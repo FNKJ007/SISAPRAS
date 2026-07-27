@@ -34,14 +34,6 @@
                     </button>
                     <ul class="submenu open" id="menuPemeliharaan">
                         <li><a href="#">Pengajuan</a></li>
-                        <li><a href="#">Nota Dinas</a></li>
-                        <li><a href="#">Pemeriksaan</a></li>
-                        <li><a href="#">Pesanan Barang</a></li>
-                        <li><a href="#">Invoice</a></li>
-                        <li><a href="#">Monitoring</a></li>
-                        <li><a href="#">Kendali Bayar</a></li>
-                        <li><a href="#">Kendali Aktual</a></li>
-                        <li><a href="#">Kendali Invoice</a></li>
                     </ul>
                 </div>
 
@@ -52,8 +44,8 @@
                         <span class="chevron">&#9662;</span>
                     </button>
                     <ul class="submenu open" id="menuPemadam">
-                        <li><a href="#">Cek Harian</a></li>
-                        <li><a href="#">Laporan</a></li>
+                        <li><a href="#">Cek Harian Unit</a></li>
+                        <li><a href="#">Cek Harian Alat</a></li>
                     </ul>
                 </div>
 
@@ -64,8 +56,8 @@
                         <span class="chevron">&#9662;</span>
                     </button>
                     <ul class="submenu open" id="menuRescue">
-                        <li><a href="#">Cek Harian</a></li>
-                        <li><a href="#">Cek Harian</a></li>
+                        <li><a href="#">Cek Harian Unit</a></li>
+                        <li><a href="#">Cek Harian Alat</a></li>
                     </ul>
                 </div>
 
@@ -101,8 +93,8 @@
 
             <header class="topbar">
                 <div class="topbar-logos">
-                    <img src="{{ asset('images/logo-kiri.png') }}" alt="Logo Instansi" class="logo logo-left">
-                    <img src="{{ asset('images/logo-kanan.png') }}" alt="Logo Yudha Brama Jaya" class="logo logo-right">
+                    <img src="{{ asset('images/logo-kabupaten.png') }}" alt="Logo Instansi" class="logo logo-left">
+                    <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Yudha Brama Jaya" class="logo logo-right">
                 </div>
             </header>
             <div class="topbar-accent"></div>
