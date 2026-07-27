@@ -4,187 +4,181 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Dinas Pemadam Kebakaran</title>
-    <!-- Memanggil Tailwind CSS via CDN untuk kemudahan testing -->
+    
+    <!-- Menggunakan Font Inter untuk tampilan lebih modern dan profesional -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Memanggil Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Konfigurasi Custom Warna & Font Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        damkar: {
+                            blue: '#213B63',
+                            red: '#B71C1C',
+                            'red-hover': '#b01d22'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
         body {
-            background-color: #ffffff; /* Warna dasar putih */
-            font-family: Arial, sans-serif; /* Gunakan font yang bersih */
+            background-color: #0B1F3A; /* Warna dasar biru tua */
+            margin: 0;
+            overflow-x: hidden; 
         }
 
-        /* Container utama dengan layout split-screen */
-        .login-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
+        .login-layout {
             display: flex;
-            justify-content: space-between;
-            overflow: hidden;
-        }
-
-        /* Elemen latar belakang aksen biru di pojok kiri atas */
-        .bg-accent-left {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 200px;
-            height: 200px;
-            background-color: #213B63;
-            border-bottom-right-radius: 200px;
-            z-index: 0;
-        }
-
-        /* Elemen latar belakang aksen biru di pojok kanan bawah */
-        .bg-accent-right {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 200px;
-            height: 200px;
-            background-color: #213B63;
-            border-top-left-radius: 200px;
-            z-index: 0;
-        }
-
-        /* Bentuk melengkung besar berwarna merah */
-        .bg-red-curve {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 50%;
-            height: 100%;
-            background-color: #CC2328;
-            border-bottom-right-radius: 100%;
-            z-index: 1;
-        }
-
-        /* Sisi Kiri (Area Merah dengan Logo) */
-        .login-left {
-            width: 50%;
-            height: 100%;
+            min-height: 100vh;
+            width: 100vw;
             position: relative;
+        }
+
+        /* Area Merah Kiri dengan Kurva Mulus (Clip-Path) */
+        .panel-merah {
+            width: 55%; 
+            background-color: #B71C1C;
+            /* Membuat lengkungan sempurna menggunakan ellipse */
+            clip-path: ellipse(100% 120% at 0% 50%);
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 2; /* Di atas bentuk melengkung */
-        }
-
-        .login-logo {
-            width: 200px; /* Ukuran logo lebih besar seperti di target */
-            height: auto;
-        }
-
-        /* Sisi Kanan (Area Putih dengan Form) */
-        .login-right {
-            width: 50%;
+            position: absolute;
             height: 100%;
-            position: relative;
+            left: 0;
+            top: 0;
+            z-index: 10;
+        }
+
+        /* Area Form Kanan */
+        .panel-biru {
+            width: 50%;
+            margin-left: 50%; /* Menggeser ke kanan */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            z-index: 20;
+            position: relative;
+        }
+
+        /* Input Custom Styles */
+        .input-field {
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
             background-color: #ffffff;
-            z-index: 2; /* Di atas aksen latar belakang */
+            border-color: #B71C1C;
+            box-shadow: 0 0 0 4px rgba(204, 35, 40, 0.1);
         }
 
-        .login-form-container {
-            width: 320px; /* Ukuran container form */
-            text-align: center;
-        }
-
-        .login-title {
-            font-size: 40px;
-            font-weight: bold;
-            color: #000000;
-            margin-bottom: 5px;
-        }
-
-        .login-subtitle {
-            font-size: 16px;
-            color: #000000;
-            margin-bottom: 40px;
-        }
-
-        .login-input {
-            width: 100%;
-            padding: 15px 20px;
-            margin-bottom: 20px;
-            border-radius: 10px; /* Border radius yang lembut */
-            background-color: #E0E3E7; /* Warna latar belakang abu-abu terang */
-            border: none;
-            font-size: 16px;
-            color: #000000;
-            outline: none;
-        }
-
-        .login-input::placeholder {
-            color: #999999;
-        }
-
-        .forgot-password {
-            font-size: 14px;
-            color: #000000;
-            margin-top: -10px;
-            margin-bottom: 30px;
-            display: block;
-            text-decoration: none;
-        }
-
-        .login-button {
-            width: 100%;
-            padding: 15px 0;
-            background-color: #213B63; /* Warna tombol biru tua */
-            color: #ffffff;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            outline: none;
+        /* --- FITUR RESPONSIF (HP/Tablet) --- */
+        @media (max-width: 992px) {
+            body { overflow-y: auto; }
+            .login-layout { flex-direction: column; }
+            .panel-merah {
+                width: 100%;
+                height: 45vh;
+                position: relative;
+                /* Ubah arah lengkungan ke bawah saat di HP */
+                clip-path: ellipse(150% 100% at 50% 0%);
+            }
+            .panel-biru {
+                width: 100%;
+                margin-left: 0;
+                padding: 40px 20px;
+                min-height: 55vh;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div class="login-container">
-        <!-- Latar belakang aksen biru -->
-        <div class="bg-accent-left"></div>
-        <div class="bg-accent-right"></div>
+    <div class="login-layout">
         
-        <!-- Bentuk melengkung besar merah -->
-        <div class="bg-red-curve"></div>
-        <div class="bg-blue-curve"></div>
-        <!-- Sisi Kiri (Logo) -->
-        <div class="login-left">
-            <!-- Pastikan Anda meletakkan file gambar logo di dalam folder public/images/ -->
-            <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Yudha Brama Jaya" class="login-logo">
+        <!-- Sisi Kiri (Area Merah + Logo) -->
+        <div class="panel-merah shadow-2xl">
+            <!-- Tambahkan efek hover scale pada logo agar interaktif -->
+            <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Yudha Brama Jaya" 
+                 class="w-64 md:w-80 lg:w-96 drop-shadow-2xl transition-transform duration-500 hover:scale-105">
         </div>
 
-        <!-- Sisi Kanan (Form) -->
-        <div class="login-right">
-            <div class="login-form-container">
-                <h1 class="login-title">Welcome</h1>
-                <p class="login-subtitle">Please sign in to continue.</p>
+        <!-- Sisi Kanan (Area Biru + Form) -->
+        <div class="panel-biru">
+            
+            <!-- Kotak Form dengan Efek Transparan (Glassmorphism) -->
+            <div class="w-full max-w-md p-8 md:p-10 rounded-2xl border-4 border-damkar-red bg-white/5 backdrop-blur-sm shadow-2xl">
                 
-                <form action="{{ route('login.post') }}" method="POST">
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl font-bold text-white tracking-wide mb-2">SISAPRAS</h1>
+                    <p class="text-gray-300 text-sm">Please sign in to continue.</p>
+                </div>
+
+                <!-- NOTIFIKASI ERROR (KEAMANAN UX) -->
+                <!-- Menampilkan pesan jika Username/Password salah atau kosong -->
+                @if ($errors->any())
+                    <div class="bg-red-500/20 border border-red-500 text-red-100 px-4 py-3 rounded-lg mb-6 text-sm">
+                        <ul class="list-disc list-inside">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+                
+                @if (session('error'))
+                    <div class="bg-red-500/20 border border-red-500 text-red-100 px-4 py-3 rounded-lg mb-6 text-sm text-center font-medium">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                <!-- Form Login -->
+                <form action="{{ route('login.post') }}" method="POST" class="space-y-5">
+                    <!-- Token CSRF wajib untuk keamanan dari serangan CSRF -->
                     @csrf
                     
+                    <!-- Input Username / ID -->
                     <div>
-                        <input type="email" name="email" id="email" class="login-input" placeholder="example@email.com" required>
+                        <!-- value old('username') mencegah user mengetik ulang ID jika password salah -->
+                        <input type="text" name="username" id="username" 
+                               class="input-field w-full px-5 py-3.5 rounded-xl bg-gray-200 border-2 border-transparent text-gray-900 placeholder-gray-500 font-medium outline-none" 
+                               placeholder="Username / ID" 
+                               value="{{ old('username') }}" 
+                               required 
+                               autocomplete="username">
                     </div>
 
+                    <!-- Input Password -->
                     <div>
-                        <input type="password" name="password" id="password" class="login-input" required>
+                        <input type="password" name="password" id="password" 
+                               class="input-field w-full px-5 py-3.5 rounded-xl bg-gray-200 border-2 border-transparent text-gray-900 placeholder-gray-500 font-medium outline-none" 
+                               placeholder="Password" 
+                               required 
+                               autocomplete="current-password">
                     </div>
 
-                    <div>
-                        <a href="#" class="forgot-password">Forgot your password?</a>
-                    </div>
-
-                    <div>
-                        <button type="submit" class="login-button">LOG IN</button>
+                    <!-- Tombol Login -->
+                    <div class="pt-3">
+                        <button type="submit" 
+                                class="w-full py-3.5 bg-damkar-red hover:bg-damkar-red-hover text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-red-500/40 transition-all duration-300 transform active:scale-95">
+                            LOG IN
+                        </button>
                     </div>
                 </form>
+
             </div>
         </div>
     </div>
