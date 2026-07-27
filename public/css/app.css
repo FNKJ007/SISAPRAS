@@ -132,7 +132,7 @@ body {
 }
 
 .topbar {
-    background-color: #fff;
+    background-color: #D9D9D9;
     padding: 14px 24px;
     display: flex;
     align-items: center;
@@ -145,21 +145,50 @@ body {
 }
 
 .logo {
-    height: 42px;
-    width: 42px;
+    height: 80px;
+    width: 80px;
     object-fit: contain;
 }
 
 .topbar-accent {
-    height: 5px;
-    background-color: var(--accent-blue);
-    width: 100%;
+    height: 10px;
+    background-color: #20429C;
+    width: auto;
+    margin: 0 24px;      /* celah/gap kiri-kanan */
+    border-radius: 3px;
 }
 
 .content-area {
+    position: relative;
     flex: 1;
     background-color: var(--content-bg);
     padding: 24px;
+    overflow: hidden; /* jaga watermark tidak keluar dari area konten */
+}
+
+/* Watermark logo besar & transparan di tengah area konten.
+   Ganti url() di bawah dengan path logo Anda. */
+.content-area::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 420px;
+    height: 420px;
+    transform: translate(-50%, -50%);
+    background-image: url('/images/logo-damkar.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.08;      /* atur di sini seberapa samar bayangannya */
+    pointer-events: none; /* supaya tidak menghalangi klik konten di atasnya */
+    z-index: 0;
+}
+
+/* Pastikan konten asli (yang di-@yield) tampil di atas watermark */
+.content-area > * {
+    position: relative;
+    z-index: 1;
 }
 
 /* ===================== RESPONSIVE ===================== */
