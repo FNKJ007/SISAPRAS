@@ -25,7 +25,7 @@
             </div>
 
             <nav class="sidebar-menu">
-
+    
                 {{-- === Pemeliharaan === --}}
                 <div class="menu-group">
                     <button class="menu-title" data-target="menuPemeliharaan">
@@ -33,10 +33,14 @@
                         <span class="chevron">&#9662;</span>
                     </button>
                     <ul class="submenu open" id="menuPemeliharaan">
-                        <li><a href="#">Pengajuan</a></li>
+                        <li>
+                            <a href="{{ route('pemeliharaan.pengajuan') }}"
+                               class="{{ request()->routeIs('pemeliharaan.pengajuan') ? 'active' : '' }}">
+                                Pengajuan
+                            </a>
+                        </li>
                     </ul>
                 </div>
-
                 {{-- === Unit Pemadam === --}}
                 <div class="menu-group">
                     <button class="menu-title" data-target="menuPemadam">

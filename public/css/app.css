@@ -191,6 +191,94 @@ body {
     z-index: 1;
 }
 
+/* ===================== FORM CARD (halaman Pengajuan, dsb) ===================== */
+.form-card {
+    background-color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+    padding: 28px 32px 32px;
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto; /* agar card selalu di tengah area konten */
+}
+
+.form-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 22px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13.5px;
+    color: #444;
+    margin-bottom: 6px;
+}
+
+.form-group input[type="text"],
+.form-group select {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    background: transparent;
+    padding: 6px 2px;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+    font-family: inherit;
+}
+
+.form-group input[type="text"]:focus,
+.form-group select:focus {
+    border-bottom-color: var(--accent-blue);
+}
+
+/* Select tanpa tampilan panah bawaan browser, diganti panah custom */
+.form-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+}
+
+.form-group.has-caret::after {
+    content: '\25BC'; /* ▼ */
+    position: absolute;
+    right: 4px;
+    bottom: 10px;
+    font-size: 12px;
+    color: #333;
+    pointer-events: none;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 28px;
+}
+
+.btn-submit {
+    background-color: #2952d9;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 32px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.btn-submit:hover {
+    background-color: #1f3fae;
+}
+
 /* ===================== RESPONSIVE ===================== */
 @media (max-width: 768px) {
     .sidebar {
@@ -199,5 +287,9 @@ body {
 
     .sidebar.collapsed {
         min-width: 56px;
+    }
+
+    .form-card {
+        max-width: 100%;
     }
 }
