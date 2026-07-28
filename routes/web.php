@@ -3,7 +3,7 @@
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
-
+use App\Http\Controllers\PengajuanController;
 
 // Route khusus untuk tamu (belum login)
 Route::middleware('guest')->group(function () {
@@ -22,3 +22,10 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/home', [HomeController::class, 'index'])->name('home.index');
+
+// ===== Pemeliharaan > Pengajuan =====
+Route::get('/pemeliharaan/pengajuan', [PengajuanController::class, 'index'])
+    ->name('pemeliharaan.pengajuan');
+
+Route::post('/pemeliharaan/pengajuan', [PengajuanController::class, 'store'])
+    ->name('pemeliharaan.pengajuan.store');

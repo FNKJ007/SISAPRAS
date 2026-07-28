@@ -1,0 +1,69 @@
+body {
+    background-color: #0B1F3A; /* Warna dasar biru tua */
+    margin: 0;
+    overflow-x: hidden;
+}
+
+.login-layout {
+    display: flex;
+    min-height: 100vh;
+    width: 100vw;
+    position: relative;
+}
+
+/* Area Merah Kiri dengan Kurva Mulus (Clip-Path) */
+.panel-merah {
+    width: 55%;
+    background-color: #B71C1C;
+    /* Membuat lengkungan sempurna menggunakan ellipse */
+    clip-path: ellipse(100% 120% at 0% 50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    height: 100%;
+    left: 0;
+    top: 0;
+    z-index: 10;
+}
+
+/* Area Form Kanan */
+.panel-biru {
+    width: 50%;
+    margin-left: 50%; /* Menggeser ke kanan */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    position: relative;
+}
+
+/* Input Custom Styles */
+.input-field {
+    transition: all 0.3s ease;
+}
+.input-field:focus {
+    background-color: #ffffff;
+    border-color: #B71C1C;
+    box-shadow: 0 0 0 4px rgba(204, 35, 40, 0.1);
+}
+
+/* --- FITUR RESPONSIF (HP/Tablet) --- */
+@media (max-width: 992px) {
+    body { overflow-y: auto; }
+    .login-layout { flex-direction: column; }
+    .panel-merah {
+        width: 100%;
+        height: 45vh;
+        position: relative;
+        /* Ubah arah lengkungan ke bawah saat di HP */
+        clip-path: ellipse(150% 100% at 50% 0%);
+    }
+    .panel-biru {
+        width: 100%;
+        margin-left: 0;
+        padding: 40px 20px;
+        min-height: 55vh;
+    }
+}
