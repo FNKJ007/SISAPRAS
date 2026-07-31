@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cek Harian Alat Pemadam</title>
+    <title>Cek Harian Alat Rescue</title>
 
     {{-- Tailwind CSS (ganti dengan build asset Laravel Mix/Vite di project asli) --}}
     <script src="https://cdn.tailwindcss.com"></script>
@@ -24,12 +24,12 @@
 @section('content')
 <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 max-w-5xl mx-auto">
 
-    <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Cek Harian Alat Pemadam</h1>
+    <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Cek Harian Alat Rescue</h1>
     <p class="text-gray-500 text-sm mt-1 mb-6">
-        Pemeriksaan kondisi dan kelengkapan alat pemadam kebakaran.
+        Pemeriksaan kondisi dan kelengkapan alat Rescue.
     </p>
 
-    <form action="{{ route('alat-pemadam.cek-harian-alat.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+    <form action="{{ route('alat-rescue.cek-harian-alat.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
 
         {{-- Baris 1: Nama Pemeriksa & Jabatan --}}
@@ -54,20 +54,7 @@
 
         {{-- Baris 2: Unit/Kendaraan & Tanggal Pemeriksaan (fitur Shift dihilangkan) --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-                <label for="unit_id" class="block text-sm font-medium mb-1">Unit / Kendaraan</label>
-                <select id="unit_id" name="unit_id"
-                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                    <option value="" selected disabled>Pilih Unit / Kendaraan</option>
-                    @foreach($unitList ?? [] as $unit)
-                        <option value="{{ $unit->id }}" @selected(old('unit_id') == $unit->id)>
-                            {{ $unit->nama }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('unit_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-            </div>
-            <div>
+           <div>
                 <label for="tanggal_pemeriksaan" class="block text-sm font-medium mb-1">Tanggal Pemeriksaan</label>
                 <input type="date" id="tanggal_pemeriksaan" name="tanggal_pemeriksaan"
                        value="{{ old('tanggal_pemeriksaan', date('Y-m-d')) }}"
