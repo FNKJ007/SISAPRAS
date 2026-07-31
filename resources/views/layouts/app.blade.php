@@ -70,9 +70,14 @@
                     </button>
                     <ul class="submenu open" id="menuRescue">
                         <li><a href="#">Cek Harian Unit</a></li>
-                        <li><a href="#">Cek Harian Alat</a></li>
+                        <li><a href="{{ route('alat-rescue.cek-harian-alat') }}"
+                               class="{{ request()->routeIs('alat-rescue.cek-harian-alat') ? 'active' : '' }}">
+                               Cek Harian Alat
+                            </a>
+                        </li>
                     </ul>
                 </div>
+                
 
                 {{-- === Command Center === --}}
                 <div class="menu-group">
