@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ file_exists(public_path('css/app.css')) ? filemtime(public_path('css/app.css')) : '1' }}">
     @stack('styles')
 </head>
 <body>
@@ -25,7 +25,7 @@
             </div>
 
             <nav class="sidebar-menu">
-    
+
                 {{-- === Pemeliharaan === --}}
                 <div class="menu-group">
                     <button class="menu-title" data-target="menuPemeliharaan">
@@ -48,7 +48,12 @@
                         <span class="chevron">&#9662;</span>
                     </button>
                     <ul class="submenu open" id="menuPemadam">
-                        <li><a href="#">Cek Harian Unit</a></li>
+                        <li>
+                            <a href="{{ route('unit-pemadam.cek-harian-unit') }}"
+                               class="{{ request()->routeIs('unit-pemadam.cek-harian-unit') ? 'active' : '' }}">
+                                Cek Harian Unit
+                            </a>
+                        </li>
                         <li><a href="#">Cek Harian Alat</a></li>
                     </ul>
                 </div>
@@ -92,10 +97,20 @@
             </nav>
         </aside>
 
+        {{-- Backdrop gelap, muncul di belakang sidebar saat sidebar dibuka di layar kecil --}}
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
         {{-- ===================== MAIN AREA ===================== --}}
         <div class="main-area">
 
             <header class="topbar">
+                {{-- Tombol hamburger ini HANYA tampil di layar kecil (lihat app.css).
+                     Sengaja diletakkan di dalam header (bukan position:fixed) supaya
+                     tidak pernah menimpa logo, mengikuti alur flex header biasa. --}}
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Buka menu">
+                    <span class="icon-bars">&#9776;</span>
+                </button>
+
                 <div class="topbar-logos">
                     <img src="{{ asset('images/logo-kabupaten.png') }}" alt="Logo Instansi" class="logo logo-left">
                     <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Yudha Brama Jaya" class="logo logo-right">
@@ -110,7 +125,7 @@
         </div>
     </div>
 
-    <script src="{{ asset('js/app.js') }}"></script>
+    <script src="{{ asset('js/app.js') }}?v={{ file_exists(public_path('js/app.js')) ? filemtime(public_path('js/app.js')) : '1' }}"></script>
     @stack('scripts')
 </body>
 </html>
