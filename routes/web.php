@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\CekHarianUnitPemadamController;
+use App\Http\Controllers\CekHarianAlatController;
 
 
 // ===== Auth (Login/Logout) =====
@@ -29,3 +30,8 @@ Route::get('/unit-pemadam/cek-harian-unit', [CekHarianUnitPemadamController::cla
 Route::post('/unit-pemadam/cek-harian-unit', [CekHarianUnitPemadamController::class, 'store'])
     ->name('unit-pemadam.cek-harian-unit.store');
 
+Route::get('/alat-pemadam/cek-harian-alat', [CekHarianAlatController::class, 'index'])
+    ->name('alat-pemadam.cek-harian-alat');
+
+Route::post('/alat-pemadam/cek-harian-alat', [CekHarianAlatController::class, 'store'])
+    ->name('alat-pemadam.cek-harian-alat.store');
