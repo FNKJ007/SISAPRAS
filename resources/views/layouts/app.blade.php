@@ -7,6 +7,8 @@
 
     {{-- Google Font (opsional, boleh dihapus kalau tidak ada koneksi internet di server) --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <script src="https://cdn.tailwindcss.com"></script>
+     @stack('styles')
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ file_exists(public_path('css/app.css')) ? filemtime(public_path('css/app.css')) : '1' }}">
@@ -69,7 +71,10 @@
                         <span class="chevron">&#9662;</span>
                     </button>
                     <ul class="submenu open" id="menuRescue">
-                        <li><a href="#">Cek Harian Unit</a></li>
+                        <li><a href="{{ route('unit-rescue.cek-harian-unit-rescue') }}"
+                               class="{{ request()->routeIs('unit-rescue.cek-harian-unit-rescue.store') ? 'active' : '' }}">
+                               Cek Harian Alat
+                            </a></li>
                         <li><a href="{{ route('alat-rescue.cek-harian-alat') }}"
                                class="{{ request()->routeIs('alat-rescue.cek-harian-alat') ? 'active' : '' }}">
                                Cek Harian Alat

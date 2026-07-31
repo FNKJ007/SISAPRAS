@@ -7,6 +7,7 @@ use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\CekHarianUnitPemadamController;
 use App\Http\Controllers\CekHarianAlatController;
 use App\Http\Controllers\CekHarianAlatRescueController;
+use App\Http\Controllers\CekHarianUnitRescueController;
 
 
 
@@ -43,3 +44,9 @@ Route::get('/alat-rescue/cek-harian-alat', [CekHarianAlatRescueController::class
 
 Route::post('/alat-rescue/cek-harian-alat', [CekHarianAlatRescueController::class, 'store'])
     ->name('alat-rescue.cek-harian-alat.store');
+
+Route::get('/unit-rescue/cek-harian-unit', [CekHarianUnitRescueController::class, 'index'])
+    ->name('unit-rescue.cek-harian-unit-rescue');
+
+Route::post('/unit-rescue/cek-harian-unit', [CekHarianUnitRescueController::class, 'store'])
+    ->name('unit-rescue.cek-harian-unit-rescue.store');
