@@ -1,30 +1,62 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    // Toggle buka/tutup sidebar (klik "Menu" di dalam sidebar, atau tombol
-    // kecil di luar sidebar yang muncul saat sidebar tertutup)
-    var sidebarToggle = document.getElementById('sidebarToggle');
-    var sidebarReopen = document.getElementById('sidebarReopen');
-    var sidebar = document.getElementById('sidebar');
+    var sidebar          = document.getElementById('sidebar');
+    var sidebarToggle     = document.getElementById('sidebarToggle');   // tombol "Menu" di dalam sidebar
+    var mobileMenuBtn     = document.getElementById('mobileMenuBtn');   // tombol hamburger di header (khusus mobile)
+    var sidebarBackdrop   = document.getElementById('sidebarBackdrop'); // overlay gelap (khusus mobile)
 
-    function closeSidebar() {
-        sidebar.classList.add('collapsed');
-        sidebarReopen.classList.add('visible');
+    var MOBILE_BREAKPOINT = '(max-width: 768px)';
+
+    function isMobile() {
+        return window.matchMedia(MOBILE_BREAKPOINT).matches;
     }
 
-    function openSidebar() {
-        sidebar.classList.remove('collapsed');
-        sidebarReopen.classList.remove('visible');
+    function openMobileSidebar() {
+        sidebar.classList.add('mobile-open');
+        sidebarBackdrop.classList.add('show');
     }
 
-    if (sidebarToggle && sidebar && sidebarReopen) {
-        sidebarToggle.addEventListener('click', function () {
-            closeSidebar();
-        });
-
-        sidebarReopen.addEventListener('click', function () {
-            openSidebar();
-        });
+    function closeMobileSidebar() {
+        sidebar.classList.remove('mobile-open');
+        sidebarBackdrop.classList.remove('show');
     }
+
+    function toggleSidebar() {
+        if (isMobile()) {
+            // Mode mobile: sidebar off-canvas (geser keluar/masuk layar) + backdrop
+            if (sidebar.classList.contains('mobile-open')) {
+                closeMobileSidebar();
+            } else {
+                openMobileSidebar();
+            }
+        } else {
+            // Mode desktop: sidebar menyempit jadi rel tipis (perilaku lama, tidak berubah)
+            sidebar.classList.toggle('collapsed');
+        }
+    }
+
+    if (sidebar && sidebarToggle) {
+        sidebarToggle.addEventListener('click', toggleSidebar);
+    }
+
+    if (sidebar && mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', toggleSidebar);
+    }
+
+    // Klik di area gelap (backdrop) menutup sidebar mobile
+    if (sidebarBackdrop) {
+        sidebarBackdrop.addEventListener('click', closeMobileSidebar);
+    }
+
+    // Kalau layar di-resize dari mobile ke desktop (atau sebaliknya),
+    // reset state supaya tidak "nyangkut" di kondisi yang salah.
+    window.addEventListener('resize', function () {
+        if (!isMobile()) {
+            closeMobileSidebar();
+        } else {
+            sidebar.classList.remove('collapsed');
+        }
+    });
 
     // Accordion untuk tiap grup menu (Pemeliharaan, Unit Pemadam, dst)
     var menuTitles = document.querySelectorAll('.menu-title');

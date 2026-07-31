@@ -27,18 +27,18 @@
         <div class="panel-merah shadow-2xl">
             <!-- Tambahkan efek hover scale pada logo agar interaktif -->
             <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Yudha Brama Jaya"
-                 class="w-64 md:w-80 lg:w-96 drop-shadow-2xl transition-transform duration-500 hover:scale-105">
+                 class="w-28 sm:w-40 md:w-64 lg:w-80 xl:w-96 drop-shadow-2xl transition-transform duration-500 hover:scale-105">
         </div>
 
         <!-- Sisi Kanan (Area Biru + Form) -->
         <div class="panel-biru">
 
             <!-- Kotak Form dengan Efek Transparan (Glassmorphism) -->
-            <div class="w-full max-w-md p-8 md:p-10 rounded-2xl border-4 border-damkar-red bg-white/5 backdrop-blur-sm shadow-2xl">
+            <div class="w-full max-w-md p-5 sm:p-6 md:p-8 lg:p-10 rounded-2xl border-4 border-damkar-red bg-white/5 backdrop-blur-sm shadow-2xl">
 
-                <div class="text-center mb-8">
-                    <h1 class="text-4xl font-bold text-white tracking-wide mb-2">SISAPRAS</h1>
-                    <p class="text-gray-300 text-sm">Please sign in to continue.</p>
+                <div class="text-center mb-4 sm:mb-6 md:mb-8">
+                    <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-wide mb-2">SISAPRAS</h1>
+                    <p class="text-gray-300 text-xs sm:text-sm">Please sign in to continue.</p>
                 </div>
 
                 <!-- NOTIFIKASI ERROR (KEAMANAN UX) -->
@@ -60,7 +60,7 @@
                 @endif
 
                 <!-- Form Login -->
-                <form action="{{ route('login.post') }}" method="POST" class="space-y-5">
+                <form action="{{ route('login.post') }}" method="POST" class="space-y-3 sm:space-y-4 md:space-y-5">
                     <!-- Token CSRF wajib untuk keamanan dari serangan CSRF -->
                     @csrf
 
@@ -68,7 +68,7 @@
                     <div>
                         <!-- value old('username') mencegah user mengetik ulang ID jika password salah -->
                         <input type="text" name="username" id="username"
-                               class="input-field w-full px-5 py-3.5 rounded-xl bg-gray-200 border-2 border-transparent text-gray-900 placeholder-gray-500 font-medium outline-none"
+                               class="input-field w-full px-4 sm:px-5 py-2.5 sm:py-3 md:py-3.5 rounded-xl bg-gray-200 border-2 border-transparent text-gray-900 placeholder-gray-500 font-medium outline-none"
                                placeholder="Username / ID"
                                value="{{ old('username') }}"
                                required
@@ -78,16 +78,16 @@
                     <!-- Input Password -->
                     <div>
                         <input type="password" name="password" id="password"
-                               class="input-field w-full px-5 py-3.5 rounded-xl bg-gray-200 border-2 border-transparent text-gray-900 placeholder-gray-500 font-medium outline-none"
+                               class="input-field w-full px-4 sm:px-5 py-2.5 sm:py-3 md:py-3.5 rounded-xl bg-gray-200 border-2 border-transparent text-gray-900 placeholder-gray-500 font-medium outline-none"
                                placeholder="Password"
                                required
                                autocomplete="current-password">
                     </div>
 
                     <!-- Tombol Login -->
-                    <div class="pt-3">
+                    <div class="pt-2 sm:pt-3">
                         <button type="submit"
-                                class="w-full py-3.5 bg-damkar-red hover:bg-damkar-red-hover text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-red-500/40 transition-all duration-300 transform active:scale-95">
+                                class="w-full py-2.5 sm:py-3 md:py-3.5 bg-damkar-red hover:bg-damkar-red-hover text-white font-bold text-base sm:text-lg rounded-xl shadow-lg hover:shadow-red-500/40 transition-all duration-300 transform active:scale-95">
                             LOG IN
                         </button>
                     </div>
