@@ -54,7 +54,11 @@
                                 Cek Harian Unit
                             </a>
                         </li>
-                        <li><a href="#">Cek Harian Alat</a></li>
+                        <li><a href="{{ route('alat-pemadam.cek-harian-alat') }}"
+                               class="{{ request()->routeIs('alat-pemadam.cek-harian-alat') ? 'active' : '' }}">
+                               Cek Harian Alat
+                            </a>
+                        </li>
                     </ul>
                 </div>
 
