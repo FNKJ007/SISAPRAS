@@ -72,8 +72,8 @@
                     </button>
                     <ul class="submenu open" id="menuRescue">
                         <li><a href="{{ route('unit-rescue.cek-harian-unit-rescue') }}"
-                               class="{{ request()->routeIs('unit-rescue.cek-harian-unit-rescue.store') ? 'active' : '' }}">
-                               Cek Harian Alat
+                               class="{{ request()->routeIs('unit-rescue.cek-harian-unit-rescue') ? 'active' : '' }}">
+                               Cek Harian Unit
                             </a></li>
                         <li><a href="{{ route('alat-rescue.cek-harian-alat') }}"
                                class="{{ request()->routeIs('alat-rescue.cek-harian-alat') ? 'active' : '' }}">
@@ -91,20 +91,10 @@
                         <span class="chevron">&#9662;</span>
                     </button>
                     <ul class="submenu open" id="menuCommand">
-                        <li><a href="#">Cek Sistem</a></li>
-                        <li><a href="#">Laporan</a></li>
-                    </ul>
-                </div>
-
-                {{-- === APAR === --}}
-                <div class="menu-group">
-                    <button class="menu-title" data-target="menuApar">
-                        <span>APAR</span>
-                        <span class="chevron">&#9662;</span>
-                    </button>
-                    <ul class="submenu open" id="menuApar">
-                        <li><a href="#">Data APAR</a></li>
-                        <li><a href="#">Cek Sistem</a></li>
+                        <li><a href="{{ route('alat-cc.cek-alat-cc') }}"
+                               class="{{ request()->routeIs('alat-cc.cek-alat-cc') ? 'active' : '' }}">
+                               Cek Harian Alat
+                            </a></li>
                     </ul>
                 </div>
 
