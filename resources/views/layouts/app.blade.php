@@ -91,7 +91,10 @@
                         <span class="chevron">&#9662;</span>
                     </button>
                     <ul class="submenu open" id="menuCommand">
-                        <li><a href="#">Cek Sistem</a></li>
+                        <li><a href="{{ route('alat-cc.cek-alat-cc') }}"
+                               class="{{ request()->routeIs('alat-cc.cek-alat-cc') ? 'active' : '' }}">
+                               Cek Harian Alat
+                            </a></li>
                         <li><a href="#">Laporan</a></li>
                     </ul>
                 </div>
