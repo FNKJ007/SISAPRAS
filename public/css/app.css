@@ -1,10 +1,10 @@
 :root {
     --sidebar-red: #C0201F;
     --sidebar-red-dark: #A81A19;
-    --sidebar-border: rgba(255, 255, 255, 0.25);
+    --sidebar-border: rgba(255, 255, 255, 0.15);
     --accent-blue: #1B2A6B;
     --content-bg: #FFFFFF;
-    --sidebar-width: 230px;
+    --sidebar-width: 176px;
 }
 
 * {
@@ -24,7 +24,7 @@ body {
     width: 100%;
 }
 
-/* ===================== SIDEBAR ===================== */
+/* ===================== SIDEBAR (DESKTOP) ===================== */
 .sidebar {
     width: var(--sidebar-width);
     min-width: var(--sidebar-width);
@@ -34,17 +34,15 @@ body {
     flex-direction: column;
     overflow: hidden;
     transition: width 0.25s ease, min-width 0.25s ease;
-
-    position: sticky; 
-    top: 0; 
+    position: sticky;
+    top: 0;
     height: 100vh;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
 }
 
-/* Saat "ditutup", sidebar TIDAK hilang total — menyempit jadi rel tipis
-   berwarna merah, supaya masih terlihat & mudah dibuka lagi. */
 .sidebar.collapsed {
-    width: 56px;
-    min-width: 56px;
+    width: 48px;
+    min-width: 48px;
 }
 
 .sidebar.collapsed .menu-label,
@@ -55,46 +53,84 @@ body {
 .sidebar-toggle {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 16px 18px;
+    gap: 8px;
+    padding: 11px 14px;
     cursor: pointer;
-    font-size: 15px;
+    font-size: 12.5px;
     font-weight: 500;
     border-bottom: 1px solid var(--sidebar-border);
     white-space: nowrap;
+    width: 100%;
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    color: rgba(255, 255, 255, 0.9);
+    transition: background-color 0.15s ease;
+}
+
+.sidebar-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.08);
 }
 
 .icon-bars {
-    font-size: 18px;
+    font-size: 15px;
     line-height: 1;
+    width: 15px;
+    height: 15px;
 }
 
 .sidebar-menu {
     flex: 1;
     overflow-y: auto;
+    padding: 8px 5px;
 }
 
 .menu-group {
-    border-bottom: 1px solid var(--sidebar-border);
+    margin-bottom: 3px;
 }
 
 .menu-title {
     width: 100%;
     background: none;
     border: none;
-    color: #fff;
+    color: rgba(255, 255, 255, 0.85);
     text-align: left;
-    padding: 12px 18px;
-    font-size: 14px;
-    font-weight: 600;
+    padding: 8px 9px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.menu-title:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.menu-title-left {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.menu-icon {
+    width: 13px;
+    height: 13px;
+    opacity: 0.8;
+    flex-shrink: 0;
 }
 
 .menu-title .chevron {
-    font-size: 11px;
+    width: 11px;
+    height: 11px;
+    opacity: 0.6;
     transition: transform 0.2s ease;
 }
 
@@ -110,37 +146,32 @@ body {
 }
 
 .submenu.open {
-    max-height: 500px; /* cukup besar agar semua item tampil */
+    max-height: 500px;
+}
+
+.submenu li {
+    padding: 1px 3px;
 }
 
 .submenu li a {
     display: block;
-    color: #f4d9d9;
+    color: #f0cccc;
     text-decoration: none;
-    font-size: 13.5px;
-    padding: 8px 18px 8px 28px;
+    font-size: 11.5px;
+    padding: 6px 9px 6px 22px;
+    border-radius: 5px;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .submenu li a:hover {
-    background-color: var(--sidebar-red-dark);
+    background-color: rgba(255, 255, 255, 0.1);
     color: #fff;
 }
 
 .submenu li a.active {
-    background-color: var(--sidebar-red-dark);
-    color: #fff;
+    background-color: rgba(255, 255, 255, 0.95);
+    color: var(--sidebar-red);
     font-weight: 600;
-    border-left: 3px solid #fff;
-    padding-left: 25px;
-}
-
-.submenu li a.active {
-    background-color: var(--sidebar-red-dark);
-    color: #fff;
-    font-weight: 600;
-    border-left: 3px solid #fff;
-    padding-left: 25px; /* 28px - 3px border, biar teks tidak geser */
 }
 
 /* ===================== MAIN AREA ===================== */
@@ -153,46 +184,57 @@ body {
 
 .topbar {
     background-color: #fff;
-    padding: 14px 24px;
+    padding: 12px 22px;
     display: flex;
     align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
-/* Tombol hamburger di header — hanya tampil di layar kecil (lihat media query) */
 .mobile-menu-btn {
     display: none;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
-    margin-right: 14px;
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
     background-color: var(--sidebar-red);
     color: #fff;
     border: none;
     border-radius: 6px;
-    font-size: 18px;
+    font-size: 14px;
     cursor: pointer;
     flex-shrink: 0;
+}
+
+.mobile-menu-btn i,
+.mobile-menu-btn svg {
+    width: 16px;
+    height: 16px;
 }
 
 .topbar-logos {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
 .logo {
-    height: 64px;
-    width: 64px;
+    height: 56px;
+    width: 56px;
     object-fit: contain;
 }
 
 .topbar-accent {
-    height: 5px;
+    height: 4px;
     background-color: var(--accent-blue);
-    width: auto;         /* tidak lagi 100% penuh */
-    margin: 0 24px;      /* celah/gap di kiri & kanan, sejajar padding konten */
-    border-radius: 3px;  /* opsional: ujung garis jadi sedikit membulat */
+    width: auto;
+    margin: 0 22px;
+    border-radius: 3px;
+    position: sticky;
+    top: 80px;
+    z-index: 99;
 }
 
 .content-area {
@@ -200,11 +242,9 @@ body {
     flex: 1;
     background-color: var(--content-bg);
     padding: 24px;
-    overflow: hidden; /* jaga watermark tidak keluar dari area konten */
+    overflow: hidden;
 }
 
-/* Watermark logo besar & transparan di tengah area konten.
-   Ganti url() di bawah dengan path logo Anda. */
 .content-area::before {
     content: '';
     position: absolute;
@@ -217,18 +257,17 @@ body {
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    opacity: 0.08;      /* atur di sini seberapa samar bayangannya */
-    pointer-events: none; /* supaya tidak menghalangi klik konten di atasnya */
+    opacity: 0.08;
+    pointer-events: none;
     z-index: 0;
 }
 
-/* Pastikan konten asli (yang di-@yield) tampil di atas watermark */
 .content-area > * {
     position: relative;
     z-index: 1;
 }
 
-/* ===================== FORM CARD (halaman Pengajuan, dsb) ===================== */
+/* ===================== FORM CARD ===================== */
 .form-card {
     background-color: #fff;
     border-radius: 6px;
@@ -236,7 +275,7 @@ body {
     padding: 28px 32px 32px;
     max-width: 1100px;
     width: 100%;
-    margin: 0 auto; /* posisikan card di tengah content-area */
+    margin: 0 auto;
 }
 
 .form-card-title {
@@ -283,7 +322,6 @@ body {
     border-bottom-color: var(--accent-blue);
 }
 
-/* Select tanpa tampilan panah bawaan browser, diganti panah custom */
 .form-group select {
     appearance: none;
     -webkit-appearance: none;
@@ -292,7 +330,7 @@ body {
 }
 
 .form-group.has-caret::after {
-    content: '\25BC'; /* ▼ */
+    content: '\25BC';
     position: absolute;
     right: 4px;
     bottom: 10px;
@@ -301,8 +339,6 @@ body {
     pointer-events: none;
 }
 
-/* Grid 2 kolom, dipakai untuk pasangan field (Bidang|Unit, atau
-   daftar item pengecekan seperti Engine Stater | Rem Tangan, dst). */
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -318,13 +354,11 @@ body {
     line-height: 1.4;
 }
 
-/* ---- Field upload foto (tombol "+") ---- */
 .upload-group-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
     gap: 12px;
-    
 }
 
 .upload-underline {
@@ -334,16 +368,16 @@ body {
 
 .upload-btn {
     display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  background-color: #7b7d7d; /* Warna hijau teal */
-  color: white;
-  border-radius: 8px; /* Sudut melengkung */
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Efek bayangan halus */
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background-color: #7b7d7d;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .upload-btn:hover {
@@ -383,50 +417,58 @@ body {
     background-color: #000000;
 }
 
-/* ===================== RESPONSIVE ===================== */
-
-/* Backdrop gelap di belakang sidebar saat sidebar terbuka (mobile).
-   Default disembunyikan total di semua ukuran layar; hanya dipakai
-   dan diberi fungsi di dalam media query mobile di bawah. */
+/* ===================== RESPONSIVE (MOBILE) ===================== */
 .sidebar-backdrop {
     display: none;
 }
 
 @media (max-width: 768px) {
+    .topbar {
+        padding: 10px 16px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .topbar-accent {
+        top: 60px;
+    }
+
+    .logo {
+        height: 42px;
+        width: 42px;
+    }
+
     .mobile-menu-btn {
         display: flex;
     }
 
-    /* Sembunyikan tombol "Menu" bawaan di dalam sidebar untuk mobile,
-       karena sudah digantikan tombol hamburger di header. */
     .sidebar-toggle {
-        display: none;
+        display: flex;
     }
 
-    /* Sidebar jadi off-canvas: tersembunyi total di luar layar,
-       muncul sebagai overlay saat class .mobile-open ditambahkan. */
+    /* Sidebar mobile tetap ukuran nyaman untuk disentuh (lebih lebar dari desktop) */
     .sidebar {
         position: fixed;
         top: 0;
         left: 0;
         height: 100vh;
-        width: var(--sidebar-width);
-        min-width: var(--sidebar-width);
+        width: 208px;
+        min-width: 208px;
         transform: translateX(-100%);
         transition: transform 0.3s ease;
         z-index: 1000;
-        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3);
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.35);
+        border-radius: 0 12px 12px 0;
     }
 
     .sidebar.mobile-open {
         transform: translateX(0);
     }
 
-    /* Netralkan perilaku "rel tipis" milik desktop supaya tidak
-       bentrok dengan mode off-canvas mobile. */
     .sidebar.collapsed {
-        width: var(--sidebar-width);
-        min-width: var(--sidebar-width);
+        width: 208px;
+        min-width: 208px;
     }
 
     .sidebar.collapsed .menu-label,
@@ -434,21 +476,14 @@ body {
         display: block;
     }
 
-    /* Backdrop gelap muncul di belakang sidebar saat sidebar dibuka */
-    .sidebar-backdrop {
-        display: block;
-        position: fixed;
-        inset: 0;
-        background-color: rgba(0, 0, 0, 0.45);
-        z-index: 999;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.25s ease;
+    .menu-title {
+        padding: 10px 12px;
+        font-size: 12px;
     }
 
-    .sidebar-backdrop.show {
-        opacity: 1;
-        pointer-events: auto;
+    .submenu li a {
+        padding: 9px 12px 9px 28px;
+        font-size: 12.5px;
     }
 
     .form-card {

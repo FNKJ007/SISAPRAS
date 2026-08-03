@@ -7,6 +7,7 @@
 
     {{-- Google Font (opsional, boleh dihapus kalau tidak ada koneksi internet di server) --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.tailwindcss.com"></script>
      @stack('styles')
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -21,18 +22,21 @@
         {{-- ===================== SIDEBAR ===================== --}}
         <aside class="sidebar" id="sidebar">
 
-            <div class="sidebar-toggle" id="sidebarToggle">
-                <span class="icon-bars">&#9776;</span>
+            <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Buka/tutup sidebar" aria-expanded="true">
+                <i data-lucide="menu" class="icon-bars"></i>
                 <span class="menu-label">Menu</span>
-            </div>
+            </button>
 
             <nav class="sidebar-menu">
 
                 {{-- === Pemeliharaan === --}}
                 <div class="menu-group">
-                    <button class="menu-title" data-target="menuPemeliharaan">
-                        <span>Pemeliharaan</span>
-                        <span class="chevron">&#9662;</span>
+                    <button class="menu-title" type="button" data-target="menuPemeliharaan" aria-expanded="true">
+                        <span class="menu-title-left">
+                            <i data-lucide="wrench" class="menu-icon"></i>
+                            <span>Pemeliharaan</span>
+                        </span>
+                        <i data-lucide="chevron-down" class="chevron"></i>
                     </button>
                     <ul class="submenu open" id="menuPemeliharaan">
                         <li>
@@ -43,11 +47,15 @@
                         </li>
                     </ul>
                 </div>
+
                 {{-- === Unit Pemadam === --}}
                 <div class="menu-group">
-                    <button class="menu-title" data-target="menuPemadam">
-                        <span>Unit Pemadam</span>
-                        <span class="chevron">&#9662;</span>
+                    <button class="menu-title" type="button" data-target="menuPemadam" aria-expanded="true">
+                        <span class="menu-title-left">
+                            <i data-lucide="flame" class="menu-icon"></i>
+                            <span>Unit Pemadam</span>
+                        </span>
+                        <i data-lucide="chevron-down" class="chevron"></i>
                     </button>
                     <ul class="submenu open" id="menuPemadam">
                         <li>
@@ -56,9 +64,10 @@
                                 Cek Harian Unit
                             </a>
                         </li>
-                        <li><a href="{{ route('alat-pemadam.cek-harian-alat') }}"
+                        <li>
+                            <a href="{{ route('alat-pemadam.cek-harian-alat') }}"
                                class="{{ request()->routeIs('alat-pemadam.cek-harian-alat') ? 'active' : '' }}">
-                               Cek Harian Alat
+                                Cek Harian Alat
                             </a>
                         </li>
                     </ul>
@@ -66,35 +75,45 @@
 
                 {{-- === Unit Rescue === --}}
                 <div class="menu-group">
-                    <button class="menu-title" data-target="menuRescue">
-                        <span>Unit Rescue</span>
-                        <span class="chevron">&#9662;</span>
+                    <button class="menu-title" type="button" data-target="menuRescue" aria-expanded="true">
+                        <span class="menu-title-left">
+                            <i data-lucide="life-buoy" class="menu-icon"></i>
+                            <span>Unit Rescue</span>
+                        </span>
+                        <i data-lucide="chevron-down" class="chevron"></i>
                     </button>
                     <ul class="submenu open" id="menuRescue">
-                        <li><a href="{{ route('unit-rescue.cek-harian-unit-rescue') }}"
+                        <li>
+                            <a href="{{ route('unit-rescue.cek-harian-unit-rescue') }}"
                                class="{{ request()->routeIs('unit-rescue.cek-harian-unit-rescue') ? 'active' : '' }}">
-                               Cek Harian Unit
-                            </a></li>
-                        <li><a href="{{ route('alat-rescue.cek-harian-alat') }}"
+                                Cek Harian Unit
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('alat-rescue.cek-harian-alat') }}"
                                class="{{ request()->routeIs('alat-rescue.cek-harian-alat') ? 'active' : '' }}">
-                               Cek Harian Alat
+                                Cek Harian Alat
                             </a>
                         </li>
                     </ul>
                 </div>
-                
 
                 {{-- === Command Center === --}}
                 <div class="menu-group">
-                    <button class="menu-title" data-target="menuCommand">
-                        <span>Command Center</span>
-                        <span class="chevron">&#9662;</span>
+                    <button class="menu-title" type="button" data-target="menuCommand" aria-expanded="true">
+                        <span class="menu-title-left">
+                            <i data-lucide="radio-tower" class="menu-icon"></i>
+                            <span>Command Center</span>
+                        </span>
+                        <i data-lucide="chevron-down" class="chevron"></i>
                     </button>
                     <ul class="submenu open" id="menuCommand">
-                        <li><a href="{{ route('alat-cc.cek-alat-cc') }}"
+                        <li>
+                            <a href="{{ route('alat-cc.cek-alat-cc') }}"
                                class="{{ request()->routeIs('alat-cc.cek-alat-cc') ? 'active' : '' }}">
-                               Cek Harian Alat
-                            </a></li>
+                                Cek Harian Alat
+                            </a>
+                        </li>
                     </ul>
                 </div>
 
@@ -108,11 +127,8 @@
         <div class="main-area">
 
             <header class="topbar">
-                {{-- Tombol hamburger ini HANYA tampil di layar kecil (lihat app.css).
-                     Sengaja diletakkan di dalam header (bukan position:fixed) supaya
-                     tidak pernah menimpa logo, mengikuti alur flex header biasa. --}}
-                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Buka menu">
-                    <span class="icon-bars">&#9776;</span>
+                <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Buka menu">
+                    <i data-lucide="menu" class="icon-bars"></i>
                 </button>
 
                 <div class="topbar-logos">
@@ -130,6 +146,14 @@
     </div>
 
     <script src="{{ asset('js/app.js') }}?v={{ file_exists(public_path('js/app.js')) ? filemtime(public_path('js/app.js')) : '1' }}"></script>
+    <script>
+        // Render semua icon Lucide setelah DOM siap
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+    </script>
     @stack('scripts')
 </body>
 </html>
