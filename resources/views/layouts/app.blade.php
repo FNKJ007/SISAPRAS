@@ -29,7 +29,16 @@
 
             <nav class="sidebar-menu">
 
-                {{-- === Pemeliharaan === --}}
+            {{-- === Home === --}} 
+                 <div class="menu-group">
+        <a href="{{ route('home') }}" class="menu-title menu-title-link {{ request()->routeIs('home') ? 'active' : '' }}">
+            <span class="menu-title-left">
+                <i data-lucide="home" class="menu-icon"></i>
+                <span>Home</span>
+            </span>
+        </a>
+    </div>
+            {{-- === Pemeliharaan === --}}
                 <div class="menu-group">
                     <button class="menu-title" type="button" data-target="menuPemeliharaan" aria-expanded="true">
                         <span class="menu-title-left">
@@ -53,7 +62,7 @@
                     <button class="menu-title" type="button" data-target="menuPemadam" aria-expanded="true">
                         <span class="menu-title-left">
                             <i data-lucide="flame" class="menu-icon"></i>
-                            <span>Unit Pemadam</span>
+                            <span>Pemadam</span>
                         </span>
                         <i data-lucide="chevron-down" class="chevron"></i>
                     </button>
@@ -78,7 +87,7 @@
                     <button class="menu-title" type="button" data-target="menuRescue" aria-expanded="true">
                         <span class="menu-title-left">
                             <i data-lucide="life-buoy" class="menu-icon"></i>
-                            <span>Unit Rescue</span>
+                            <span>Rescue</span>
                         </span>
                         <i data-lucide="chevron-down" class="chevron"></i>
                     </button>
