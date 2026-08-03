@@ -21,10 +21,8 @@ class CekHarianAlatController extends Controller
             (object) ['id' => 3, 'nama' => 'Damkar 03 - Isuzu Elf'],
         ]);
 
-        // Daftar alat pemadam sesuai data yang diberikan (26 item, termasuk varian
-        // ukuran/kapasitas yang dipisah jadi baris tersendiri: Y Connection 2 ukuran,
-        // APAR 3 kapasitas). Ganti dengan query Model asli, mis. AlatPemadam::all(),
-        // jika data ini nantinya disimpan di database.
+        // Daftar alat pemadam (26 item). Ganti dengan query Model asli,
+        // mis. AlatPemadam::all(), jika data ini nantinya disimpan di database.
         $namaAlat = [
             'SELANG KANVAS 1,5"',
             'SELANG KANVAS 2,5"',
@@ -71,26 +69,48 @@ class CekHarianAlatController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama_pemeriksa'      => 'required|string|max:255',
-            'jabatan'             => 'required|string|max:255',
-            'unit_id'             => 'required|integer',
-            'tanggal_pemeriksaan' => 'required|date',
-            'alat'                => 'required|array|min:1',
-            'alat.*.id'           => 'required|integer',
-            'alat.*.status'       => 'required|in:baik,rusak',
-            'alat.*.keterangan'   => 'nullable|string',
-            'alat.*.foto'         => 'nullable|image|max:2048', // maks 2MB
+            'nama_pemeriksa'          => 'required|string|max:255',
+            'jabatan'                 => 'required|string|max:255',
+            'unit_id'                 => 'required|integer',
+            'tanggal_pemeriksaan'     => 'required|date',
+
+            'alat'                    => 'required|array|min:1',
+            'alat.*.id'               => 'required|integer',
+            'alat.*.status'           => 'required|in:baik,rusak',
+            'alat.*.nomor_rusak'      => 'required_if:alat.*.status,rusak|nullable|string|max:255',
+
+            // Catatan & foto sekarang untuk keseluruhan pemeriksaan, bukan per-alat
+            'catatan_umum'            => 'nullable|string',
+            'foto_umum'               => 'nullable|image|max:2048', // maks 2MB
         ]);
 
-        // TODO: simpan header pemeriksaan, lalu loop $validated['alat']
-        // untuk simpan tiap baris + upload foto ke storage, mis:
+        // Upload foto umum (jika ada), sebelum simpan header
+        $fotoUmumPath = null;
+        if ($request->hasFile('foto_umum')) {
+            $fotoUmumPath = $request->file('foto_umum')->store('cek-harian-alat', 'public');
+        }
+
+        // TODO: simpan header pemeriksaan, misal:
+        //
+        // $pemeriksaan = CekHarianAlat::create([
+        //     'nama_pemeriksa'      => $validated['nama_pemeriksa'],
+        //     'jabatan'             => $validated['jabatan'],
+        //     'unit_id'             => $validated['unit_id'],
+        //     'tanggal_pemeriksaan' => $validated['tanggal_pemeriksaan'],
+        //     'catatan_umum'        => $validated['catatan_umum'] ?? null,
+        //     'foto_umum'           => $fotoUmumPath,
+        // ]);
+        //
+        // Lalu loop untuk simpan detail tiap alat:
         //
         // foreach ($validated['alat'] as $item) {
-        //     $fotoPath = null;
-        //     if ($request->hasFile("alat.{$loopIndex}.foto")) {
-        //         $fotoPath = $request->file("alat.{$loopIndex}.foto")->store('cek-harian-alat', 'public');
-        //     }
-        //     CekHarianAlat::create([...]);
+        //     $pemeriksaan->detailAlat()->create([
+        //         'alat_id'      => $item['id'],
+        //         'status'       => $item['status'],
+        //         'nomor_rusak'  => $item['status'] === 'rusak'
+        //                             ? ($item['nomor_rusak'] ?? null)
+        //                             : null,
+        //     ]);
         // }
 
         return redirect()

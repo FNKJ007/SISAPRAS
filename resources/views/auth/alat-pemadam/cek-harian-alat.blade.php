@@ -1,24 +1,3 @@
-
-<!DOCTYPE html>
-<html lang="id" x-data="{ sidebarOpen: false }">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cek Harian Alat Pemadam</title>
-
-    {{-- Tailwind CSS (ganti dengan build asset Laravel Mix/Vite di project asli) --}}
-    <script src="https://cdn.tailwindcss.com"></script>
-    {{-- Alpine.js untuk toggle sidebar responsive --}}
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-    <style>
-        [x-cloak] { display: none !important; }
-        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-    </style>
-</head>
-<body class="bg-gray-100 text-gray-800">
-
-
 @extends('layouts.app')
 
 @section('content')
@@ -52,7 +31,7 @@
             </div>
         </div>
 
-        {{-- Baris 2: Unit/Kendaraan & Tanggal Pemeriksaan (fitur Shift dihilangkan) --}}
+        {{-- Baris 2: Unit/Kendaraan & Tanggal Pemeriksaan --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label for="unit_id" class="block text-sm font-medium mb-1">Unit / Kendaraan</label>
@@ -80,52 +59,83 @@
         <div class="pt-2">
             <h2 class="text-base font-semibold border-b border-gray-200 pb-2 mb-4">Daftar Pemeriksaan Alat</h2>
 
-            <div class="space-y-4">
+            <div class="space-y-3">
                 @foreach(($daftarAlat ?? []) as $index => $alat)
-                    <div class="border border-gray-200 rounded-xl p-4 sm:p-5">
-                        <div class="flex items-center gap-3 mb-4">
-                            <span class="flex-shrink-0 w-8 h-8 rounded-md bg-red-700 text-white text-xs font-bold flex items-center justify-center">
-                                {{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}
-                            </span>
-                            <h3 class="font-semibold text-gray-900">{{ $alat->nama }}</h3>
-                            <input type="hidden" name="alat[{{ $index }}][id]" value="{{ $alat->id }}">
+                    @php
+                        $statusLama = old('alat.' . $index . '.status', $alat->status ?? 'baik');
+                        $nomorRusakLama = old('alat.' . $index . '.nomor_rusak');
+                    @endphp
+                    <div class="border border-gray-200 rounded-xl p-4 sm:p-5"
+                         x-data="{ status: '{{ $statusLama }}' }">
+
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                            <div class="flex items-center gap-3 flex-1">
+                                <span class="flex-shrink-0 w-8 h-8 rounded-md bg-red-700 text-white text-xs font-bold flex items-center justify-center">
+                                    {{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}
+                                </span>
+                                <h3 class="font-semibold text-gray-900">{{ $alat->nama }}</h3>
+                                <input type="hidden" name="alat[{{ $index }}][id]" value="{{ $alat->id }}">
+                            </div>
+
+                            {{-- Status: Baik / Rusak --}}
+                            <div class="flex items-center gap-4 sm:gap-2">
+                                <label class="inline-flex items-center gap-1.5 text-sm cursor-pointer">
+                                    <input type="radio" name="alat[{{ $index }}][status]" value="baik"
+                                           x-model="status"
+                                           class="text-green-600 focus:ring-green-500">
+                                    <span class="text-green-700 font-medium">Baik</span>
+                                </label>
+                                <label class="inline-flex items-center gap-1.5 text-sm cursor-pointer">
+                                    <input type="radio" name="alat[{{ $index }}][status]" value="rusak"
+                                           x-model="status"
+                                           class="text-red-600 focus:ring-red-500">
+                                    <span class="text-red-700 font-medium">Rusak</span>
+                                </label>
+                            </div>
                         </div>
 
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                            {{-- Status Kondisi --}}
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Status Kondisi</label>
-                                <select name="alat[{{ $index }}][status]"
-                                        class="status-select w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                                    <option value="baik" @selected(($alat->status ?? 'baik') === 'baik')>Baik</option>
-                                    <option value="perlu_perhatian" @selected(($alat->status ?? '') === 'perlu_perhatian')>Perlu Perhatian</option>
-                                    <option value="rusak" @selected(($alat->status ?? '') === 'rusak')>Rusak</option>
-                                </select>
-                            </div>
-
-                            {{-- Keterangan --}}
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Keterangan</label>
-                                <textarea name="alat[{{ $index }}][keterangan]" rows="3"
-                                          placeholder="Tuliskan kondisi alat (jika ada catatan)..."
-                                          class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-600">{{ old("alat.$index.keterangan") }}</textarea>
-                            </div>
-
-                            {{-- Foto Kondisi Alat --}}
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Foto Kondisi Alat</label>
-                                <label for="foto_{{ $index }}"
-                                       class="flex flex-col items-center justify-center h-[86px] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer text-center hover:border-blue-500 transition-colors">
-                                    <span class="text-blue-600 text-lg leading-none">📷</span>
-                                    <span class="text-xs text-blue-700 font-medium mt-1">+ Tambahkan Foto</span>
-                                    <span class="text-[11px] text-gray-400">JPG, PNG maks. 2MB</span>
-                                </label>
-                                <input id="foto_{{ $index }}" type="file" name="alat[{{ $index }}][foto]"
-                                       accept="image/jpeg,image/png" class="hidden">
-                            </div>
+                        {{-- Muncul otomatis kalau status = rusak --}}
+                        <div class="mt-3" x-show="status === 'rusak'" x-cloak>
+                            <label class="block text-sm font-medium mb-1">Nomor yang Rusak</label>
+                            <input type="text" name="alat[{{ $index }}][nomor_rusak]"
+                                   value="{{ $nomorRusakLama }}"
+                                   placeholder="Contoh: 2, 4, 7"
+                                   class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-600">
+                            <p class="text-[11px] text-gray-400 mt-1">Pisahkan dengan koma jika lebih dari satu nomor.</p>
+                            @error('alat.' . $index . '.nomor_rusak')
+                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
                 @endforeach
+            </div>
+        </div>
+
+        {{-- Catatan & Foto Umum (untuk keseluruhan pemeriksaan, bukan per-alat) --}}
+        <div class="pt-2">
+            <h2 class="text-base font-semibold border-b border-gray-200 pb-2 mb-4">Catatan &amp; Dokumentasi</h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="catatan_umum" class="block text-sm font-medium mb-1">Catatan Umum</label>
+                    <textarea id="catatan_umum" name="catatan_umum" rows="4"
+                              placeholder="Tuliskan catatan keseluruhan pemeriksaan (jika ada)..."
+                              class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-600">{{ old('catatan_umum') }}</textarea>
+                    @error('catatan_umum') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">Foto Dokumentasi</label>
+                    <label for="foto_umum"
+                           class="flex flex-col items-center justify-center h-[110px] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer text-center hover:border-blue-500 transition-colors">
+                        <span class="text-blue-600 text-lg leading-none">📷</span>
+                        <span class="text-xs text-blue-700 font-medium mt-1">+ Tambahkan Foto</span>
+                        <span class="text-[11px] text-gray-400">JPG, PNG maks. 2MB</span>
+                    </label>
+                    <input id="foto_umum" type="file" name="foto_umum"
+                           accept="image/jpeg,image/png" class="hidden">
+                    @error('foto_umum') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                </div>
             </div>
         </div>
 
