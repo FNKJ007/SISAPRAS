@@ -10,10 +10,9 @@
         @php
             $steps = [
                 1 => 'Identitas',
-                2 => 'Pemanasan & Roda',
-                3 => 'Tangki & Pompa',
-                4 => 'Perlengkapan',
-                5 => 'Konfirmasi',
+                2 => 'Pemanasan & BBM',
+                3 => 'Perlengkapan',
+                4 => 'Konfirmasi',
             ];
         @endphp
         @foreach($steps as $num => $label)
@@ -63,17 +62,6 @@
                     </select>
                     @error('unit_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
-                <div>
-                    <label for="shift" class="block text-sm font-medium mb-1">Shift</label>
-                    <select id="shift" name="shift"
-                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Shift</option>
-                        <option value="pagi" @selected(old('shift') === 'pagi')>Pagi</option>
-                        <option value="siang" @selected(old('shift') === 'siang')>Siang</option>
-                        <option value="malam" @selected(old('shift') === 'malam')>Malam</option>
-                    </select>
-                    @error('shift') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                </div>
             </div>
         </div>
 
@@ -116,113 +104,69 @@
                     </select>
                     @error('level_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
-                <div>
-                    <label for="jumlah_bbm_liter" class="block text-sm font-medium mb-1">Jumlah (Liter)</label>
-                    <input type="number" min="0" step="0.1" id="jumlah_bbm_liter" name="jumlah_bbm_liter"
-                           value="{{ old('jumlah_bbm_liter') }}" placeholder="Contoh: 10"
-                           class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
-                    @error('jumlah_bbm_liter') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                </div>
             </div>
         </div>
 
-        {{-- ===================== STEP 3 - TANGKI & POMPA ===================== --}}
-        <div data-step-panel="3" class="hidden">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label for="level_air" class="block text-sm font-medium mb-1">Level Air</label>
-                    <select id="level_air" name="level_air"
-                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Level Air</option>
-                        <option value="penuh" @selected(old('level_air') === 'penuh')>Penuh</option>
-                        <option value="3_4" @selected(old('level_air') === '3_4')>3/4</option>
-                        <option value="1_2" @selected(old('level_air') === '1_2')>1/2</option>
-                        <option value="kosong" @selected(old('level_air') === 'kosong')>Kosong</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="kondisi_tangki" class="block text-sm font-medium mb-1">Kondisi Tangki</label>
-                    <select id="kondisi_tangki" name="kondisi_tangki"
-                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Kondisi</option>
-                        <option value="baik" @selected(old('kondisi_tangki') === 'baik')>Baik</option>
-                        <option value="perlu_perhatian" @selected(old('kondisi_tangki') === 'perlu_perhatian')>Perlu Perhatian</option>
-                        <option value="rusak" @selected(old('kondisi_tangki') === 'rusak')>Rusak</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="kebocoran_tangki" class="block text-sm font-medium mb-1">Kebocoran Tangki</label>
-                    <select id="kebocoran_tangki" name="kebocoran_tangki"
-                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Kondisi</option>
-                        <option value="tidak_ada" @selected(old('kebocoran_tangki') === 'tidak_ada')>Tidak Ada</option>
-                        <option value="ada" @selected(old('kebocoran_tangki') === 'ada')>Ada</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="tekanan_pompa" class="block text-sm font-medium mb-1">Tekanan Pompa</label>
-                    <select id="tekanan_pompa" name="tekanan_pompa"
-                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Tekanan</option>
-                        <option value="baik" @selected(old('tekanan_pompa') === 'baik')>Baik</option>
-                        <option value="kurang" @selected(old('tekanan_pompa') === 'kurang')>Kurang</option>
-                        <option value="tidak_ada" @selected(old('tekanan_pompa') === 'tidak_ada')>Tidak Ada</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="pengisian_pompa" class="block text-sm font-medium mb-1">Pengisian Pompa</label>
-                    <select id="pengisian_pompa" name="pengisian_pompa"
-                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Kondisi</option>
-                        <option value="baik" @selected(old('pengisian_pompa') === 'baik')>Baik</option>
-                        <option value="kurang" @selected(old('pengisian_pompa') === 'kurang')>Kurang</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="selang_induk" class="block text-sm font-medium mb-1">Selang Induk</label>
-                    <select id="selang_induk" name="selang_induk"
-                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Kondisi</option>
-                        <option value="baik" @selected(old('selang_induk') === 'baik')>Baik</option>
-                        <option value="rusak" @selected(old('selang_induk') === 'rusak')>Rusak</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="mt-4">
-                <label for="catatan_tangki_pompa" class="block text-sm font-medium mb-1">Catatan Khusus Terkait Pemeriksaan Tangki dan Pompa</label>
-                <textarea id="catatan_tangki_pompa" name="catatan_tangki_pompa" rows="3"
-                          placeholder="Tuliskan catatan khusus (jika ada)"
-                          class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-600">{{ old('catatan_tangki_pompa') }}</textarea>
-            </div>
-
-            <div class="mt-4">
-                <label for="dokumentasi_tangki_pompa" class="block text-sm font-medium mb-1">Dokumentasi Pengecekan Tangki dan Pompa (maksimal 3 foto)</label>
-                <label for="dokumentasi_tangki_pompa"
-                       class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500">
-                    <span id="dokumentasiTangkiLabel">Lampirkan Foto (Maks. 3 file)</span>
-                    <span>📎</span>
-                </label>
-                <input id="dokumentasi_tangki_pompa" type="file" name="dokumentasi_tangki_pompa[]" accept="image/*" multiple class="hidden">
-                @error('dokumentasi_tangki_pompa') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-            </div>
-        </div>
 
         {{-- ===================== STEP 4 - PERLENGKAPAN ===================== --}}
-        <div data-step-panel="4" class="hidden">
+        <div data-step-panel="3" class="hidden">
             <p class="font-medium text-sm mb-3">Pemeriksaan Perlengkapan Kendaraan</p>
 
             <div class="space-y-3">
                 @php
                     $perlengkapan = [
-                        'selang'          => 'Selang',
-                        'nozzle'          => 'Nozzle',
-                        'apar'            => 'APAR',
-                        'helm'            => 'Helm',
-                        'sepatu'          => 'Sepatu',
-                        'sarung_tangan'   => 'Sarung Tangan',
-                        'senter'          => 'Senter',
-                        'lainnya'         => 'Peralatan Pendukung Lainnya',
+                        'ban_cadangan'                => 'Ban Cadangan',
+    'ban_belakang_kanan'          => 'Ban Mobil Belakang Kanan',
+    'ban_belakang_kiri'           => 'Ban Mobil Belakang Kiri',
+    'ban_depan_kanan'             => 'Ban Mobil Depan Kanan',
+    'ban_depan_kiri'              => 'Ban Mobil Depan Kiri',
+    'dop_pelek'                   => 'Dop Pelek',
+    'electric_winch'              => 'Electric Winch',
+    'handel_kanan_belakang'       => 'Handel Kanan Belakang',
+    'handel_kanan_depan'          => 'Handel Kanan Depan',
+    'handel_kiri_belakang'        => 'Handel Kiri Belakang',
+    'handel_kiri_depan'           => 'Handel Kiri Depan',
+    'kaca_spion_kanan'            => 'Kaca Spion Kanan',
+    'kaca_spion_kiri'             => 'Kaca Spion Kiri',
+    'lampu_kabut_kanan'           => 'Lampu Kabut Kanan',
+    'lampu_kabut_kiri'            => 'Lampu Kabut Kiri',
+    'lampu_parkir_kanan'          => 'Lampu Parkir Kanan',
+    'lampu_parkir_kiri'           => 'Lampu Parkir Kiri',
+    'lampu_penerangan'            => 'Lampu Penerangan',
+    'lampu_peringatan_belakang_kanan' => 'Lampu Peringatan Belakang Kanan',
+    'lampu_peringatan_belakang_kiri'  => 'Lampu Peringatan Belakang Kiri',
+    'lampu_peringatan_depan_kanan'    => 'Lampu Peringatan Depan Kanan',
+    'lampu_peringatan_depan_kiri'     => 'Lampu Peringatan Depan Kiri',
+    'lampu_rem_kanan'             => 'Lampu Rem Kanan',
+    'lampu_rem_kiri'              => 'Lampu Rem Kiri',
+    'lampu_rotari_atas_belakang'  => 'Lampu Rotari Atas Belakang',
+    'lampu_rotari_atas_depan'     => 'Lampu Rotari Atas Depan',
+    'lampu_rotator_atas_belakang' => 'Lampu Rotator Atas Belakang',
+    'lampu_rotator_atas_depan'    => 'Lampu Rotator Atas Depan',
+    'lampu_sein_belakang_kanan'   => 'Lampu Sein Belakang Kanan',
+    'lampu_sein_belakang_kiri'    => 'Lampu Sein Belakang Kiri',
+    'lampu_sein_depan_kanan'      => 'Lampu Sein Depan Kanan',
+    'lampu_sein_depan_kiri'       => 'Lampu Sein Depan Kiri',
+    'lampu_sorot_belakang'        => 'Lampu Sorot Belakang',
+    'lampu_sorot_kanan_atas'      => 'Lampu Sorot Kanan Atas',
+    'lampu_sorot_kanan_samping'   => 'Lampu Sorot Kanan Samping',
+    'lampu_sorot_kiri_atas'       => 'Lampu Sorot Kiri Atas',
+    'lampu_sorot_kiri_samping'    => 'Lampu Sorot Kiri Samping',
+    'lampu_utama_depan_kanan'     => 'Lampu Utama Depan Kanan',
+    'lampu_utama_depan_kiri'      => 'Lampu Utama Depan Kiri',
+    'lighting_remote'             => 'Lighting + Remote',
+    'modulator_sirine'            => 'Modulator Sirine',
+    'plat_nomor_belakang'         => 'Plat Nomor Kendaraan Belakang',
+    'plat_nomor_depan'            => 'Plat Nomor Kendaraan Depan',
+    'radio_pesawat_rig'           => 'Radio Pesawat (RIG)',
+    'radio_tape'                  => 'Radio Tape',
+    'rolling_belakang'            => 'Rolling Belakang',
+    'rolling_kanan'               => 'Rolling Kanan',
+    'rolling_kiri'                => 'Rolling Kiri',
+    'sirine_tunggal'              => 'Sirine Tunggal',
+    'toa_sirine'                  => 'TOA Sirine',
+    'wiper_kanan'                 => 'Wiper Kanan',
+    'wiper_kiri'                  => 'Wiper Kiri',
                     ];
                 @endphp
                 @foreach($perlengkapan as $key => $label)
@@ -232,7 +176,6 @@
                                 class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
                             <option value="baik" selected>Baik</option>
                             <option value="rusak">Rusak</option>
-                            <option value="hilang">Hilang</option>
                         </select>
                         <input type="text" name="perlengkapan[{{ $key }}][catatan]"
                                placeholder="Catatan (jika ada)"
@@ -243,10 +186,10 @@
         </div>
 
         {{-- ===================== STEP 5 - KONFIRMASI ===================== --}}
-        <div data-step-panel="5" class="hidden">
+        <div data-step-panel="4" class="hidden">
             <p class="font-medium text-base mb-3">Ringkasan Pemeriksaan</p>
             <div class="border border-gray-200 rounded-xl divide-y divide-gray-200">
-                @foreach(['Identitas Pemeriksaan', 'Pemanasan & BBM', 'Tangki & Pompa', 'Perlengkapan Kendaraan'] as $ringkasan)
+                @foreach(['Identitas Pemeriksaan', 'Pemanasan & BBM', 'Perlengkapan Kendaraan'] as $ringkasan)
                     <div class="flex items-center justify-between px-4 py-3 text-sm">
                         <span>{{ $ringkasan }}</span>
                         <span class="text-green-600 font-medium flex items-center gap-1">Lengkap <span>✓</span></span>
