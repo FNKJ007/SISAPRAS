@@ -13,6 +13,10 @@
     box-sizing: border-box;
 }
 
+html, body {
+    height: 100%;
+}
+
 body {
     font-family: 'Poppins', Arial, Helvetica, sans-serif;
     background-color: var(--content-bg);
@@ -20,8 +24,9 @@ body {
 
 .app-wrapper {
     display: flex;
-    min-height: 100vh;
+    height: 100vh;
     width: 100%;
+    overflow: hidden; /* cegah double-scrollbar di level dokumen */
 }
 
 /* ===================== SIDEBAR (DESKTOP) ===================== */
@@ -34,8 +39,6 @@ body {
     flex-direction: column;
     overflow: hidden;
     transition: width 0.25s ease, min-width 0.25s ease;
-    position: sticky;
-    top: 0;
     height: 100vh;
     box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
 }
@@ -67,6 +70,7 @@ body {
     border-top: none;
     color: rgba(255, 255, 255, 0.9);
     transition: background-color 0.15s ease;
+    flex-shrink: 0;
 }
 
 .sidebar-toggle:hover {
@@ -84,6 +88,7 @@ body {
     flex: 1;
     overflow-y: auto;
     padding: 8px 5px;
+    min-height: 0;
 }
 
 .menu-group {
@@ -180,6 +185,8 @@ body {
     display: flex;
     flex-direction: column;
     min-width: 0;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .topbar {
@@ -187,9 +194,7 @@ body {
     padding: 12px 22px;
     display: flex;
     align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    flex-shrink: 0;
 }
 
 .mobile-menu-btn {
@@ -232,9 +237,7 @@ body {
     width: auto;
     margin: 0 22px;
     border-radius: 3px;
-    position: sticky;
-    top: 80px;
-    z-index: 99;
+    flex-shrink: 0;
 }
 
 .content-area {
@@ -242,7 +245,10 @@ body {
     flex: 1;
     background-color: var(--content-bg);
     padding: 24px;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0; /* WAJIB: agar flex child ini boleh menyusut dan overflow-y:auto aktif */
+    -webkit-overflow-scrolling: touch;
 }
 
 .content-area::before {
@@ -425,13 +431,6 @@ body {
 @media (max-width: 768px) {
     .topbar {
         padding: 10px 16px;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-    }
-
-    .topbar-accent {
-        top: 60px;
     }
 
     .logo {
@@ -494,4 +493,6 @@ body {
         grid-template-columns: 1fr;
         column-gap: 0;
     }
+
+    
 }

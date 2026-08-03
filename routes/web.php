@@ -2,13 +2,19 @@
 
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\CekHarianUnitPemadamController;
 use App\Http\Controllers\CekHarianAlatController;
 use App\Http\Controllers\CekHarianAlatRescueController;
 use App\Http\Controllers\CekHarianUnitRescueController;
 use App\Http\Controllers\CekAlatCcController;
+use App\Http\Controllers\HomeController;
+
+Route::get('/', function () {
+    return auth()->check()
+        ? redirect()->route('home')
+        : redirect()->route('login');
+});
 
 
 
@@ -57,3 +63,5 @@ Route::get('/alat-cc/cek-alat-cc', [CekAlatCcController::class, 'index'])
 
 Route::post('/alat-cc/cek-alat-cc', [CekAlatCcController::class, 'store'])
     ->name('alat-cc.cek-alat-cc.store');
+
+
