@@ -92,17 +92,16 @@
                     @error('jenis_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div></div>
-                <div>
-                    <label for="level_bbm" class="block text-sm font-medium mb-1">Level BBM</label>
-                    <select id="level_bbm" name="level_bbm"
-                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Level BBM</option>
-                        <option value="penuh" @selected(old('level_bbm') === 'penuh')>Penuh</option>
-                        <option value="3_4" @selected(old('level_bbm') === '3_4')>3/4</option>
-                        <option value="1_2" @selected(old('level_bbm') === '1_2')>1/2</option>
-                        <option value="kosong" @selected(old('level_bbm') === 'kosong')>Kosong</option>
-                    </select>
-                    @error('level_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                <div class="mb-5">
+                <p class="font-medium text-sm mb-1">Level BBM</p>
+                <p class="text-xs text-gray-500 mb-2">(fotokan Speedometer untuk bukti level bbm)</p>
+                <label for="bukti_pemanasan"
+                       class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500">
+                    <span id="buktiPemanasanLabel">Lampirkan Bukti Level BBM</span>
+                    <span>📎</span>
+                </label>
+                <input id="bukti_bbm" type="file" name="bukti_bbm" accept="image/*" class="hidden">
+                @error('bukti_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
             </div>
         </div>

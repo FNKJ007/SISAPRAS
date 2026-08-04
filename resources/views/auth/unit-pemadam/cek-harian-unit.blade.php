@@ -12,7 +12,7 @@
                 1 => 'Identitas',
                 2 => 'Pemanasan & BBM',
                 3 => 'Tangki & Pompa',
-                4 => 'Perlengkapan',
+                4 => 'Kendaraan',
                 5 => 'Konfirmasi',
             ];
         @endphp

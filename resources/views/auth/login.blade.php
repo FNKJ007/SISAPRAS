@@ -97,5 +97,10 @@
         </div>
     </div>
 
+{{-- Bersihkan status submenu yang tersimpan agar sidebar selalu mulai tertutup setelah login --}}
+<script>
+    try { localStorage.removeItem('sisapras_open_submenus'); } catch(e) {}
+</script>
+
 </body>
 </html>
