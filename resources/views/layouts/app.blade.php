@@ -9,6 +9,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
      @stack('styles')
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -30,15 +34,18 @@
             <nav class="sidebar-menu">
 
             {{-- === Home === --}} 
-                 <div class="menu-group">
-        <a href="{{ route('home') }}" class="menu-title menu-title-link {{ request()->routeIs('home') ? 'active' : '' }}">
-            <span class="menu-title-left">
-                <i data-lucide="home" class="menu-icon"></i>
-                <span>Home</span>
-            </span>
-        </a>
-    </div>
-            {{-- === Pemeliharaan === --}}
+                <div class="menu-group">
+    <a href="{{ route('home') }}"
+       class="menu-title menu-title-link"
+       style="{{ request()->routeIs('home') ? 'background-color: rgba(255,255,255,0.95); color: var(--sidebar-red); box-shadow: 0 1px 3px rgba(0,0,0,0.15);' : '' }}">
+        <span class="menu-title-left">
+            <i data-lucide="home" class="menu-icon"></i>
+            <span>Home</span>
+        </span>
+    </a>
+</div>
+
+{{-- === Pemeliharaan === --}}
                 <div class="menu-group">
                     <button class="menu-title" type="button" data-target="menuPemeliharaan" aria-expanded="true">
                         <span class="menu-title-left">
