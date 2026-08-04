@@ -131,6 +131,8 @@ body {
     border-radius: 6px;
     white-space: nowrap;
     transition: background-color 0.15s ease, color 0.15s ease;
+    text-decoration: none;
+    font-family: 'Poppins', Arial, Helvetica, sans-serif;
 }
 
 .menu-title:hover {
@@ -459,6 +461,14 @@ body {
     display: none;
 }
 
+.sidebar-backdrop.show {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 999;
+}
+
 @media (max-width: 768px) {
     .topbar {
         padding: 10px 16px;
@@ -540,5 +550,4 @@ body {
         column-gap: 0;
     }
 
-    
 }
