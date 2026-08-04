@@ -49,7 +49,7 @@
 
                     {{-- === Pemeliharaan === --}}
                     <div class="menu-group">
-                        <button class="menu-title {{ request()->routeIs('admin.pemeliharaan.*') ? 'active' : '' }}"
+                        <button class="menu-title"
                                 type="button" data-target="menuPemeliharaan">
                             <span class="menu-title-left">
                                 <i data-lucide="wrench" class="menu-icon"></i>
@@ -57,7 +57,7 @@
                             </span>
                             <i data-lucide="chevron-down" class="chevron"></i>
                         </button>
-                        <ul class="submenu {{ request()->routeIs('admin.pemeliharaan.*') ? 'open' : '' }}" id="menuPemeliharaan">
+                        <ul class="submenu" id="menuPemeliharaan">
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.pengajuan') }}"
                                    class="{{ request()->routeIs('admin.pemeliharaan.pengajuan') ? 'active' : '' }}">
@@ -93,7 +93,7 @@
 
                     {{-- === Unit Pemadam === --}}
                     <div class="menu-group">
-                        <button class="menu-title {{ request()->routeIs('admin.unit-pemadam.*') ? 'active' : '' }}"
+                        <button class="menu-title"
                                 type="button" data-target="menuPemadam">
                             <span class="menu-title-left">
                                 <i data-lucide="flame" class="menu-icon"></i>
@@ -101,7 +101,7 @@
                             </span>
                             <i data-lucide="chevron-down" class="chevron"></i>
                         </button>
-                        <ul class="submenu {{ request()->routeIs('admin.unit-pemadam.*') ? 'open' : '' }}" id="menuPemadam">
+                        <ul class="submenu" id="menuPemadam">
                             <li>
                                 <a href="{{ route('admin.unit-pemadam.data-unit') }}"
                                    class="{{ request()->routeIs('admin.unit-pemadam.data-unit') ? 'active' : '' }}">
@@ -125,7 +125,7 @@
 
                     {{-- === Unit Rescue === --}}
                     <div class="menu-group">
-                        <button class="menu-title {{ request()->routeIs('admin.unit-rescue.*') ? 'active' : '' }}"
+                        <button class="menu-title"
                                 type="button" data-target="menuRescue">
                             <span class="menu-title-left">
                                 <i data-lucide="life-buoy" class="menu-icon"></i>
@@ -133,7 +133,7 @@
                             </span>
                             <i data-lucide="chevron-down" class="chevron"></i>
                         </button>
-                        <ul class="submenu {{ request()->routeIs('admin.unit-rescue.*') ? 'open' : '' }}" id="menuRescue">
+                        <ul class="submenu" id="menuRescue">
                             <li>
                                 <a href="{{ route('admin.unit-rescue.data-unit') }}"
                                    class="{{ request()->routeIs('admin.unit-rescue.data-unit') ? 'active' : '' }}">
@@ -157,7 +157,7 @@
 
                     {{-- === Command Center === --}}
                     <div class="menu-group">
-                        <button class="menu-title {{ request()->routeIs('admin.command-center.*') ? 'active' : '' }}"
+                        <button class="menu-title"
                                 type="button" data-target="menuCommand">
                             <span class="menu-title-left">
                                 <i data-lucide="radio-tower" class="menu-icon"></i>
@@ -165,7 +165,7 @@
                             </span>
                             <i data-lucide="chevron-down" class="chevron"></i>
                         </button>
-                        <ul class="submenu {{ request()->routeIs('admin.command-center.*') ? 'open' : '' }}" id="menuCommand">
+                        <ul class="submenu" id="menuCommand">
                             <li>
                                 <a href="{{ route('admin.command-center.data-peralatan') }}"
                                    class="{{ request()->routeIs('admin.command-center.data-peralatan') ? 'active' : '' }}">
@@ -189,7 +189,7 @@
 
                     {{-- === APAR & Kejadian === --}}
                     <div class="menu-group">
-                        <button class="menu-title {{ request()->routeIs('admin.apar.*') ? 'active' : '' }}"
+                        <button class="menu-title"
                                 type="button" data-target="menuApar">
                             <span class="menu-title-left">
                                 <i data-lucide="shield-alert" class="menu-icon"></i>
@@ -197,7 +197,7 @@
                             </span>
                             <i data-lucide="chevron-down" class="chevron"></i>
                         </button>
-                        <ul class="submenu {{ request()->routeIs('admin.apar.*') ? 'open' : '' }}" id="menuApar">
+                        <ul class="submenu" id="menuApar">
                             <li>
                                 <a href="{{ route('admin.apar.data-apar') }}"
                                    class="{{ request()->routeIs('admin.apar.data-apar') ? 'active' : '' }}">
@@ -221,7 +221,7 @@
 
                     {{-- === Laporan === --}}
                     <div class="menu-group">
-                        <button class="menu-title {{ request()->routeIs('admin.laporan.*') ? 'active' : '' }}"
+                        <button class="menu-title"
                                 type="button" data-target="menuLaporan">
                             <span class="menu-title-left">
                                 <i data-lucide="file-bar-chart" class="menu-icon"></i>
@@ -229,7 +229,7 @@
                             </span>
                             <i data-lucide="chevron-down" class="chevron"></i>
                         </button>
-                        <ul class="submenu {{ request()->routeIs('admin.laporan.*') ? 'open' : '' }}" id="menuLaporan">
+                        <ul class="submenu" id="menuLaporan">
                             <li>
                                 <a href="{{ route('admin.laporan.pemeliharaan') }}"
                                    class="{{ request()->routeIs('admin.laporan.pemeliharaan') ? 'active' : '' }}">

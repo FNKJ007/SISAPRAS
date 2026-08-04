@@ -62,48 +62,56 @@
             <div class="space-y-3">
                 @foreach(($daftarAlat ?? []) as $index => $alat)
                     @php
-                        $statusLama = old('alat.' . $index . '.status', $alat->status ?? 'baik');
+                        $baikLama = old('alat.' . $index . '.jumlah_baik', $alat->jumlah_baik ?? 0);
+                        $rusakLama = old('alat.' . $index . '.jumlah_rusak', $alat->jumlah_rusak ?? 0);
                         $nomorRusakLama = old('alat.' . $index . '.nomor_rusak');
                     @endphp
                     <div class="border border-gray-200 rounded-xl p-4 sm:p-5"
-                         x-data="{ status: '{{ $statusLama }}' }">
+                         x-data="{ jumlahBaik: {{ $baikLama }}, jumlahRusak: {{ $rusakLama }} }">
 
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
                             <div class="flex items-center gap-3 flex-1">
                                 <span class="flex-shrink-0 w-8 h-8 rounded-md bg-red-700 text-white text-xs font-bold flex items-center justify-center">
                                     {{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}
                                 </span>
-                                <h3 class="font-semibold text-gray-900">{{ $alat->nama }}</h3>
+                                <h3 class="font-semibold text-gray-900 text-sm sm:text-base">{{ $alat->nama }}</h3>
                                 <input type="hidden" name="alat[{{ $index }}][id]" value="{{ $alat->id }}">
                             </div>
 
-                            {{-- Status: Baik / Rusak --}}
-                            <div class="flex items-center gap-4 sm:gap-2">
-                                <label class="inline-flex items-center gap-1.5 text-sm cursor-pointer">
-                                    <input type="radio" name="alat[{{ $index }}][status]" value="baik"
-                                           x-model="status"
-                                           class="text-green-600 focus:ring-green-500">
-                                    <span class="text-green-700 font-medium">Baik</span>
-                                </label>
-                                <label class="inline-flex items-center gap-1.5 text-sm cursor-pointer">
-                                    <input type="radio" name="alat[{{ $index }}][status]" value="rusak"
-                                           x-model="status"
-                                           class="text-red-600 focus:ring-red-500">
-                                    <span class="text-red-700 font-medium">Rusak</span>
-                                </label>
+                            {{-- Input Jumlah Baik & Rusak --}}
+                            <div class="flex items-center gap-3 sm:gap-4 flex-wrap">
+                                <div class="flex items-center gap-2">
+                                    <label for="baik_{{ $index }}" class="text-xs font-bold text-green-700 uppercase tracking-wide">Baik:</label>
+                                    <input type="number" id="baik_{{ $index }}" name="alat[{{ $index }}][jumlah_baik]"
+                                           x-model.number="jumlahBaik" min="0" placeholder="0"
+                                           class="w-20 rounded-lg border border-green-300 px-3 py-1.5 text-sm font-semibold text-green-800 bg-green-50/60 focus:outline-none focus:ring-2 focus:ring-green-600">
+                                </div>
+
+                                <div class="flex items-center gap-2">
+                                    <label for="rusak_{{ $index }}" class="text-xs font-bold text-red-700 uppercase tracking-wide">Rusak:</label>
+                                    <input type="number" id="rusak_{{ $index }}" name="alat[{{ $index }}][jumlah_rusak]"
+                                           x-model.number="jumlahRusak" min="0" placeholder="0"
+                                           class="w-20 rounded-lg border border-red-300 px-3 py-1.5 text-sm font-semibold text-red-800 bg-red-50/60 focus:outline-none focus:ring-2 focus:ring-red-600">
+                                </div>
                             </div>
                         </div>
 
-                        {{-- Muncul otomatis kalau status = rusak --}}
-                        <div class="mt-3" x-show="status === 'rusak'" x-cloak>
-                            <label class="block text-sm font-medium mb-1">Nomor yang Rusak</label>
+                        {{-- Muncul otomatis jika ada alat yang rusak (jumlahRusak > 0) --}}
+                        <div class="mt-3 pt-3 border-t border-gray-100" x-show="jumlahRusak > 0" x-cloak>
+                            <label class="block text-xs font-semibold text-red-800 mb-1">Nomor / Keterangan Alat yang Rusak</label>
                             <input type="text" name="alat[{{ $index }}][nomor_rusak]"
                                    value="{{ $nomorRusakLama }}"
-                                   placeholder="Contoh: 2, 4, 7"
-                                   class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-600">
-                            <p class="text-[11px] text-gray-400 mt-1">Pisahkan dengan koma jika lebih dari satu nomor.</p>
+                                   placeholder="Contoh: No. 2, No. 5"
+                                   class="w-full rounded-lg border border-red-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600 bg-red-50/30">
+                            <p class="text-[11px] text-gray-400 mt-1">Sebutkan nomor urut atau keterangan spesifik barang yang rusak.</p>
                             @error('alat.' . $index . '.nomor_rusak')
                                 <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                            @error('alat.' . $index . '.jumlah_baik')
+                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
+                            @error('alat.' . $index . '.jumlah_rusak')
+                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
                             @enderror
                         </div>
                     </div>

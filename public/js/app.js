@@ -57,13 +57,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // =========================================================================
     //  OTOMATIS BUKA SIDEBAR SAAT MENU DIKLIK (SAAT SIDEBAR TERTUTUP/COLLAPSED)
-    //  + MULTI-OPEN ACCORDION SUBMENU WITH LOCALSTORAGE PERSISTENCE
+    //  + MULTI-OPEN ACCORDION SUBMENU WITH SESSIONSTORAGE PERSISTENCE
+    //  (Reset otomatis setiap login baru / sesi baru)
     // =========================================================================
     var STORAGE_KEY = 'sisapras_open_submenus';
 
     function getOpenSubmenus() {
         try {
-            var data = localStorage.getItem(STORAGE_KEY);
+            var data = sessionStorage.getItem(STORAGE_KEY);
             return data ? JSON.parse(data) : [];
         } catch (e) {
             return [];
@@ -72,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function saveOpenSubmenus(list) {
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(list));
         } catch (e) {}
     }
 
@@ -83,19 +84,13 @@ document.addEventListener('DOMContentLoaded', function () {
         var targetId = title.getAttribute('data-target');
         var submenu  = targetId ? document.getElementById(targetId) : null;
 
-        // 1. Pulihkan status terbuka untuk menu yang mempunyai submenu
+        // 1. Pulihkan status terbuka untuk menu yang pernah dibuka secara manual di sesi ini
         if (submenu) {
-            var isCurrentlyOpen = submenu.classList.contains('open');
-            var isStoredOpen    = storedSubmenus.indexOf(targetId) !== -1;
+            var isStoredOpen = storedSubmenus.indexOf(targetId) !== -1;
 
-            if (isStoredOpen || isCurrentlyOpen) {
+            if (isStoredOpen) {
                 submenu.classList.add('open');
                 title.classList.add('active');
-
-                if (storedSubmenus.indexOf(targetId) === -1) {
-                    storedSubmenus.push(targetId);
-                    saveOpenSubmenus(storedSubmenus);
-                }
             }
         }
 
