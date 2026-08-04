@@ -169,19 +169,12 @@
                     </div>
                 </div>
 
-                {{-- Area User Info & Logout Button di Topbar --}}
+                {{-- Area User Info di Topbar --}}
                 <div style="display: flex; align-items: center; gap: 12px; margin-left: auto;">
                     <span style="font-size: 13px; font-weight: 500; color: #333; display: flex; align-items: center; gap: 6px;">
                         <i data-lucide="user" style="width: 16px; height: 16px; color: #C0201F;"></i>
                         <span>{{ auth()->user()->name ?? 'User' }}</span>
                     </span>
-                    <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
-                        @csrf
-                        <button type="submit" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background-color: #C0201F; color: #fff; border: none; border-radius: 6px; font-size: 12.5px; font-weight: 500; cursor: pointer; transition: background-color 0.15s ease;" onmouseover="this.style.backgroundColor='#A81A19'" onmouseout="this.style.backgroundColor='#C0201F'">
-                            <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
-                            <span>Logout</span>
-                        </button>
-                    </form>
                 </div>
             </header>
             <div class="topbar-accent"></div>

@@ -38,7 +38,7 @@
     </div>
 
     {{-- Bottom: Chart + Activity --}}
-    <div style="display:grid; grid-template-columns:1fr 340px; gap:16px; align-items:start;">
+    <div class="dash-bottom-grid" style="display:grid; grid-template-columns:1fr 340px; gap:16px; align-items:start;">
 
         {{-- Grafik Pemeliharaan --}}
         <div style="background:#fff; border-radius:6px; box-shadow:0 2px 10px rgba(0,0,0,0.12); overflow:hidden;">
@@ -114,9 +114,11 @@
 
 @push('styles')
 <style>
-@media (max-width: 1024px) {
-    /* Stack chart dan activity di layar kecil */
-    .dash-bottom-grid { grid-template-columns: 1fr !important; }
+@media (max-width: 900px) {
+    /* Stack chart dan activity di layar HP/tablet */
+    .dash-bottom-grid {
+        grid-template-columns: 1fr !important;
+    }
 }
 </style>
 @endpush

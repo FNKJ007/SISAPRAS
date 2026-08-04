@@ -56,8 +56,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // =========================================================================
-    //  MULTI-OPEN ACCORDION SUBMENU WITH LOCALSTORAGE PERSISTENCE
-    //  (Memungkinkan banyak menu tetap terbuka bersamaan & bertahan antar halaman)
+    //  OTOMATIS BUKA SIDEBAR SAAT MENU DIKLIK (SAAT SIDEBAR TERTUTUP/COLLAPSED)
+    //  + MULTI-OPEN ACCORDION SUBMENU WITH LOCALSTORAGE PERSISTENCE
     // =========================================================================
     var STORAGE_KEY = 'sisapras_open_submenus';
 
@@ -77,49 +77,56 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     var storedSubmenus = getOpenSubmenus();
-    var menuTitles = document.querySelectorAll('.menu-title[data-target]');
+    var allMenuTitles  = document.querySelectorAll('.menu-title');
 
-    menuTitles.forEach(function (title) {
+    allMenuTitles.forEach(function (title) {
         var targetId = title.getAttribute('data-target');
-        if (!targetId) return;
-        var submenu = document.getElementById(targetId);
+        var submenu  = targetId ? document.getElementById(targetId) : null;
 
-        if (!submenu) return;
+        // 1. Pulihkan status terbuka untuk menu yang mempunyai submenu
+        if (submenu) {
+            var isCurrentlyOpen = submenu.classList.contains('open');
+            var isStoredOpen    = storedSubmenus.indexOf(targetId) !== -1;
 
-        // Pulihkan status terbuka jika ada di localStorage atau dari kelas bawaan Blade
-        var isCurrentlyOpen = submenu.classList.contains('open');
-        var isStoredOpen = storedSubmenus.indexOf(targetId) !== -1;
+            if (isStoredOpen || isCurrentlyOpen) {
+                submenu.classList.add('open');
+                title.classList.add('active');
 
-        if (isStoredOpen || isCurrentlyOpen) {
-            submenu.classList.add('open');
-            title.classList.add('active');
-
-            if (storedSubmenus.indexOf(targetId) === -1) {
-                storedSubmenus.push(targetId);
-                saveOpenSubmenus(storedSubmenus);
+                if (storedSubmenus.indexOf(targetId) === -1) {
+                    storedSubmenus.push(targetId);
+                    saveOpenSubmenus(storedSubmenus);
+                }
             }
         }
 
-        // Toggle independen (Multi-Open): muka/tutup menu ini tanpa menutup menu lain
+        // 2. Event Klik pada Menu Item
         title.addEventListener('click', function () {
-            var isOpen = submenu.classList.contains('open');
-
-            if (isOpen) {
-                submenu.classList.remove('open');
-                title.classList.remove('active');
-                var index = storedSubmenus.indexOf(targetId);
-                if (index !== -1) {
-                    storedSubmenus.splice(index, 1);
-                }
-            } else {
-                submenu.classList.add('open');
-                title.classList.add('active');
-                if (storedSubmenus.indexOf(targetId) === -1) {
-                    storedSubmenus.push(targetId);
-                }
+            // JIKA SIDEBAR DALAM KEADAAN TERTUTUP (COLLAPSED), OTOMATIS BUKA SIDEBAR!
+            if (sidebar && sidebar.classList.contains('collapsed')) {
+                sidebar.classList.remove('collapsed');
             }
 
-            saveOpenSubmenus(storedSubmenus);
+            // Jika item ini memiliki submenu, lakukan toggle buka/tutup submenu
+            if (submenu) {
+                var isOpen = submenu.classList.contains('open');
+
+                if (isOpen) {
+                    submenu.classList.remove('open');
+                    title.classList.remove('active');
+                    var index = storedSubmenus.indexOf(targetId);
+                    if (index !== -1) {
+                        storedSubmenus.splice(index, 1);
+                    }
+                } else {
+                    submenu.classList.add('open');
+                    title.classList.add('active');
+                    if (storedSubmenus.indexOf(targetId) === -1) {
+                        storedSubmenus.push(targetId);
+                    }
+                }
+
+                saveOpenSubmenus(storedSubmenus);
+            }
         });
     });
 
