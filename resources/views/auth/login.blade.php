@@ -64,13 +64,13 @@
                     <!-- Token CSRF wajib untuk keamanan dari serangan CSRF -->
                     @csrf
 
-                    <!-- Input Username / ID -->
+                    <!-- Input NIP -->
                     <div>
-                        <!-- value old('username') mencegah user mengetik ulang ID jika password salah -->
-                        <input type="text" name="username" id="username"
+                        <!-- value old('nip') mencegah user mengetik ulang NIP jika password salah -->
+                        <input type="text" name="nip" id="nip"
                                class="input-field w-full px-4 sm:px-5 py-2.5 sm:py-3 md:py-3.5 rounded-xl bg-gray-200 border-2 border-transparent text-gray-900 placeholder-gray-500 font-medium outline-none"
-                               placeholder="Username / ID"
-                               value="{{ old('username') }}"
+                               placeholder="NIP"
+                               value="{{ old('nip') }}"
                                required
                                autocomplete="username">
                     </div>
