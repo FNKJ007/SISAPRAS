@@ -22,15 +22,7 @@
             </div>
             <form action="{{ route('admin.switch-to-user') }}" method="POST">
                 @csrf
-                <button type="submit"
-                        style="display: inline-flex; align-items: center; gap: 8px;
-                               padding: 10px 22px;
-                               background: linear-gradient(135deg, #C0201F 0%, #A81A19 100%);
-                               color: #fff; border: none; border-radius: 8px;
-                               font-size: 13px; font-weight: 600;
-                               cursor: pointer;
-                               box-shadow: 0 2px 8px rgba(192, 32, 31, 0.3);
-                               transition: all 0.2s ease;">
+                <button type="submit" class="btn btn-primary">
                     <i data-lucide="external-link" style="width: 16px; height: 16px;"></i>
                     Buka Halaman User
                 </button>
