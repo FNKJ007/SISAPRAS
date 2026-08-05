@@ -29,7 +29,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // =====================================================================
 //  USER ROUTES — Wajib Login (middleware: auth)
 // =====================================================================
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'user'])->group(function () {
 
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/home/index', [HomeController::class, 'index'])->name('home.index');
@@ -125,6 +125,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Pengaturan
     Route::get('/pengaturan', [AdminController::class, 'pengaturan'])->name('pengaturan');
+
+    // Lihat Halaman User (switch mode)
+    Route::post('/switch-to-user', [AdminController::class, 'switchToUser'])->name('switch-to-user');
+    Route::post('/switch-back-to-admin', [AdminController::class, 'switchBackToAdmin'])->name('switch-back-to-admin');
 
     // Redirect /admin → /admin/dashboard
     Route::redirect('/', '/admin/dashboard');

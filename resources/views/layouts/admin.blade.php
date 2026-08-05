@@ -308,6 +308,15 @@
                         <img src="{{ asset('images/logo-kabupaten.png') }}" alt="Logo Instansi"         class="logo logo-left">
                         <img src="{{ asset('images/logo-damkar.png') }}"    alt="Logo Yudha Brama Jaya"  class="logo logo-right">
                     </div>
+
+                    {{-- SISAPRAS Brand di Header --}}
+                    <div class="topbar-brand">
+                        <img src="{{ asset('images/logo-sisapras.png') }}" alt="Logo Sisapras" class="topbar-brand-logo">
+                        <div class="topbar-brand-text">
+                            <span class="topbar-brand-title">SISAPRAS</span>
+                            <span class="topbar-brand-subtitle">Sistem Informasi Sarana Prasarana</span>
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Area User Info di Topbar --}}
