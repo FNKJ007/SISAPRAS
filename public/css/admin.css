@@ -741,14 +741,13 @@ body {
 
     .topbar-brand-subtitle {
         display: block !important;
-        font-size: 7.5px;
-        letter-spacing: 0px;
-        color: rgba(255, 255, 255, 0.85);
+        font-size: 7.8px;
+        letter-spacing: -0.2px;
+        color: rgba(255, 255, 255, 0.9);
         font-weight: 500;
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 140px;
+        overflow: visible;
+        max-width: none;
     }
 
     .user-card-topbar {

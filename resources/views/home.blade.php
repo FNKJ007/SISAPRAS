@@ -92,7 +92,7 @@
                                     $adaData = $eventsHariIni->count() > 0;
                                     $adaRusak = $eventsHariIni->contains('status', 'dibengkel');
                                 @endphp
-                                <td class="align-top border border-gray-100 p-0.5 sm:p-1.5 h-14 sm:h-28 w-[14.28%] relative group
+                                <td class="align-top border border-gray-100 p-1 sm:p-2 h-14 sm:h-20 w-[14.28%] relative group
                                            {{ $isBulanIni ? 'bg-white' : 'bg-gray-50/60' }}
                                            {{ $adaData ? 'cursor-pointer hover:bg-red-50/60 hover:ring-1 hover:ring-inset hover:ring-red-200 transition-all duration-150' : '' }}"
                                     @if($adaData)
@@ -100,10 +100,10 @@
                                         title="Klik untuk lihat detail"
                                     @endif
                                 >
-                                    <div class="flex items-center justify-between mb-0.5 sm:mb-1">
-                                        <span class="text-[10px] sm:text-sm font-medium
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-xs sm:text-sm font-medium
                                             {{ $isBulanIni ? 'text-gray-800' : 'text-gray-300' }}
-                                            {{ $isHariIni ? 'inline-flex items-center justify-center w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-red-700 text-white shadow-sm text-[9px] sm:text-sm' : '' }}">
+                                            {{ $isHariIni ? 'inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-red-700 text-white shadow-sm text-[10px] sm:text-xs' : '' }}">
                                             {{ $hari->day }}
                                         </span>
 
@@ -112,8 +112,8 @@
                                         @endif
                                     </div>
 
-                                    {{-- Tampilan Desktop (Nama Unit Lengkap) --}}
-                                    <div class="hidden sm:block space-y-1">
+                                    {{-- Event Badges (Compact & Unified) --}}
+                                    <div class="space-y-1">
                                         @foreach($eventsHariIni->take(2) as $event)
                                             @php
                                                 $warna = match($event->status) {
@@ -123,37 +123,14 @@
                                                     default     => 'bg-gray-100 text-gray-700 border-gray-300',
                                                 };
                                             @endphp
-                                            <div class="text-[11px] leading-tight px-1.5 py-1 rounded border {{ $warna }} truncate">
+                                            <div class="text-[9px] sm:text-[11px] leading-snug px-1.5 py-0.5 rounded border {{ $warna }} truncate font-medium">
                                                 {{ $event->unit_nama }}
                                             </div>
                                         @endforeach
 
                                         @if($eventsHariIni->count() > 2)
-                                            <div class="text-[10px] text-red-600 font-medium px-1 group-hover:underline">
-                                                +{{ $eventsHariIni->count() - 2 }} →
-                                            </div>
-                                        @endif
-                                    </div>
-
-                                    {{-- Tampilan Mobile (Ringkas & Pas Layar) --}}
-                                    <div class="sm:hidden space-y-0.5">
-                                        @foreach($eventsHariIni->take(2) as $event)
-                                            @php
-                                                $warnaMobile = match($event->status) {
-                                                    'menunggu'  => 'bg-amber-100 text-amber-900 border-amber-200',
-                                                    'dibengkel' => 'bg-blue-100 text-blue-900 border-blue-200',
-                                                    'selesai'   => 'bg-green-100 text-green-900 border-green-200',
-                                                    default     => 'bg-gray-100 text-gray-800 border-gray-200',
-                                                };
-                                            @endphp
-                                            <div class="text-[8px] leading-none px-0.5 py-0.5 rounded border {{ $warnaMobile }} truncate font-medium">
-                                                {{ $event->unit_nama }}
-                                            </div>
-                                        @endforeach
-
-                                        @if($eventsHariIni->count() > 2)
-                                            <div class="text-[8px] leading-none text-red-600 font-semibold px-0.5">
-                                                +{{ $eventsHariIni->count() - 2 }}
+                                            <div class="text-[9px] sm:text-[10px] text-red-600 font-semibold px-1 group-hover:underline">
+                                                +{{ $eventsHariIni->count() - 2 }} detail →
                                             </div>
                                         @endif
                                     </div>
