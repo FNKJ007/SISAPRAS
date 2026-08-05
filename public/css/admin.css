@@ -264,6 +264,44 @@ body {
     object-fit: contain;
 }
 
+/* SISAPRAS Brand di Header */
+.topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-left: 14px;
+    border-left: 2px solid #E0E0E0;
+    margin-left: 2px;
+}
+
+.topbar-brand-logo {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.topbar-brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.topbar-brand-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #C0201F;
+    letter-spacing: 1px;
+}
+
+.topbar-brand-subtitle {
+    font-size: 9.5px;
+    color: #757575;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
 .topbar-accent {
     height: 4px;
     background-color: var(--accent-blue);
@@ -477,6 +515,19 @@ body {
     .logo {
         height: 42px;
         width: 42px;
+    }
+
+    .topbar-brand-text {
+        display: none;
+    }
+
+    .topbar-brand-logo {
+        width: 32px;
+        height: 32px;
+    }
+
+    .topbar-brand {
+        padding-left: 10px;
     }
 
     .mobile-menu-btn {

@@ -208,9 +208,19 @@ class AdminController extends Controller
     /* ==================== PENGATURAN ==================== */
     public function pengaturan()
     {
-        return view('admin.placeholder', [
-            'pageTitle'  => 'Pengaturan',
-            'breadcrumb' => ['Pengaturan'],
-        ]);
+        return view('admin.pengaturan');
+    }
+
+    /* ==================== SWITCH TO USER VIEW ==================== */
+    public function switchToUser(Request $request)
+    {
+        $request->session()->put('admin_viewing_as_user', true);
+        return redirect()->route('home');
+    }
+
+    public function switchBackToAdmin(Request $request)
+    {
+        $request->session()->forget('admin_viewing_as_user');
+        return redirect()->route('admin.dashboard');
     }
 }

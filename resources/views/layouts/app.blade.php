@@ -135,17 +135,29 @@
                     </div>
                 </div>
 
-                {{-- === Logout (Bawah Sidebar) === --}}
+                {{-- === Tombol Bawah Sidebar (Hanya 1 Tombol: Kembali ke Admin ATAU Logout) === --}}
                 <div class="menu-group" style="margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--sidebar-border);">
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="menu-title" style="width: 100%; border: none; background: none; color: #fff; cursor: pointer; text-decoration: none;">
-                            <span class="menu-title-left">
-                                <i data-lucide="log-out" class="menu-icon"></i>
-                                <span>Logout</span>
-                            </span>
-                        </button>
-                    </form>
+                    @if(auth()->check() && auth()->user()->isAdmin() && session('admin_viewing_as_user'))
+                        <form action="{{ route('admin.switch-back-to-admin') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="menu-title" style="width: 100%; border: none; background: none; color: #fff; cursor: pointer; text-decoration: none;" title="Kembali ke Panel Admin">
+                                <span class="menu-title-left">
+                                    <i data-lucide="arrow-left" class="menu-icon"></i>
+                                    <span>Kembali ke Admin</span>
+                                </span>
+                            </button>
+                        </form>
+                    @else
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="menu-title" style="width: 100%; border: none; background: none; color: #fff; cursor: pointer; text-decoration: none;">
+                                <span class="menu-title-left">
+                                    <i data-lucide="log-out" class="menu-icon"></i>
+                                    <span>Logout</span>
+                                </span>
+                            </button>
+                        </form>
+                    @endif
                 </div>
 
             </nav>
@@ -167,9 +179,18 @@
                         <img src="{{ asset('images/logo-kabupaten.png') }}" alt="Logo Instansi" class="logo logo-left">
                         <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Yudha Brama Jaya" class="logo logo-right">
                     </div>
+
+                    {{-- SISAPRAS Brand di Header --}}
+                    <div class="topbar-brand">
+                        <img src="{{ asset('images/logo-sisapras.png') }}" alt="Logo Sisapras" class="topbar-brand-logo">
+                        <div class="topbar-brand-text">
+                            <span class="topbar-brand-title">SISAPRAS</span>
+                            <span class="topbar-brand-subtitle">Sistem Informasi Sarana Prasarana</span>
+                        </div>
+                    </div>
                 </div>
 
-                {{-- Area User Info di Topbar --}}
+    {{-- Area User Info di Topbar --}}
                 <div style="display: flex; align-items: center; gap: 12px; margin-left: auto;">
                     <span style="font-size: 13px; font-weight: 500; color: #333; display: flex; align-items: center; gap: 6px;">
                         <i data-lucide="user" style="width: 16px; height: 16px; color: #C0201F;"></i>
