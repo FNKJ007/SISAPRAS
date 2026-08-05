@@ -290,16 +290,16 @@
         {{-- ===================== TOMBOL NAVIGASI ===================== --}}
         <div class="flex justify-between pt-4">
             <button type="button" data-action="prev"
-                    class="hidden inline-flex items-center justify-center gap-2 border border-gray-300 rounded-lg px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                <span>←</span> Kembali
+                    class="hidden btn btn-outline">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali
             </button>
             <button type="button" data-action="next"
-                    class="ml-auto inline-flex items-center justify-center gap-2 bg-blue-800 text-white rounded-lg px-5 py-2.5 text-sm font-medium hover:bg-blue-900">
-                Lanjut <span>→</span>
+                    class="ml-auto btn btn-primary">
+                Lanjut <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </button>
             <button type="submit" data-action="submit"
-                    class="hidden ml-auto inline-flex items-center justify-center gap-2 bg-blue-800 text-white rounded-lg px-5 py-2.5 text-sm font-medium hover:bg-blue-900">
-                <span>💾</span> Simpan Pemeriksaan
+                    class="hidden ml-auto btn btn-primary">
+                <i data-lucide="send" class="w-4 h-4"></i> Kirim Pemeriksaan
             </button>
         </div>
 
@@ -326,19 +326,19 @@
             var circle = el.querySelector('[data-circle]');
             var label = el.querySelector('[data-label]');
 
-            circle.classList.remove('bg-blue-600', 'text-white', 'border-blue-600', 'bg-green-500', 'border-green-500', 'border-gray-300', 'text-gray-400', 'bg-white');
-            label.classList.remove('text-blue-700', 'text-gray-700', 'text-gray-400', 'font-semibold');
+            circle.classList.remove('bg-[#C0201F]', 'text-white', 'border-[#C0201F]', 'bg-emerald-600', 'border-emerald-600', 'border-gray-300', 'text-gray-400', 'bg-white');
+            label.classList.remove('text-[#C0201F]', 'text-gray-700', 'text-gray-400', 'font-semibold');
 
             if (num < currentStep) {
                 // selesai
-                circle.classList.add('bg-green-500', 'text-white', 'border-green-500');
+                circle.classList.add('bg-emerald-600', 'text-white', 'border-emerald-600');
                 circle.innerHTML = '&#10003;';
                 label.classList.add('text-gray-700');
             } else if (num === currentStep) {
                 // aktif
-                circle.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+                circle.classList.add('bg-[#C0201F]', 'text-white', 'border-[#C0201F]');
                 circle.innerHTML = num;
-                label.classList.add('text-blue-700', 'font-semibold');
+                label.classList.add('text-[#C0201F]', 'font-semibold');
             } else {
                 // belum sampai
                 circle.classList.add('border-gray-300', 'text-gray-400', 'bg-white');
@@ -349,8 +349,8 @@
 
         lines.forEach(function (line, idx) {
             var stepBoundary = idx + 1; // garis ke-idx menghubungkan step (idx+1) -> (idx+2)
-            line.classList.remove('bg-blue-600', 'bg-gray-200');
-            line.classList.add(stepBoundary < currentStep ? 'bg-blue-600' : 'bg-gray-200');
+            line.classList.remove('bg-[#C0201F]', 'bg-gray-200');
+            line.classList.add(stepBoundary < currentStep ? 'bg-[#C0201F]' : 'bg-gray-200');
         });
     }
 

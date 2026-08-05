@@ -130,9 +130,8 @@
 
         {{-- Tombol Aksi --}}
         <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-2">
-            <button type="submit"
-                    class="inline-flex items-center justify-center gap-2 bg-blue-800 text-white rounded-lg px-5 py-2.5 text-sm font-medium hover:bg-blue-900">
-                <span>💾</span> Simpan Pemeriksaan
+            <button type="submit" class="btn btn-primary">
+                <i data-lucide="send" class="w-4 h-4"></i> Kirim Pemeriksaan
             </button>
         </div>
 

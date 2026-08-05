@@ -38,8 +38,8 @@
                     {{-- === Dashboard === --}}
                     <div class="menu-group">
                         <a href="{{ route('admin.dashboard') }}"
-                           class="menu-title"
-                           style="text-decoration:none; {{ request()->routeIs('admin.dashboard') ? 'background-color: rgba(255,255,255,0.95); color: var(--sidebar-red); box-shadow: 0 1px 3px rgba(0,0,0,0.15);' : '' }}">
+                           class="menu-title {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
+                           style="text-decoration:none;">
                             <span class="menu-title-left">
                                 <i data-lucide="layout-dashboard" class="menu-icon"></i>
                                 <span>Dashboard</span>
@@ -266,8 +266,8 @@
                     {{-- === Pengaturan === --}}
                     <div class="menu-group">
                         <a href="{{ route('admin.pengaturan') }}"
-                           class="menu-title"
-                           style="text-decoration:none; {{ request()->routeIs('admin.pengaturan') ? 'background-color: rgba(255,255,255,0.95); color: var(--sidebar-red); box-shadow: 0 1px 3px rgba(0,0,0,0.15);' : '' }}">
+                           class="menu-title {{ request()->routeIs('admin.pengaturan') ? 'active' : '' }}"
+                           style="text-decoration:none;">
                             <span class="menu-title-left">
                                 <i data-lucide="settings" class="menu-icon"></i>
                                 <span>Pengaturan</span>
@@ -309,9 +309,8 @@
                         <img src="{{ asset('images/logo-damkar.png') }}"    alt="Logo Yudha Brama Jaya"  class="logo logo-right">
                     </div>
 
-                    {{-- SISAPRAS Brand di Header --}}
+                    {{-- SISAPRAS Brand di Header (Tanpa Logo) --}}
                     <div class="topbar-brand">
-                        <img src="{{ asset('images/logo-sisapras.png') }}" alt="Logo Sisapras" class="topbar-brand-logo">
                         <div class="topbar-brand-text">
                             <span class="topbar-brand-title">SISAPRAS</span>
                             <span class="topbar-brand-subtitle">Sistem Informasi Sarana Prasarana</span>
@@ -320,14 +319,11 @@
                 </div>
 
                 {{-- Area User Info di Topbar --}}
-                <div style="display: flex; align-items: center; gap: 12px; margin-left: auto;">
-                    <span style="font-size: 13px; font-weight: 500; color: #333; display: flex; align-items: center; gap: 6px;">
-                        <i data-lucide="user-check" style="width: 16px; height: 16px; color: #C0201F;"></i>
-                        <span>{{ auth()->user()->name ?? 'Admin' }}</span>
-                    </span>
+                <div class="user-card-topbar">
+                    <i data-lucide="user-check"></i>
+                    <span>{{ auth()->user()->name ?? 'Admin' }}</span>
                 </div>
             </header>
-            <div class="topbar-accent"></div>
 
             <main class="content-area">
                 @yield('content')
