@@ -54,9 +54,10 @@ class CekHarianAlatController extends Controller
 
         $daftarAlat = collect($namaAlat)->map(function ($nama, $index) {
             return (object) [
-                'id'     => $index + 1,
-                'nama'   => $nama,
-                'status' => 'baik',
+                'id'           => $index + 1,
+                'nama'         => $nama,
+                'jumlah_baik'  => 0,
+                'jumlah_rusak' => 0,
             ];
         });
 
@@ -76,10 +77,11 @@ class CekHarianAlatController extends Controller
 
             'alat'                    => 'required|array|min:1',
             'alat.*.id'               => 'required|integer',
-            'alat.*.status'           => 'required|in:baik,rusak',
-            'alat.*.nomor_rusak'      => 'required_if:alat.*.status,rusak|nullable|string|max:255',
+            'alat.*.jumlah_baik'      => 'required|integer|min:0',
+            'alat.*.jumlah_rusak'     => 'required|integer|min:0',
+            'alat.*.nomor_rusak'      => 'nullable|string|max:255',
 
-            // Catatan & foto sekarang untuk keseluruhan pemeriksaan, bukan per-alat
+            // Catatan & foto untuk keseluruhan pemeriksaan
             'catatan_umum'            => 'nullable|string',
             'foto_umum'               => 'nullable|image|max:2048', // maks 2MB
         ]);

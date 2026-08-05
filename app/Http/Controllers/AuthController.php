@@ -14,58 +14,75 @@ class AuthController extends Controller
      */
     public function showLoginForm()
     {
-        return view('auth.login'); // Pastikan nama file view adalah login.blade.php
+        // Jika sudah login, langsung redirect sesuai role
+        if (Auth::check()) {
+            return $this->redirectByRole();
+        }
+
+        return view('auth.login');
     }
 
     /**
-     * Memproses data login
+     * Memproses data login dengan NIP + Password
      */
     public function login(Request $request)
     {
-        // 1. RATE LIMITING (Mencegah Serangan Brute Force)
-        // Membatasi percobaan login berdasarkan Username dan IP Address (Maksimal 5x percobaan)
-        $throttleKey = Str::transliterate(Str::lower($request->input('username')) . '|' . $request->ip());
+        // 1. RATE LIMITING (Mencegah Serangan Brute Force — maks 5x percobaan)
+        $throttleKey = Str::transliterate(Str::lower($request->input('nip')) . '|' . $request->ip());
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
             return back()->with('error', 'Terlalu banyak percobaan login. Silakan coba lagi dalam ' . $seconds . ' detik.');
         }
 
-        // 2. VALIDASI INPUT (Mencegah XSS & Memastikan Integritas Data)
-        // Memastikan input berupa string murni dan membuang karakter tag HTML (strip_tags)
+        // 2. VALIDASI INPUT
         $request->merge([
-            'username' => strip_tags($request->input('username')),
+            'nip' => strip_tags($request->input('nip')),
         ]);
 
-        $credentials = $request->validate([
-            'username' => ['required', 'string', 'max:255'],
+        $request->validate([
+            'nip'      => ['required', 'string', 'max:50'],
             'password' => ['required', 'string'],
         ]);
 
-        // 3. PROSES AUTENTIKASI (Aman dari SQL Injection)
-        // Laravel Auth::attempt secara otomatis menggunakan PDO Parameter Binding
+        // 3. PROSES AUTENTIKASI menggunakan NIP
+        $credentials = [
+            'nip'      => $request->input('nip'),
+            'password' => $request->input('password'),
+        ];
+
         if (Auth::attempt($credentials)) {
-            
-            // Hapus log percobaan gagal jika login berhasil
+
+            // Hapus log percobaan gagal
             RateLimiter::clear($throttleKey);
 
             // 4. MENCEGAH SESSION FIXATION
-            // Wajib memperbarui ID Sesi setelah user berhasil login
             $request->session()->regenerate();
 
-            // Redirect ke halaman dashboard (ubah 'dashboard' sesuai nama route tujuanmu)
-            return redirect()->intended('dashboard');
+            // 5. REDIRECT BERDASARKAN ROLE
+            return $this->redirectByRole();
         }
 
-        // Catat percobaan login yang gagal untuk Rate Limiting
         RateLimiter::hit($throttleKey);
 
-        // 5. MENCEGAH USER ENUMERATION
-        // Jangan beri tahu penyerang apakah 'Username' atau 'Password' yang salah.
-        // Gunakan pesan error umum.
+        // 6. MENCEGAH USER ENUMERATION — pesan error umum
         return back()->withErrors([
-            'username' => 'Username atau Password yang Anda masukkan tidak cocok.',
-        ])->onlyInput('username'); // Mengembalikan username ke form agar tidak perlu diketik ulang
+            'nip' => 'NIP atau Password yang Anda masukkan tidak cocok.',
+        ])->onlyInput('nip');
+    }
+
+    /**
+     * Redirect ke halaman yang sesuai berdasarkan role
+     */
+    private function redirectByRole()
+    {
+        $user = Auth::user();
+
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return redirect()->route('home');
     }
 
     /**
@@ -75,10 +92,9 @@ class AuthController extends Controller
     {
         Auth::logout();
 
-        // Menghapus dan menghancurkan sesi lama demi keamanan
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login');
+        return redirect()->route('login');
     }
 }

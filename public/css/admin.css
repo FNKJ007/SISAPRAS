@@ -13,8 +13,7 @@
     box-sizing: border-box;
 }
 
-html,
-body {
+html, body {
     height: 100%;
 }
 
@@ -23,55 +22,11 @@ body {
     background-color: var(--content-bg);
 }
 
-/* Banner saat admin melihat halaman user */
-.admin-as-user-banner {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    padding: 8px 20px;
-    background: linear-gradient(135deg, #1B2A6B 0%, #2D3F8F 100%);
-    color: #fff;
-    font-size: 13px;
-    font-weight: 500;
-    box-shadow: 0 2px 10px rgba(27, 42, 107, 0.35);
-}
-
-.admin-as-user-banner + .app-wrapper {
-    margin-top: 40px;
-    height: calc(100vh - 40px);
-}
-
-.admin-as-user-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 14px;
-    background: rgba(255,255,255,0.15);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: inherit;
-}
-
-.admin-as-user-btn:hover {
-    background: rgba(255,255,255,0.25);
-}
-
 .app-wrapper {
     display: flex;
     height: 100vh;
     width: 100%;
-    overflow: hidden;
+    overflow: hidden; /* cegah double-scrollbar di level dokumen */
 }
 
 /* ===================== SIDEBAR (DESKTOP) ===================== */
@@ -88,13 +43,15 @@ body {
     box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
 }
 
+/* Collapsed State (Desktop Rail Mode: Width 48px) */
 .sidebar.collapsed {
     width: 48px;
     min-width: 48px;
 }
 
+/* Sembunyikan teks & chevron. Ikon dikunci diam di posisi X=24px tanpa melompat ke tengah */
 .sidebar.collapsed .menu-label,
-.sidebar.collapsed .menu-title-left>span,
+.sidebar.collapsed .menu-title-left > span,
 .sidebar.collapsed .chevron,
 .sidebar.collapsed .submenu {
     display: none !important;
@@ -138,72 +95,6 @@ body {
     white-space: nowrap;
 }
 
-/* ===================== SIDEBAR BRAND (LOGO + NAMA APLIKASI) ===================== */
-.sidebar-brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--sidebar-border);
-    white-space: nowrap;
-    overflow: hidden;
-    flex-shrink: 0;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-}
-
-.sidebar-brand:hover {
-    background-color: rgba(255, 255, 255, 0.06);
-}
-
-.brand-logo {
-    width: 30px;
-    height: 30px;
-    min-width: 30px;
-    object-fit: contain;
-    flex-shrink: 0;
-    border-radius: 4px;
-    background-color: #fff;
-    padding: 2px;
-}
-
-.brand-text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.25;
-    overflow: hidden;
-}
-
-.brand-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: 0.3px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.brand-subtitle {
-    font-size: 9.5px;
-    font-weight: 400;
-    color: rgba(255, 255, 255, 0.75);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Saat sidebar desktop collapsed (rail mode 48px), sembunyikan teks brand */
-.sidebar.collapsed .brand-text {
-    display: none !important;
-}
-
-.sidebar.collapsed .sidebar-brand {
-    justify-content: center;
-    padding: 14px 0;
-}
-
 .sidebar-menu {
     flex: 1;
     overflow-y: auto;
@@ -240,6 +131,8 @@ body {
     border-radius: 6px;
     white-space: nowrap;
     transition: background-color 0.15s ease, color 0.15s ease;
+    text-decoration: none;
+    font-family: 'Poppins', Arial, Helvetica, sans-serif;
 }
 
 .menu-title:hover {
@@ -254,7 +147,7 @@ body {
     white-space: nowrap;
 }
 
-.menu-title-left>span {
+.menu-title-left > span {
     white-space: nowrap;
 }
 
@@ -425,7 +318,7 @@ body {
     padding: 24px;
     overflow-y: auto;
     overflow-x: hidden;
-    min-height: 0;
+    min-height: 0; /* WAJIB: agar flex child ini boleh menyusut dan overflow-y:auto aktif */
     -webkit-overflow-scrolling: touch;
 }
 
@@ -446,7 +339,7 @@ body {
     z-index: 0;
 }
 
-.content-area>* {
+.content-area > * {
     position: relative;
     z-index: 1;
 }
@@ -606,6 +499,14 @@ body {
     display: none;
 }
 
+.sidebar-backdrop.show {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 999;
+}
+
 @media (max-width: 768px) {
     .topbar {
         padding: 10px 16px;
@@ -662,7 +563,7 @@ body {
     }
 
     .sidebar.collapsed .menu-label,
-    .sidebar.collapsed .menu-title-left>span {
+    .sidebar.collapsed .menu-title-left > span {
         display: inline !important;
     }
 
@@ -679,34 +580,6 @@ body {
         justify-content: flex-start;
         gap: 7px;
         width: auto;
-    }
-
-    /* Brand: di mobile selalu tampil penuh (logo + teks) walau state collapsed aktif */
-    .sidebar.collapsed .brand-text {
-        display: flex !important;
-    }
-
-    .sidebar.collapsed .sidebar-brand {
-        justify-content: flex-start;
-        padding: 14px 16px;
-    }
-
-    .sidebar-brand {
-        padding: 12px 16px;
-    }
-
-    .brand-logo {
-        width: 32px;
-        height: 32px;
-        min-width: 32px;
-    }
-
-    .brand-title {
-        font-size: 13px;
-    }
-
-    .brand-subtitle {
-        font-size: 9px;
     }
 
     .menu-title {
@@ -728,15 +601,4 @@ body {
         column-gap: 0;
     }
 
-    /* Backdrop gelap saat sidebar mobile terbuka */
-    .sidebar-backdrop.show {
-        display: block;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.45);
-        z-index: 999;
-    }
-}   
+}
