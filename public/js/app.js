@@ -56,9 +56,83 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // =========================================================================
-    //  OTOMATIS BUKA SIDEBAR SAAT MENU DIKLIK (SAAT SIDEBAR TERTUTUP/COLLAPSED)
-    //  + MULTI-OPEN ACCORDION SUBMENU WITH SESSIONSTORAGE PERSISTENCE
-    //  (Reset otomatis setiap login baru / sesi baru)
+    //  SMOOTH SUBMENU ANIMATION WITH scrollHeight
+    //  Animates to exact pixel height for buttery-smooth open/close.
+    // =========================================================================
+
+    /**
+     * Membuka submenu dengan animasi halus.
+     * Menghitung tinggi konten sesungguhnya (scrollHeight) lalu
+     * men-transisikan height: 0 → height: Npx secara presisi.
+     */
+    function openSubmenu(submenu) {
+        if (!submenu) return;
+
+        // Pastikan tidak ada transisi yang sedang berjalan
+        submenu.style.willChange = 'height, opacity';
+
+        // Tambahkan class .open (mengaktifkan opacity, padding, dan stagger li)
+        submenu.classList.add('open');
+
+        // Hitung tinggi konten yang sesungguhnya
+        // Set height sementara ke 'auto' agar scrollHeight bisa dihitung
+        submenu.style.height = 'auto';
+        var targetHeight = submenu.scrollHeight;
+
+        // Kembalikan ke 0 dulu, lalu paksa reflow, lalu set ke target
+        submenu.style.height = '0px';
+        // Force reflow agar browser mengenali perubahan dari 0 → target
+        submenu.offsetHeight; // eslint-disable-line no-unused-expressions
+
+        // Animasikan ke tinggi target
+        submenu.style.height = targetHeight + 'px';
+
+        // Setelah transisi selesai, ubah height ke 'auto'
+        // agar submenu bisa menyesuaikan jika isinya berubah dinamis
+        var onTransitionEnd = function (e) {
+            if (e.propertyName !== 'height') return;
+            submenu.removeEventListener('transitionend', onTransitionEnd);
+            if (submenu.classList.contains('open')) {
+                submenu.style.height = 'auto';
+            }
+            submenu.style.willChange = '';
+        };
+        submenu.addEventListener('transitionend', onTransitionEnd);
+    }
+
+    /**
+     * Menutup submenu dengan animasi halus.
+     * Menyimpan tinggi saat ini → set ke pixel tetap → reflow → set ke 0
+     * sehingga CSS transition berjalan dari Npx → 0px secara mulus.
+     */
+    function closeSubmenu(submenu) {
+        if (!submenu) return;
+
+        submenu.style.willChange = 'height, opacity';
+
+        // Ambil tinggi saat ini (mungkin 'auto'), ubah ke pixel tetap
+        var currentHeight = submenu.scrollHeight;
+        submenu.style.height = currentHeight + 'px';
+
+        // Force reflow agar browser mengenali dari Npx
+        submenu.offsetHeight; // eslint-disable-line no-unused-expressions
+
+        // Hapus class .open (mereset opacity, transform stagger li)
+        submenu.classList.remove('open');
+
+        // Animasikan ke 0
+        submenu.style.height = '0px';
+
+        var onTransitionEnd = function (e) {
+            if (e.propertyName !== 'height') return;
+            submenu.removeEventListener('transitionend', onTransitionEnd);
+            submenu.style.willChange = '';
+        };
+        submenu.addEventListener('transitionend', onTransitionEnd);
+    }
+
+    // =========================================================================
+    //  MULTI-OPEN ACCORDION SUBMENU WITH SESSIONSTORAGE PERSISTENCE
     // =========================================================================
     var STORAGE_KEY = 'sisapras_open_submenus';
 
@@ -84,12 +158,14 @@ document.addEventListener('DOMContentLoaded', function () {
         var targetId = title.getAttribute('data-target');
         var submenu  = targetId ? document.getElementById(targetId) : null;
 
-        // 1. Pulihkan status terbuka untuk menu yang pernah dibuka secara manual di sesi ini
+        // 1. Pulihkan status terbuka dari sesi sebelumnya (tanpa animasi)
         if (submenu) {
             var isStoredOpen = storedSubmenus.indexOf(targetId) !== -1;
 
             if (isStoredOpen) {
+                // Buka langsung tanpa animasi saat load halaman
                 submenu.classList.add('open');
+                submenu.style.height = 'auto';
                 title.classList.add('active');
             }
         }
@@ -106,14 +182,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 var isOpen = submenu.classList.contains('open');
 
                 if (isOpen) {
-                    submenu.classList.remove('open');
+                    closeSubmenu(submenu);
                     title.classList.remove('active');
                     var index = storedSubmenus.indexOf(targetId);
                     if (index !== -1) {
                         storedSubmenus.splice(index, 1);
                     }
                 } else {
-                    submenu.classList.add('open');
+                    openSubmenu(submenu);
                     title.classList.add('active');
                     if (storedSubmenus.indexOf(targetId) === -1) {
                         storedSubmenus.push(targetId);
