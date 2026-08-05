@@ -1,142 +1,382 @@
+/* ===================== PREMIUM SISAPRAS LOGIN SYSTEM ===================== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
 html, body {
     height: 100%;
+    height: 100dvh;
+    overflow: hidden !important;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
 }
 
 body {
-    background-color: #0B1F3A; /* Warna dasar biru tua */
-    margin: 0;
-    overflow-x: hidden;
-}
-
-.login-layout {
-    display: flex;
-    min-height: 100vh;
-    min-height: 100dvh; /* dvh = tinggi layar SEBENARNYA di HP, tidak meleset karena address bar */
     width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background: #0D163A;
+    color: #1E293B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
+    overflow: hidden !important;
 }
 
-/* Area Merah Kiri dengan Kurva Mulus (Clip-Path) */
-.panel-merah {
-    width: 55%;
-    background-color: #B71C1C;
-    /* Membuat lengkungan sempurna menggunakan ellipse */
-    clip-path: ellipse(100% 120% at 0% 50%);
+/* Background Atmosphere Glows */
+.login-bg-glow-1 {
+    position: fixed;
+    top: -10%;
+    left: -10%;
+    width: 50vw;
+    height: 50vw;
+    background: radial-gradient(circle, rgba(192, 32, 31, 0.25) 0%, rgba(13, 22, 58, 0) 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.login-bg-glow-2 {
+    position: fixed;
+    bottom: -10%;
+    right: -10%;
+    width: 60vw;
+    height: 60vw;
+    background: radial-gradient(circle, rgba(27, 42, 107, 0.45) 0%, rgba(13, 22, 58, 0) 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 960px;
+    height: 520px;
+    max-height: calc(100dvh - 32px);
+    margin: auto;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    height: 100%;
-    left: 0;
-    top: 0;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(192, 32, 31, 0.15);
+    position: relative;
     z-index: 10;
 }
 
-/* Area Form Kanan */
-.panel-biru {
-    width: 50%;
-    margin-left: 50%; /* Menggeser ke kanan */
+/* Kiri: Panel Hero Merah Damkar */
+.login-hero {
+    flex: 1.1;
+    background: linear-gradient(135deg, #C0201F 0%, #9B1212 60%, #680B0B 100%);
+    padding: 36px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    color: #FFFFFF;
+}
+
+.login-hero::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 440px;
+    height: 440px;
+    transform: translate(-50%, -50%);
+    background-image: url('/images/logo-damkar.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.08;
+    filter: grayscale(100%) brightness(200%);
+    pointer-events: none;
+}
+
+.hero-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 2;
+}
+
+.hero-brand-tag {
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 5px 12px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.hero-content {
+    text-align: center;
+    margin: auto 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hero-logo-img {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.35));
+    transition: transform 0.4s ease;
+    margin-bottom: 14px;
+}
+
+.hero-logo-img:hover {
+    transform: scale(1.06);
+}
+
+.hero-title {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    line-height: 1.1;
+    margin-bottom: 4px;
+    text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.hero-subtitle {
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, 0.88);
+    font-weight: 500;
+    max-width: 300px;
+    line-height: 1.35;
+}
+
+.hero-footer {
+    font-size: 10.5px;
+    color: rgba(255, 255, 255, 0.65);
+    z-index: 2;
+}
+
+/* Kanan: Panel Form Login */
+.login-form-wrapper {
+    flex: 1;
+    background: #FFFFFF;
+    padding: 36px 40px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    z-index: 20;
     position: relative;
+    overflow: hidden;
 }
 
-/* Input Custom Styles */
-.input-field {
-    transition: all 0.3s ease;
-}
-.input-field:focus {
-    background-color: #ffffff;
-    border-color: #B71C1C;
-    box-shadow: 0 0 0 4px rgba(204, 35, 40, 0.1);
+.form-header {
+    margin-bottom: 22px;
 }
 
-/* --- FITUR RESPONSIF (HP/Tablet) --- */
-@media (max-width: 992px) {
-    body {
-        overflow-y: hidden; /* TIDAK bisa di-scroll di mobile */
+.form-header-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #121E4E;
+    margin-bottom: 4px;
+}
+
+.form-header-sub {
+    font-size: 12.5px;
+    color: #64748B;
+}
+
+.input-group-custom {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.input-group-custom label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 5px;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon-left {
+    position: absolute;
+    left: 14px;
+    color: #94A3B8;
+    width: 17px;
+    height: 17px;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.input-custom {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px 0 40px;
+    border-radius: 10px;
+    border: 1.5px solid #E2E8F0;
+    background: #F8FAFC;
+    font-size: 13px;
+    color: #1E293B;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.input-custom:focus {
+    background: #FFFFFF;
+    border-color: #C0201F;
+    box-shadow: 0 0 0 3px rgba(192, 32, 31, 0.12);
+}
+
+.input-custom:focus ~ .input-icon-left,
+.input-wrapper:focus-within .input-icon-left {
+    color: #C0201F;
+}
+
+.toggle-password-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #94A3B8;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.toggle-password-btn:hover {
+    color: #1E293B;
+}
+
+.btn-login-submit {
+    width: 100%;
+    height: 46px;
+    background: linear-gradient(135deg, #C0201F 0%, #9B1212 100%);
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(192, 32, 31, 0.28);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.btn-login-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(192, 32, 31, 0.38);
+    background: linear-gradient(135deg, #D62827 0%, #A81A19 100%);
+}
+
+.btn-login-submit:active {
+    transform: translateY(0);
+}
+
+/* Responsif Mobile Pas Layar Tanpa Scroll (< 768px) */
+@media (max-width: 768px) {
+    html, body {
+        overflow: hidden !important;
     }
 
-    .login-layout {
+    .login-container {
         flex-direction: column;
-        height: 100vh;
-        height: 100dvh; /* tinggi pasti mengikuti layar HP, bukan cuma "minimal" */
-        overflow: hidden;
+        width: calc(100% - 24px);
+        height: calc(100dvh - 24px);
+        max-height: calc(100dvh - 24px);
+        margin: auto;
+        border-radius: 20px;
     }
 
-    .panel-merah {
-        width: 100%;
-        height: auto;
-        flex: 0 1 40%;      /* logo ambil maksimal 40% tinggi layar, ikut menyusut kalau layar pendek */
-        min-height: 0;
-        position: relative;
-        /* Ubah arah lengkungan ke bawah saat di HP */
-        clip-path: ellipse(150% 100% at 50% 0%);
-        padding: 12px;
-        overflow: hidden;
-    }
-
-    /* Logo ikut menyusut mengikuti tinggi panel-merah, tidak pernah meluber */
-    .panel-merah {
-        width: 100%;
-        height: auto;
-        flex: 0 1 30%;      /* logo ambil maksimal 40% tinggi layar, ikut menyusut kalau layar pendek */
-        min-height: 0;
-        position: relative;
-        /* Ubah arah lengkungan ke bawah saat di HP */
-        clip-path: ellipse(150% 100% at 50% 0%);
-        padding: 12px;
-        overflow: hidden;
-    }
-    .panel-biru {
-        width: 100%;
-        margin-left: 0;
-        flex: 1 1 auto;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;   /* diubah dari center: dorong form ke atas area biru */
+    .login-hero {
+        padding: 24px 20px;
+        text-align: center;
         align-items: center;
-        padding: 16px 16px;
-        padding-top: 4dvh;             /* jarak kecil dari lengkungan merah, bukan full center */
-        overflow: hidden;
+        justify-content: center;
+        flex: 1 1 50% !important;
+        height: 50% !important;
     }
 
-    /* Kartu form ikut menyusut kalau layar pendek, tidak dipatok tinggi tetap.
-       Padding sudah diatur bertingkat lewat class Tailwind di blade
-       (p-5 sm:p-6 md:p-8 lg:p-10), di sini cukup jaga batas tinggi & overflow. */
-    .panel-biru > div {
-        max-height: 100%;
-        overflow: hidden;
-        padding: 2rem 1.75rem !important;   /* kartu jadi lebih tinggi (sebelumnya p-5 = 1.25rem) */
-    }
-    .panel-biru .input-field {
-        padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
-    }
-    .panel-biru form > div + div {
-        margin-top: 1.5rem;   /* jarak antar Username, Password, tombol Login */
-    }
-     .panel-biru h1 {
-        margin-bottom: 0.75rem;
+    .hero-brand-tag {
+        font-size: 10px;
+        padding: 4px 10px;
     }
 
-    .panel-biru .text-center {
-        margin-bottom: 2rem !important;   /* jarak judul SISAPRAS ke input pertama */
-    }
-}
-
-/* Layar pendek (mis. HP dalam mode landscape, atau HP kecil) —
-   perkecil lagi porsi logo supaya tetap muat tanpa scroll. */
-@media (max-width: 992px) and (max-height: 700px) {
-    .panel-merah {
-        flex-basis: 22%;
+    .hero-logo-img {
+        width: 76px;
+        height: 76px;
+        margin-bottom: 8px;
     }
 
-    .panel-merah img {
-        max-width: 45%;
+    .hero-title {
+        font-size: 22px;
+        margin-bottom: 2px;
+    }
+
+    .hero-subtitle {
+        font-size: 11px;
+        line-height: 1.3;
+    }
+
+    .hero-footer {
+        display: none;
+    }
+
+    .login-form-wrapper {
+        padding: 24px 20px;
+        flex: 1 1 50% !important;
+        height: 50% !important;
+        justify-content: center;
+    }
+
+    .form-header {
+        margin-bottom: 16px;
+    }
+
+    .form-header-title {
+        font-size: 18px;
+        margin-bottom: 2px;
+    }
+
+    .form-header-sub {
+        font-size: 11.5px;
+    }
+
+    .input-group-custom {
+        margin-bottom: 12px;
+    }
+
+    .input-group-custom label {
+        font-size: 11px;
+        margin-bottom: 4px;
+    }
+
+    .input-custom {
+        height: 40px;
+        font-size: 12.5px;
+    }
+
+    .btn-login-submit {
+        height: 42px;
+        font-size: 13.5px;
+        margin-top: 4px;
     }
 }
