@@ -79,11 +79,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Pemeliharaan
     Route::prefix('pemeliharaan')->name('pemeliharaan.')->group(function () {
-        Route::get('/pengajuan',    [AdminController::class, 'pemeliharaanPengajuan'])->name('pengajuan');
-        Route::get('/pemeriksaan',  [AdminController::class, 'pemeliharaanPemeriksaan'])->name('pemeriksaan');
-        Route::get('/pemeliharaan', [AdminController::class, 'pemeliharaanPemeliharaan'])->name('pemeliharaan');
-        Route::get('/invoice',      [AdminController::class, 'pemeliharaanInvoice'])->name('invoice');
-        Route::get('/kartu-kendali',[AdminController::class, 'pemeliharaanKartuKendali'])->name('kartu-kendali');
+        Route::get('/pengajuan',                    [AdminController::class, 'pemeliharaanPengajuan'])->name('pengajuan');
+        Route::post('/pengajuan/{id}/verifikasi',   [AdminController::class, 'verifikasiPengajuan'])->name('pengajuan.verifikasi');
+        Route::get('/pemeriksaan',                  [AdminController::class, 'pemeliharaanPemeriksaan'])->name('pemeriksaan');
+        Route::get('/pemeliharaan',                 [AdminController::class, 'pemeliharaanPemeliharaan'])->name('pemeliharaan');
+        Route::get('/invoice',                      [AdminController::class, 'pemeliharaanInvoice'])->name('invoice');
+        Route::get('/kartu-kendali',                [AdminController::class, 'pemeliharaanKartuKendali'])->name('kartu-kendali');
     });
 
     // Unit Pemadam
