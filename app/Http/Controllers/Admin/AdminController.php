@@ -3,33 +3,121 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Pengajuan;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
-    /* ==================== DASHBOARD ==================== */
+    /**
+     * Dashboard Utama Admin
+     */
     public function dashboard()
     {
-        // Ganti dengan query Model asli saat model sudah tersedia
-        // Contoh:
-        // $totalUnit         = \App\Models\Unit::count();
-        // $totalPemeliharaan = \App\Models\Pengajuan::whereMonth('created_at', now()->month)->count();
-        // $totalPemeriksaan  = \App\Models\Pemeriksaan::whereMonth('created_at', now()->month)->count();
+        $kpi = [
+            'total_pengajuan'  => Pengajuan::count(),
+            'menunggu'         => Pengajuan::where('status', 'menunggu')->count(),
+            'disetujui'        => Pengajuan::where('status', 'disetujui')->count(),
+            'ditolak'          => Pengajuan::where('status', 'ditolak')->count(),
+        ];
 
-        return view('admin.dashboard', [
-            'totalUnit'         => 12,
-            'totalPemeliharaan' => 5,
-            'totalPemeriksaan'  => 3,
-        ]);
+        $pengajuanTerbaru = Pengajuan::latest()->take(5)->get();
+
+        return view('admin.dashboard', compact('kpi', 'pengajuanTerbaru'));
     }
 
-    /* ==================== PEMELIHARAAN ==================== */
-    public function pemeliharaanPengajuan()
+    /**
+     * Halaman Verifikasi Pengajuan Pemeliharaan Unit
+     */
+    public function pemeliharaanPengajuan(Request $request)
     {
-        return view('admin.placeholder', [
-            'pageTitle'  => 'Pengajuan',
-            'breadcrumb' => ['Pemeliharaan', 'Pengajuan'],
+        $statusFilter = $request->query('status', 'semua');
+        $searchQuery  = $request->query('search', '');
+
+        $query = Pengajuan::latest();
+
+        // Filter berdasarkan status
+        if ($statusFilter !== 'semua' && in_array($statusFilter, ['menunggu', 'disetujui', 'ditolak'])) {
+            $query->where('status', $statusFilter);
+        }
+
+        // Pencarian berdasarkan nomor_lambung, nama_pemegang, atau pos
+        if (!empty($searchQuery)) {
+            $query->where(function ($q) use ($searchQuery) {
+                $q->where('nomor_lambung', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemegang', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('pos', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('item_perbaikan', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
+        $pengajuanList = $query->paginate(10)->withQueryString();
+
+        // Ringkasan KPI
+        $kpi = [
+            'total'     => Pengajuan::count(),
+            'menunggu'  => Pengajuan::where('status', 'menunggu')->count(),
+            'disetujui' => Pengajuan::where('status', 'disetujui')->count(),
+            'ditolak'   => Pengajuan::where('status', 'ditolak')->count(),
+        ];
+
+        return view('admin.pemeliharaan.pengajuan', compact('pengajuanList', 'kpi', 'statusFilter', 'searchQuery'));
+    }
+
+    /**
+     * Memverifikasi pengajuan (Setujui / Tolak) oleh Admin + Verifikasi per item
+     */
+    public function verifikasiPengajuan(Request $request, $id)
+    {
+        $request->validate([
+            'status'                => 'required|in:disetujui,ditolak,menunggu',
+            'tanggal_keberangkatan' => 'nullable|date',
+            'catatan_admin'         => 'nullable|string|max:500',
+            'item_verifikasis'      => 'nullable|array',
         ]);
+
+        $pengajuan = Pengajuan::findOrFail($id);
+
+        $itemVerifikasis = $request->input('item_verifikasis', []);
+        
+        // Simpan keputusan per item
+        $pengajuan->item_verifikasis = $itemVerifikasis;
+
+        // Tentukan status keseluruhan berdasarkan verifikasi item jika ada
+        if (!empty($itemVerifikasis)) {
+            $hasDisetujui = in_array('disetujui', $itemVerifikasis, true);
+            $hasDitolak   = in_array('ditolak', $itemVerifikasis, true);
+
+            if ($hasDisetujui && !$hasDitolak) {
+                $pengajuan->status = 'disetujui';
+            } elseif ($hasDitolak && !$hasDisetujui) {
+                $pengajuan->status = 'ditolak';
+            } else {
+                // Ada item yang disetujui dan ada yang ditolak -> Tetap disetujui (sebagian disetujui untuk perbaikan)
+                $pengajuan->status = $request->status ?? 'disetujui';
+            }
+        } else {
+            $pengajuan->status = $request->status;
+        }
+
+        $pengajuan->catatan_admin = $request->catatan_admin;
+
+        if ($pengajuan->status === 'disetujui' && $request->filled('tanggal_keberangkatan')) {
+            $pengajuan->tanggal_keberangkatan = $request->tanggal_keberangkatan;
+        } elseif ($pengajuan->status !== 'disetujui') {
+            $pengajuan->tanggal_keberangkatan = null;
+        }
+
+        $pengajuan->save();
+
+        $statusText = match ($pengajuan->status) {
+            'disetujui' => 'disetujui' . ($pengajuan->tanggal_keberangkatan ? ' (Jadwal: ' . $pengajuan->tanggal_keberangkatan->format('d/m/Y') . ')' : ''),
+            'ditolak'   => 'ditolak',
+            default     => 'diperbarui',
+        };
+
+        return redirect()
+            ->route('admin.pemeliharaan.pengajuan')
+            ->with('success', "Pengajuan unit {$pengajuan->nomor_lambung} berhasil {$statusText}.");
     }
 
     public function pemeliharaanPemeriksaan()
@@ -148,6 +236,14 @@ class AdminController extends Controller
         ]);
     }
 
+    public function aparMonitoring()
+    {
+        return view('admin.placeholder', [
+            'pageTitle'  => 'Monitoring',
+            'breadcrumb' => ['APAR & Kejadian', 'Monitoring'],
+        ]);
+    }
+
     public function aparLaporanKejadian()
     {
         return view('admin.placeholder', [
@@ -156,23 +252,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function aparMonitoring()
-    {
-        return view('admin.placeholder', [
-            'pageTitle'  => 'Monitoring Kejadian',
-            'breadcrumb' => ['APAR & Kejadian', 'Monitoring Kejadian'],
-        ]);
-    }
-
     /* ==================== LAPORAN ==================== */
-    public function laporanPemeliharaan()
-    {
-        return view('admin.placeholder', [
-            'pageTitle'  => 'Laporan Pemeliharaan',
-            'breadcrumb' => ['Laporan', 'Pemeliharaan'],
-        ]);
-    }
-
     public function laporanPemadam()
     {
         return view('admin.placeholder', [
@@ -197,11 +277,19 @@ class AdminController extends Controller
         ]);
     }
 
+    public function laporanPemeliharaan()
+    {
+        return view('admin.placeholder', [
+            'pageTitle'  => 'Laporan Pemeliharaan',
+            'breadcrumb' => ['Laporan', 'Pemeliharaan'],
+        ]);
+    }
+
     public function laporanBulanan()
     {
         return view('admin.placeholder', [
             'pageTitle'  => 'Laporan Bulanan',
-            'breadcrumb' => ['Laporan', 'Laporan Bulanan'],
+            'breadcrumb' => ['Laporan', 'Bulanan'],
         ]);
     }
 
@@ -211,16 +299,21 @@ class AdminController extends Controller
         return view('admin.pengaturan');
     }
 
-    /* ==================== SWITCH TO USER VIEW ==================== */
+    /**
+     * Switch Mode (Dev Utility - Admin melihat halaman sebagai User)
+     */
     public function switchToUser(Request $request)
     {
-        $request->session()->put('admin_viewing_as_user', true);
-        return redirect()->route('home');
+        session([
+            'admin_viewing_as_user' => true,
+            'admin_preview_as_user' => true,
+        ]);
+        return redirect()->route('home')->with('info', 'Anda sekarang melihat tampilan sebagai User.');
     }
 
     public function switchBackToAdmin(Request $request)
     {
-        $request->session()->forget('admin_viewing_as_user');
-        return redirect()->route('admin.dashboard');
+        session()->forget(['admin_viewing_as_user', 'admin_preview_as_user']);
+        return redirect()->route('admin.dashboard')->with('success', 'Kembali ke mode Admin.');
     }
 }
