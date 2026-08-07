@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CekHarianAlat;
+use App\Models\CekHarianUnit;
 use App\Models\Pengajuan;
 use Illuminate\Http\Request;
 
@@ -161,12 +163,29 @@ class AdminController extends Controller
         ]);
     }
 
-    public function unitPemadamPengecekan()
+    public function unitPemadamPengecekan(Request $request)
     {
-        return view('admin.placeholder', [
-            'pageTitle'  => 'Pengecekan',
-            'breadcrumb' => ['Unit Pemadam', 'Pengecekan'],
-        ]);
+        $tab = $request->query('tab', 'unit'); // 'unit' atau 'alat'
+
+        // ===== Hasil Cek Harian Unit Kendaraan =====
+        $cekUnitList = CekHarianUnit::latest()
+            ->paginate(10, ['*'], 'unit_page')
+            ->withQueryString();
+
+        // ===== Hasil Cek Harian Alat Pemadam =====
+        $cekAlatList = CekHarianAlat::latest()
+            ->paginate(10, ['*'], 'alat_page')
+            ->withQueryString();
+
+        // ===== Ringkasan KPI =====
+        $kpi = [
+            'total_cek_unit'   => CekHarianUnit::count(),
+            'unit_ada_rusak'   => CekHarianUnit::where('jumlah_rusak', '>', 0)->count(),
+            'total_cek_alat'   => CekHarianAlat::count(),
+            'alat_rusak_total' => (int) CekHarianAlat::sum('total_rusak'),
+        ];
+
+        return view('admin.unit-pemadam.pengecekan', compact('cekUnitList', 'cekAlatList', 'kpi', 'tab'));
     }
 
     public function unitPemadamRiwayat()

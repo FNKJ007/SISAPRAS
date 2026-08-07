@@ -63,7 +63,17 @@
                     </select>
                     @error('unit_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
-                
+                <div>
+                    <label for="shift" class="block text-sm font-medium mb-1">Shift</label>
+                    <select id="shift" name="shift"
+                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+                        <option value="" selected disabled>Pilih Shift</option>
+                        <option value="pagi" @selected(old('shift') === 'pagi')>Pagi</option>
+                        <option value="siang" @selected(old('shift') === 'siang')>Siang</option>
+                        <option value="malam" @selected(old('shift') === 'malam')>Malam</option>
+                    </select>
+                    @error('shift') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                </div>
             </div>
         </div>
 
@@ -93,13 +103,31 @@
                     </select>
                     @error('jenis_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
-                <div></div>
+                <div>
+                    <label for="level_bbm" class="block text-sm font-medium mb-1">Level BBM</label>
+                    <select id="level_bbm" name="level_bbm"
+                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+                        <option value="" selected disabled>Pilih Level BBM</option>
+                        <option value="penuh" @selected(old('level_bbm') === 'penuh')>Penuh</option>
+                        <option value="3_4" @selected(old('level_bbm') === '3_4')>3/4</option>
+                        <option value="1_2" @selected(old('level_bbm') === '1_2')>1/2</option>
+                        <option value="kosong" @selected(old('level_bbm') === 'kosong')>Kosong</option>
+                    </select>
+                    @error('level_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="jumlah_bbm_liter" class="block text-sm font-medium mb-1">Jumlah BBM (Liter)</label>
+                    <input type="number" step="0.01" min="0" id="jumlah_bbm_liter" name="jumlah_bbm_liter" value="{{ old('jumlah_bbm_liter') }}"
+                           placeholder="Contoh: 40"
+                           class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    @error('jumlah_bbm_liter') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                </div>
                 <div class="mb-5">
-                <p class="font-medium text-sm mb-1">Level BBM</p>
+                <p class="font-medium text-sm mb-1">Bukti Foto Level BBM</p>
                 <p class="text-xs text-gray-500 mb-2">(fotokan Speedometer untuk bukti level bbm)</p>
-                <label for="bukti_pemanasan"
+                <label for="bukti_bbm"
                        class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500">
-                    <span id="buktiPemanasanLabel">Lampirkan Bukti Level BBM</span>
+                    <span id="buktiBbmLabel">Lampirkan Bukti Level BBM</span>
                     <span>📎</span>
                 </label>
                 <input id="bukti_bbm" type="file" name="bukti_bbm" accept="image/*" class="hidden">
@@ -122,6 +150,7 @@
                         <option value="1_2" @selected(old('level_air') === '1_2')>1/2</option>
                         <option value="kosong" @selected(old('level_air') === 'kosong')>Kosong</option>
                     </select>
+                    @error('level_air') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="kondisi_tangki" class="block text-sm font-medium mb-1">Kondisi Tangki</label>
@@ -132,6 +161,7 @@
                         <option value="perlu_perhatian" @selected(old('kondisi_tangki') === 'perlu_perhatian')>Perlu Perhatian</option>
                         <option value="rusak" @selected(old('kondisi_tangki') === 'rusak')>Rusak</option>
                     </select>
+                    @error('kondisi_tangki') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="kebocoran_tangki" class="block text-sm font-medium mb-1">Kebocoran Tangki</label>
@@ -141,6 +171,7 @@
                         <option value="tidak_ada" @selected(old('kebocoran_tangki') === 'tidak_ada')>Tidak Ada</option>
                         <option value="ada" @selected(old('kebocoran_tangki') === 'ada')>Ada</option>
                     </select>
+                    @error('kebocoran_tangki') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="tekanan_pompa" class="block text-sm font-medium mb-1">Tekanan Pompa</label>
@@ -151,6 +182,7 @@
                         <option value="kurang" @selected(old('tekanan_pompa') === 'kurang')>Kurang</option>
                         <option value="tidak_ada" @selected(old('tekanan_pompa') === 'tidak_ada')>Tidak Ada</option>
                     </select>
+                    @error('tekanan_pompa') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="pengisian_pompa" class="block text-sm font-medium mb-1">Pengisian Pompa</label>
@@ -160,6 +192,7 @@
                         <option value="baik" @selected(old('pengisian_pompa') === 'baik')>Baik</option>
                         <option value="kurang" @selected(old('pengisian_pompa') === 'kurang')>Kurang</option>
                     </select>
+                    @error('pengisian_pompa') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="selang_induk" class="block text-sm font-medium mb-1">Selang Induk</label>
@@ -169,6 +202,7 @@
                         <option value="baik" @selected(old('selang_induk') === 'baik')>Baik</option>
                         <option value="rusak" @selected(old('selang_induk') === 'rusak')>Rusak</option>
                     </select>
+                    @error('selang_induk') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
             </div>
 
@@ -411,6 +445,7 @@
         });
     }
     bindFileLabel('bukti_pemanasan', 'buktiPemanasanLabel', 'Lampirkan Bukti Pemanasan');
+    bindFileLabel('bukti_bbm', 'buktiBbmLabel', 'Lampirkan Bukti Level BBM');
     bindFileLabel('dokumentasi_tangki_pompa', 'dokumentasiTangkiLabel', 'Lampirkan Foto (Maks. 3 file)');
 
     showStep(currentStep);
