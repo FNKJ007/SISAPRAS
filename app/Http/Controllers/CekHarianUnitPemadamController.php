@@ -107,12 +107,12 @@ class CekHarianUnitPemadamController extends Controller
             'bukti_bbm'        => 'nullable|image|max:2048',
 
             // Step 3 - Tangki & Pompa
-            'level_air'               => 'required|in:penuh,3_4,1_2,kosong',
-            'kondisi_tangki_air'          => 'required|in:baik,perlu_perhatian,rusak',
-            'kebocoran_tangki_air'        => 'required|in:ada,tidak_ada',
-            'tekanan_pompa'           => 'required|in:baik,kurang,tidak_ada',
-            'selang_induk'            => 'required|in:baik,rusak',
-            'catatan_tangki_pompa'    => 'nullable|string',
+            'level_air'                  => 'required|in:penuh,3_4,1_2,kosong',
+            'kondisi_tangki_air'         => 'required|in:baik,perlu_perhatian,rusak',
+            'kebocoran_tangki_air'       => 'required|in:ada,tidak_ada',
+            'tekanan_pompa'              => 'required|in:baik,kurang,tidak_ada',
+            'selang_induk'               => 'required|in:baik,rusak',
+            'catatan_tangki_pompa'       => 'nullable|string',
             'dokumentasi_tangki_pompa'   => 'nullable|array|max:3',
             'dokumentasi_tangki_pompa.*' => 'image|max:2048',
 
@@ -163,17 +163,14 @@ class CekHarianUnitPemadamController extends Controller
             'jabatan'        => $validated['jabatan'],
             'unit_id'        => $validated['unit_id'],
             'unit_nama'      => $unit->nama ?? null,
-            'shift'          => $validated['shift'],
 
             'bukti_pemanasan'  => $buktiPemanasanPath,
             'jenis_bbm'        => $validated['jenis_bbm'],
-            'level_bbm'        => $validated['level_bbm'],
-            'jumlah_bbm_liter' => $validated['jumlah_bbm_liter'] ?? null,
             'bukti_bbm'        => $buktiBbmPath,
 
             'level_air'                => $validated['level_air'],
-            'kondisi_tangki_air'           => $validated['kondisi_tangki_air'],
-            'kebocoran_tangki_air'         => $validated['kebocoran_tangki_air'],
+            'kondisi_tangki_air'       => $validated['kondisi_tangki_air'],
+            'kebocoran_tangki_air'     => $validated['kebocoran_tangki_air'],
             'tekanan_pompa'            => $validated['tekanan_pompa'],
             'selang_induk'             => $validated['selang_induk'],
             'catatan_tangki_pompa'     => $validated['catatan_tangki_pompa'] ?? null,

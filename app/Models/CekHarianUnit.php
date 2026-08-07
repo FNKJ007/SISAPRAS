@@ -24,10 +24,9 @@ class CekHarianUnit extends Model
         'bukti_bbm',
 
         'level_air',
-        'kondisi_tangki',
-        'kebocoran_tangki',
+        'kondisi_tangki_air',
+        'kebocoran_tangki_air',
         'tekanan_pompa',
-        'pengisian_pompa',
         'selang_induk',
         'catatan_tangki_pompa',
         'dokumentasi_tangki_pompa',
@@ -39,13 +38,6 @@ class CekHarianUnit extends Model
     protected $casts = [
         'dokumentasi_tangki_pompa' => 'array',
         'perlengkapan'             => 'array',
-        'jumlah_bbm_liter'         => 'float',
-    ];
-
-    public static array $shiftMap = [
-        'pagi'  => 'Pagi',
-        'siang' => 'Siang',
-        'malam' => 'Malam',
     ];
 
     public static array $levelMap = [
