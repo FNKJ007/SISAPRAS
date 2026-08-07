@@ -100,21 +100,17 @@ class CekHarianUnitPemadamController extends Controller
             'nama_pemeriksa'   => 'required|string|max:255',
             'jabatan'          => 'required|string|max:255',
             'unit_id'          => 'required|integer',
-            'shift'            => 'required|in:pagi,siang,malam',
 
             // Step 2 - Pemanasan & BBM
             'bukti_pemanasan'  => 'nullable|image|max:2048',
             'jenis_bbm'        => 'required|in:solar,bensin',
-            'level_bbm'        => 'required|in:penuh,3_4,1_2,kosong',
-            'jumlah_bbm_liter' => 'nullable|numeric|min:0',
             'bukti_bbm'        => 'nullable|image|max:2048',
 
             // Step 3 - Tangki & Pompa
             'level_air'               => 'required|in:penuh,3_4,1_2,kosong',
-            'kondisi_tangki'          => 'required|in:baik,perlu_perhatian,rusak',
-            'kebocoran_tangki'        => 'required|in:ada,tidak_ada',
-            'tekanan_pompa'           => 'required|in:baik,rusak',
-            'pengisian_pompa'         => 'required|in:baik,rusak',
+            'kondisi_tangki_air'          => 'required|in:baik,perlu_perhatian,rusak',
+            'kebocoran_tangki_air'        => 'required|in:ada,tidak_ada',
+            'tekanan_pompa'           => 'required|in:baik,kurang,tidak_ada',
             'selang_induk'            => 'required|in:baik,rusak',
             'catatan_tangki_pompa'    => 'nullable|string',
             'dokumentasi_tangki_pompa'   => 'nullable|array|max:3',
@@ -176,10 +172,9 @@ class CekHarianUnitPemadamController extends Controller
             'bukti_bbm'        => $buktiBbmPath,
 
             'level_air'                => $validated['level_air'],
-            'kondisi_tangki'           => $validated['kondisi_tangki'],
-            'kebocoran_tangki'         => $validated['kebocoran_tangki'],
+            'kondisi_tangki_air'           => $validated['kondisi_tangki_air'],
+            'kebocoran_tangki_air'         => $validated['kebocoran_tangki_air'],
             'tekanan_pompa'            => $validated['tekanan_pompa'],
-            'pengisian_pompa'          => $validated['pengisian_pompa'],
             'selang_induk'             => $validated['selang_induk'],
             'catatan_tangki_pompa'     => $validated['catatan_tangki_pompa'] ?? null,
             'dokumentasi_tangki_pompa' => $dokumentasiTangkiPompaPaths,
