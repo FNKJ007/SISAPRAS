@@ -1,75 +1,66 @@
 <?php
 
-namespace App\Models;
+namespace App\Http\Controllers;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Pengajuan;
+use Illuminate\Http\Request;
 
-class CekHarianUnit extends Model
+class PengajuanController extends Controller
 {
-    use HasFactory;
-
-    protected $fillable = [
-        'user_id',
-        'nama_pemeriksa',
-        'jabatan',
-        'unit_id',
-        'unit_nama',
-        'shift',
-
-        'bukti_pemanasan',
-        'jenis_bbm',
-        'level_bbm',
-        'jumlah_bbm_liter',
-        'bukti_bbm',
-
-        'level_air',
-        'kondisi_tangki',
-        'kebocoran_tangki',
-        'tekanan_pompa',
-        'pengisian_pompa',
-        'selang_induk',
-        'catatan_tangki_pompa',
-        'dokumentasi_tangki_pompa',
-
-        'perlengkapan',
-        'jumlah_rusak',
-    ];
-
-    protected $casts = [
-        'dokumentasi_tangki_pompa' => 'array',
-        'perlengkapan'             => 'array',
-        'jumlah_bbm_liter'         => 'float',
-    ];
-
-    public static array $shiftMap = [
-        'pagi'  => 'Pagi',
-        'siang' => 'Siang',
-        'malam' => 'Malam',
-    ];
-
-    public static array $levelMap = [
-        'penuh'   => 'Penuh',
-        '3_4'     => '3/4',
-        '1_2'     => '1/2',
-        'kosong'  => 'Kosong',
-    ];
-
     /**
-     * Relasi ke User (pemeriksa)
+     * Menampilkan form Pengajuan Pemeliharaan Unit Operasional.
      */
-    public function user()
+    public function index()
     {
-        return $this->belongsTo(User::class);
+        $bidangList         = Pengajuan::$bidangMap;
+        $posList            = Pengajuan::$posMap;
+        $reguList           = Pengajuan::$reguMap;
+        $jenisKendaraanList = Pengajuan::$jenisKendaraanMap;
+        $nomorLambungList   = Pengajuan::$nomorLambungMap;
+
+        return view('pemeliharaan.pengajuan', compact(
+            'bidangList',
+            'posList',
+            'reguList',
+            'jenisKendaraanList',
+            'nomorLambungList'
+        ));
     }
 
     /**
-     * Daftar item perlengkapan yang berstatus "rusak".
+     * Menyimpan data pengajuan yang dikirim dari form.
      */
-    public function getPerlengkapanRusakAttribute(): array
+    public function store(Request $request)
     {
-        return collect($this->perlengkapan ?? [])
-            ->filter(fn ($item) => ($item['status'] ?? null) === 'rusak')
-            ->all();
+        $validated = $request->validate([
+            'bidang'              => 'required|string',
+            'pos'                 => 'required|string',
+            'regu'                => 'required|string',
+            'jenis_kendaraan'     => 'required|string',
+            'nomor_lambung'       => 'required|string',
+            'item_perbaikan'      => 'required|string|max:255',
+            'nama_pemegang'       => 'required|string|max:255',
+            'nip_pemegang'        => 'required|string|max:50',
+            'nama_komandan_regu'   => 'required|string|max:255',
+            'nip_komandan_regu'    => 'required|string|max:50',
+            'nama_kepala_bidang'   => 'required|string|max:255',
+            'nip_kepala_bidang'    => 'required|string|max:50',
+        ]);
+
+        // Map kode internal ke Teks Label yang Human-Readable
+        $validated['bidang']          = Pengajuan::$bidangMap[$validated['bidang']] ?? $validated['bidang'];
+        $validated['pos']             = Pengajuan::$posMap[$validated['pos']] ?? $validated['pos'];
+        $validated['regu']            = Pengajuan::$reguMap[$validated['regu']] ?? $validated['regu'];
+        $validated['jenis_kendaraan'] = Pengajuan::$jenisKendaraanMap[$validated['jenis_kendaraan']] ?? $validated['jenis_kendaraan'];
+        $validated['nomor_lambung']   = Pengajuan::$nomorLambungMap[$validated['nomor_lambung']] ?? $validated['nomor_lambung'];
+
+        $validated['user_id'] = auth()->id();
+        $validated['status']  = 'menunggu'; // Status awal: Menunggu verifikasi admin
+
+        Pengajuan::create($validated);
+
+        return redirect()
+            ->route('pemeliharaan.pengajuan')
+            ->with('success', 'Pengajuan pemeliharaan berhasil dikirim! Data telah masuk ke antrean verifikasi Admin.');
     }
 }
