@@ -397,11 +397,9 @@
 
     .admin-modal-overlay {
         padding: 12px !important;
-        display: flex !important;
         align-items: center !important;
         justify-content: center !important;
     }
-
     .admin-modal-dialog {
         max-height: 85vh !important;
         margin: auto !important;
