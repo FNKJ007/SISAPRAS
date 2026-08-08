@@ -2,51 +2,44 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CekHarianAlat;
 use Illuminate\Http\Request;
-// use App\Models\Unit;
-// use App\Models\AlatPemadam;
-// use App\Models\CekHarianAlat;
 
 class CekAlatCcController extends Controller
 {
     /**
-     * Menampilkan form Cek Harian Alat Pemadam.
+     * Menampilkan form Cek Harian Alat Command Center.
      */
     public function index()
     {
-        // Contoh data unit/kendaraan untuk dropdown (ganti dengan query Model asli)
         $unitList = collect([
             (object) ['id' => 1, 'nama' => 'Regu 1'],
             (object) ['id' => 2, 'nama' => 'Regu 2'],
-            
+            (object) ['id' => 3, 'nama' => 'Regu 3'],
         ]);
 
-        // Daftar alat pemadam sesuai data yang diberikan (26 item, termasuk varian
-        // ukuran/kapasitas yang dipisah jadi baris tersendiri: Y Connection 2 ukuran,
-        // APAR 3 kapasitas). Ganti dengan query Model asli, mis. AlatPemadam::all(),
-        // jika data ini nantinya disimpan di database.
         $namaAlat = [
             'Telepon',
-            'Tablet/Handphone',
-            'Handy Talky',
+            'Tablet / Handphone',
+            'Handy Talky (HT)',
             'Walky Talky',
-            'RIG',
-            'Komputer',
+            'Radio RIG',
+            'Komputer Operasional',
             'Speaker Komputer',
             'UPS',
-            'Headphone',
+            'Headphone / Headset',
             'Megaphone (TOA)',
-            'TV',
-            'Monitor',
-            'Laser Distance',
-            
-        ]; // total = 26 item
+            'TV Monitoring',
+            'Monitor Display',
+            'Laser Distance Meter',
+        ];
 
         $daftarAlat = collect($namaAlat)->map(function ($nama, $index) {
             return (object) [
-                'id'     => $index + 1,
-                'nama'   => $nama,
-                'status' => 'baik',
+                'id'           => $index + 1,
+                'nama'         => $nama,
+                'jumlah_baik'  => 0,
+                'jumlah_rusak' => 0,
             ];
         });
 
@@ -54,7 +47,7 @@ class CekAlatCcController extends Controller
     }
 
     /**
-     * Menyimpan hasil pemeriksaan.
+     * Menyimpan hasil pemeriksaan alat Command Center.
      */
     public function store(Request $request)
     {
@@ -65,24 +58,80 @@ class CekAlatCcController extends Controller
             'tanggal_pemeriksaan' => 'required|date',
             'alat'                => 'required|array|min:1',
             'alat.*.id'           => 'required|integer',
-            'alat.*.status'       => 'required|in:baik,rusak',
-            'alat.*.keterangan'   => 'nullable|string',
-            'alat.*.foto'         => 'nullable|image|max:2048', // maks 2MB
+            'alat.*.jumlah_baik'  => 'nullable|integer|min:0',
+            'alat.*.jumlah_rusak' => 'nullable|integer|min:0',
+            'alat.*.nomor_rusak'  => 'nullable|string|max:500',
+            'catatan_umum'        => 'nullable|string|max:1000',
+            'foto_umum'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // TODO: simpan header pemeriksaan, lalu loop $validated['alat']
-        // untuk simpan tiap baris + upload foto ke storage, mis:
-        //
-        // foreach ($validated['alat'] as $item) {
-        //     $fotoPath = null;
-        //     if ($request->hasFile("alat.{$loopIndex}.foto")) {
-        //         $fotoPath = $request->file("alat.{$loopIndex}.foto")->store('cek-harian-alat', 'public');
-        //     }
-        //     CekHarianAlat::create([...]);
-        // }
+        $namaAlatMap = [
+            1  => 'Telepon',
+            2  => 'Tablet / Handphone',
+            3  => 'Handy Talky (HT)',
+            4  => 'Walky Talky',
+            5  => 'Radio RIG',
+            6  => 'Komputer Operasional',
+            7  => 'Speaker Komputer',
+            8  => 'UPS',
+            9  => 'Headphone / Headset',
+            10 => 'Megaphone (TOA)',
+            11 => 'TV Monitoring',
+            12 => 'Monitor Display',
+            13 => 'Laser Distance Meter',
+        ];
+
+        $reguMap = [
+            1 => 'Regu 1',
+            2 => 'Regu 2',
+            3 => 'Regu 3',
+        ];
+
+        $unitNama = $reguMap[(int) $validated['unit_id']] ?? ('Regu ' . $validated['unit_id']);
+
+        $processedAlat = [];
+        $totalBaik = 0;
+        $totalRusak = 0;
+
+        foreach ($validated['alat'] as $item) {
+            $id = (int) $item['id'];
+            $baik = (int) ($item['jumlah_baik'] ?? 0);
+            $rusak = (int) ($item['jumlah_rusak'] ?? 0);
+
+            $totalBaik += $baik;
+            $totalRusak += $rusak;
+
+            $processedAlat[] = [
+                'id'           => $id,
+                'nama'         => $namaAlatMap[$id] ?? ("Alat #" . $id),
+                'jumlah_baik'  => $baik,
+                'jumlah_rusak' => $rusak,
+                'nomor_rusak'  => $rusak > 0 ? ($item['nomor_rusak'] ?? null) : null,
+            ];
+        }
+
+        $fotoPath = null;
+        if ($request->hasFile('foto_umum')) {
+            $fotoPath = $request->file('foto_umum')->store('cek-harian-alat-cc', 'public');
+        }
+
+        CekHarianAlat::create([
+            'user_id'             => auth()->id(),
+            'kategori'            => 'command_center',
+            'nama_pemeriksa'      => $validated['nama_pemeriksa'],
+            'jabatan'             => $validated['jabatan'],
+            'unit_id'             => $validated['unit_id'],
+            'unit_nama'           => $unitNama,
+            'tanggal_pemeriksaan' => $validated['tanggal_pemeriksaan'],
+            'alat'                => $processedAlat,
+            'total_baik'          => $totalBaik,
+            'total_rusak'         => $totalRusak,
+            'catatan_umum'        => $validated['catatan_umum'] ?? null,
+            'foto_umum'           => $fotoPath,
+        ]);
 
         return redirect()
             ->route('alat-cc.cek-alat-cc')
-            ->with('success', 'Pemeriksaan alat berhasil disimpan.');
+            ->with('success', 'Pemeriksaan alat Command Center berhasil disimpan!');
     }
 }

@@ -173,7 +173,10 @@ class AdminController extends Controller
             ->withQueryString();
 
         // ===== Hasil Cek Harian Alat Pemadam =====
-        $cekAlatList = CekHarianAlat::latest()
+        $cekAlatList = CekHarianAlat::where(function ($q) {
+                $q->where('kategori', 'pemadam')->orWhereNull('kategori');
+            })
+            ->latest()
             ->paginate(10, ['*'], 'alat_page')
             ->withQueryString();
 
@@ -181,8 +184,12 @@ class AdminController extends Controller
         $kpi = [
             'total_cek_unit'   => CekHarianUnit::count(),
             'unit_ada_rusak'   => CekHarianUnit::where('jumlah_rusak', '>', 0)->count(),
-            'total_cek_alat'   => CekHarianAlat::count(),
-            'alat_rusak_total' => (int) CekHarianAlat::sum('total_rusak'),
+            'total_cek_alat'   => CekHarianAlat::where(function ($q) {
+                $q->where('kategori', 'pemadam')->orWhereNull('kategori');
+            })->count(),
+            'alat_rusak_total' => (int) CekHarianAlat::where(function ($q) {
+                $q->where('kategori', 'pemadam')->orWhereNull('kategori');
+            })->sum('total_rusak'),
         ];
 
         return view('admin.unit-pemadam.pengecekan', compact('cekUnitList', 'cekAlatList', 'kpi', 'tab'));
@@ -232,10 +239,17 @@ class AdminController extends Controller
 
     public function commandCenterPengecekan()
     {
-        return view('admin.placeholder', [
-            'pageTitle'  => 'Pengecekan',
-            'breadcrumb' => ['Command Center', 'Pengecekan'],
-        ]);
+        $cekAlatList = CekHarianAlat::where('kategori', 'command_center')
+            ->latest()
+            ->get();
+
+        $kpi = [
+            'total_cek_cc'   => $cekAlatList->count(),
+            'total_baik_cc'  => (int) $cekAlatList->sum('total_baik'),
+            'total_rusak_cc' => (int) $cekAlatList->sum('total_rusak'),
+        ];
+
+        return view('admin.command-center.pengecekan', compact('cekAlatList', 'kpi'));
     }
 
     public function commandCenterRiwayat()
