@@ -101,17 +101,11 @@
                             <label class="block text-xs font-semibold text-red-800 mb-1">Nomor / Keterangan Alat yang Rusak</label>
                             <input type="text" name="alat[{{ $index }}][nomor_rusak]"
                                    value="{{ $nomorRusakLama }}"
-                                   placeholder="Contoh: No. 2, No. 5"
+                                   placeholder="Contoh: Unit 1 mengalami kerusakan / kebocoran"
                                    class="w-full rounded-lg border border-red-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600 bg-red-50/30">
-                            <p class="text-[11px] text-gray-400 mt-1">Sebutkan nomor urut atau keterangan spesifik barang yang rusak.</p>
+                            <p class="text-[11px] text-gray-400 mt-1">Sebutkan keterangan spesifik barang yang rusak.</p>
                             @error('alat.' . $index . '.nomor_rusak')
                                 <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                            @error('alat.' . $index . '.jumlah_baik')
-                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                            @enderror
-                            @error('alat.' . $index . '.jumlah_rusak')
-                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                            @enderror
                             @enderror
                         </div>
                     </div>

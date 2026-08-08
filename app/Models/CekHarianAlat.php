@@ -11,6 +11,7 @@ class CekHarianAlat extends Model
 
     protected $fillable = [
         'user_id',
+        'kategori',
         'nama_pemeriksa',
         'jabatan',
         'unit_id',

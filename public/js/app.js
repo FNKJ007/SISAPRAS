@@ -158,11 +158,12 @@ document.addEventListener('DOMContentLoaded', function () {
         var targetId = title.getAttribute('data-target');
         var submenu  = targetId ? document.getElementById(targetId) : null;
 
-        // 1. Pulihkan status terbuka dari sesi sebelumnya (tanpa animasi)
+        // 1. Pulihkan status terbuka dari sesi sebelumnya atau jika mengandung link aktif
         if (submenu) {
             var isStoredOpen = storedSubmenus.indexOf(targetId) !== -1;
+            var hasActiveChild = submenu.querySelector('a.active') !== null;
 
-            if (isStoredOpen) {
+            if (isStoredOpen || hasActiveChild) {
                 // Buka langsung tanpa animasi saat load halaman
                 submenu.classList.add('open');
                 submenu.style.height = 'auto';
