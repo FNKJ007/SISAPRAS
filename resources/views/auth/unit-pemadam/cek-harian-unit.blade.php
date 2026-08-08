@@ -95,9 +95,10 @@
             </div>
 
             <p class="font-medium text-sm mb-2">BBM</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                 <div>
                     <label for="jenis_bbm" class="block text-sm font-medium mb-1">Jenis BBM <span class="text-red-500">*</span></label>
+                    <p class="text-xs text-gray-500 mb-2">(Pilih jenis bahan bakar kendaraan)</p>
                     <select id="jenis_bbm" name="jenis_bbm" required
                             class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
                         <option value="" selected disabled>Pilih Jenis BBM</option>
@@ -106,9 +107,9 @@
                     </select>
                     @error('jenis_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
-                <div class="mb-5">
+                <div>
                     <p class="font-medium text-sm mb-1">Bukti Foto Level BBM</p>
-                    <p class="text-xs text-gray-500 mb-2">(fotokan Speedometer untuk bukti level bbm)</p>
+                    <p class="text-xs text-gray-500 mb-2">(Fotokan Speedometer untuk bukti level BBM)</p>
                     <label for="bukti_bbm"
                            class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
                         <span id="buktiBbmLabel">Lampirkan Bukti Level BBM</span>
