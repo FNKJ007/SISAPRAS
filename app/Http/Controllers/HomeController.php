@@ -17,8 +17,8 @@ class HomeController extends Controller
         Carbon::setLocale('id');
 
         // 1. Dapatkan bulan & tahun dari query string (default: bulan & tahun saat ini)
-        $month = (int) $request->query('month', date('n'));
-        $year  = (int) $request->query('year', date('Y'));
+        $month = (int) $request->query('month', $request->query('bulan', date('n')));
+        $year  = (int) $request->query('year', $request->query('tahun', date('Y')));
 
         // Buat objek Carbon untuk navigasi bulan
         $currentDate     = Carbon::createFromDate($year, $month, 1);
@@ -124,6 +124,47 @@ class HomeController extends Controller
         $ringkasan      = $kpi;
         $totalPengajuan = $kpi['total_pengajuan'];
 
+        // 5. Hitung Kesiapan Armada (Ready vs Di Bengkel) per Hari Ini
+        $today = Carbon::today();
+
+        // Unit di bengkel jika disetujui DAN tanggal_keberangkatan <= hari ini
+        $pengajuanBengkelAktif = Pengajuan::where('status', 'disetujui')
+            ->whereNotNull('tanggal_keberangkatan')
+            ->whereDate('tanggal_keberangkatan', '<=', $today)
+            ->get();
+
+        $listBengkel = [];
+        $unitsBengkelSet = [];
+
+        foreach ($pengajuanBengkelAktif as $pb) {
+            $unitKey = strtoupper($pb->nomor_lambung);
+            if (!isset($unitsBengkelSet[$unitKey])) {
+                $unitsBengkelSet[$unitKey] = true;
+                $listBengkel[] = [
+                    'nomor_lambung'         => $pb->nomor_lambung,
+                    'unit_nama'             => strtoupper($pb->nomor_lambung) . ' (' . ucfirst($pb->pos) . ')',
+                    'tanggal_keberangkatan' => $pb->tanggal_keberangkatan ? $pb->tanggal_keberangkatan->translatedFormat('d F Y') : '-',
+                ];
+            }
+        }
+
+        $totalBengkel = count($unitsBengkelSet);
+        $totalMasterArmada = max(10, Pengajuan::distinct('nomor_lambung')->count('nomor_lambung'));
+        $totalReady = max(0, $totalMasterArmada - $totalBengkel);
+
+        $summaryArmada = [
+            'total_armada'  => $totalMasterArmada,
+            'total_ready'   => $totalReady,
+            'total_bengkel' => $totalBengkel,
+            'list_bengkel'  => $listBengkel,
+        ];
+
+        // 6. Range Tahun Dinamis (Otomatis mencakup record tertua di DB s.d. 10 tahun ke depan)
+        $minDbYear = Pengajuan::min('created_at') ? Carbon::parse(Pengajuan::min('created_at'))->year : date('Y') - 5;
+        $startYear = min(2020, $minDbYear);
+        $endYear   = max((int) date('Y') + 10, $year + 5);
+        $availableYears = range($startYear, $endYear);
+
         return view('home', compact(
             'currentDate',
             'bulanAktif',
@@ -136,7 +177,9 @@ class HomeController extends Controller
             'eventsByDate',
             'kpi',
             'ringkasan',
-            'totalPengajuan'
+            'totalPengajuan',
+            'summaryArmada',
+            'availableYears'
         ));
     }
 }

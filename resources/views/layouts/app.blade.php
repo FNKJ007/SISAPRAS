@@ -131,6 +131,12 @@
                                     Cek Harian Alat
                                 </a>
                             </li>
+                            <li>
+                                <a href="https://apar.bandungkab.go.id" target="_blank" rel="noopener noreferrer" style="display:flex; align-items:center; justify-space-between;">
+                                    <span>APAR</span>
+                                    <i data-lucide="external-link" style="width:13px; height:13px; margin-left:auto; opacity:0.8;"></i>
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>

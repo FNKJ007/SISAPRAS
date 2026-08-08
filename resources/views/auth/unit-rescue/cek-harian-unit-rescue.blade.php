@@ -71,37 +71,39 @@
                 <p class="font-medium text-sm mb-1">Pemanasan Kendaraan</p>
                 <p class="text-xs text-gray-500 mb-2">(Unit harus dioperasikan dan dikendarai minimal sejauh 1 KM. Silakan lampirkan dokumentasi sebagai bukti)</p>
                 <label for="bukti_pemanasan"
-                       class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500">
+                       class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
                     <span id="buktiPemanasanLabel">Lampirkan Bukti Pemanasan</span>
                     <span>📎</span>
                 </label>
                 <input id="bukti_pemanasan" type="file" name="bukti_pemanasan" accept="image/*" class="hidden">
+                <div id="buktiPemanasanPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
                 @error('bukti_pemanasan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <p class="font-medium text-sm mb-2">BBM</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                 <div>
-                    <label for="jenis_bbm" class="block text-sm font-medium mb-1">Jenis BBM</label>
-                    <select id="jenis_bbm" name="jenis_bbm"
+                    <label for="jenis_bbm" class="block text-sm font-medium mb-1">Jenis BBM <span class="text-red-500">*</span></label>
+                    <p class="text-xs text-gray-500 mb-2">(Pilih jenis bahan bakar kendaraan)</p>
+                    <select id="jenis_bbm" name="jenis_bbm" required
                             class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
                         <option value="" selected disabled>Pilih Jenis BBM</option>
-                        <option value="solar" @selected(old('jenis_bbm') === 'solar')>Solar</option>
+                        <option value="solar" @selected(old('jenis_bbm', 'solar') === 'solar')>Solar</option>
                         <option value="bensin" @selected(old('jenis_bbm') === 'bensin')>Bensin</option>
                     </select>
                     @error('jenis_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
-                <div></div>
-                <div class="mb-5">
-                <p class="font-medium text-sm mb-1">Level BBM</p>
-                <p class="text-xs text-gray-500 mb-2">(fotokan Speedometer untuk bukti level bbm)</p>
-                <label for="bukti_pemanasan"
-                       class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500">
-                    <span id="buktiPemanasanLabel">Lampirkan Bukti Level BBM</span>
-                    <span>📎</span>
-                </label>
-                <input id="bukti_bbm" type="file" name="bukti_bbm" accept="image/*" class="hidden">
-                @error('bukti_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                <div>
+                    <p class="font-medium text-sm mb-1">Bukti Foto Level BBM</p>
+                    <p class="text-xs text-gray-500 mb-2">(Fotokan Speedometer untuk bukti level BBM)</p>
+                    <label for="bukti_bbm"
+                           class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
+                        <span id="buktiBbmLabel">Lampirkan Bukti Level BBM</span>
+                        <span>📎</span>
+                    </label>
+                    <input id="bukti_bbm" type="file" name="bukti_bbm" accept="image/*" class="hidden">
+                    <div id="buktiBbmPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
+                    @error('bukti_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
             </div>
         </div>
@@ -310,23 +312,58 @@
         }
     });
 
-    // Update label nama file yang dipilih pada input file
-    function bindFileLabel(inputId, labelId, placeholder) {
+    // Update label & render thumbnail preview for file inputs
+    function bindFilePreview(inputId, labelId, previewId, placeholder) {
         var input = document.getElementById(inputId);
         var labelEl = document.getElementById(labelId);
+        var previewEl = document.getElementById(previewId);
         if (!input || !labelEl) return;
+
         input.addEventListener('change', function () {
+            if (previewEl) previewEl.innerHTML = '';
+
             if (input.files.length === 0) {
                 labelEl.textContent = placeholder;
-            } else if (input.files.length === 1) {
-                labelEl.textContent = input.files[0].name;
+                labelEl.parentElement.classList.remove('border-emerald-500', 'bg-emerald-50/50');
+                if (previewEl) previewEl.classList.add('hidden');
+                return;
+            }
+
+            labelEl.parentElement.classList.add('border-emerald-500', 'bg-emerald-50/50');
+
+            if (input.files.length === 1) {
+                labelEl.textContent = '✓ ' + input.files[0].name;
             } else {
-                labelEl.textContent = input.files.length + ' file dipilih';
+                labelEl.textContent = '✓ ' + input.files.length + ' file foto terpilih';
+            }
+
+            if (previewEl) {
+                previewEl.classList.remove('hidden');
+                Array.from(input.files).forEach(function (file) {
+                    if (file.type.startsWith('image/')) {
+                        var reader = new FileReader();
+                        reader.onload = function (e) {
+                            var item = document.createElement('div');
+                            item.className = 'relative border border-emerald-300 rounded-lg p-1.5 bg-emerald-50/30 flex items-center gap-2.5 shadow-2xs';
+                            item.innerHTML = `
+                                <img src="${e.target.result}" alt="Preview" class="w-12 h-12 object-cover rounded-md border border-emerald-200">
+                                <div>
+                                    <span class="block text-xs font-bold text-emerald-900 truncate max-w-[160px]">${file.name}</span>
+                                    <span class="block text-[10px] text-emerald-700 font-semibold">${(file.size / 1024).toFixed(1)} KB · Foto Terpilih ✓</span>
+                                </div>
+                            `;
+                            previewEl.appendChild(item);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
             }
         });
     }
-    bindFileLabel('bukti_pemanasan', 'buktiPemanasanLabel', 'Lampirkan Bukti Pemanasan');
-    bindFileLabel('dokumentasi_tangki_pompa', 'dokumentasiTangkiLabel', 'Lampirkan Foto (Maks. 3 file)');
+
+    bindFilePreview('bukti_pemanasan', 'buktiPemanasanLabel', 'buktiPemanasanPreview', 'Lampirkan Bukti Pemanasan');
+    bindFilePreview('bukti_bbm', 'buktiBbmLabel', 'buktiBbmPreview', 'Lampirkan Bukti Level BBM');
+    bindFilePreview('dokumentasi_tangki_pompa', 'dokumentasiTangkiLabel', 'dokumentasiTangkiPreview', 'Lampirkan Foto (Maks. 3 file)');
 
     showStep(currentStep);
 })();
