@@ -39,18 +39,35 @@
         </div>
     </div>
 
-    {{-- Tabs --}}
-    <div style="display:flex; align-items:center; gap:6px; background:#F8FAFC; padding:4px; border-radius:10px; border:1px solid #E2E8F0; width:fit-content; margin-bottom:20px;">
-        <button type="button" @click="activeTab = 'unit'"
-                :style="activeTab === 'unit' ? 'background:#1B2A6B; color:#FFFFFF; box-shadow:0 2px 6px rgba(27,42,107,0.2);' : 'color:#64748B; background:transparent;'"
-                style="padding:7px 16px; font-size:12.5px; font-weight:700; border:none; border-radius:8px; cursor:pointer; transition:all 0.15s ease;">
-            Unit Kendaraan
-        </button>
-        <button type="button" @click="activeTab = 'alat'"
-                :style="activeTab === 'alat' ? 'background:#1B2A6B; color:#FFFFFF; box-shadow:0 2px 6px rgba(27,42,107,0.2);' : 'color:#64748B; background:transparent;'"
-                style="padding:7px 16px; font-size:12.5px; font-weight:700; border:none; border-radius:8px; cursor:pointer; transition:all 0.15s ease;">
-            Alat Pemadam
-        </button>
+    {{-- Compact Modern Switcher Bar --}}
+    <div style="display:inline-flex; align-items:center; background:#FFFFFF; padding:4px; border-radius:10px; border:1px solid #E2E8F0; box-shadow:0 2px 8px rgba(15,23,42,0.05); margin-bottom:18px;">
+        <div style="display:flex; align-items:center; gap:4px;">
+            <button type="button" @click="activeTab = 'unit'"
+                    :style="activeTab === 'unit' 
+                        ? 'background:linear-gradient(135deg, #1B2A6B 0%, #2563EB 100%); color:#FFFFFF; box-shadow:0 2px 8px rgba(37,99,235,0.25); font-weight:700;' 
+                        : 'color:#64748B; background:transparent; font-weight:600;'"
+                    style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; font-size:12.5px; border:none; border-radius:8px; cursor:pointer; transition:all 0.2s ease;">
+                <i data-lucide="truck" style="width:14px; height:14px;"></i>
+                <span>Unit Kendaraan</span>
+                <span :style="activeTab === 'unit' ? 'background:rgba(255,255,255,0.25); color:#FFFFFF;' : 'background:#F1F5F9; color:#64748B;'"
+                      style="padding:1px 6px; border-radius:12px; font-size:10px; font-weight:700; margin-left:2px;">
+                    {{ count($cekUnitList) }}
+                </span>
+            </button>
+
+            <button type="button" @click="activeTab = 'alat'"
+                    :style="activeTab === 'alat' 
+                        ? 'background:linear-gradient(135deg, #1B2A6B 0%, #2563EB 100%); color:#FFFFFF; box-shadow:0 2px 8px rgba(37,99,235,0.25); font-weight:700;' 
+                        : 'color:#64748B; background:transparent; font-weight:600;'"
+                    style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; font-size:12.5px; border:none; border-radius:8px; cursor:pointer; transition:all 0.2s ease;">
+                <i data-lucide="shield-alert" style="width:14px; height:14px;"></i>
+                <span>Alat Pemadam</span>
+                <span :style="activeTab === 'alat' ? 'background:rgba(255,255,255,0.25); color:#FFFFFF;' : 'background:#F1F5F9; color:#64748B;'"
+                      style="padding:1px 6px; border-radius:12px; font-size:10px; font-weight:700; margin-left:2px;">
+                    {{ count($cekAlatList) }}
+                </span>
+            </button>
+        </div>
     </div>
 
     {{-- ===================== TAB: UNIT KENDARAAN ===================== --}}
@@ -104,15 +121,9 @@
                                         @endif
                                     </td>
                                     <td style="padding:14px 18px;">
-                                        @if($item->jumlah_rusak > 0)
-                                            <span style="background:#FEE2E2; color:#991B1B; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; border:1px solid #FCA5A5;">
-                                                {{ $item->jumlah_rusak }} Rusak
-                                            </span>
-                                        @else
-                                            <span style="background:#D1FAE5; color:#065F46; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; border:1px solid #A7F3D0;">
-                                                Semua Baik
-                                            </span>
-                                        @endif
+                                        <span style="background:#FEE2E2; color:#991B1B; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700;">
+                                            {{ $item->jumlah_rusak }}
+                                        </span>
                                     </td>
                                     <td style="padding:14px 18px; text-align:center; white-space:nowrap;">
                                         <button type="button" @click="openUnitModal({{ json_encode($item) }})"
@@ -182,7 +193,7 @@
                                                 {{ $item->total_rusak }}
                                             </span>
                                         @else
-                                            <span style="background:#F1F5F9; color:#64748B; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; border:1px solid #E2E8F0;">
+                                            <span style="background:#D1FAE5; color:#065F46; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; border:1px solid #A7F3D0;">
                                                 0
                                             </span>
                                         @endif
@@ -246,19 +257,35 @@
                     <div style="font-size:12px; font-weight:800; color:#0F172A; margin-bottom:8px; border-bottom:1px solid #E2E8F0; padding-bottom:6px;">Pemanasan &amp; BBM</div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                         <div><span style="color:#64748B;">Jenis BBM:</span> <strong x-text="capitalize(activeUnit.jenis_bbm)"></strong></div>
-                        <div><span style="color:#64748B;">Level BBM:</span> <strong x-text="levelLabel(activeUnit.level_bbm)"></strong></div>
-                        <div><span style="color:#64748B;">Jumlah BBM:</span> <strong x-text="(activeUnit.jumlah_bbm_liter || '-') + (activeUnit.jumlah_bbm_liter ? ' L' : '')"></strong></div>
+                        <div><span style="color:#64748B;">Level Air:</span> <strong x-text="levelLabel(activeUnit.level_air)"></strong></div>
                     </div>
-                    <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
+                    
+                    {{-- Foto Pemanasan & Foto BBM --}}
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;">
                         <template x-if="activeUnit.bukti_pemanasan">
-                            <a :href="'/storage/' + activeUnit.bukti_pemanasan" target="_blank" style="display:flex; align-items:center; gap:6px; padding:6px 10px; background:#F1F5F9; border-radius:8px; text-decoration:none; color:#1B2A6B; font-weight:600;">
-                                <i data-lucide="image" style="width:14px; height:14px;"></i> Bukti Pemanasan
-                            </a>
+                            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:10px;">
+                                <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
+                                    <i data-lucide="image" style="width:14px; height:14px; color:#1B2A6B;"></i> Bukti Pemanasan
+                                </div>
+                                <a :href="'/storage/' + activeUnit.bukti_pemanasan" target="_blank" title="Klik untuk lihat ukuran penuh">
+                                    <img :src="'/storage/' + activeUnit.bukti_pemanasan" alt="Bukti Pemanasan"
+                                         style="width:100%; height:120px; object-fit:cover; border-radius:8px; border:1px solid #CBD5E1; transition:transform 0.2s;"
+                                         onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                                </a>
+                            </div>
                         </template>
+
                         <template x-if="activeUnit.bukti_bbm">
-                            <a :href="'/storage/' + activeUnit.bukti_bbm" target="_blank" style="display:flex; align-items:center; gap:6px; padding:6px 10px; background:#F1F5F9; border-radius:8px; text-decoration:none; color:#1B2A6B; font-weight:600;">
-                                <i data-lucide="image" style="width:14px; height:14px;"></i> Bukti Level BBM
-                            </a>
+                            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:10px;">
+                                <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
+                                    <i data-lucide="image" style="width:14px; height:14px; color:#1B2A6B;"></i> Bukti Level BBM
+                                </div>
+                                <a :href="'/storage/' + activeUnit.bukti_bbm" target="_blank" title="Klik untuk lihat ukuran penuh">
+                                    <img :src="'/storage/' + activeUnit.bukti_bbm" alt="Bukti Level BBM"
+                                         style="width:100%; height:120px; object-fit:cover; border-radius:8px; border:1px solid #CBD5E1; transition:transform 0.2s;"
+                                         onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                                </a>
+                            </div>
                         </template>
                     </div>
                 </div>
@@ -268,10 +295,9 @@
                     <div style="font-size:12px; font-weight:800; color:#0F172A; margin-bottom:8px; border-bottom:1px solid #E2E8F0; padding-bottom:6px;">Tangki &amp; Pompa</div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                         <div><span style="color:#64748B;">Level Air:</span> <strong x-text="levelLabel(activeUnit.level_air)"></strong></div>
-                        <div><span style="color:#64748B;">Kondisi Tangki:</span> <strong x-text="capitalize(activeUnit.kondisi_tangki)"></strong></div>
-                        <div><span style="color:#64748B;">Kebocoran Tangki:</span> <strong x-text="activeUnit.kebocoran_tangki === 'ada' ? 'Ada' : 'Tidak Ada'"></strong></div>
+                        <div><span style="color:#64748B;">Kondisi Tangki:</span> <strong x-text="capitalize(activeUnit.kondisi_tangki_air)"></strong></div>
+                        <div><span style="color:#64748B;">Kebocoran Tangki:</span> <strong x-text="activeUnit.kebocoran_tangki_air === 'ada' ? 'Ada' : 'Tidak Ada'"></strong></div>
                         <div><span style="color:#64748B;">Tekanan Pompa:</span> <strong x-text="capitalize(activeUnit.tekanan_pompa)"></strong></div>
-                        <div><span style="color:#64748B;">Pengisian Pompa:</span> <strong x-text="capitalize(activeUnit.pengisian_pompa)"></strong></div>
                         <div><span style="color:#64748B;">Selang Induk:</span> <strong x-text="capitalize(activeUnit.selang_induk)"></strong></div>
                     </div>
                     <template x-if="activeUnit.catatan_tangki_pompa">
@@ -279,14 +305,22 @@
                             <span x-text="activeUnit.catatan_tangki_pompa"></span>
                         </div>
                     </template>
-                    <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
-                        <template x-for="(foto, idx) in (activeUnit.dokumentasi_tangki_pompa || [])" :key="idx">
-                            <a :href="'/storage/' + foto" target="_blank" style="display:flex; align-items:center; gap:6px; padding:6px 10px; background:#F1F5F9; border-radius:8px; text-decoration:none; color:#1B2A6B; font-weight:600;">
-                                <i data-lucide="image" style="width:14px; height:14px;"></i>
-                                <span x-text="'Foto ' + (idx + 1)"></span>
-                            </a>
-                        </template>
-                    </div>
+                    
+                    {{-- Foto Tangki & Pompa --}}
+                    <template x-if="activeUnit.dokumentasi_tangki_pompa && activeUnit.dokumentasi_tangki_pompa.length > 0">
+                        <div style="margin-top:12px;">
+                            <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px;">Dokumentasi Tangki &amp; Pompa:</div>
+                            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
+                                <template x-for="(foto, idx) in activeUnit.dokumentasi_tangki_pompa" :key="idx">
+                                    <a :href="'/storage/' + foto" target="_blank" title="Klik untuk lihat ukuran penuh">
+                                        <img :src="'/storage/' + foto" :alt="'Foto ' + (idx + 1)"
+                                             style="width:100%; height:90px; object-fit:cover; border-radius:8px; border:1px solid #CBD5E1; transition:transform 0.2s;"
+                                             onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                                    </a>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
                 </div>
 
                 {{-- Perlengkapan --}}
@@ -356,17 +390,20 @@
                         <span>Daftar Alat</span>
                         <span style="font-size:10.5px; color:#64748B; font-weight:600;" x-text="(activeAlat.alat || []).length + ' item'"></span>
                     </div>
-                    <div style="display:flex; flex-direction:column; gap:4px; max-height:280px; overflow-y:auto;">
+                    <div style="display:flex; flex-direction:column; gap:6px; max-height:300px; overflow-y:auto; padding-right:4px;">
                         <template x-for="(alat, idx) in (activeAlat.alat || [])" :key="idx">
-                            <div style="padding:8px 10px; border-radius:8px;" :style="alat.jumlah_rusak > 0 ? 'background:#FEF2F2;' : 'background:#F8FAFC;'">
-                                <div style="display:flex; align-items:center; justify-content:space-between;">
-                                    <span style="font-weight:600; color:#1E293B;" x-text="alat.nama"></span>
-                                    <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-                                        <span style="background:#D1FAE5; color:#065F46; border:1px solid #A7F3D0; padding:2px 8px; border-radius:20px; font-size:10.5px; font-weight:700;" x-text="'Baik: ' + alat.jumlah_baik"></span>
-                                        <span style="background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; padding:2px 8px; border-radius:20px; font-size:10.5px; font-weight:700;" x-text="'Rusak: ' + alat.jumlah_rusak"></span>
-                                    </div>
+                            <div style="padding:8px 12px; border-radius:8px; border:1px solid #E2E8F0; background:#F8FAFC;">
+                                <div style="display:grid; grid-template-columns: 1fr 70px 70px; gap:8px; align-items:center;">
+                                    <span style="font-weight:700; color:#1E293B; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" :title="alat.nama" x-text="alat.nama"></span>
+                                    
+                                    <span style="display:inline-flex; align-items:center; justify-content:center; background:#D1FAE5; color:#065F46; padding:3px 8px; border-radius:20px; font-size:10.5px; font-weight:700; text-align:center; width:70px;" x-text="'Baik: ' + alat.jumlah_baik"></span>
+
+                                    <span style="display:inline-flex; align-items:center; justify-content:center; background:#FEE2E2; color:#991B1B; padding:3px 8px; border-radius:20px; font-size:10.5px; font-weight:700; text-align:center; width:70px;" x-text="'Rusak: ' + alat.jumlah_rusak"></span>
                                 </div>
-                                <div x-show="alat.jumlah_rusak > 0 && alat.nomor_rusak" style="font-size:11px; color:#991B1B; margin-top:4px; font-style:italic;" x-text="'Keterangan: ' + alat.nomor_rusak"></div>
+
+                                <template x-if="alat.jumlah_rusak > 0 && alat.nomor_rusak">
+                                    <div style="font-size:11px; color:#DC2626; margin-top:4px; font-style:italic;" x-text="'Keterangan: ' + alat.nomor_rusak"></div>
+                                </template>
                             </div>
                         </template>
                     </div>
@@ -383,10 +420,19 @@
                     <template x-if="!activeAlat.catatan_umum">
                         <div style="color:#94A3B8; font-style:italic; margin-bottom:8px;">Tidak ada catatan.</div>
                     </template>
+                    
+                    {{-- Preview Foto Umum Alat --}}
                     <template x-if="activeAlat.foto_umum">
-                        <a :href="'/storage/' + activeAlat.foto_umum" target="_blank" style="display:inline-flex; align-items:center; gap:6px; padding:6px 10px; background:#F1F5F9; border-radius:8px; text-decoration:none; color:#1B2A6B; font-weight:600;">
-                            <i data-lucide="image" style="width:14px; height:14px;"></i> Lihat Foto Dokumentasi
-                        </a>
+                        <div style="margin-top:10px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:10px; max-width:240px;">
+                            <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
+                                <i data-lucide="image" style="width:14px; height:14px; color:#1B2A6B;"></i> Dokumentasi Foto Umum
+                            </div>
+                            <a :href="'/storage/' + activeAlat.foto_umum" target="_blank" title="Klik untuk lihat ukuran penuh">
+                                <img :src="'/storage/' + activeAlat.foto_umum" alt="Foto Umum Dokumentasi Alat"
+                                     style="width:100%; height:130px; object-fit:cover; border-radius:8px; border:1px solid #CBD5E1; transition:transform 0.2s;"
+                                     onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                            </a>
+                        </div>
                     </template>
                 </div>
 

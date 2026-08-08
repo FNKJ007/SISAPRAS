@@ -3,6 +3,19 @@
 @section('content')
 <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 max-w-5xl mx-auto">
 
+    {{-- Flash Message Success --}}
+    @if(session('success'))
+        <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between shadow-xs">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">✓</div>
+                <div>
+                    <h4 class="font-bold text-sm">Pemeriksaan Alat Berhasil Disimpan!</h4>
+                    <p class="text-xs text-emerald-700 mt-0.5">{{ session('success') }}</p>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Cek Harian Alat Pemadam</h1>
     <p class="text-gray-500 text-sm mt-1 mb-6">
         Pemeriksaan kondisi dan kelengkapan alat pemadam kebakaran.
@@ -14,17 +27,17 @@
         {{-- Baris 1: Nama Pemeriksa & Jabatan --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-                <label for="nama_pemeriksa" class="block text-sm font-medium mb-1">Nama Pemeriksa</label>
+                <label for="nama_pemeriksa" class="block text-sm font-medium mb-1">Nama Pemeriksa <span class="text-red-500">*</span></label>
                 <input type="text" id="nama_pemeriksa" name="nama_pemeriksa"
-                       value="{{ old('nama_pemeriksa') }}"
+                       value="{{ old('nama_pemeriksa', auth()->user()->name ?? '') }}" required
                        placeholder="Masukkan nama pemeriksa"
                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
                 @error('nama_pemeriksa') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
             <div>
-                <label for="jabatan" class="block text-sm font-medium mb-1">Jabatan</label>
+                <label for="jabatan" class="block text-sm font-medium mb-1">Jabatan <span class="text-red-500">*</span></label>
                 <input type="text" id="jabatan" name="jabatan"
-                       value="{{ old('jabatan') }}"
+                       value="{{ old('jabatan', 'Petugas Regu') }}" required
                        placeholder="Masukkan jabatan"
                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
                 @error('jabatan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
@@ -134,26 +147,72 @@
 
                 <div>
                     <label class="block text-sm font-medium mb-1">Foto Dokumentasi</label>
-                    <label for="foto_umum"
+                    <label for="foto_umum" id="fotoUmumLabel"
                            class="flex flex-col items-center justify-center h-[110px] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer text-center hover:border-blue-500 transition-colors">
                         <span class="text-blue-600 text-lg leading-none">📷</span>
-                        <span class="text-xs text-blue-700 font-medium mt-1">+ Tambahkan Foto</span>
+                        <span class="text-xs text-blue-700 font-medium mt-1" id="fotoUmumText">+ Tambahkan Foto</span>
                         <span class="text-[11px] text-gray-400">JPG, PNG maks. 2MB</span>
                     </label>
                     <input id="foto_umum" type="file" name="foto_umum"
                            accept="image/jpeg,image/png" class="hidden">
+                    <div id="fotoUmumPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
                     @error('foto_umum') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
             </div>
         </div>
 
-        {{-- Tombol Aksi --}}
-        <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-2">
+        {{-- Tombol Kirim --}}
+        <div class="flex justify-end pt-4 border-t border-gray-200">
             <button type="submit" class="btn btn-primary">
-                <i data-lucide="send" class="w-4 h-4"></i> Kirim Pemeriksaan
+                <i data-lucide="send" class="w-4 h-4"></i> Simpan Pemeriksaan Alat
             </button>
         </div>
 
     </form>
 </div>
+
+@push('scripts')
+<script>
+(function () {
+    var input = document.getElementById('foto_umum');
+    var labelText = document.getElementById('fotoUmumText');
+    var previewEl = document.getElementById('fotoUmumPreview');
+    var labelBox = document.getElementById('fotoUmumLabel');
+
+    if (!input || !labelText) return;
+
+    input.addEventListener('change', function () {
+        if (previewEl) previewEl.innerHTML = '';
+
+        if (input.files.length === 0) {
+            labelText.textContent = '+ Tambahkan Foto';
+            labelBox.classList.remove('border-emerald-500', 'bg-emerald-50/50');
+            if (previewEl) previewEl.classList.add('hidden');
+            return;
+        }
+
+        labelBox.classList.add('border-emerald-500', 'bg-emerald-50/50');
+        labelText.textContent = '✓ ' + input.files[0].name;
+
+        if (previewEl && input.files[0].type.startsWith('image/')) {
+            previewEl.classList.remove('hidden');
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var item = document.createElement('div');
+                item.className = 'relative border border-emerald-300 rounded-lg p-1.5 bg-emerald-50/30 flex items-center gap-2.5 shadow-2xs';
+                item.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview" class="w-12 h-12 object-cover rounded-md border border-emerald-200">
+                    <div>
+                        <span class="block text-xs font-bold text-emerald-900 truncate max-w-[160px]">${input.files[0].name}</span>
+                        <span class="block text-[10px] text-emerald-700 font-semibold">${(input.files[0].size / 1024).toFixed(1)} KB · Foto Terpilih ✓</span>
+                    </div>
+                `;
+                previewEl.appendChild(item);
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    });
+})();
+</script>
+@endpush
 @endsection
