@@ -281,29 +281,33 @@
                 <form :action="'/admin/pemeliharaan/pengajuan/' + activeItem.id + '/verifikasi'" method="POST">
                     @csrf
 
-                    {{-- VERIFIKASI PER ITEM PERBAIKAN (Hanya Tampil Jika Item Lebih Dari 1) --}}
-                    <template x-if="itemList.length > 1">
-                        <div style="margin-bottom:14px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:12px;">
-                            <div style="font-size:11.5px; font-weight:700; color:#0F172A; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
-                                <span x-text="'Verifikasi Keputusan Per Item (' + itemList.length + ' Item)'"></span>
-                                <span style="font-size:10.5px; color:#64748B; font-weight:500;">Pilih status perbaikan per item:</span>
+                    {{-- VERIFIKASI PER ITEM PERBAIKAN (Desain Identik Pengecekan & Clean Badge Pills) --}}
+                    <template x-if="itemList.length > 0">
+                        <div style="margin-bottom:16px;">
+                            <div style="font-size:12px; font-weight:800; color:#0F172A; margin-bottom:10px; border-bottom:1px solid #E2E8F0; padding-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+                                <span x-text="'Daftar Item Perbaikan (' + itemList.length + ' Item)'"></span>
+                                <span style="font-size:11px; color:#64748B; font-weight:500;">Pilih keputusan per item:</span>
                             </div>
 
-                            <div style="display:flex; flex-direction:column; gap:6px;">
+                            <div class="custom-scrollbar" style="display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto; padding-right:2px;">
                                 <template x-for="(itemText, idx) in itemList" :key="idx">
-                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 10px; border-radius:8px; background:#FFFFFF; border:1px solid #E2E8F0;">
-                                        <span style="font-weight:700; color:#1E293B; font-size:12px;" x-text="itemText"></span>
+                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:7px 12px; border-radius:8px; background:#F8FAFC; border:1px solid #E2E8F0; transition:all 0.15s ease;">
+                                        <span style="font-weight:700; color:#0F172A; font-size:11.5px; text-transform:uppercase;" x-text="itemText"></span>
                                         
                                         <div style="display:flex; align-items:center; gap:6px;">
-                                            <label style="cursor:pointer; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; display:flex; align-items:center; gap:4px; transition:all 0.15s ease;"
-                                                   :style="itemVerifikasis[itemText] === 'disetujui' ? 'background:#D1FAE5; color:#065F46; border:1px solid #A7F3D0;' : 'color:#94A3B8; background:#F8FAFC; border:1px solid #E2E8F0;'">
-                                                <input type="radio" :name="'item_verifikasis[' + itemText + ']'" value="disetujui" x-model="itemVerifikasis[itemText]" style="accent-color:#10B981;">
+                                            {{-- Option Setujui --}}
+                                            <label class="verif-pill-btn"
+                                                   :class="itemVerifikasis[itemText] === 'disetujui' ? 'pill-disetujui-active' : 'pill-inactive'">
+                                                <input type="radio" :name="'item_verifikasis[' + itemText + ']'" value="disetujui" x-model="itemVerifikasis[itemText]" style="display:none !important;">
+                                                <span x-show="itemVerifikasis[itemText] === 'disetujui'">✓</span>
                                                 <span>Setujui</span>
                                             </label>
 
-                                            <label style="cursor:pointer; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; display:flex; align-items:center; gap:4px; transition:all 0.15s ease;"
-                                                   :style="itemVerifikasis[itemText] === 'ditolak' ? 'background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5;' : 'color:#94A3B8; background:#F8FAFC; border:1px solid #E2E8F0;'">
-                                                <input type="radio" :name="'item_verifikasis[' + itemText + ']'" value="ditolak" x-model="itemVerifikasis[itemText]" style="accent-color:#EF4444;">
+                                            {{-- Option Tolak --}}
+                                            <label class="verif-pill-btn"
+                                                   :class="itemVerifikasis[itemText] === 'ditolak' ? 'pill-ditolak-active' : 'pill-inactive'">
+                                                <input type="radio" :name="'item_verifikasis[' + itemText + ']'" value="ditolak" x-model="itemVerifikasis[itemText]" style="display:none !important;">
+                                                <span x-show="itemVerifikasis[itemText] === 'ditolak'">✕</span>
                                                 <span>Tolak</span>
                                             </label>
                                         </div>
@@ -315,17 +319,19 @@
 
                     {{-- Keputusan Keseluruhan Admin --}}
                     <div style="margin-bottom:12px;">
-                        <label style="display:block; font-size:12px; font-weight:700; color:#0F172A; margin-bottom:6px;">Status Pengajuan Keseluruhan</label>
-                        <div style="display:flex; gap:10px;">
-                            <label style="flex:1; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; font-weight:700; transition:all 0.15s ease;"
-                                   :style="selectedStatus === 'disetujui' ? 'border-color:#10B981; background:#ECFDF5; color:#065F46;' : 'color:#475569; background:#FFFFFF;'">
-                                <input type="radio" name="status" value="disetujui" x-model="selectedStatus" required style="accent-color:#10B981;">
+                        <label style="display:block; font-size:11.5px; font-weight:700; color:#0F172A; margin-bottom:5px;">Status Pengajuan Keseluruhan</label>
+                        <div style="display:flex; gap:6px;">
+                            <label class="verif-pill-btn verif-status-pill" style="flex:1; padding:5px 8px !important; font-size:11px !important; white-space:nowrap;"
+                                   :class="selectedStatus === 'disetujui' ? 'pill-disetujui-active' : 'pill-inactive'">
+                                <input type="radio" name="status" value="disetujui" x-model="selectedStatus" required style="display:none !important;">
+                                <span x-show="selectedStatus === 'disetujui'">✓</span>
                                 <span>Disetujui / Ke Bengkel</span>
                             </label>
 
-                            <label style="flex:1; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; font-weight:700; transition:all 0.15s ease;"
-                                   :style="selectedStatus === 'ditolak' ? 'border-color:#EF4444; background:#FEF2F2; color:#991B1B;' : 'color:#475569; background:#FFFFFF;'">
-                                <input type="radio" name="status" value="ditolak" x-model="selectedStatus" required style="accent-color:#EF4444;">
+                            <label class="verif-pill-btn verif-status-pill" style="flex:1; padding:5px 8px !important; font-size:11px !important; white-space:nowrap;"
+                                   :class="selectedStatus === 'ditolak' ? 'pill-ditolak-active' : 'pill-inactive'">
+                                <input type="radio" name="status" value="ditolak" x-model="selectedStatus" required style="display:none !important;">
+                                <span x-show="selectedStatus === 'ditolak'">✕</span>
                                 <span>Ditolak Semua</span>
                             </label>
                         </div>
@@ -364,6 +370,64 @@
 
 @push('styles')
 <style>
+.verif-pill-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    padding: 3px 10px !important;
+    border-radius: 20px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    user-select: none !important;
+    transition: all 0.15s ease !important;
+    border: 1px solid transparent !important;
+    box-sizing: border-box !important;
+}
+
+.verif-pill-btn.pill-disetujui-active {
+    background-color: #D1FAE5 !important;
+    color: #065F46 !important;
+    border-color: #A7F3D0 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.15) !important;
+}
+
+.verif-pill-btn.pill-ditolak-active {
+    background-color: #FEE2E2 !important;
+    color: #991B1B !important;
+    border-color: #FCA5A5 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 4px rgba(239, 68, 68, 0.15) !important;
+}
+
+.verif-pill-btn.pill-inactive {
+    background-color: #F1F5F9 !important;
+    color: #64748B !important;
+    border-color: #E2E8F0 !important;
+    font-weight: 600 !important;
+}
+
+.verif-pill-btn.pill-inactive:hover {
+    background-color: #E2E8F0 !important;
+    color: #334155 !important;
+}
+
+.verif-status-pill {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+}
+
+@media (max-width: 480px) {
+    .verif-status-pill {
+        font-size: 10px !important;
+        padding: 4px 5px !important;
+        white-space: nowrap !important;
+        letter-spacing: -0.25px !important;
+    }
+}
+
 .kpi-grid-container {
     display: grid;
     grid-template-columns: repeat(4, 1fr);

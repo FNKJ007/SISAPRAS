@@ -2,7 +2,7 @@
 @section('title', 'Pengecekan Unit Pemadam — Admin')
 
 @section('content')
-<div class="space-y-6" x-data="pengecekanPemadamAdmin('{{ $tab }}')">
+<div class="admin-pengecekan-wrapper" x-data="pengecekanPemadamAdmin('{{ $tab }}')">
 
     {{-- Header Page --}}
     <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
@@ -39,34 +39,36 @@
         </div>
     </div>
 
-    {{-- Compact Modern Switcher Bar --}}
-    <div style="display:inline-flex; align-items:center; background:#FFFFFF; padding:4px; border-radius:10px; border:1px solid #E2E8F0; box-shadow:0 2px 8px rgba(15,23,42,0.05); margin-bottom:18px;">
-        <div style="display:flex; align-items:center; gap:4px;">
-            <button type="button" @click="activeTab = 'unit'"
-                    :style="activeTab === 'unit' 
-                        ? 'background:linear-gradient(135deg, #1B2A6B 0%, #2563EB 100%); color:#FFFFFF; box-shadow:0 2px 8px rgba(37,99,235,0.25); font-weight:700;' 
-                        : 'color:#64748B; background:transparent; font-weight:600;'"
-                    style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; font-size:12.5px; border:none; border-radius:8px; cursor:pointer; transition:all 0.2s ease;">
-                <i data-lucide="truck" style="width:14px; height:14px;"></i>
-                <span>Unit Kendaraan</span>
-                <span :style="activeTab === 'unit' ? 'background:rgba(255,255,255,0.25); color:#FFFFFF;' : 'background:#F1F5F9; color:#64748B;'"
-                      style="padding:1px 6px; border-radius:12px; font-size:10px; font-weight:700; margin-left:2px;">
-                    {{ count($cekUnitList) }}
-                </span>
-            </button>
+    {{-- Sleek Modern Tab Switcher Bar (LOCKED FLUSH LEFT) --}}
+    <div style="width:100%; display:flex; justify-content:flex-start; align-items:center; margin-bottom:18px;">
+        <div style="display:inline-flex; align-items:center; background:#FFFFFF; padding:4px; border-radius:12px; border:1px solid #E2E8F0; box-shadow:0 2px 8px rgba(15,23,42,0.04);">
+            <div style="display:flex; align-items:center; gap:4px;">
+                <button type="button" @click="activeTab = 'unit'"
+                        :style="activeTab === 'unit' 
+                            ? 'background:#1B2A6B; color:#FFFFFF; box-shadow:0 4px 12px rgba(27,42,107,0.25); font-weight:700;' 
+                            : 'color:#64748B; background:transparent; font-weight:600;'"
+                        style="display:inline-flex; align-items:center; gap:8px; padding:7px 16px; font-size:12.5px; border:none; border-radius:8px; cursor:pointer; transition:all 0.2s ease;">
+                    <i data-lucide="truck" style="width:15px; height:15px;"></i>
+                    <span>Unit Kendaraan</span>
+                    <span :style="activeTab === 'unit' ? 'background:rgba(255,255,255,0.2); color:#FFFFFF;' : 'background:#E2E8F0; color:#475569;'"
+                          style="padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700;">
+                        {{ count($cekUnitList) }}
+                    </span>
+                </button>
 
-            <button type="button" @click="activeTab = 'alat'"
-                    :style="activeTab === 'alat' 
-                        ? 'background:linear-gradient(135deg, #1B2A6B 0%, #2563EB 100%); color:#FFFFFF; box-shadow:0 2px 8px rgba(37,99,235,0.25); font-weight:700;' 
-                        : 'color:#64748B; background:transparent; font-weight:600;'"
-                    style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; font-size:12.5px; border:none; border-radius:8px; cursor:pointer; transition:all 0.2s ease;">
-                <i data-lucide="shield-alert" style="width:14px; height:14px;"></i>
-                <span>Alat Pemadam</span>
-                <span :style="activeTab === 'alat' ? 'background:rgba(255,255,255,0.25); color:#FFFFFF;' : 'background:#F1F5F9; color:#64748B;'"
-                      style="padding:1px 6px; border-radius:12px; font-size:10px; font-weight:700; margin-left:2px;">
-                    {{ count($cekAlatList) }}
-                </span>
-            </button>
+                <button type="button" @click="activeTab = 'alat'"
+                        :style="activeTab === 'alat' 
+                            ? 'background:#1B2A6B; color:#FFFFFF; box-shadow:0 4px 12px rgba(27,42,107,0.25); font-weight:700;' 
+                            : 'color:#64748B; background:transparent; font-weight:600;'"
+                        style="display:inline-flex; align-items:center; gap:8px; padding:7px 16px; font-size:12.5px; border:none; border-radius:8px; cursor:pointer; transition:all 0.2s ease;">
+                    <i data-lucide="shield-alert" style="width:15px; height:15px;"></i>
+                    <span>Alat Pemadam</span>
+                    <span :style="activeTab === 'alat' ? 'background:rgba(255,255,255,0.2); color:#FFFFFF;' : 'background:#E2E8F0; color:#475569;'"
+                          style="padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700;">
+                        {{ count($cekAlatList) }}
+                    </span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -329,16 +331,14 @@
                         <span>Perlengkapan Kendaraan</span>
                         <span style="font-size:10.5px; color:#64748B; font-weight:600;" x-text="Object.keys(activeUnit.perlengkapan || {}).length + ' item'"></span>
                     </div>
-                    <div style="display:flex; flex-direction:column; gap:4px; max-height:220px; overflow-y:auto;">
+                    <div class="custom-scrollbar" style="display:flex; flex-direction:column; gap:6px; max-height:240px; overflow-y:auto; padding-right:2px;">
                         <template x-for="(val, key) in (activeUnit.perlengkapan || {})" :key="key">
-                            <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 10px; border-radius:8px;"
-                                 :style="val.status === 'rusak' ? 'background:#FEF2F2;' : 'background:#F8FAFC;'">
-                                <span style="font-weight:600; color:#1E293B;" x-text="val.label"></span>
+                            <div style="display:flex; align-items:center; justify-content:space-between; padding:7px 12px; border-radius:8px; background:#F8FAFC; border:1px solid #E2E8F0; transition:all 0.15s ease;">
+                                <span style="font-weight:700; color:#0F172A; font-size:11.5px; text-transform:uppercase;" x-text="val.label"></span>
                                 <div style="display:flex; align-items:center; gap:8px;">
                                     <span x-show="val.catatan" style="font-size:11px; color:#64748B; font-style:italic;" x-text="val.catatan"></span>
-                                    <span :style="val.status === 'rusak' ? 'background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5;' : 'background:#D1FAE5; color:#065F46; border:1px solid #A7F3D0;'"
-                                          style="padding:2px 9px; border-radius:20px; font-size:10.5px; font-weight:700;"
-                                          x-text="val.status === 'rusak' ? 'Rusak' : 'Baik'"></span>
+                                    <span :class="val.status === 'rusak' ? 'badge-pill-rusak' : 'badge-pill-baik'"
+                                          x-text="val.status === 'rusak' ? '✕ Rusak' : '✓ Baik'"></span>
                                 </div>
                             </div>
                         </template>
