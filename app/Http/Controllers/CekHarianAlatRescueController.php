@@ -13,9 +13,9 @@ class CekHarianAlatRescueController extends Controller
     protected function unitList()
     {
         return collect([
-            (object) ['id' => 1, 'nama' => 'Damkar 01 - Toyota Dyna'],
-            (object) ['id' => 2, 'nama' => 'Damkar 02 - Hino Ranger'],
-            (object) ['id' => 3, 'nama' => 'Damkar 03 - Isuzu Elf'],
+            (object) ['id' => 1, 'nama' => 'Rescue 01 - Ford Ranger'],
+            (object) ['id' => 2, 'nama' => 'Rescue 02 - Mitsubishi Triton'],
+            (object) ['id' => 3, 'nama' => 'Rescue 03 - Isuzu D-Max'],
         ]);
     }
 
@@ -93,7 +93,10 @@ class CekHarianAlatRescueController extends Controller
 
             // Catatan & foto untuk keseluruhan pemeriksaan
             'catatan_umum'            => 'nullable|string',
-            'foto_umum'               => 'nullable|image|max:2048', // maks 2MB
+            'foto_umum'               => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240', // maks 10MB
+        ], [
+            'foto_umum.uploaded' => 'File foto dokumentasi gagal diunggah. Ukuran foto terlalu besar (Maks 10MB).',
+            'foto_umum.max'      => 'Ukuran foto dokumentasi tidak boleh lebih dari 10 MB.',
         ]);
 
         // Upload foto umum (jika ada), sebelum simpan header

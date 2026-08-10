@@ -74,7 +74,7 @@
                                 <td style="padding:14px 18px; font-weight:700; color:#64748B;">{{ $index + 1 }}</td>
                                 <td style="padding:14px 18px;">
                                     <div style="font-weight:700; color:#0F172A;">{{ $item->tanggal_pemeriksaan->format('d/m/Y') }}</div>
-                                    <div style="font-size:11px; color:#94A3B8;">Diinput {{ $item->created_at->format('d/m/Y H:i') }}</div>
+                                    <div style="font-size:11px; color:#94A3B8;">{{ $item->created_at->format('H:i') }} WIB</div>
                                 </td>
                                 <td style="padding:14px 18px;">
                                     <span style="background:#F1F5F9; color:#1E293B; padding:4px 10px; border-radius:8px; font-weight:700; font-size:12px; border:1px solid #E2E8F0;">

@@ -172,7 +172,7 @@
                                     <td style="padding:14px 18px; font-weight:600; color:#94A3B8;">{{ $cekAlatList->firstItem() + $index }}</td>
                                     <td style="padding:14px 18px; white-space:nowrap;">
                                         <div style="font-weight:600; color:#1E293B;">{{ \Illuminate\Support\Carbon::parse($item->tanggal_pemeriksaan)->format('d/m/Y') }}</div>
-                                        <div style="font-size:11px; color:#94A3B8;">Diinput {{ $item->created_at->format('d/m/Y H:i') }}</div>
+                                        <div style="font-size:11px; color:#94A3B8;">{{ $item->created_at->format('H:i') }} WIB</div>
                                     </td>
                                     <td style="padding:14px 18px;">
                                         <div style="font-weight:700; color:#0F172A;">{{ $item->unit_nama ?? '—' }}</div>
