@@ -1,0 +1,131 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\Peralatan;
+
+class PeralatanSeeder extends Seeder
+{
+    public function run(): void
+    {
+        // 1. Hapus seluruh data peralatan rescue yang lama
+        Peralatan::where('kategori', 'rescue')->delete();
+
+        // 2. Daftar 96 Peralatan Rescue Resmi dari Dinas Damkar & Penyelamatan
+        $rescueItems = [
+            'Apar',
+            'APD Hazmat',
+            'APD Tawon',
+            'Asap lock (Petzl)',
+            'Ascender',
+            'Auto Stop',
+            'Bakrik',
+            'Blower',
+            'Bolt Cutter 36"',
+            'Bolt Cutter 12"',
+            'Carabiner Auto Lock',
+            'Carabiner Screw',
+            'Carabiner Snap',
+            'Chainsaw',
+            'Chest Ascend',
+            'Compressor SCBA',
+            'Container Toolbox 75 lt',
+            'Cribbing',
+            'Cutter Spreader Battery',
+            'Dongkrak',
+            'Emergency Kit/P3K',
+            'Figure of Eight (Besar)',
+            'Figure of Eight (Kecil)',
+            'Fire Helmet',
+            'Fire Jacket',
+            'Full Body Harness',
+            'Ganjal Ban Mobil',
+            'Genset',
+            'Grab Stick',
+            'Hammer Besar',
+            'Hammer Kecil',
+            'Hand Ascend',
+            'Hand Gloves',
+            'Head lamp',
+            'Heavy Duty Strap (Derek)',
+            'Hook',
+            'Hooligan Tools',
+            "I'Ds",
+            'Jack Hammer',
+            'Jumpsuit Rescue',
+            'Kabel Jumper',
+            'Kantong Mayat',
+            'Knee Ascend',
+            'Kompan BBM',
+            'Kunci Roda',
+            'Lampu Senter',
+            'Lampu Sorot',
+            'Lampu Tripod',
+            'Life Jacket (Pelampung)',
+            'Linggis',
+            'Masker Respirator (Dragger)',
+            'Masker SCBA',
+            'Mini Grinder',
+            'Oxigen portable (kaleng)',
+            'Parang',
+            'Pelontar',
+            'Percusion Rescue Tool',
+            'Pipa Kunci roda',
+            'Plana SCBA',
+            'Plate Hade AXE',
+            'Prusik',
+            'Pulley tandem',
+            'Pump Wedge',
+            'Reeve',
+            'Rigging Plate/PAW M',
+            'Roll Kabel',
+            'Rotary saw',
+            'Safety Belt',
+            'Safety Helmet',
+            'Safety Shoes',
+            'SCBA set',
+            'Seat harness',
+            'Seem',
+            'Selang + Masker Oksigen',
+            'Single Pulley',
+            'Sling Anchor',
+            'Speader Battery (Combi Tool)',
+            'Sprayer/Semprotan',
+            'Tabung Oxigen',
+            'Tabung SCBA (cadangan)',
+            'Tali Carnmantel ( 100 M )',
+            'Tali Carnmantel ( 50 M )',
+            'Tali Prusik',
+            'Tali Seling loreng',
+            'Tali Webbing (Roll 4,5m)',
+            'Tandu Basket',
+            'Tandu Lipat',
+            'Tandu Scoop',
+            'Tangga Julur',
+            'Tangga Lipat',
+            'Tool Box',
+            'Tracker',
+            'Traffic Cone',
+            'Tripod Rescue',
+            'Twin Pulley',
+            'Twin Realease',
+        ];
+
+        foreach ($rescueItems as $index => $nama) {
+            $numStr = str_pad($index + 1, 2, '0', STR_PAD_LEFT);
+            Peralatan::create([
+                'nama'         => $nama,
+                'kategori'     => 'rescue',
+                'kode_alat'    => "ALT-RSC-{$numStr}",
+                'jumlah_total' => 4,
+                'kondisi_baik' => 4,
+                'kondisi_rusak' => 0,
+                'satuan'       => 'unit',
+                'lokasi'       => 'Gudang Pos Rescue',
+                'status'       => 'baik',
+                'catatan'      => 'Peralatan operasional tim rescue dinas.',
+            ]);
+        }
+    }
+}

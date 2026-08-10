@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\PeralatanManagementController;
+use App\Http\Controllers\Admin\PosManagementController;
+use App\Http\Controllers\Admin\UnitManagementController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CekAlatCcController;
 use App\Http\Controllers\CekHarianAlatController;
@@ -85,18 +88,34 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/pemeliharaan',                 [AdminController::class, 'pemeliharaanPemeliharaan'])->name('pemeliharaan');
         Route::get('/invoice',                      [AdminController::class, 'pemeliharaanInvoice'])->name('invoice');
         Route::get('/kartu-kendali',                [AdminController::class, 'pemeliharaanKartuKendali'])->name('kartu-kendali');
+        
+        // Data Unit CRUD Routes
+        Route::get('/data-unit',                    [UnitManagementController::class, 'index'])->name('data-unit');
+        Route::post('/data-unit',                   [UnitManagementController::class, 'store'])->name('data-unit.store');
+        Route::put('/data-unit/{id}',               [UnitManagementController::class, 'update'])->name('data-unit.update');
+        Route::delete('/data-unit/{id}',            [UnitManagementController::class, 'destroy'])->name('data-unit.destroy');
+
+        // Data Peralatan CRUD Routes
+        Route::get('/data-peralatan',              [PeralatanManagementController::class, 'index'])->name('data-peralatan');
+        Route::post('/data-peralatan',             [PeralatanManagementController::class, 'store'])->name('data-peralatan.store');
+        Route::put('/data-peralatan/{id}',         [PeralatanManagementController::class, 'update'])->name('data-peralatan.update');
+        Route::delete('/data-peralatan/{id}',      [PeralatanManagementController::class, 'destroy'])->name('data-peralatan.destroy');
+
+        // Data Pos CRUD Routes
+        Route::get('/data-pos',                    [PosManagementController::class, 'index'])->name('data-pos');
+        Route::post('/data-pos',                   [PosManagementController::class, 'store'])->name('data-pos.store');
+        Route::put('/data-pos/{id}',               [PosManagementController::class, 'update'])->name('data-pos.update');
+        Route::delete('/data-pos/{id}',            [PosManagementController::class, 'destroy'])->name('data-pos.destroy');
     });
 
     // Unit Pemadam
     Route::prefix('unit-pemadam')->name('unit-pemadam.')->group(function () {
-        Route::get('/data-unit',   [AdminController::class, 'unitPemadamDataUnit'])->name('data-unit');
         Route::get('/pengecekan',  [AdminController::class, 'unitPemadamPengecekan'])->name('pengecekan');
         Route::get('/riwayat',     [AdminController::class, 'unitPemadamRiwayat'])->name('riwayat');
     });
 
     // Unit Rescue
     Route::prefix('unit-rescue')->name('unit-rescue.')->group(function () {
-        Route::get('/data-unit',   [AdminController::class, 'unitRescueDataUnit'])->name('data-unit');
         Route::get('/pengecekan',  [AdminController::class, 'unitRescuePengecekan'])->name('pengecekan');
         Route::get('/riwayat',     [AdminController::class, 'unitRescueRiwayat'])->name('riwayat');
     });

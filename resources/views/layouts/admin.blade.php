@@ -88,6 +88,24 @@
                                     Kartu Kendali
                                 </a>
                             </li>
+                            <li>
+                                <a href="{{ route('admin.pemeliharaan.data-unit') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-unit') ? 'active' : '' }}">
+                                    Data Unit
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('admin.pemeliharaan.data-peralatan') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-peralatan') ? 'active' : '' }}">
+                                    Data Peralatan
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('admin.pemeliharaan.data-pos') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-pos') ? 'active' : '' }}">
+                                    Data Pos
+                                </a>
+                            </li>
                         </ul>
                     </div>
 
@@ -102,12 +120,6 @@
                             <i data-lucide="chevron-down" class="chevron"></i>
                         </button>
                         <ul class="submenu" id="menuPemadam">
-                            <li>
-                                <a href="{{ route('admin.unit-pemadam.data-unit') }}"
-                                   class="{{ request()->routeIs('admin.unit-pemadam.data-unit') ? 'active' : '' }}">
-                                    Data Unit
-                                </a>
-                            </li>
                             <li>
                                 <a href="{{ route('admin.unit-pemadam.pengecekan') }}"
                                    class="{{ request()->routeIs('admin.unit-pemadam.pengecekan') ? 'active' : '' }}">
@@ -134,12 +146,6 @@
                             <i data-lucide="chevron-down" class="chevron"></i>
                         </button>
                         <ul class="submenu" id="menuRescue">
-                            <li>
-                                <a href="{{ route('admin.unit-rescue.data-unit') }}"
-                                   class="{{ request()->routeIs('admin.unit-rescue.data-unit') ? 'active' : '' }}">
-                                    Data Unit
-                                </a>
-                            </li>
                             <li>
                                 <a href="{{ route('admin.unit-rescue.pengecekan') }}"
                                    class="{{ request()->routeIs('admin.unit-rescue.pengecekan') ? 'active' : '' }}">

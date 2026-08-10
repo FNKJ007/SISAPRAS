@@ -33,5 +33,7 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('user123'),
             ]
         );
+
+        $this->call(PeralatanSeeder::class);
     }
 }

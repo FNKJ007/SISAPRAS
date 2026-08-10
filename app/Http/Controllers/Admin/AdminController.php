@@ -154,6 +154,22 @@ class AdminController extends Controller
         ]);
     }
 
+    public function pemeliharaanDataUnit()
+    {
+        return view('admin.placeholder', [
+            'pageTitle'  => 'Data Unit',
+            'breadcrumb' => ['Pemeliharaan', 'Data Unit'],
+        ]);
+    }
+
+    public function pemeliharaanDataPeralatan()
+    {
+        return view('admin.placeholder', [
+            'pageTitle'  => 'Data Peralatan',
+            'breadcrumb' => ['Pemeliharaan', 'Data Peralatan'],
+        ]);
+    }
+
     /* ==================== UNIT PEMADAM ==================== */
     public function unitPemadamDataUnit()
     {
