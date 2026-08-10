@@ -979,6 +979,15 @@ body {
     box-sizing: border-box !important;
 }
 
+.kpi-grid-container-2 {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+    margin-bottom: 24px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
 .kpi-card {
     box-sizing: border-box !important;
     width: 100% !important;
@@ -1017,4 +1026,103 @@ body {
     border: 1px solid #FCA5A5 !important;
     box-sizing: border-box !important;
     white-space: nowrap !important;
+}
+
+/* =========================================================================
+   MOBILE & TABLET RESPONSIVE STYLES
+   ========================================================================= */
+@media (max-width: 992px) {
+    .kpi-grid-container {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .kpi-grid-container {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+    .kpi-grid-container-2 {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+
+    .admin-filter-bar form {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .admin-filter-bar .filter-group {
+        width: 100% !important;
+        justify-content: space-between !important;
+    }
+
+    .admin-filter-bar .search-box {
+        width: 100% !important;
+    }
+
+    .admin-filter-bar .search-box input {
+        width: 100% !important;
+    }
+
+    .admin-modal-overlay {
+        padding: 10px !important;
+    }
+
+    .admin-modal-dialog {
+        max-width: 100% !important;
+        max-height: 92vh !important;
+        border-radius: 14px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .kpi-grid-container {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+}
+
+/* =========================================================================
+   RESPONSIVE FORM & MODAL GRID UTILITIES
+   ========================================================================= */
+.admin-filter-bar {
+    background: #FFFFFF;
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: 1px solid #E2E8F0;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.modal-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.modal-form-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+@media (max-width: 640px) {
+    .modal-form-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .modal-form-grid-3 {
+        grid-template-columns: 1fr !important;
+    }
+    .modal-form-grid .full-mobile {
+        grid-column: span 1 !important;
+    }
+    .admin-filter-bar form {
+        gap: 10px !important;
+    }
+    .admin-filter-bar input[type="text"] {
+        width: 100% !important;
+    }
 }
