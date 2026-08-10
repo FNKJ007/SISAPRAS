@@ -26,12 +26,12 @@ return new class extends Migration
             $table->string('jenis_bbm'); // solar, bensin
             $table->string('bukti_bbm')->nullable();
 
-            // Step 3 - Tangki & Pompa
-            $table->string('level_air');
-            $table->string('kondisi_tangki_air');
-            $table->string('kebocoran_tangki_air');
-            $table->string('tekanan_pompa');
-            $table->string('selang_induk');
+            // Step 3 - Tangki & Pompa (Nullable untuk unit Rescue yang tidak memiliki tangki/pompa)
+            $table->string('level_air')->nullable();
+            $table->string('kondisi_tangki_air')->nullable();
+            $table->string('kebocoran_tangki_air')->nullable();
+            $table->string('tekanan_pompa')->nullable();
+            $table->string('selang_induk')->nullable();
             $table->text('catatan_tangki_pompa')->nullable();
             $table->json('dokumentasi_tangki_pompa')->nullable();
 

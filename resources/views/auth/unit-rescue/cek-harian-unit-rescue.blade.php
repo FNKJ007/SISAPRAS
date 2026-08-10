@@ -3,6 +3,19 @@
 @section('content')
 <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 max-w-4xl mx-auto" id="wizardCekHarianUnit">
 
+    {{-- Flash Message Success --}}
+    @if(session('success'))
+        <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between shadow-xs">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">✓</div>
+                <div>
+                    <h4 class="font-bold text-sm">Pemeriksaan Berhasil Disimpan!</h4>
+                    <p class="text-xs text-emerald-700 mt-0.5">{{ session('success') }}</p>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Cek Harian Unit Kendaraan Rescue</h1>
 
     {{-- ===================== STEPPER ===================== --}}
@@ -186,19 +199,19 @@
             </div>
         </div>
 
-        {{-- ===================== STEP 5 - KONFIRMASI ===================== --}}
+        {{-- ===================== STEP 4 - KONFIRMASI ===================== --}}
         <div data-step-panel="4" class="hidden">
             <p class="font-medium text-base mb-3">Ringkasan Pemeriksaan</p>
             <div class="border border-gray-200 rounded-xl divide-y divide-gray-200">
                 @foreach(['Identitas Pemeriksaan', 'Pemanasan & BBM', 'Perlengkapan Kendaraan'] as $ringkasan)
                     <div class="flex items-center justify-between px-4 py-3 text-sm">
                         <span>{{ $ringkasan }}</span>
-                        <span class="text-green-600 font-medium flex items-center gap-1">Lengkap <span>✓</span></span>
+                        <span class="text-emerald-600 font-bold flex items-center gap-1">Lengkap <span>✓</span></span>
                     </div>
                 @endforeach
             </div>
 
-            <div class="mt-4 flex items-start gap-2 bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-3">
+            <div class="mt-4 flex items-start gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-lg px-4 py-3 font-semibold">
                 <span>✅</span>
                 <span>Pastikan semua data sudah benar sebelum menyimpan pemeriksaan.</span>
             </div>
@@ -227,7 +240,7 @@
 <script>
 (function () {
     var wizard = document.getElementById('wizardCekHarianUnit');
-    var totalSteps = 5;
+    var totalSteps = 4;
     var currentStep = 1;
 
     var panels     = wizard.querySelectorAll('[data-step-panel]');
@@ -363,7 +376,16 @@
 
     bindFilePreview('bukti_pemanasan', 'buktiPemanasanLabel', 'buktiPemanasanPreview', 'Lampirkan Bukti Pemanasan');
     bindFilePreview('bukti_bbm', 'buktiBbmLabel', 'buktiBbmPreview', 'Lampirkan Bukti Level BBM');
-    bindFilePreview('dokumentasi_tangki_pompa', 'dokumentasiTangkiLabel', 'dokumentasiTangkiPreview', 'Lampirkan Foto (Maks. 3 file)');
+
+    @if($errors->any())
+        var firstError = wizard.querySelector('.text-red-600');
+        if (firstError) {
+            var errPanel = firstError.closest('[data-step-panel]');
+            if (errPanel) {
+                currentStep = parseInt(errPanel.getAttribute('data-step-panel'), 10);
+            }
+        }
+    @endif
 
     showStep(currentStep);
 })();

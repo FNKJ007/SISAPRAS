@@ -13,9 +13,9 @@ class CekHarianUnitRescueController extends Controller
     protected function unitList()
     {
         return collect([
-            (object) ['id' => 1, 'nama' => 'Damkar 01 - Toyota Dyna'],
-            (object) ['id' => 2, 'nama' => 'Damkar 02 - Hino Ranger'],
-            (object) ['id' => 3, 'nama' => 'Damkar 03 - Isuzu Elf'],
+            (object) ['id' => 1, 'nama' => 'Rescue 01 - Ford Ranger'],
+            (object) ['id' => 2, 'nama' => 'Rescue 02 - Mitsubishi Triton'],
+            (object) ['id' => 3, 'nama' => 'Rescue 03 - Isuzu D-Max'],
         ]);
     }
 
@@ -157,6 +157,14 @@ class CekHarianUnitRescueController extends Controller
             'bukti_pemanasan' => $buktiPemanasanPath,
             'jenis_bbm'       => $validated['jenis_bbm'],
             'bukti_bbm'       => $buktiBbmPath,
+
+            'level_air'            => null,
+            'kondisi_tangki_air'   => null,
+            'kebocoran_tangki_air' => null,
+            'tekanan_pompa'        => null,
+            'selang_induk'         => null,
+            'catatan_tangki_pompa' => null,
+            'dokumentasi_tangki_pompa' => null,
 
             'perlengkapan' => $perlengkapan,
             'jumlah_rusak' => $jumlahRusak,
