@@ -159,6 +159,7 @@ class CekHarianUnitPemadamController extends Controller
 
         CekHarianUnit::create([
             'user_id'        => auth()->id(),
+            'kategori'       => 'pemadam',
             'nama_pemeriksa' => $validated['nama_pemeriksa'],
             'jabatan'        => $validated['jabatan'],
             'unit_id'        => $validated['unit_id'],

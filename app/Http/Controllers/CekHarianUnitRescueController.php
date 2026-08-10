@@ -2,78 +2,163 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CekHarianUnit;
 use Illuminate\Http\Request;
-// use App\Models\Unit;
-// use App\Models\CekHarianUnit;
 
 class CekHarianUnitRescueController extends Controller
 {
     /**
-     * Menampilkan form wizard Cek Harian Unit Kendaraan Pemadam.
+     * Daftar unit/kendaraan rescue (dummy, ganti dengan Model Unit::all() bila sudah tersedia).
      */
-    public function index()
+    protected function unitList()
     {
-        // Contoh data unit/kendaraan untuk dropdown (ganti dengan query Model asli, mis. Unit::all())
-        $unitList = collect([
+        return collect([
             (object) ['id' => 1, 'nama' => 'Damkar 01 - Toyota Dyna'],
             (object) ['id' => 2, 'nama' => 'Damkar 02 - Hino Ranger'],
             (object) ['id' => 3, 'nama' => 'Damkar 03 - Isuzu Elf'],
         ]);
+    }
+
+    /**
+     * Daftar label perlengkapan kendaraan rescue (harus sinkron dengan view form).
+     */
+    protected function perlengkapanLabels(): array
+    {
+        return [
+            'ban_cadangan'                     => 'Ban Cadangan',
+            'ban_belakang_kanan'                => 'Ban Mobil Belakang Kanan',
+            'ban_belakang_kiri'                 => 'Ban Mobil Belakang Kiri',
+            'ban_depan_kanan'                   => 'Ban Mobil Depan Kanan',
+            'ban_depan_kiri'                     => 'Ban Mobil Depan Kiri',
+            'dop_pelek'                          => 'Dop Pelek',
+            'electric_winch'                     => 'Electric Winch',
+            'handel_kanan_belakang'              => 'Handel Kanan Belakang',
+            'handel_kanan_depan'                 => 'Handel Kanan Depan',
+            'handel_kiri_belakang'               => 'Handel Kiri Belakang',
+            'handel_kiri_depan'                  => 'Handel Kiri Depan',
+            'kaca_spion_kanan'                   => 'Kaca Spion Kanan',
+            'kaca_spion_kiri'                    => 'Kaca Spion Kiri',
+            'lampu_kabut_kanan'                  => 'Lampu Kabut Kanan',
+            'lampu_kabut_kiri'                   => 'Lampu Kabut Kiri',
+            'lampu_parkir_kanan'                 => 'Lampu Parkir Kanan',
+            'lampu_parkir_kiri'                  => 'Lampu Parkir Kiri',
+            'lampu_penerangan'                   => 'Lampu Penerangan',
+            'lampu_peringatan_belakang_kanan'    => 'Lampu Peringatan Belakang Kanan',
+            'lampu_peringatan_belakang_kiri'     => 'Lampu Peringatan Belakang Kiri',
+            'lampu_peringatan_depan_kanan'       => 'Lampu Peringatan Depan Kanan',
+            'lampu_peringatan_depan_kiri'        => 'Lampu Peringatan Depan Kiri',
+            'lampu_rem_kanan'                    => 'Lampu Rem Kanan',
+            'lampu_rem_kiri'                     => 'Lampu Rem Kiri',
+            'lampu_rotari_atas_belakang'         => 'Lampu Rotari Atas Belakang',
+            'lampu_rotari_atas_depan'            => 'Lampu Rotari Atas Depan',
+            'lampu_rotator_atas_belakang'        => 'Lampu Rotator Atas Belakang',
+            'lampu_rotator_atas_depan'           => 'Lampu Rotator Atas Depan',
+            'lampu_sein_belakang_kanan'          => 'Lampu Sein Belakang Kanan',
+            'lampu_sein_belakang_kiri'           => 'Lampu Sein Belakang Kiri',
+            'lampu_sein_depan_kanan'             => 'Lampu Sein Depan Kanan',
+            'lampu_sein_depan_kiri'              => 'Lampu Sein Depan Kiri',
+            'lampu_sorot_belakang'               => 'Lampu Sorot Belakang',
+            'lampu_sorot_kanan_atas'             => 'Lampu Sorot Kanan Atas',
+            'lampu_sorot_kanan_samping'          => 'Lampu Sorot Kanan Samping',
+            'lampu_sorot_kiri_atas'              => 'Lampu Sorot Kiri Atas',
+            'lampu_sorot_kiri_samping'           => 'Lampu Sorot Kiri Samping',
+            'lampu_utama_depan_kanan'            => 'Lampu Utama Depan Kanan',
+            'lampu_utama_depan_kiri'             => 'Lampu Utama Depan Kiri',
+            'lighting_remote'                    => 'Lighting + Remote',
+            'modulator_sirine'                   => 'Modulator Sirine',
+            'plat_nomor_belakang'                => 'Plat Nomor Kendaraan Belakang',
+            'plat_nomor_depan'                   => 'Plat Nomor Kendaraan Depan',
+            'radio_pesawat_rig'                  => 'Radio Pesawat (RIG)',
+            'radio_tape'                         => 'Radio Tape',
+            'rolling_belakang'                   => 'Rolling Belakang',
+            'rolling_kanan'                       => 'Rolling Kanan',
+            'rolling_kiri'                        => 'Rolling Kiri',
+            'sirine_tunggal'                      => 'Sirine Tunggal',
+            'toa_sirine'                          => 'TOA Sirine',
+            'wiper_kanan'                         => 'Wiper Kanan',
+            'wiper_kiri'                          => 'Wiper Kiri',
+        ];
+    }
+
+    /**
+     * Menampilkan form wizard Cek Harian Unit Kendaraan Rescue.
+     */
+    public function index()
+    {
+        $unitList = $this->unitList();
 
         return view('auth.unit-rescue.cek-harian-unit-rescue', compact('unitList'));
     }
 
     /**
-     * Menyimpan hasil pemeriksaan unit kendaraan pemadam.
+     * Menyimpan hasil pemeriksaan unit kendaraan rescue.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
             // Step 1 - Identitas
-            'nama_pemeriksa'   => 'required|string|max:255',
-            'jabatan'          => 'required|string|max:255',
-            'unit_id'          => 'required|integer',
-            'shift'            => 'required|in:pagi,siang,malam',
+            'nama_pemeriksa'  => 'required|string|max:255',
+            'jabatan'         => 'required|string|max:255',
+            'unit_id'         => 'required|integer',
 
             // Step 2 - Pemanasan & BBM
-            'bukti_pemanasan'  => 'nullable|image|max:2048',
-            'jenis_bbm'        => 'required|in:solar,bensin',
-            'level_bbm'        => 'required|in:penuh,3_4,1_2,kosong',
-            'jumlah_bbm_liter' => 'nullable|numeric|min:0',
+            'bukti_pemanasan' => 'nullable|image|max:2048',
+            'jenis_bbm'       => 'required|in:solar,bensin',
+            'bukti_bbm'       => 'nullable|image|max:2048',
 
-            // Step 3 - Tangki & Pompa
-            'level_air'               => 'required|in:penuh,3_4,1_2,kosong',
-            'kondisi_tangki'          => 'required|in:baik,perlu_perhatian,rusak',
-            'kebocoran_tangki'        => 'required|in:ada,tidak_ada',
-            'tekanan_pompa'           => 'required|in:baik,kurang,tidak_ada',
-            'pengisian_pompa'         => 'required|in:baik,kurang',
-            'selang_induk'            => 'required|in:baik,rusak',
-            'catatan_tangki_pompa'    => 'nullable|string',
-            'dokumentasi_tangki_pompa'   => 'nullable|array|max:3',
-            'dokumentasi_tangki_pompa.*' => 'image|max:2048',
-
-            // Step 4 - Perlengkapan
-            'perlengkapan'                    => 'required|array',
-            'perlengkapan.*.status'           => 'required|in:baik,rusak,hilang',
-            'perlengkapan.*.catatan'          => 'nullable|string',
+            // Step 3 - Perlengkapan
+            'perlengkapan'           => 'required|array',
+            'perlengkapan.*.status'  => 'required|in:baik,rusak',
+            'perlengkapan.*.catatan' => 'nullable|string',
         ]);
 
-        // TODO: simpan header pemeriksaan + upload file (bukti_pemanasan,
-        // dokumentasi_tangki_pompa[]) ke storage, lalu simpan tiap baris
-        // perlengkapan, mis:
-        //
-        // $fotoPemanasanPath = $request->hasFile('bukti_pemanasan')
-        //     ? $request->file('bukti_pemanasan')->store('cek-harian-unit', 'public')
-        //     : null;
-        //
-        // foreach ($request->file('dokumentasi_tangki_pompa', []) as $foto) {
-        //     $foto->store('cek-harian-unit', 'public');
-        // }
-        //
-        // CekHarianUnit::create([...]);
+        // Upload bukti pemanasan
+        $buktiPemanasanPath = $request->hasFile('bukti_pemanasan')
+            ? $request->file('bukti_pemanasan')->store('cek-harian-unit-rescue', 'public')
+            : null;
+
+        // Upload bukti BBM
+        $buktiBbmPath = $request->hasFile('bukti_bbm')
+            ? $request->file('bukti_bbm')->store('cek-harian-unit-rescue', 'public')
+            : null;
+
+        // Susun perlengkapan lengkap dengan label, agar mudah ditampilkan di admin
+        $labels = $this->perlengkapanLabels();
+        $perlengkapan = [];
+        $jumlahRusak = 0;
+        foreach ($validated['perlengkapan'] as $key => $item) {
+            $status = $item['status'] ?? 'baik';
+            if ($status === 'rusak') {
+                $jumlahRusak++;
+            }
+            $perlengkapan[$key] = [
+                'label'   => $labels[$key] ?? $key,
+                'status'  => $status,
+                'catatan' => $item['catatan'] ?? null,
+            ];
+        }
+
+        // Ambil nama unit terpilih untuk disimpan sebagai snapshot
+        $unit = $this->unitList()->firstWhere('id', (int) $validated['unit_id']);
+
+        CekHarianUnit::create([
+            'user_id'        => auth()->id(),
+            'kategori'       => 'rescue',
+            'nama_pemeriksa' => $validated['nama_pemeriksa'],
+            'jabatan'        => $validated['jabatan'],
+            'unit_id'        => $validated['unit_id'],
+            'unit_nama'      => $unit->nama ?? null,
+
+            'bukti_pemanasan' => $buktiPemanasanPath,
+            'jenis_bbm'       => $validated['jenis_bbm'],
+            'bukti_bbm'       => $buktiBbmPath,
+
+            'perlengkapan' => $perlengkapan,
+            'jumlah_rusak' => $jumlahRusak,
+        ]);
 
         return redirect()
-            ->route('unit-rescue.cek-harian-unit')
-            ->with('success', 'Pemeriksaan unit kendaraan pemadam berhasil disimpan.');
+            ->route('unit-rescue.cek-harian-unit-rescue')
+            ->with('success', 'Pemeriksaan unit kendaraan rescue berhasil disimpan.');
     }
 }

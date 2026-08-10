@@ -168,7 +168,10 @@ class AdminController extends Controller
         $tab = $request->query('tab', 'unit'); // 'unit' atau 'alat'
 
         // ===== Hasil Cek Harian Unit Kendaraan =====
-        $cekUnitList = CekHarianUnit::latest()
+        $cekUnitList = CekHarianUnit::where(function ($q) {
+                $q->where('kategori', 'pemadam')->orWhereNull('kategori');
+            })
+            ->latest()
             ->paginate(10, ['*'], 'unit_page')
             ->withQueryString();
 
@@ -182,8 +185,12 @@ class AdminController extends Controller
 
         // ===== Ringkasan KPI =====
         $kpi = [
-            'total_cek_unit'   => CekHarianUnit::count(),
-            'unit_ada_rusak'   => CekHarianUnit::where('jumlah_rusak', '>', 0)->count(),
+            'total_cek_unit'   => CekHarianUnit::where(function ($q) {
+                $q->where('kategori', 'pemadam')->orWhereNull('kategori');
+            })->count(),
+            'unit_ada_rusak'   => CekHarianUnit::where(function ($q) {
+                $q->where('kategori', 'pemadam')->orWhereNull('kategori');
+            })->where('jumlah_rusak', '>', 0)->count(),
             'total_cek_alat'   => CekHarianAlat::where(function ($q) {
                 $q->where('kategori', 'pemadam')->orWhereNull('kategori');
             })->count(),
@@ -212,12 +219,35 @@ class AdminController extends Controller
         ]);
     }
 
-    public function unitRescuePengecekan()
+    /**
+     * Halaman Pengecekan Rescue: menampilkan hasil input Cek Harian Unit
+     * Kendaraan Rescue dan Cek Harian Alat Rescue yang diisi oleh petugas.
+     */
+    public function unitRescuePengecekan(Request $request)
     {
-        return view('admin.placeholder', [
-            'pageTitle'  => 'Pengecekan',
-            'breadcrumb' => ['Unit Rescue', 'Pengecekan'],
-        ]);
+        $tab = $request->query('tab', 'unit'); // 'unit' atau 'alat'
+
+        // ===== Hasil Cek Harian Unit Kendaraan Rescue =====
+        $cekUnitList = CekHarianUnit::where('kategori', 'rescue')
+            ->latest()
+            ->paginate(10, ['*'], 'unit_page')
+            ->withQueryString();
+
+        // ===== Hasil Cek Harian Alat Rescue =====
+        $cekAlatList = CekHarianAlat::where('kategori', 'rescue')
+            ->latest()
+            ->paginate(10, ['*'], 'alat_page')
+            ->withQueryString();
+
+        // ===== Ringkasan KPI =====
+        $kpi = [
+            'total_cek_unit'   => CekHarianUnit::where('kategori', 'rescue')->count(),
+            'unit_ada_rusak'   => CekHarianUnit::where('kategori', 'rescue')->where('jumlah_rusak', '>', 0)->count(),
+            'total_cek_alat'   => CekHarianAlat::where('kategori', 'rescue')->count(),
+            'alat_rusak_total' => (int) CekHarianAlat::where('kategori', 'rescue')->sum('total_rusak'),
+        ];
+
+        return view('admin.unit-rescue.pengecekan', compact('cekUnitList', 'cekAlatList', 'kpi', 'tab'));
     }
 
     public function unitRescueRiwayat()
