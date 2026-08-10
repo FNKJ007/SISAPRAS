@@ -102,14 +102,19 @@ class CekHarianUnitRescueController extends Controller
             'unit_id'         => 'required|integer',
 
             // Step 2 - Pemanasan & BBM
-            'bukti_pemanasan' => 'nullable|image|max:2048',
+            'bukti_pemanasan' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'jenis_bbm'       => 'required|in:solar,bensin',
-            'bukti_bbm'       => 'nullable|image|max:2048',
+            'bukti_bbm'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
 
             // Step 3 - Perlengkapan
             'perlengkapan'           => 'required|array',
             'perlengkapan.*.status'  => 'required|in:baik,rusak',
             'perlengkapan.*.catatan' => 'nullable|string',
+        ], [
+            'bukti_pemanasan.uploaded' => 'File Bukti Pemanasan gagal diunggah. Ukuran foto terlalu besar atau melebihi batas upload PHP server (Maks 10MB).',
+            'bukti_pemanasan.max'      => 'Ukuran foto Bukti Pemanasan tidak boleh lebih dari 10 MB.',
+            'bukti_bbm.uploaded'        => 'File Bukti Level BBM gagal diunggah. Ukuran foto terlalu besar atau melebihi batas upload PHP server (Maks 10MB).',
+            'bukti_bbm.max'            => 'Ukuran foto Bukti Level BBM tidak boleh lebih dari 10 MB.',
         ]);
 
         // Upload bukti pemanasan

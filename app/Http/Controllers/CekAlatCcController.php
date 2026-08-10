@@ -62,7 +62,10 @@ class CekAlatCcController extends Controller
             'alat.*.jumlah_rusak' => 'nullable|integer|min:0',
             'alat.*.nomor_rusak'  => 'nullable|string|max:500',
             'catatan_umum'        => 'nullable|string|max:1000',
-            'foto_umum'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'foto_umum'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+        ], [
+            'foto_umum.uploaded' => 'File Foto Umum gagal diunggah. Ukuran foto terlalu besar atau melebihi batas upload PHP server (Maks 10MB).',
+            'foto_umum.max'      => 'Ukuran foto tidak boleh lebih dari 10 MB.',
         ]);
 
         $namaAlatMap = [
