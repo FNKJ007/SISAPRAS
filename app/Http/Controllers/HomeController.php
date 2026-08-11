@@ -124,33 +124,52 @@ class HomeController extends Controller
         $ringkasan      = $kpi;
         $totalPengajuan = $kpi['total_pengajuan'];
 
-        // 5. Hitung Kesiapan Armada (Ready vs Di Bengkel) per Hari Ini
-        $today = Carbon::today();
+        // 5. Hitung Kesiapan Armada (Ready vs Di Bengkel) langsung dari Database Admin Data Unit
+        $totalDbUnits = \App\Models\Unit::count();
 
-        // Unit di bengkel jika disetujui DAN tanggal_keberangkatan <= hari ini
-        $pengajuanBengkelAktif = Pengajuan::where('status', 'disetujui')
-            ->whereNotNull('tanggal_keberangkatan')
-            ->whereDate('tanggal_keberangkatan', '<=', $today)
-            ->get();
+        if ($totalDbUnits > 0) {
+            $totalReady   = \App\Models\Unit::where('status', 'aktif')->count();
+            $totalBengkel = \App\Models\Unit::where('status', 'perbaikan')->count();
+            $totalMasterArmada = $totalDbUnits;
 
-        $listBengkel = [];
-        $unitsBengkelSet = [];
-
-        foreach ($pengajuanBengkelAktif as $pb) {
-            $unitKey = strtoupper($pb->nomor_lambung);
-            if (!isset($unitsBengkelSet[$unitKey])) {
-                $unitsBengkelSet[$unitKey] = true;
+            $unitsInBengkel = \App\Models\Unit::where('status', 'perbaikan')->orderBy('nama', 'asc')->get();
+            $listBengkel = [];
+            foreach ($unitsInBengkel as $u) {
+                $posText = $u->pos ? " (" . ucfirst($u->pos) . ")" : "";
+                $platText = ($u->plat_nomor && $u->plat_nomor !== '—') ? " / {$u->plat_nomor}" : "";
                 $listBengkel[] = [
-                    'nomor_lambung'         => $pb->nomor_lambung,
-                    'unit_nama'             => strtoupper($pb->nomor_lambung) . ' (' . ucfirst($pb->pos) . ')',
-                    'tanggal_keberangkatan' => $pb->tanggal_keberangkatan ? $pb->tanggal_keberangkatan->translatedFormat('d F Y') : '-',
+                    'nomor_lambung'         => $u->nomor_lambung ?? $u->nama,
+                    'unit_nama'             => ($u->nomor_lambung ? strtoupper($u->nomor_lambung) . $platText : $u->nama) . $posText,
+                    'tanggal_keberangkatan' => $u->updated_at ? $u->updated_at->translatedFormat('d F Y') : '-',
                 ];
             }
-        }
+        } else {
+            // Fallback jika tabel unit belum diisi
+            $today = Carbon::today();
+            $pengajuanBengkelAktif = Pengajuan::where('status', 'disetujui')
+                ->whereNotNull('tanggal_keberangkatan')
+                ->whereDate('tanggal_keberangkatan', '<=', $today)
+                ->get();
 
-        $totalBengkel = count($unitsBengkelSet);
-        $totalMasterArmada = max(10, Pengajuan::distinct('nomor_lambung')->count('nomor_lambung'));
-        $totalReady = max(0, $totalMasterArmada - $totalBengkel);
+            $listBengkel = [];
+            $unitsBengkelSet = [];
+
+            foreach ($pengajuanBengkelAktif as $pb) {
+                $unitKey = strtoupper($pb->nomor_lambung);
+                if (!isset($unitsBengkelSet[$unitKey])) {
+                    $unitsBengkelSet[$unitKey] = true;
+                    $listBengkel[] = [
+                        'nomor_lambung'         => $pb->nomor_lambung,
+                        'unit_nama'             => strtoupper($pb->nomor_lambung) . ' (' . ucfirst($pb->pos) . ')',
+                        'tanggal_keberangkatan' => $pb->tanggal_keberangkatan ? $pb->tanggal_keberangkatan->translatedFormat('d F Y') : '-',
+                    ];
+                }
+            }
+
+            $totalBengkel = count($unitsBengkelSet);
+            $totalMasterArmada = max(10, Pengajuan::distinct('nomor_lambung')->count('nomor_lambung'));
+            $totalReady = max(0, $totalMasterArmada - $totalBengkel);
+        }
 
         $summaryArmada = [
             'total_armada'  => $totalMasterArmada,

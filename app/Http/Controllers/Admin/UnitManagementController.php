@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Unit;
+use App\Models\Pos;
 use Illuminate\Http\Request;
 
 class UnitManagementController extends Controller
@@ -51,7 +52,9 @@ class UnitManagementController extends Controller
             'perbaikan' => Unit::where('status', 'perbaikan')->count(),
         ];
 
-        return view('admin.pemeliharaan.data-unit.index', compact('unitList', 'kpi', 'kategoriFilter', 'statusFilter', 'searchQuery'));
+        $posList = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
+
+        return view('admin.pemeliharaan.data-unit.index', compact('unitList', 'kpi', 'kategoriFilter', 'statusFilter', 'searchQuery', 'posList'));
     }
 
     /**

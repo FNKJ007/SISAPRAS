@@ -14,6 +14,7 @@ class CekHarianAlat extends Model
         'kategori',
         'nama_pemeriksa',
         'jabatan',
+        'pos',
         'unit_id',
         'unit_nama',
         'tanggal_pemeriksaan',
@@ -35,6 +36,14 @@ class CekHarianAlat extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relasi ke Unit Kendaraan
+     */
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class, 'unit_id');
     }
 
     /**

@@ -6,17 +6,18 @@
     <title>@yield('title', 'Admin') — Dinas Damkar</title>
     <meta name="description" content="Admin Panel Sistem Informasi Dinas Pemadam Kebakaran">
 
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     {{-- Identik dengan app.blade.php milik user --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         [x-cloak] { display: none !important; }
     </style>
-    @stack('styles')
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    {{-- CSS admin: identik dengan app.css --}}
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v={{ file_exists(public_path('css/admin.css')) ? filemtime(public_path('css/admin.css')) : '1' }}">
     @stack('styles')
 </head>

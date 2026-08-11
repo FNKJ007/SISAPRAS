@@ -46,13 +46,45 @@
         </div>
     </div>
 
+    {{-- Search Bar --}}
+    <div style="margin-bottom:18px;">
+        <form method="GET" action="{{ route('admin.command-center.pengecekan') }}" style="display:flex; align-items:center; gap:8px; width:100%; max-width:520px;">
+            <div style="position:relative; flex:1;">
+                <input type="text" name="search" value="{{ $searchQuery ?? '' }}" placeholder="Cari berdasarkan Regu atau Pemeriksa..."
+                       style="width:100%; padding:8px 14px 8px 36px; font-size:12.5px; border-radius:10px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF; box-shadow:0 2px 6px rgba(0,0,0,0.03);">
+                <i data-lucide="search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:#94A3B8;"></i>
+            </div>
+            <button type="submit" style="padding:8px 16px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer;">
+                Cari
+            </button>
+            @if(!empty($searchQuery))
+                <a href="{{ route('admin.command-center.pengecekan') }}" style="padding:8px 12px; background:#F1F5F9; color:#64748B; border:1px solid #CBD5E1; border-radius:10px; font-size:12px; font-weight:600; text-decoration:none;">
+                    Reset
+                </a>
+            @endif
+        </form>
+    </div>
+
     {{-- Table Container --}}
     <div style="background:#FFFFFF; border-radius:16px; border:1px solid #E2E8F0; box-shadow:0px 18px 40px rgba(112,144,176,0.08); overflow:hidden;">
         @if($cekAlatList->isEmpty())
-            <div style="padding:48px 20px; text-align:center; color:#64748B;">
-                <i data-lucide="inbox" style="width:44px; height:44px; color:#CBD5E1; margin-bottom:12px;"></i>
-                <div style="font-size:15px; font-weight:700; color:#334155;">Belum Ada Data Pengecekan</div>
-                <div style="font-size:12.5px; color:#94A3B8; margin-top:4px;">Belum ada petugas yang mengisi Cek Harian Alat Command Center.</div>
+            <div style="padding:56px 20px; text-align:center; background:#FFFFFF;">
+                <div style="width:64px; height:64px; background:#F8FAFC; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:16px; border:1px solid #E2E8F0; margin-left:auto; margin-right:auto;">
+                    <i data-lucide="search-x" style="width:30px; height:30px; color:#64748B;"></i>
+                </div>
+                @if(!empty($searchQuery))
+                    <div style="font-size:16px; font-weight:800; color:#0F172A; margin-bottom:6px;">Data Tidak Ditemukan</div>
+                    <div style="font-size:13px; color:#64748B; margin-bottom:18px; max-width:440px; margin-left:auto; margin-right:auto;">
+                        Tidak ditemukan data pengecekan alat Command Center yang cocok dengan kata kunci <strong style="color:#1E293B;">"{{ $searchQuery }}"</strong>.
+                    </div>
+                    <a href="{{ route('admin.command-center.pengecekan') }}" style="display:inline-flex; align-items:center; gap:8px; padding:9px 20px; background:#1B2A6B; color:#FFFFFF; border-radius:10px; font-size:12.5px; font-weight:700; text-decoration:none; box-shadow:0 4px 12px rgba(27,42,107,0.2);">
+                        <i data-lucide="rotate-ccw" style="width:14px; height:14px;"></i>
+                        <span>Reset Pencarian</span>
+                    </a>
+                @else
+                    <div style="font-size:16px; font-weight:800; color:#0F172A; margin-bottom:6px;">Belum Ada Data Pengecekan</div>
+                    <div style="font-size:12.5px; color:#94A3B8;">Belum ada petugas yang mengisi Cek Harian Alat Command Center.</div>
+                @endif
             </div>
         @else
             <div style="overflow-x:auto;">
@@ -61,7 +93,7 @@
                         <tr style="background:#F8FAFC; border-bottom:1.5px solid #E2E8F0; color:#475569; font-size:11.5px; text-transform:uppercase; letter-spacing:0.5px;">
                             <th style="padding:14px 18px;">No</th>
                             <th style="padding:14px 18px;">Tanggal Pemeriksaan</th>
-                            <th style="padding:14px 18px;">Regu / Unit</th>
+                            <th style="padding:14px 18px;">Regu</th>
                             <th style="padding:14px 18px;">Pemeriksa</th>
                             <th style="padding:14px 18px;">Jumlah Baik</th>
                             <th style="padding:14px 18px;">Jumlah Rusak</th>
@@ -76,9 +108,9 @@
                                     <div style="font-weight:700; color:#0F172A;">{{ $item->tanggal_pemeriksaan->format('d/m/Y') }}</div>
                                     <div style="font-size:11px; color:#94A3B8;">{{ $item->created_at->format('H:i') }} WIB</div>
                                 </td>
-                                <td style="padding:14px 18px;">
-                                    <span style="background:#F1F5F9; color:#1E293B; padding:4px 10px; border-radius:8px; font-weight:700; font-size:12px; border:1px solid #E2E8F0;">
-                                        {{ $item->unit_nama ?? 'Regu ' . $item->unit_id }}
+                                <td style="padding:14px 18px; white-space:nowrap;">
+                                    <span style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700;">
+                                        👥 {{ $item->pos ?? '—' }}
                                     </span>
                                 </td>
                                 <td style="padding:14px 18px;">
@@ -128,8 +160,8 @@
                 {{-- Identitas --}}
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; background:#F8FAFC; padding:14px; border-radius:10px; border:1px solid #E2E8F0;">
                     <div>
-                        <span style="color:#64748B; font-size:10.5px; display:block;">Regu / Unit:</span>
-                        <strong style="color:#0F172A;" x-text="activeAlat ? activeAlat.unit_nama : '-'"></strong>
+                        <span style="color:#64748B; font-size:10.5px; display:block;">Regu:</span>
+                        <strong style="color:#1D4ED8; font-weight:800;" x-text="activeAlat ? (activeAlat.pos || '-') : '-'"></strong>
                     </div>
                     <div>
                         <span style="color:#64748B; font-size:10.5px; display:block;">Tanggal Pemeriksaan:</span>

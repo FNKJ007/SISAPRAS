@@ -14,6 +14,7 @@ class CekHarianUnit extends Model
         'kategori',
         'nama_pemeriksa',
         'jabatan',
+        'pos',
         'unit_id',
         'unit_nama',
         'shift',
@@ -54,6 +55,14 @@ class CekHarianUnit extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relasi ke Unit Kendaraan
+     */
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class, 'unit_id');
     }
 
     /**

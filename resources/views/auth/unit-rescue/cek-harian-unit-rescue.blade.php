@@ -51,24 +51,35 @@
         <div data-step-panel="1">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label for="nama_pemeriksa" class="block text-sm font-medium mb-1">Nama Pemeriksa</label>
-                    <input type="text" id="nama_pemeriksa" name="nama_pemeriksa" value="{{ old('nama_pemeriksa') }}"
-                           placeholder="Masukkan nama pemeriksa"
+                    <label for="pos" class="block text-sm font-medium mb-1">Pos Damkar <span class="text-red-500">*</span></label>
+                    <select id="pos" name="pos" required
+                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+                        <option value="" selected disabled>Pilih Pos Damkar</option>
+                        @foreach($posList ?? [] as $p)
+                            <option value="{{ $p->nama }}" @selected(old('pos') == $p->nama)>{{ $p->nama }}</option>
+                        @endforeach
+                    </select>
+                    @error('pos') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="nama_pemeriksa" class="block text-sm font-medium mb-1">Nama Pemeriksa <span class="text-red-500">*</span></label>
+                    <input type="text" id="nama_pemeriksa" name="nama_pemeriksa" value="{{ old('nama_pemeriksa', auth()->user()->name ?? '') }}"
+                           placeholder="Masukkan nama pemeriksa" required
                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
                     @error('nama_pemeriksa') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label for="jabatan" class="block text-sm font-medium mb-1">Jabatan</label>
-                    <input type="text" id="jabatan" name="jabatan" value="{{ old('jabatan') }}"
-                           placeholder="Masukkan jabatan"
+                    <label for="jabatan" class="block text-sm font-medium mb-1">Jabatan <span class="text-red-500">*</span></label>
+                    <input type="text" id="jabatan" name="jabatan" value="{{ old('jabatan', 'Petugas Regu') }}"
+                           placeholder="Masukkan jabatan" required
                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
                     @error('jabatan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label for="unit_id" class="block text-sm font-medium mb-1">Unit</label>
-                    <select id="unit_id" name="unit_id"
+                    <label for="unit_id" class="block text-sm font-medium mb-1">Unit Kendaraan Rescue <span class="text-red-500">*</span></label>
+                    <select id="unit_id" name="unit_id" required
                             class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Unit / Kendaraan</option>
+                        <option value="" selected disabled>Pilih Unit / Kendaraan Rescue</option>
                         @foreach($unitList ?? [] as $unit)
                             <option value="{{ $unit->id }}" @selected(old('unit_id') == $unit->id)>{{ $unit->nama }}</option>
                         @endforeach

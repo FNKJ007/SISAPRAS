@@ -17,7 +17,8 @@ return new class extends Migration
 
             $table->string('nama_pemeriksa');
             $table->string('jabatan');
-            $table->unsignedInteger('unit_id');
+            $table->string('pos')->nullable();
+            $table->unsignedInteger('unit_id')->nullable();
             $table->string('unit_nama')->nullable();
             $table->date('tanggal_pemeriksaan');
 

@@ -36,4 +36,14 @@ class Unit extends Model
         'perbaikan' => 'Perbaikan / Bengkel',
         'nonaktif'  => 'Non-Aktif',
     ];
+
+    public function cekHarianUnits()
+    {
+        return $this->hasMany(CekHarianUnit::class, 'unit_id');
+    }
+
+    public function cekHarianAlats()
+    {
+        return $this->hasMany(CekHarianAlat::class, 'unit_id');
+    }
 }
