@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pengajuan;
+use App\Models\Pos;
+use App\Models\Unit;
 use Illuminate\Http\Request;
 
 class PengajuanController extends Controller
@@ -13,10 +15,29 @@ class PengajuanController extends Controller
     public function index()
     {
         $bidangList         = Pengajuan::$bidangMap;
-        $posList            = Pengajuan::$posMap;
         $reguList           = Pengajuan::$reguMap;
         $jenisKendaraanList = Pengajuan::$jenisKendaraanMap;
-        $nomorLambungList   = Pengajuan::$nomorLambungMap;
+
+        // Ambil Pos dari Database Admin Data Pos
+        $posDb = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
+        $posList = [];
+        foreach ($posDb as $p) {
+            $posList[strtolower(str_replace(' ', '', $p->nama))] = $p->nama;
+        }
+        if (empty($posList)) {
+            $posList = Pengajuan::$posMap;
+        }
+
+        // Ambil Unit Kendaraan dari Database Admin Data Unit
+        $unitDb = Unit::where('status', 'aktif')->orderBy('nomor_lambung', 'asc')->get();
+        $nomorLambungList = [];
+        foreach ($unitDb as $u) {
+            $key = strtolower(str_replace(['-', ' ', '/'], '', $u->nomor_lambung));
+            $nomorLambungList[$key] = "{$u->nomor_lambung} / {$u->plat_nomor} ({$u->merk_tipe})";
+        }
+        if (empty($nomorLambungList)) {
+            $nomorLambungList = Pengajuan::$nomorLambungMap;
+        }
 
         return view('pemeliharaan.pengajuan', compact(
             'bidangList',
@@ -47,14 +68,12 @@ class PengajuanController extends Controller
             'nip_kepala_bidang'    => 'required|string|max:50',
         ]);
 
-        // Map kode internal ke Teks Label yang Human-Readable
+        // Transform / fallback map jika key dikirim
         $validated['bidang']          = Pengajuan::$bidangMap[$validated['bidang']] ?? $validated['bidang'];
-        $validated['pos']             = Pengajuan::$posMap[$validated['pos']] ?? $validated['pos'];
         $validated['regu']            = Pengajuan::$reguMap[$validated['regu']] ?? $validated['regu'];
         $validated['jenis_kendaraan'] = Pengajuan::$jenisKendaraanMap[$validated['jenis_kendaraan']] ?? $validated['jenis_kendaraan'];
-        $validated['nomor_lambung']   = Pengajuan::$nomorLambungMap[$validated['nomor_lambung']] ?? $validated['nomor_lambung'];
 
-        $validated['user_id'] = auth()->id();
+        $validated['user_id'] = auth()->id() ?? 1;
         $validated['status']  = 'menunggu'; // Status awal: Menunggu verifikasi admin
 
         Pengajuan::create($validated);

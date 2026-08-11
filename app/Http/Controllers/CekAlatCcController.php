@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CekHarianAlat;
+use App\Models\Peralatan;
 use Illuminate\Http\Request;
 
 class CekAlatCcController extends Controller
@@ -18,26 +19,14 @@ class CekAlatCcController extends Controller
             (object) ['id' => 3, 'nama' => 'Regu 3'],
         ]);
 
-        $namaAlat = [
-            'Telepon',
-            'Tablet / Handphone',
-            'Handy Talky (HT)',
-            'Walky Talky',
-            'Radio RIG',
-            'Komputer Operasional',
-            'Speaker Komputer',
-            'UPS',
-            'Headphone / Headset',
-            'Megaphone (TOA)',
-            'TV Monitoring',
-            'Monitor Display',
-            'Laser Distance Meter',
-        ];
+        // Ambil data peralatan Command Center dari database Admin Data Peralatan (Urut A-Z)
+        $peralatanDb = Peralatan::where('kategori', 'command_center')->orderBy('nama', 'asc')->get();
 
-        $daftarAlat = collect($namaAlat)->map(function ($nama, $index) {
+        $daftarAlat = $peralatanDb->map(function ($item) {
             return (object) [
-                'id'           => $index + 1,
-                'nama'         => $nama,
+                'id'           => $item->id,
+                'nama'         => $item->nama,
+                'jumlah_total' => $item->jumlah_total,
                 'jumlah_baik'  => 0,
                 'jumlah_rusak' => 0,
             ];
@@ -68,22 +57,6 @@ class CekAlatCcController extends Controller
             'foto_umum.max'      => 'Ukuran foto tidak boleh lebih dari 10 MB.',
         ]);
 
-        $namaAlatMap = [
-            1  => 'Telepon',
-            2  => 'Tablet / Handphone',
-            3  => 'Handy Talky (HT)',
-            4  => 'Walky Talky',
-            5  => 'Radio RIG',
-            6  => 'Komputer Operasional',
-            7  => 'Speaker Komputer',
-            8  => 'UPS',
-            9  => 'Headphone / Headset',
-            10 => 'Megaphone (TOA)',
-            11 => 'TV Monitoring',
-            12 => 'Monitor Display',
-            13 => 'Laser Distance Meter',
-        ];
-
         $reguMap = [
             1 => 'Regu 1',
             2 => 'Regu 2',
@@ -96,35 +69,36 @@ class CekAlatCcController extends Controller
         $totalBaik = 0;
         $totalRusak = 0;
 
-        foreach ($validated['alat'] as $item) {
-            $id = (int) $item['id'];
-            $baik = (int) ($item['jumlah_baik'] ?? 0);
-            $rusak = (int) ($item['jumlah_rusak'] ?? 0);
+        foreach ($validated['alat'] as $itemData) {
+            $alatObj  = Peralatan::find($itemData['id']);
+            $namaAlat = $alatObj ? $alatObj->nama : ("Alat CC #" . $itemData['id']);
+
+            $baik  = (int) ($itemData['jumlah_baik'] ?? 0);
+            $rusak = (int) ($itemData['jumlah_rusak'] ?? 0);
 
             $totalBaik += $baik;
             $totalRusak += $rusak;
 
             $processedAlat[] = [
-                'id'           => $id,
-                'nama'         => $namaAlatMap[$id] ?? ("Alat #" . $id),
+                'id'           => $itemData['id'],
+                'nama'         => $namaAlat,
                 'jumlah_baik'  => $baik,
                 'jumlah_rusak' => $rusak,
-                'nomor_rusak'  => $rusak > 0 ? ($item['nomor_rusak'] ?? null) : null,
+                'nomor_rusak'  => $itemData['nomor_rusak'] ?? null,
             ];
         }
 
         $fotoPath = null;
         if ($request->hasFile('foto_umum')) {
-            $fotoPath = $request->file('foto_umum')->store('cek-harian-alat-cc', 'public');
+            $fotoPath = $request->file('foto_umum')->store('cek-alat-cc', 'public');
         }
 
         CekHarianAlat::create([
-            'user_id'             => auth()->id(),
-            'kategori'            => 'command_center',
-            'nama_pemeriksa'      => $validated['nama_pemeriksa'],
-            'jabatan'             => $validated['jabatan'],
+            'user_id'             => auth()->id() ?? 1,
             'unit_id'             => $validated['unit_id'],
             'unit_nama'           => $unitNama,
+            'nama_pemeriksa'      => $validated['nama_pemeriksa'],
+            'jabatan'             => $validated['jabatan'],
             'tanggal_pemeriksaan' => $validated['tanggal_pemeriksaan'],
             'alat'                => $processedAlat,
             'total_baik'          => $totalBaik,
@@ -135,6 +109,6 @@ class CekAlatCcController extends Controller
 
         return redirect()
             ->route('alat-cc.cek-alat-cc')
-            ->with('success', 'Pemeriksaan alat Command Center berhasil disimpan!');
+            ->with('success', "Pemeriksaan harian alat Command Center ({$unitNama}) berhasil disimpan!");
     }
 }

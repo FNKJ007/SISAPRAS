@@ -17,9 +17,14 @@ return new class extends Migration
             $table->enum('kategori', ['pemadam', 'rescue'])->default('pemadam');
             $table->string('nomor_lambung')->nullable();
             $table->string('plat_nomor')->nullable();
-            $table->string('pos')->nullable();
+            $table->string('no_rangka_mesin')->nullable();
             $table->string('merk_tipe')->nullable();
             $table->integer('tahun_pembuatan')->nullable();
+            $table->string('cc')->nullable();
+            $table->string('jenis_peruntukan')->nullable();
+            $table->string('pos')->nullable();
+            $table->string('pengemudi_1')->nullable();
+            $table->string('pengemudi_2')->nullable();
             $table->enum('status', ['aktif', 'perbaikan', 'nonaktif'])->default('aktif');
             $table->text('catatan')->nullable();
             $table->timestamps();
