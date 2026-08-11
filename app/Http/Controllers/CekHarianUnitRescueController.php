@@ -3,24 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Models\CekHarianUnit;
+use App\Models\Unit;
+use App\Models\Pos;
 use Illuminate\Http\Request;
 
 class CekHarianUnitRescueController extends Controller
 {
     /**
-     * Daftar unit/kendaraan rescue (dummy, ganti dengan Model Unit::all() bila sudah tersedia).
+     * Daftar unit/kendaraan rescue dari database Admin Data Unit.
      */
     protected function unitList()
     {
-        return collect([
-            (object) ['id' => 1, 'nama' => 'Rescue 01 - Ford Ranger'],
-            (object) ['id' => 2, 'nama' => 'Rescue 02 - Mitsubishi Triton'],
-            (object) ['id' => 3, 'nama' => 'Rescue 03 - Isuzu D-Max'],
-        ]);
+        $units = Unit::where('kategori', 'rescue')->orderBy('nomor_lambung', 'asc')->get();
+
+        if ($units->isEmpty()) {
+            return collect([
+                (object) ['id' => 1, 'nama' => 'R-01 - HINO', 'nomor_lambung' => 'R-01', 'plat_nomor' => 'D 9933 V', 'pos' => 'SOREANG'],
+            ]);
+        }
+
+        return $units;
     }
 
     /**
-     * Daftar label perlengkapan kendaraan rescue (harus sinkron dengan view form).
+     * Daftar label perlengkapan kendaraan rescue.
      */
     protected function perlengkapanLabels(): array
     {
@@ -86,8 +92,9 @@ class CekHarianUnitRescueController extends Controller
     public function index()
     {
         $unitList = $this->unitList();
+        $posList  = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
 
-        return view('auth.unit-rescue.cek-harian-unit-rescue', compact('unitList'));
+        return view('auth.unit-rescue.cek-harian-unit-rescue', compact('unitList', 'posList'));
     }
 
     /**
@@ -96,82 +103,61 @@ class CekHarianUnitRescueController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            // Step 1 - Identitas
             'nama_pemeriksa'  => 'required|string|max:255',
             'jabatan'         => 'required|string|max:255',
             'unit_id'         => 'required|integer',
-
-            // Step 2 - Pemanasan & BBM
-            'bukti_pemanasan' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
-            'jenis_bbm'       => 'required|in:solar,bensin',
-            'bukti_bbm'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
-
-            // Step 3 - Perlengkapan
-            'perlengkapan'           => 'required|array',
-            'perlengkapan.*.status'  => 'required|in:baik,rusak',
-            'perlengkapan.*.catatan' => 'nullable|string',
-        ], [
-            'bukti_pemanasan.uploaded' => 'File Bukti Pemanasan gagal diunggah. Ukuran foto terlalu besar atau melebihi batas upload PHP server (Maks 10MB).',
-            'bukti_pemanasan.max'      => 'Ukuran foto Bukti Pemanasan tidak boleh lebih dari 10 MB.',
-            'bukti_bbm.uploaded'        => 'File Bukti Level BBM gagal diunggah. Ukuran foto terlalu besar atau melebihi batas upload PHP server (Maks 10MB).',
-            'bukti_bbm.max'            => 'Ukuran foto Bukti Level BBM tidak boleh lebih dari 10 MB.',
+            'pos'             => 'nullable|string|max:255',
+            'tanggal'         => 'required|date',
+            'kondisi'         => 'required|array',
+            'keterangan'      => 'nullable|array',
+            'catatan'         => 'nullable|string',
         ]);
 
-        // Upload bukti pemanasan
-        $buktiPemanasanPath = $request->hasFile('bukti_pemanasan')
-            ? $request->file('bukti_pemanasan')->store('cek-harian-unit-rescue', 'public')
-            : null;
+        $unitObj  = Unit::find($validated['unit_id']);
+        $unitNama = $unitObj ? "{$unitObj->nomor_lambung} ({$unitObj->plat_nomor})" : ("Unit #" . $validated['unit_id']);
 
-        // Upload bukti BBM
-        $buktiBbmPath = $request->hasFile('bukti_bbm')
-            ? $request->file('bukti_bbm')->store('cek-harian-unit-rescue', 'public')
-            : null;
-
-        // Susun perlengkapan lengkap dengan label, agar mudah ditampilkan di admin
-        $labels = $this->perlengkapanLabels();
         $perlengkapan = [];
-        $jumlahRusak = 0;
-        foreach ($validated['perlengkapan'] as $key => $item) {
-            $status = $item['status'] ?? 'baik';
-            if ($status === 'rusak') {
-                $jumlahRusak++;
+        $totalBaik = 0;
+        $totalPerbaikan = 0;
+        $totalRusak = 0;
+
+        foreach ($this->perlengkapanLabels() as $key => $label) {
+            $st  = $validated['kondisi'][$key] ?? 'baik';
+            $ket = $validated['keterangan'][$key] ?? null;
+
+            if ($st === 'baik') {
+                $totalBaik++;
+            } elseif ($st === 'perbaikan') {
+                $totalPerbaikan++;
+            } else {
+                $totalRusak++;
             }
+
             $perlengkapan[$key] = [
-                'label'   => $labels[$key] ?? $key,
-                'status'  => $status,
-                'catatan' => $item['catatan'] ?? null,
+                'label'      => $label,
+                'status'     => $st,
+                'keterangan' => $ket,
             ];
         }
 
-        // Ambil nama unit terpilih untuk disimpan sebagai snapshot
-        $unit = $this->unitList()->firstWhere('id', (int) $validated['unit_id']);
-
         CekHarianUnit::create([
-            'user_id'        => auth()->id(),
-            'kategori'       => 'rescue',
-            'nama_pemeriksa' => $validated['nama_pemeriksa'],
-            'jabatan'        => $validated['jabatan'],
-            'unit_id'        => $validated['unit_id'],
-            'unit_nama'      => $unit->nama ?? null,
-
-            'bukti_pemanasan' => $buktiPemanasanPath,
-            'jenis_bbm'       => $validated['jenis_bbm'],
-            'bukti_bbm'       => $buktiBbmPath,
-
-            'level_air'            => null,
-            'kondisi_tangki_air'   => null,
-            'kebocoran_tangki_air' => null,
-            'tekanan_pompa'        => null,
-            'selang_induk'         => null,
-            'catatan_tangki_pompa' => null,
-            'dokumentasi_tangki_pompa' => null,
-
-            'perlengkapan' => $perlengkapan,
-            'jumlah_rusak' => $jumlahRusak,
+            'user_id'            => auth()->id() ?? 1,
+            'unit_id'            => $validated['unit_id'],
+            'unit_nama'          => $unitNama,
+            'kategori_unit'      => 'rescue',
+            'nama_pemeriksa'     => $validated['nama_pemeriksa'],
+            'jabatan'            => $validated['jabatan'],
+            'pos'                => $validated['pos'] ?? ($unitObj ? $unitObj->pos : null),
+            'tanggal_pemeriksaan' => $validated['tanggal'],
+            'perlengkapan'       => $perlengkapan,
+            'total_baik'         => $totalBaik,
+            'total_perbaikan'    => $totalPerbaikan,
+            'total_rusak'        => $totalRusak,
+            'catatan'            => $validated['catatan'] ?? null,
         ]);
 
         return redirect()
             ->route('unit-rescue.cek-harian-unit-rescue')
-            ->with('success', 'Pemeriksaan unit kendaraan rescue berhasil disimpan.');
+            ->with('success', "Pemeriksaan harian unit Rescue '{$unitNama}' berhasil disimpan!");
     }
 }

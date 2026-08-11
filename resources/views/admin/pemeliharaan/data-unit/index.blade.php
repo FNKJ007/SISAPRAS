@@ -25,7 +25,7 @@
     {{-- Header Section --}}
     <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px;">
         <div>
-            <h1 style="font-size:22px; font-weight:800; color:#0F172A; margin:0;">Data Unit Kendaraan</h1>
+            <h1 style="font-size:22px; font-weight:800; color:#0F172A; margin:0;">Data Unit Kendaraan &amp; Armada Operasional</h1>
             <p style="font-size:13px; color:#64748B; margin-top:4px; margin-bottom:0;">
                 Kelola data armada unit pemadam kebakaran dan unit rescue dinas.
             </p>
@@ -86,8 +86,8 @@
             {{-- Input Pencarian --}}
             <div style="display:flex; align-items:center; gap:8px;">
                 <div style="position:relative;">
-                    <input type="text" name="search" value="{{ $searchQuery }}" placeholder="Cari nama unit, lambung, pos..."
-                           style="padding:7px 14px 7px 34px; font-size:12.5px; border-radius:8px; border:1px solid #CBD5E1; outline:none; width:220px; background:#F8FAFC;">
+                    <input type="text" name="search" value="{{ $searchQuery }}" placeholder="Cari lambung, TNKB, merk, pengemudi..."
+                           style="padding:7px 14px 7px 34px; font-size:12.5px; border-radius:8px; border:1px solid #CBD5E1; outline:none; width:250px; background:#F8FAFC;">
                     <i data-lucide="search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:14px; height:14px; color:#94A3B8;"></i>
                 </div>
                 <button type="submit" style="padding:7px 14px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;">
@@ -97,7 +97,7 @@
         </form>
     </div>
 
-    {{-- Tabel Data Unit --}}
+    {{-- Tabel Data Unit Resmi Infografis --}}
     <div style="background:#FFFFFF; border-radius:16px; border:1px solid #E2E8F0; box-shadow:0px 18px 40px rgba(112,144,176,0.08); overflow:hidden;">
         @if($unitList->isEmpty())
             <div style="padding:48px 20px; text-align:center; color:#64748B;">
@@ -107,63 +107,95 @@
             </div>
         @else
             <div style="overflow-x:auto;">
-                <table style="width:100%; min-width:900px; table-layout:fixed; border-collapse:collapse; font-size:13px; text-align:left;">
+                <table style="width:100%; min-width:1100px; table-layout:fixed; border-collapse:collapse; font-size:12.5px; text-align:left;">
                     <thead>
-                        <tr style="background:#F8FAFC; border-bottom:1.5px solid #E2E8F0; color:#475569; font-size:11.5px; text-transform:uppercase; letter-spacing:0.5px;">
-                            <th style="padding:14px 16px; width:60px; text-align:center;">No</th>
-                            <th style="padding:14px 18px; width:26%;">Nama Unit</th>
-                            <th style="padding:14px 18px; width:15%;">Kategori</th>
-                            <th style="padding:14px 18px; width:18%;">No. Lambung / Plat</th>
-                            <th style="padding:14px 18px; width:18%;">Pos / Lokasi</th>
-                            <th style="padding:14px 18px;">Status Operasional</th>
-                            <th style="padding:14px 18px; width:130px; text-align:center;">Aksi</th>
+                        <tr style="background:#F8FAFC; border-bottom:1.5px solid #E2E8F0; color:#475569; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; font-weight:800;">
+                            <th style="padding:12px 14px; width:100px;">NO. LAMBUNG</th>
+                            <th style="padding:12px 14px; width:110px;">TNKB</th>
+                            <th style="padding:12px 14px; width:140px;">NO. RANGKA MESIN</th>
+                            <th style="padding:12px 14px; width:150px;">MERK</th>
+                            <th style="padding:12px 14px; width:75px; text-align:center;">TAHUN</th>
+                            <th style="padding:12px 14px; width:70px; text-align:center;">CC</th>
+                            <th style="padding:12px 14px; width:160px;">JENIS / PERUNTUKAN</th>
+                            <th style="padding:12px 14px; width:120px;">PENEMPATAN</th>
+                            <th style="padding:12px 14px; width:170px;">PENGEMUDI 1 &amp; 2</th>
+                            <th style="padding:12px 14px; width:110px; text-align:center;">AKSI</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($unitList as $index => $item)
+                        @foreach($unitList as $item)
                             <tr style="border-bottom:1px solid #F1F5F9;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='transparent'">
-                                <td style="padding:14px 16px; font-weight:600; color:#94A3B8; text-align:center;">{{ $unitList->firstItem() + $index }}</td>
-                                <td style="padding:14px 18px;">
-                                    <div style="font-weight:700; color:#0F172A;">{{ $item->nama }}</div>
-                                    <div style="font-size:11px; color:#94A3B8;">{{ $item->merk_tipe ?? 'Tipe —' }} @if($item->tahun_pembuatan) (Th {{ $item->tahun_pembuatan }}) @endif</div>
+                                {{-- No. Lambung --}}
+                                <td style="padding:12px 14px; font-weight:800; color:#1E3A8A;">
+                                    <span style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; padding:3px 9px; border-radius:6px; font-size:12px;">
+                                        {{ $item->nomor_lambung ?? '—' }}
+                                    </span>
                                 </td>
-                                <td style="padding:14px 18px;">
+
+                                {{-- TNKB / Plat Nomor --}}
+                                <td style="padding:12px 14px; font-weight:700; color:#0F172A;">
+                                    {{ $item->plat_nomor ?? '—' }}
+                                </td>
+
+                                {{-- No. Rangka Mesin --}}
+                                <td style="padding:12px 14px; color:#475569; font-size:11.5px; font-family:monospace;">
+                                    {{ $item->no_rangka_mesin ?? '—' }}
+                                </td>
+
+                                {{-- Merk --}}
+                                <td style="padding:12px 14px; font-weight:700; color:#1E293B;">
+                                    {{ $item->merk_tipe ?? '—' }}
+                                </td>
+
+                                {{-- Tahun --}}
+                                <td style="padding:12px 14px; text-align:center; font-weight:600; color:#334155;">
+                                    {{ $item->tahun_pembuatan ?? '—' }}
+                                </td>
+
+                                {{-- CC --}}
+                                <td style="padding:12px 14px; text-align:center; font-weight:600; color:#334155;">
+                                    {{ $item->cc ?? '—' }}
+                                </td>
+
+                                {{-- Jenis / Peruntukan --}}
+                                <td style="padding:12px 14px;">
+                                    <div style="font-weight:700; font-size:11.5px; color:#0F172A;">{{ $item->jenis_peruntukan ?? '—' }}</div>
                                     @if($item->kategori === 'pemadam')
-                                        <span style="background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">Pemadam</span>
+                                        <span style="font-size:10px; color:#991B1B; font-weight:700;">● Pemadaman</span>
                                     @else
-                                        <span style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">Rescue</span>
+                                        <span style="font-size:10px; color:#1D4ED8; font-weight:700;">● Rescue</span>
                                     @endif
                                 </td>
-                                <td style="padding:14px 18px;">
-                                    <div style="font-weight:600; color:#1E293B;">{{ $item->nomor_lambung ?? '—' }}</div>
-                                    <div style="font-size:11px; color:#64748B;">{{ $item->plat_nomor ?? '—' }}</div>
+
+                                {{-- Penempatan (Pos) --}}
+                                <td style="padding:12px 14px; font-weight:700; color:#334155;">
+                                    <div style="display:flex; align-items:center; gap:4px;">
+                                        <i data-lucide="map-pin" style="width:13px; height:13px; color:#DC2626; flex-shrink:0;"></i>
+                                        <span>{{ $item->pos ?? '—' }}</span>
+                                    </div>
                                 </td>
-                                <td style="padding:14px 18px;">
-                                    <div style="font-weight:600; color:#334155;">{{ $item->pos ?? '—' }}</div>
+
+                                {{-- Pengemudi 1 & 2 --}}
+                                <td style="padding:12px 14px; font-size:11.5px;">
+                                    <div style="font-weight:700; color:#0F172A;">👤 1: {{ $item->pengemudi_1 && $item->pengemudi_1 !== '—' ? $item->pengemudi_1 : '—' }}</div>
+                                    <div style="font-weight:600; color:#64748B; margin-top:2px;">👤 2: {{ $item->pengemudi_2 && $item->pengemudi_2 !== '—' && $item->pengemudi_2 !== '0' ? $item->pengemudi_2 : '—' }}</div>
                                 </td>
-                                <td style="padding:14px 18px;">
-                                    @if($item->status === 'aktif')
-                                        <span style="background:#D1FAE5; color:#065F46; border:1px solid #A7F3D0; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700;">✓ Aktif</span>
-                                    @elseif($item->status === 'perbaikan')
-                                        <span style="background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700;">🛠 Perbaikan</span>
-                                    @else
-                                        <span style="background:#F1F5F9; color:#64748B; border:1px solid #E2E8F0; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700;">Non-Aktif</span>
-                                    @endif
-                                </td>
-                                <td style="padding:14px 18px; text-align:center; white-space:nowrap;">
-                                    <div style="display:inline-flex; align-items:center; gap:6px;">
+
+                                {{-- Aksi --}}
+                                <td style="padding:12px 14px; text-align:center; white-space:nowrap;">
+                                    <div style="display:inline-flex; align-items:center; gap:4px;">
                                         <button type="button" @click="
                                             activeUnit = {{ json_encode($item) }};
                                             editUrl = '{{ route('admin.pemeliharaan.data-unit.update', $item->id) }}';
                                             editModalOpen = true;
-                                        " style="padding:5px 11px; background:#F1F5F9; color:#334155; border:1px solid #CBD5E1; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">
+                                        " style="padding:4px 9px; background:#F1F5F9; color:#334155; border:1px solid #CBD5E1; border-radius:6px; font-size:11.5px; font-weight:600; cursor:pointer;">
                                             Edit
                                         </button>
                                         <button type="button" @click="
                                             activeUnit = {{ json_encode($item) }};
                                             deleteUrl = '{{ route('admin.pemeliharaan.data-unit.destroy', $item->id) }}';
                                             deleteModalOpen = true;
-                                        " style="padding:5px 11px; background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">
+                                        " style="padding:4px 9px; background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; border-radius:6px; font-size:11.5px; font-weight:600; cursor:pointer;">
                                             Hapus
                                         </button>
                                     </div>
@@ -183,7 +215,7 @@
     <div x-show="createModalOpen" x-cloak class="admin-modal-overlay"
          style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
          @click.self="createModalOpen = false">
-        <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:540px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
+        <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:580px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; sticky; top:0; background:#FFFFFF; z-index:10;">
                 <h3 style="font-size:15.5px; font-weight:800; color:#0F172A; margin:0;">Tambah Unit Kendaraan Baru</h3>
                 <button type="button" @click="createModalOpen = false" style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:4px;">
@@ -193,9 +225,34 @@
             <form action="{{ route('admin.pemeliharaan.data-unit.store') }}" method="POST" style="padding:20px;">
                 @csrf
                 <div class="modal-form-grid">
-                    <div class="full-mobile" style="grid-column: span 2;">
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">No. Lambung <span style="color:#DC2626;">*</span></label>
+                        <input type="text" name="nomor_lambung" required placeholder="Contoh: P-01"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">TNKB (Plat Nomor) <span style="color:#DC2626;">*</span></label>
+                        <input type="text" name="plat_nomor" required placeholder="Contoh: D 8518 V"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nama Unit <span style="color:#DC2626;">*</span></label>
-                        <input type="text" name="nama" required placeholder="Contoh: Damkar 04 - Hino Ranger"
+                        <input type="text" name="nama" required placeholder="Contoh: P-01 - HINO (4X4)"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Merk / Tipe</label>
+                        <input type="text" name="merk_tipe" placeholder="Contoh: HINO (4X4)"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">No. Rangka Mesin</label>
+                        <input type="text" name="no_rangka_mesin" placeholder="Contoh: FG8JJ1D-BGJ"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Jenis / Peruntukan</label>
+                        <input type="text" name="jenis_peruntukan" placeholder="Contoh: PANCAR/PEMADAMAN"
                                style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
                     </div>
                     <div>
@@ -206,6 +263,31 @@
                         </select>
                     </div>
                     <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Penempatan (Pos)</label>
+                        <input type="text" name="pos" placeholder="Contoh: SOREANG"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Tahun Pembuatan</label>
+                        <input type="number" name="tahun_pembuatan" placeholder="2018"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">CC (Kapasitas Mesin)</label>
+                        <input type="text" name="cc" placeholder="Contoh: 7684"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pengemudi 1</label>
+                        <input type="text" name="pengemudi_1" placeholder="Contoh: UDEN SUHENDI"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pengemudi 2</label>
+                        <input type="text" name="pengemudi_2" placeholder="Contoh: MUHAMAD ILHAM"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div style="grid-column: span 2;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Status Operasional <span style="color:#DC2626;">*</span></label>
                         <select name="status" required style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
                             <option value="aktif">Aktif (Siap Operasi)</option>
@@ -213,32 +295,14 @@
                             <option value="nonaktif">Non-Aktif</option>
                         </select>
                     </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">No. Lambung</label>
-                        <input type="text" name="nomor_lambung" placeholder="Contoh: DK-04"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Plat Nomor</label>
-                        <input type="text" name="plat_nomor" placeholder="Contoh: B 9004 DBA"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pos / Sektor</label>
-                        <input type="text" name="pos" placeholder="Contoh: Pos Mako"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Merk / Tipe</label>
-                        <input type="text" name="merk_tipe" placeholder="Contoh: Hino 500 FM"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
-                    </div>
                 </div>
+
                 <div style="margin-bottom:18px;">
                     <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Catatan Khusus</label>
-                    <textarea name="catatan" rows="3" placeholder="Tuliskan catatan tambahan armada..."
+                    <textarea name="catatan" rows="2" placeholder="Tuliskan catatan tambahan armada..."
                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; resize:none;"></textarea>
                 </div>
+
                 <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid #E2E8F0; padding-top:14px;">
                     <button type="button" @click="createModalOpen = false"
                             style="padding:8px 16px; background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer;">
@@ -257,7 +321,7 @@
     <div x-show="editModalOpen" x-cloak class="admin-modal-overlay"
          style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
          @click.self="editModalOpen = false">
-        <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:540px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
+        <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:580px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; sticky; top:0; background:#FFFFFF; z-index:10;">
                 <h3 style="font-size:15.5px; font-weight:800; color:#0F172A; margin:0;">Edit Data Unit Kendaraan</h3>
                 <button type="button" @click="editModalOpen = false" style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:4px;">
@@ -268,9 +332,34 @@
                 @csrf
                 @method('PUT')
                 <div class="modal-form-grid">
-                    <div class="full-mobile" style="grid-column: span 2;">
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">No. Lambung <span style="color:#DC2626;">*</span></label>
+                        <input type="text" name="nomor_lambung" required x-model="activeUnit.nomor_lambung"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">TNKB (Plat Nomor) <span style="color:#DC2626;">*</span></label>
+                        <input type="text" name="plat_nomor" required x-model="activeUnit.plat_nomor"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nama Unit <span style="color:#DC2626;">*</span></label>
                         <input type="text" name="nama" required x-model="activeUnit.nama"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Merk / Tipe</label>
+                        <input type="text" name="merk_tipe" x-model="activeUnit.merk_tipe"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">No. Rangka Mesin</label>
+                        <input type="text" name="no_rangka_mesin" x-model="activeUnit.no_rangka_mesin"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Jenis / Peruntukan</label>
+                        <input type="text" name="jenis_peruntukan" x-model="activeUnit.jenis_peruntukan"
                                style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
                     </div>
                     <div>
@@ -281,6 +370,31 @@
                         </select>
                     </div>
                     <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Penempatan (Pos)</label>
+                        <input type="text" name="pos" x-model="activeUnit.pos"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Tahun Pembuatan</label>
+                        <input type="number" name="tahun_pembuatan" x-model="activeUnit.tahun_pembuatan"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">CC (Kapasitas Mesin)</label>
+                        <input type="text" name="cc" x-model="activeUnit.cc"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pengemudi 1</label>
+                        <input type="text" name="pengemudi_1" x-model="activeUnit.pengemudi_1"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pengemudi 2</label>
+                        <input type="text" name="pengemudi_2" x-model="activeUnit.pengemudi_2"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+                    <div style="grid-column: span 2;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Status Operasional <span style="color:#DC2626;">*</span></label>
                         <select name="status" required x-model="activeUnit.status" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
                             <option value="aktif">Aktif (Siap Operasi)</option>
@@ -288,32 +402,14 @@
                             <option value="nonaktif">Non-Aktif</option>
                         </select>
                     </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">No. Lambung</label>
-                        <input type="text" name="nomor_lambung" x-model="activeUnit.nomor_lambung"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Plat Nomor</label>
-                        <input type="text" name="plat_nomor" x-model="activeUnit.plat_nomor"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pos / Sektor</label>
-                        <input type="text" name="pos" x-model="activeUnit.pos"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Merk / Tipe</label>
-                        <input type="text" name="merk_tipe" x-model="activeUnit.merk_tipe"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
-                    </div>
                 </div>
+
                 <div style="margin-bottom:18px;">
                     <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Catatan Khusus</label>
-                    <textarea name="catatan" rows="3" x-model="activeUnit.catatan"
+                    <textarea name="catatan" rows="2" x-model="activeUnit.catatan"
                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; resize:none;"></textarea>
                 </div>
+
                 <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid #E2E8F0; padding-top:14px;">
                     <button type="button" @click="editModalOpen = false"
                             style="padding:8px 16px; background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer;">
@@ -336,9 +432,9 @@
             <div style="width:48px; height:48px; border-radius:50%; background:#FEE2E2; color:#DC2626; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
                 <i data-lucide="trash-2" style="width:24px; height:24px;"></i>
             </div>
-            <h3 style="font-size:16px; font-weight:800; color:#0F172A; margin:0 0 6px;">Hapus Data Unit?</h3>
+            <h3 style="font-size:16px; font-weight:800; color:#0F172A; margin:0 0 6px;">Hapus Data Unit Kendaraan?</h3>
             <p style="font-size:13px; color:#64748B; margin-bottom:20px;">
-                Apakah Anda yakin ingin menghapus unit <strong style="color:#0F172A;" x-text="activeUnit.nama"></strong>? Tindakan ini tidak dapat dibatalkan.
+                Apakah Anda yakin ingin menghapus unit <strong style="color:#0F172A;" x-text="activeUnit.nomor_lambung + ' (' + activeUnit.plat_nomor + ')'"></strong>? Tindakan ini tidak dapat dibatalkan.
             </p>
             <form :action="deleteUrl" method="POST" style="display:flex; justify-content:center; gap:10px;">
                 @csrf

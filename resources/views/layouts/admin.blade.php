@@ -173,12 +173,6 @@
                         </button>
                         <ul class="submenu" id="menuCommand">
                             <li>
-                                <a href="{{ route('admin.command-center.data-peralatan') }}"
-                                   class="{{ request()->routeIs('admin.command-center.data-peralatan') ? 'active' : '' }}">
-                                    Data Peralatan
-                                </a>
-                            </li>
-                            <li>
                                 <a href="{{ route('admin.command-center.pengecekan') }}"
                                    class="{{ request()->routeIs('admin.command-center.pengecekan') ? 'active' : '' }}">
                                     Pengecekan

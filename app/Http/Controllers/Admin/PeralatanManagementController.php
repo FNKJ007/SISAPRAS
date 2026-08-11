@@ -17,7 +17,7 @@ class PeralatanManagementController extends Controller
         $statusFilter   = $request->query('status', 'semua');
         $searchQuery    = $request->query('search', '');
 
-        $query = Peralatan::latest();
+        $query = Peralatan::orderBy('kategori', 'asc')->orderBy('nama', 'asc');
 
         if ($kategoriFilter !== 'semua' && in_array($kategoriFilter, ['pemadam', 'rescue', 'command_center'])) {
             $query->where('kategori', $kategoriFilter);
