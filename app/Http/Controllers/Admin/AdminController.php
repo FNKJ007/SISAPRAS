@@ -15,16 +15,76 @@ class AdminController extends Controller
      */
     public function dashboard()
     {
-        $kpi = [
-            'total_pengajuan'  => Pengajuan::count(),
-            'menunggu'         => Pengajuan::where('status', 'menunggu')->count(),
-            'disetujui'        => Pengajuan::where('status', 'disetujui')->count(),
-            'ditolak'          => Pengajuan::where('status', 'ditolak')->count(),
-        ];
+        $totalUnit          = \App\Models\Unit::count();
+        $totalPemeliharaan  = \App\Models\Pengajuan::count();
+        $totalPemeriksaan   = \App\Models\CekHarianUnit::count() + \App\Models\CekHarianAlat::count();
 
-        $pengajuanTerbaru = Pengajuan::latest()->take(5)->get();
+        // Data Grafik Bulanan Pengecekan Tahun Ini (12 Bulan)
+        $currentYear  = (int) date('Y');
+        $chartPemadam = [];
+        $chartRescue  = [];
+        $chartCC      = [];
 
-        return view('admin.dashboard', compact('kpi', 'pengajuanTerbaru'));
+        for ($m = 1; $m <= 12; $m++) {
+            $pemadamCount = \App\Models\CekHarianUnit::whereYear('created_at', $currentYear)->whereMonth('created_at', $m)->where(function($q){ $q->where('kategori', 'pemadam')->orWhereNull('kategori'); })->count()
+                + \App\Models\CekHarianAlat::whereYear('created_at', $currentYear)->whereMonth('created_at', $m)->where(function($q){ $q->where('kategori', 'pemadam')->orWhereNull('kategori'); })->count();
+            
+            $rescueCount = \App\Models\CekHarianUnit::whereYear('created_at', $currentYear)->whereMonth('created_at', $m)->where('kategori', 'rescue')->count()
+                + \App\Models\CekHarianAlat::whereYear('created_at', $currentYear)->whereMonth('created_at', $m)->where('kategori', 'rescue')->count();
+            
+            $ccCount = \App\Models\CekHarianAlat::whereYear('created_at', $currentYear)->whereMonth('created_at', $m)->where('kategori', 'command_center')->count();
+
+            $chartPemadam[] = $pemadamCount;
+            $chartRescue[]  = $rescueCount;
+            $chartCC[]      = $ccCount;
+        }
+
+        // Stream Aktivitas Terbaru
+        $recentPengajuans = \App\Models\Pengajuan::latest()->take(4)->get()->map(function ($p) {
+            return (object) [
+                'icon'       => 'wrench',
+                'color'      => '#C0201F',
+                'bg'         => 'rgba(192,32,31,.10)',
+                'text'       => 'Pengajuan pemeliharaan unit ' . strtoupper($p->nomor_lambung ?? $p->pos),
+                'created_at' => $p->created_at,
+            ];
+        });
+
+        $recentCekUnits = \App\Models\CekHarianUnit::latest()->take(4)->get()->map(function ($cu) {
+            return (object) [
+                'icon'       => 'truck',
+                'color'      => '#1B2A6B',
+                'bg'         => 'rgba(27,42,107,.10)',
+                'text'       => 'Cek harian unit ' . ($cu->unit_nama ?? $cu->pos) . ' (' . ucfirst($cu->kategori ?? 'pemadam') . ')',
+                'created_at' => $cu->created_at,
+            ];
+        });
+
+        $recentCekAlats = \App\Models\CekHarianAlat::latest()->take(4)->get()->map(function ($ca) {
+            $catLabel = $ca->kategori === 'command_center' ? 'Command Center' : ucfirst($ca->kategori ?? 'pemadam');
+            return (object) [
+                'icon'       => $ca->kategori === 'command_center' ? 'radio-tower' : 'clipboard-check',
+                'color'      => '#D97706',
+                'bg'         => 'rgba(217,119,6,.10)',
+                'text'       => 'Cek harian alat ' . $catLabel . ' (' . ($ca->pos ?? 'Utama') . ')',
+                'created_at' => $ca->created_at,
+            ];
+        });
+
+        $activities = $recentPengajuans->concat($recentCekUnits)->concat($recentCekAlats)
+            ->sortByDesc('created_at')
+            ->take(6)
+            ->values();
+
+        return view('admin.dashboard', compact(
+            'totalUnit',
+            'totalPemeliharaan',
+            'totalPemeriksaan',
+            'chartPemadam',
+            'chartRescue',
+            'chartCC',
+            'activities'
+        ));
     }
 
     /**

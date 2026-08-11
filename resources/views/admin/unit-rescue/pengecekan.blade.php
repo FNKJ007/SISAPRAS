@@ -59,36 +59,30 @@
         </form>
     </div>
 
-    {{-- Sleek Modern Tab Switcher Bar (LOCKED FLUSH LEFT) --}}
-    <div style="width:100%; display:flex; justify-content:flex-start; align-items:center; margin-bottom:18px;">
-        <div style="display:inline-flex; align-items:center; background:#FFFFFF; padding:4px; border-radius:12px; border:1px solid #E2E8F0; box-shadow:0 2px 8px rgba(15,23,42,0.04);">
-            <div style="display:flex; align-items:center; gap:4px;">
-                <button type="button" @click="activeTab = 'unit'"
-                        :style="activeTab === 'unit' 
-                            ? 'background:#1B2A6B; color:#FFFFFF; box-shadow:0 4px 12px rgba(27,42,107,0.25); font-weight:700;' 
-                            : 'color:#64748B; background:transparent; font-weight:600;'"
-                        style="display:inline-flex; align-items:center; gap:8px; padding:7px 16px; font-size:12.5px; border:none; border-radius:8px; cursor:pointer; transition:all 0.2s ease;">
-                    <i data-lucide="truck" style="width:15px; height:15px;"></i>
-                    <span>Unit Kendaraan</span>
-                    <span :style="activeTab === 'unit' ? 'background:rgba(255,255,255,0.2); color:#FFFFFF;' : 'background:#E2E8F0; color:#475569;'"
-                          style="padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700;">
-                        {{ count($cekUnitList) }}
-                    </span>
-                </button>
+    {{-- Sleek Compact Tab Switcher Bar --}}
+    <div class="w-full flex items-center mb-4">
+        <div class="inline-flex items-center gap-1 p-1 bg-white border border-slate-300 rounded-lg shadow-2xs">
+            <button type="button" @click="activeTab = 'unit'"
+                    :class="activeTab === 'unit' ? 'bg-[#1B2A6B] text-white shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-semibold hover:bg-slate-100'"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md transition-all duration-200 whitespace-nowrap cursor-pointer border-0">
+                <i data-lucide="truck" class="w-3.5 h-3.5"></i>
+                <span>Unit Kendaraan</span>
+                <span :class="activeTab === 'unit' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'"
+                      class="px-1.5 py-0.25 rounded-full text-[10px] font-extrabold ml-0.5">
+                    {{ $cekUnitList->total() }}
+                </span>
+            </button>
 
-                <button type="button" @click="activeTab = 'alat'"
-                        :style="activeTab === 'alat' 
-                            ? 'background:#1B2A6B; color:#FFFFFF; box-shadow:0 4px 12px rgba(27,42,107,0.25); font-weight:700;' 
-                            : 'color:#64748B; background:transparent; font-weight:600;'"
-                        style="display:inline-flex; align-items:center; gap:8px; padding:7px 16px; font-size:12.5px; border:none; border-radius:8px; cursor:pointer; transition:all 0.2s ease;">
-                    <i data-lucide="life-buoy" style="width:15px; height:15px;"></i>
-                    <span>Alat Rescue</span>
-                    <span :style="activeTab === 'alat' ? 'background:rgba(255,255,255,0.2); color:#FFFFFF;' : 'background:#E2E8F0; color:#475569;'"
-                          style="padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700;">
-                        {{ count($cekAlatList) }}
-                    </span>
-                </button>
-            </div>
+            <button type="button" @click="activeTab = 'alat'"
+                    :class="activeTab === 'alat' ? 'bg-[#1B2A6B] text-white shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-semibold hover:bg-slate-100'"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md transition-all duration-200 whitespace-nowrap cursor-pointer border-0">
+                <i data-lucide="life-buoy" class="w-3.5 h-3.5"></i>
+                <span>Alat Rescue</span>
+                <span :class="activeTab === 'alat' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'"
+                      class="px-1.5 py-0.25 rounded-full text-[10px] font-extrabold ml-0.5">
+                    {{ $cekAlatList->total() }}
+                </span>
+            </button>
         </div>
     </div>
 
