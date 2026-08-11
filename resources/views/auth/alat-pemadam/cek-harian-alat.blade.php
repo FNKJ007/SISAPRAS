@@ -24,8 +24,19 @@
     <form action="{{ route('alat-pemadam.cek-harian-alat.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
 
-        {{-- Baris 1: Nama Pemeriksa & Jabatan --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {{-- Identitas Pemeriksaan: Pos Damkar, Nama Pemeriksa, Jabatan, Tanggal --}}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+                <label for="pos" class="block text-sm font-medium mb-1">Pos Damkar <span class="text-red-500">*</span></label>
+                <select id="pos" name="pos" required
+                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    <option value="" selected disabled>Pilih Pos Damkar</option>
+                    @foreach($posList ?? [] as $p)
+                        <option value="{{ $p->nama }}" @selected(old('pos') == $p->nama)>{{ $p->nama }}</option>
+                    @endforeach
+                </select>
+                @error('pos') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
             <div>
                 <label for="nama_pemeriksa" class="block text-sm font-medium mb-1">Nama Pemeriksa <span class="text-red-500">*</span></label>
                 <input type="text" id="nama_pemeriksa" name="nama_pemeriksa"
@@ -42,26 +53,9 @@
                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
                 @error('jabatan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
-        </div>
-
-        {{-- Baris 2: Unit/Kendaraan & Tanggal Pemeriksaan --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-                <label for="unit_id" class="block text-sm font-medium mb-1">Unit / Kendaraan</label>
-                <select id="unit_id" name="unit_id"
-                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                    <option value="" selected disabled>Pilih Unit / Kendaraan</option>
-                    @foreach($unitList ?? [] as $unit)
-                        <option value="{{ $unit->id }}" @selected(old('unit_id') == $unit->id)>
-                            {{ $unit->nama }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('unit_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-            </div>
-            <div>
-                <label for="tanggal_pemeriksaan" class="block text-sm font-medium mb-1">Tanggal Pemeriksaan</label>
-                <input type="date" id="tanggal_pemeriksaan" name="tanggal_pemeriksaan"
+                <label for="tanggal_pemeriksaan" class="block text-sm font-medium mb-1">Tanggal Pemeriksaan <span class="text-red-500">*</span></label>
+                <input type="date" id="tanggal_pemeriksaan" name="tanggal_pemeriksaan" required
                        value="{{ old('tanggal_pemeriksaan', date('Y-m-d')) }}"
                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
                 @error('tanggal_pemeriksaan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror

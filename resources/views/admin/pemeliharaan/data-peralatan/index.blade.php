@@ -101,10 +101,23 @@
     {{-- Tabel Data Peralatan --}}
     <div style="background:#FFFFFF; border-radius:16px; border:1px solid #E2E8F0; box-shadow:0px 18px 40px rgba(112,144,176,0.08); overflow:hidden;">
         @if($peralatanList->isEmpty())
-            <div style="padding:48px 20px; text-align:center; color:#64748B;">
-                <i data-lucide="inbox" style="width:44px; height:44px; color:#CBD5E1; margin-bottom:12px;"></i>
-                <div style="font-size:15px; font-weight:700; color:#334155;">Belum Ada Data Peralatan</div>
-                <div style="font-size:12.5px; color:#94A3B8; margin-top:4px;">Tidak ada data peralatan sesuai filter pencarian.</div>
+            <div style="padding:56px 20px; text-align:center; background:#FFFFFF;">
+                <div style="width:64px; height:64px; background:#F8FAFC; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:16px; border:1px solid #E2E8F0; margin-left:auto; margin-right:auto;">
+                    <i data-lucide="search-x" style="width:30px; height:30px; color:#64748B;"></i>
+                </div>
+                @if(!empty($searchQuery) || $statusFilter !== 'semua' || $kategoriFilter !== 'semua')
+                    <div style="font-size:16px; font-weight:800; color:#0F172A; margin-bottom:6px;">Data Tidak Ditemukan</div>
+                    <div style="font-size:13px; color:#64748B; margin-bottom:18px; max-width:440px; margin-left:auto; margin-right:auto;">
+                        Tidak ada peralatan yang sesuai dengan kriteria pencarian / filter Anda.
+                    </div>
+                    <a href="{{ route('admin.pemeliharaan.data-peralatan') }}" style="display:inline-flex; align-items:center; gap:8px; padding:9px 20px; background:#1B2A6B; color:#FFFFFF; border-radius:10px; font-size:12.5px; font-weight:700; text-decoration:none; box-shadow:0 4px 12px rgba(27,42,107,0.2);">
+                        <i data-lucide="rotate-ccw" style="width:14px; height:14px;"></i>
+                        <span>Reset Filter &amp; Pencarian</span>
+                    </a>
+                @else
+                    <div style="font-size:16px; font-weight:800; color:#0F172A; margin-bottom:6px;">Belum Ada Data Peralatan</div>
+                    <div style="font-size:12.5px; color:#94A3B8;">Belum ada data peralatan yang tersimpan.</div>
+                @endif
             </div>
         @else
             <div style="overflow-x:auto;">

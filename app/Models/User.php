@@ -38,4 +38,19 @@ class User extends Authenticatable
     {
         return $this->role === 'admin';
     }
+
+    public function pengajuans()
+    {
+        return $this->hasMany(Pengajuan::class);
+    }
+
+    public function cekHarianUnits()
+    {
+        return $this->hasMany(CekHarianUnit::class);
+    }
+
+    public function cekHarianAlats()
+    {
+        return $this->hasMany(CekHarianAlat::class);
+    }
 }

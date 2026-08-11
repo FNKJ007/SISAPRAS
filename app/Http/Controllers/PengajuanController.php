@@ -24,19 +24,16 @@ class PengajuanController extends Controller
         foreach ($posDb as $p) {
             $posList[strtolower(str_replace(' ', '', $p->nama))] = $p->nama;
         }
-        if (empty($posList)) {
-            $posList = Pengajuan::$posMap;
-        }
 
         // Ambil Unit Kendaraan dari Database Admin Data Unit
         $unitDb = Unit::where('status', 'aktif')->orderBy('nomor_lambung', 'asc')->get();
         $nomorLambungList = [];
         foreach ($unitDb as $u) {
             $key = strtolower(str_replace(['-', ' ', '/'], '', $u->nomor_lambung));
-            $nomorLambungList[$key] = "{$u->nomor_lambung} / {$u->plat_nomor} ({$u->merk_tipe})";
-        }
-        if (empty($nomorLambungList)) {
-            $nomorLambungList = Pengajuan::$nomorLambungMap;
+            $label = $u->nomor_lambung;
+            if ($u->plat_nomor) $label .= ' / ' . $u->plat_nomor;
+            if ($u->merk_tipe) $label .= ' (' . $u->merk_tipe . ')';
+            $nomorLambungList[$key] = $label;
         }
 
         return view('pemeliharaan.pengajuan', compact(
@@ -68,12 +65,7 @@ class PengajuanController extends Controller
             'nip_kepala_bidang'    => 'required|string|max:50',
         ]);
 
-        // Transform / fallback map jika key dikirim
-        $validated['bidang']          = Pengajuan::$bidangMap[$validated['bidang']] ?? $validated['bidang'];
-        $validated['regu']            = Pengajuan::$reguMap[$validated['regu']] ?? $validated['regu'];
-        $validated['jenis_kendaraan'] = Pengajuan::$jenisKendaraanMap[$validated['jenis_kendaraan']] ?? $validated['jenis_kendaraan'];
-
-        $validated['user_id'] = auth()->id() ?? 1;
+        $validated['user_id'] = auth()->id();
         $validated['status']  = 'menunggu'; // Status awal: Menunggu verifikasi admin
 
         Pengajuan::create($validated);

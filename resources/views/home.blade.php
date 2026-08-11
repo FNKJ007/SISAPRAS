@@ -227,7 +227,7 @@
                     <span>Status Kesiapan:</span>
                     <span class="inline-flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-100/90 px-2.5 py-1 rounded-full text-[11px]">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Siap Bertugas (Ready)
+                        (Ready)
                     </span>
                 </div>
             </div>

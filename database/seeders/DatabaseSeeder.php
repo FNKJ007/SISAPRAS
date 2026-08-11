@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        $this->call(PosSeeder::class);
         $this->call(PeralatanSeeder::class);
         $this->call(UnitSeeder::class);
     }

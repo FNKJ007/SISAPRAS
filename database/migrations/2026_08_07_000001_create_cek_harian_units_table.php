@@ -18,6 +18,7 @@ return new class extends Migration
             // Step 1 - Identitas
             $table->string('nama_pemeriksa');
             $table->string('jabatan');
+            $table->string('pos')->nullable();
             $table->unsignedInteger('unit_id');
             $table->string('unit_nama')->nullable();
            

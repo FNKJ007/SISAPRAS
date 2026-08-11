@@ -181,21 +181,39 @@ class AdminController extends Controller
 
     public function unitPemadamPengecekan(Request $request)
     {
-        $tab = $request->query('tab', 'unit'); // 'unit' atau 'alat'
+        $tab         = $request->query('tab', 'unit'); // 'unit' atau 'alat'
+        $searchQuery = $request->query('search', '');
 
         // ===== Hasil Cek Harian Unit Kendaraan =====
-        $cekUnitList = CekHarianUnit::where(function ($q) {
-                $q->where('kategori', 'pemadam')->orWhereNull('kategori');
-            })
-            ->latest()
+        $unitQuery = CekHarianUnit::where(function ($q) {
+            $q->where('kategori', 'pemadam')->orWhereNull('kategori');
+        });
+
+        if (!empty($searchQuery)) {
+            $unitQuery->where(function ($q) use ($searchQuery) {
+                $q->where('pos', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('unit_nama', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
+        $cekUnitList = $unitQuery->latest()
             ->paginate(10, ['*'], 'unit_page')
             ->withQueryString();
 
         // ===== Hasil Cek Harian Alat Pemadam =====
-        $cekAlatList = CekHarianAlat::where(function ($q) {
-                $q->where('kategori', 'pemadam')->orWhereNull('kategori');
-            })
-            ->latest()
+        $alatQuery = CekHarianAlat::where(function ($q) {
+            $q->where('kategori', 'pemadam')->orWhereNull('kategori');
+        });
+
+        if (!empty($searchQuery)) {
+            $alatQuery->where(function ($q) use ($searchQuery) {
+                $q->where('pos', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
+        $cekAlatList = $alatQuery->latest()
             ->paginate(10, ['*'], 'alat_page')
             ->withQueryString();
 
@@ -215,7 +233,7 @@ class AdminController extends Controller
             })->sum('total_rusak'),
         ];
 
-        return view('admin.unit-pemadam.pengecekan', compact('cekUnitList', 'cekAlatList', 'kpi', 'tab'));
+        return view('admin.unit-pemadam.pengecekan', compact('cekUnitList', 'cekAlatList', 'kpi', 'tab', 'searchQuery'));
     }
 
     public function unitPemadamRiwayat()
@@ -241,17 +259,35 @@ class AdminController extends Controller
      */
     public function unitRescuePengecekan(Request $request)
     {
-        $tab = $request->query('tab', 'unit'); // 'unit' atau 'alat'
+        $tab         = $request->query('tab', 'unit'); // 'unit' atau 'alat'
+        $searchQuery = $request->query('search', '');
 
         // ===== Hasil Cek Harian Unit Kendaraan Rescue =====
-        $cekUnitList = CekHarianUnit::where('kategori', 'rescue')
-            ->latest()
+        $unitQuery = CekHarianUnit::where('kategori', 'rescue');
+
+        if (!empty($searchQuery)) {
+            $unitQuery->where(function ($q) use ($searchQuery) {
+                $q->where('pos', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('unit_nama', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
+        $cekUnitList = $unitQuery->latest()
             ->paginate(10, ['*'], 'unit_page')
             ->withQueryString();
 
         // ===== Hasil Cek Harian Alat Rescue =====
-        $cekAlatList = CekHarianAlat::where('kategori', 'rescue')
-            ->latest()
+        $alatQuery = CekHarianAlat::where('kategori', 'rescue');
+
+        if (!empty($searchQuery)) {
+            $alatQuery->where(function ($q) use ($searchQuery) {
+                $q->where('pos', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
+        $cekAlatList = $alatQuery->latest()
             ->paginate(10, ['*'], 'alat_page')
             ->withQueryString();
 
@@ -263,7 +299,7 @@ class AdminController extends Controller
             'alat_rusak_total' => (int) CekHarianAlat::where('kategori', 'rescue')->sum('total_rusak'),
         ];
 
-        return view('admin.unit-rescue.pengecekan', compact('cekUnitList', 'cekAlatList', 'kpi', 'tab'));
+        return view('admin.unit-rescue.pengecekan', compact('cekUnitList', 'cekAlatList', 'kpi', 'tab', 'searchQuery'));
     }
 
     public function unitRescueRiwayat()
@@ -283,11 +319,20 @@ class AdminController extends Controller
         ]);
     }
 
-    public function commandCenterPengecekan()
+    public function commandCenterPengecekan(Request $request)
     {
-        $cekAlatList = CekHarianAlat::where('kategori', 'command_center')
-            ->latest()
-            ->get();
+        $searchQuery = $request->query('search', '');
+
+        $query = CekHarianAlat::where('kategori', 'command_center');
+
+        if (!empty($searchQuery)) {
+            $query->where(function ($q) use ($searchQuery) {
+                $q->where('pos', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
+        $cekAlatList = $query->latest()->get();
 
         $kpi = [
             'total_cek_cc'   => $cekAlatList->count(),
@@ -295,7 +340,7 @@ class AdminController extends Controller
             'total_rusak_cc' => (int) $cekAlatList->sum('total_rusak'),
         ];
 
-        return view('admin.command-center.pengecekan', compact('cekAlatList', 'kpi'));
+        return view('admin.command-center.pengecekan', compact('cekAlatList', 'kpi', 'searchQuery'));
     }
 
     public function commandCenterRiwayat()
