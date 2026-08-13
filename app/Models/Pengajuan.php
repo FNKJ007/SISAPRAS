@@ -42,17 +42,23 @@ class Pengajuan extends Model
     ];
 
     public static array $posMap = [
-        'baleendah'   => 'Baleendah',
-        'cicalengka'  => 'Cicalengka',
-        'cileunyi'    => 'Cileunyi',
-        'ciparay'     => 'Ciparay',
-        'majalaya'    => 'Majalaya',
-        'margaasih'   => 'Margaasih (TKI)',
-        'ciwidey'     => 'Ciwidey (PACIRA)',
-        'pangalengan' => 'Pangalengan',
-        'soreang'     => 'Soreang (MAKO)',
-        'pencegahan'  => 'Pencegahan',
-        'spi'         => 'SPI',
+        'baleendah'       => 'Baleendah',
+        'cicalengka'      => 'Cicalengka',
+        'cileunyi'        => 'Cileunyi',
+        'ciparay'         => 'Ciparay',
+        'majalaya'        => 'Majalaya',
+        'margaasih'       => 'Margaasih (TKI)',
+        'margaasih(tki)'  => 'Margaasih (TKI)',
+        'margaasihtki'    => 'Margaasih (TKI)',
+        'ciwidey'         => 'Ciwidey (Pacira)',
+        'ciwidey(pacira)' => 'Ciwidey (Pacira)',
+        'ciwideypacira'   => 'Ciwidey (Pacira)',
+        'pangalengan'     => 'Pangalengan',
+        'soreang'         => 'Soreang (MAKO)',
+        'soreang(mako)'   => 'Soreang (MAKO)',
+        'soreangmako'     => 'Soreang (MAKO)',
+        'pencegahan'      => 'Pencegahan',
+        'spi'             => 'SPI',
     ];
 
     public static array $reguMap = [
@@ -103,6 +109,15 @@ class Pengajuan extends Model
     ];
 
     /**
+     * Accessor untuk Kode Verifikasi (Format: HAR-YYYYMMDD-XXXX)
+     */
+    public function getKodeVerifikasiAttribute(): string
+    {
+        $dateStr = $this->created_at ? $this->created_at->format('Ymd') : date('Ymd');
+        return 'HAR-' . $dateStr . '-' . sprintf('%04d', $this->id);
+    }
+
+    /**
      * Accessor untuk memecah string item_perbaikan menjadi array item
      */
     public function getItemListAttribute(): array
@@ -119,15 +134,46 @@ class Pengajuan extends Model
      */
     public function getBidangAttribute($value)
     {
-        return self::$bidangMap[$value] ?? $value;
+        if (empty($value)) return '-';
+        if (isset(self::$bidangMap[$value])) {
+            return self::$bidangMap[$value];
+        }
+        return ucwords(str_replace(['_', '-'], ' ', $value));
     }
 
     /**
-     * Accessor untuk Pos
+     * Accessor untuk Pos (Secara otomatis memformat huruf kapital dan tanda kurung)
      */
     public function getPosAttribute($value)
     {
-        return self::$posMap[$value] ?? $value;
+        if (empty($value)) return '-';
+
+        $key = strtolower(str_replace([' ', '_', '-'], '', $value));
+
+        if (isset(self::$posMap[$key])) {
+            return self::$posMap[$key];
+        }
+
+        if (isset(self::$posMap[$value])) {
+            return self::$posMap[$value];
+        }
+
+        // Cek ke DB Pos
+        try {
+            $posDb = \App\Models\Pos::all()->first(function ($p) use ($key, $value) {
+                $dbKey = strtolower(str_replace([' ', '_', '-'], '', $p->nama));
+                return $dbKey === $key || strtolower($p->nama) === strtolower($value);
+            });
+            if ($posDb) {
+                return $posDb->nama;
+            }
+        } catch (\Throwable $e) {}
+
+        // Fallback format rapi (Capital Case & (UPPERCASE) dalam kurung)
+        $formatted = ucwords(str_replace(['_', '-'], ' ', $value));
+        return preg_replace_callback('/\(([a-zA-Z0-9]+)\)/', function($matches) {
+            return '(' . strtoupper($matches[1]) . ')';
+        }, $formatted);
     }
 
     /**
@@ -135,7 +181,11 @@ class Pengajuan extends Model
      */
     public function getReguAttribute($value)
     {
-        return self::$reguMap[$value] ?? $value;
+        if (empty($value)) return '-';
+        if (isset(self::$reguMap[$value])) {
+            return self::$reguMap[$value];
+        }
+        return ucwords(str_replace(['_', '-'], ' ', $value));
     }
 
     /**
@@ -143,7 +193,11 @@ class Pengajuan extends Model
      */
     public function getJenisKendaraanAttribute($value)
     {
-        return self::$jenisKendaraanMap[$value] ?? $value;
+        if (empty($value)) return '-';
+        if (isset(self::$jenisKendaraanMap[$value])) {
+            return self::$jenisKendaraanMap[$value];
+        }
+        return ucwords(str_replace(['_', '-'], ' ', $value));
     }
 
     /**
@@ -151,7 +205,26 @@ class Pengajuan extends Model
      */
     public function getNomorLambungAttribute($value)
     {
-        return self::$nomorLambungMap[$value] ?? $value;
+        if (empty($value)) return '-';
+        if (isset(self::$nomorLambungMap[$value])) {
+            return self::$nomorLambungMap[$value];
+        }
+
+        // Cek ke DB Unit
+        try {
+            $unitDb = \App\Models\Unit::all()->first(function ($u) use ($value) {
+                $dbKey = strtolower(str_replace(['-', ' ', '/'], '', $u->nomor_lambung));
+                $searchKey = strtolower(str_replace(['-', ' ', '/'], '', $value));
+                return $dbKey === $searchKey;
+            });
+            if ($unitDb) {
+                $label = $unitDb->nomor_lambung;
+                if ($unitDb->plat_nomor) $label .= ' / ' . $unitDb->plat_nomor;
+                return $label;
+            }
+        } catch (\Throwable $e) {}
+
+        return strtoupper($value);
     }
 
     /**

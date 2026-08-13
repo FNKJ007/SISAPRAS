@@ -190,12 +190,67 @@ class AdminController extends Controller
         ]);
     }
 
-    public function pemeliharaanPemeliharaan()
+    public function pemeliharaanPemeliharaan(Request $request)
     {
-        return view('admin.placeholder', [
-            'pageTitle'  => 'Pemeliharaan',
-            'breadcrumb' => ['Pemeliharaan', 'Pemeliharaan'],
-        ]);
+        $search = $request->query('search', '');
+
+        // Hanya tampilkan pengajuan yang sudah diverifikasi (status = disetujui)
+        $query = Pengajuan::where('status', 'disetujui')->latest();
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nomor_lambung', 'LIKE', "%{$search}%")
+                  ->orWhere('pos', 'LIKE', "%{$search}%")
+                  ->orWhere('nama_pemegang', 'LIKE', "%{$search}%")
+                  ->orWhere('item_perbaikan', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $records = $query->paginate(15)->withQueryString();
+
+        return view('admin.pemeliharaan.pemeliharaan', compact('records', 'search'));
+    }
+
+    /**
+     * Cetak / Export Dokumen Pemeliharaan (Permohonan Bidang, Permohonan Bengkel, Surat Pesanan)
+     */
+    public function cetakDokumen($id, $type)
+    {
+        $pengajuan = Pengajuan::find($id);
+
+        if (!$pengajuan) {
+            $pengajuan = (object) [
+                'id'                   => $id,
+                'created_at'           => now(),
+                'kode_verifikasi'      => 'HAR-' . date('Ymd') . '-' . sprintf('%04d', $id),
+                'bidang'               => 'Pemadam',
+                'pos'                  => 'Soreang (MAKO)',
+                'regu'                 => 'Regu Pemadam 1',
+                'jenis_kendaraan'      => 'Pancar',
+                'nomor_lambung'        => 'P-04 / D 9429 V',
+                'item_perbaikan'       => "Pengantian oli mesin\nService rem depan/belakang\nPerbaikan pompa pancar",
+                'item_list'            => ['Pengantian oli mesin', 'Service rem depan/belakang', 'Perbaikan pompa pancar'],
+                'nama_pemegang'        => 'Ahmad Sobari',
+                'nip_pemegang'         => '19850312 201001 1 004',
+                'nama_komandan_regu'   => 'Budi Santoso',
+                'nip_komandan_regu'    => '19790815 200501 1 002',
+                'nama_kepala_bidang'   => 'Drs. H. Mulyadi, M.Si',
+                'nip_kepala_bidang'    => '19681120 199303 1 005',
+                'status'               => 'disetujui',
+                'tanggal_keberangkatan'=> now()->format('Y-m-d'),
+                'catatan_admin'        => 'Unit diizinkan untuk perbaikan ke bengkel rekanan.',
+            ];
+        }
+
+        $typeNames = [
+            'permohonanbidang'  => 'Surat Permohonan Bidang',
+            'permohonanbengkel' => 'Surat Permohonan Bengkel',
+            'Suratpesanan'      => 'Surat Pesanan Pekerjaan Pemeliharaan',
+        ];
+
+        $title = $typeNames[$type] ?? 'Dokumen Pemeliharaan';
+
+        return view('admin.pemeliharaan.cetak-dokumen', compact('pengajuan', 'type', 'title'));
     }
 
     public function pemeliharaanInvoice()
