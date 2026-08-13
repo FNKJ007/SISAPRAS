@@ -253,14 +253,6 @@ class AdminController extends Controller
         return view('admin.pemeliharaan.cetak-dokumen', compact('pengajuan', 'type', 'title'));
     }
 
-    public function pemeliharaanInvoice()
-    {
-        return view('admin.placeholder', [
-            'pageTitle'  => 'Invoice',
-            'breadcrumb' => ['Pemeliharaan', 'Invoice'],
-        ]);
-    }
-
     public function pemeliharaanKartuKendali()
     {
         return view('admin.placeholder', [

@@ -78,8 +78,8 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('admin.pemeliharaan.invoice') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.invoice') ? 'active' : '' }}">
+                                <a href="{{ route('admin.pemeliharaan.invoice.index') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.invoice.*') ? 'active' : '' }}">
                                     Invoice
                                 </a>
                             </li>

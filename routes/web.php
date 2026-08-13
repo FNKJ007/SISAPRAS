@@ -12,6 +12,7 @@ use App\Http\Controllers\CekHarianUnitPemadamController;
 use App\Http\Controllers\CekHarianUnitRescueController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PengajuanController;
+use App\Http\Controllers\Admin\InvoiceController;
 use Illuminate\Support\Facades\Route;
 
 // Redirect Halaman Utama ( / )
@@ -97,7 +98,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/pemeriksaan',                  [AdminController::class, 'pemeliharaanPemeriksaan'])->name('pemeriksaan');
         Route::get('/pemeliharaan',                 [AdminController::class, 'pemeliharaanPemeliharaan'])->name('pemeliharaan');
         Route::get('/cetak-dokumen/{id}/{type}',    [AdminController::class, 'cetakDokumen'])->name('cetak-dokumen');
-        Route::get('/invoice',                      [AdminController::class, 'pemeliharaanInvoice'])->name('invoice');
+        Route::resource('invoice', InvoiceController::class);
         Route::get('/kartu-kendali',                [AdminController::class, 'pemeliharaanKartuKendali'])->name('kartu-kendali');
         
         // Data Unit CRUD Routes
