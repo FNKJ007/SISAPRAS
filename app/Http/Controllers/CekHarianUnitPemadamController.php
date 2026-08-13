@@ -2,25 +2,97 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CekHarianUnit;
+use App\Models\Unit;
+use App\Models\Pos;
 use Illuminate\Http\Request;
-// use App\Models\Unit;
-// use App\Models\CekHarianUnit;
+
+use App\Traits\HandlesCekHarianUnit;
 
 class CekHarianUnitPemadamController extends Controller
 {
+    use HandlesCekHarianUnit;
+
+    /**
+     * Daftar unit/kendaraan pemadam dari database Admin Data Unit.
+     */
+    protected function unitList()
+    {
+        $units = Unit::where('kategori', 'pemadam')->orderBy('nomor_lambung', 'asc')->get();
+
+        return $units;
+    }
+
+    /**
+     * Daftar label perlengkapan kendaraan.
+     */
+    protected function perlengkapanLabels(): array
+    {
+        return [
+            'engine_starter'             => 'Engine Starter',
+            'rem_tangan'                 => 'Rem Tangan',
+            'rem_kaki'                   => 'Rem Kaki',
+            'kelistrikan'                => 'Kelistrikan',
+            'klakson'                    => 'Klakson',
+            'sirine_tunggal'             => 'Sirine Tunggal',
+            'sirine'                     => 'Sirine',
+            'speedometer'                => 'Speedometer',
+            'dashboard_camera'           => 'Dashboard Camera',
+            'gps_tracker'                => 'GPS Tracker',
+            'flasher_sein_kanan_kiri'    => 'Flasher Sein Kanan-Kiri',
+            'spion_dalam'                => 'Spion Dalam',
+            'rig'                        => 'RIG',
+            'speaker'                    => 'Speaker',
+            'megaphone_toa'              => 'Megaphone (TOA)',
+            'oli_power_steering'         => 'Oli Power Steering',
+            'air_radiator'               => 'Air Radiator',
+            'minyak_rem'                 => 'Minyak Rem',
+            'oli_mesin'                  => 'Oli Mesin',
+            'air_wiper'                  => 'Air Wiper',
+            'ac'                         => 'AC',
+            'kebersihan_bagian_dalam'    => 'Kebersihan Bagian Dalam',
+            'lampu_depan_dim_kanan'      => 'Lampu Depan (Dim) Kanan',
+            'lampu_depan_dim_kiri'       => 'Lampu Depan (Dim) Kiri',
+            'lampu_belakang_kanan'       => 'Lampu Belakang Kanan',
+            'lampu_belakang_kiri'        => 'Lampu Belakang Kiri',
+            'lampu_belakang_hazard'      => 'Lampu Belakang Hazard',
+            'lampu_sein_depan_kanan'     => 'Lampu Sein Depan Kanan',
+            'lampu_sein_depan_kiri'      => 'Lampu Sein Depan Kiri',
+            'lampu_sein_belakang_kanan'  => 'Lampu Sein Belakang Kanan',
+            'lampu_sein_belakang_kiri'   => 'Lampu Sein Belakang Kiri',
+            'spion_kanan'                => 'Spion Kanan',
+            'spion_kiri'                 => 'Spion Kiri',
+            'wiper'                      => 'Wiper',
+            'winch'                      => 'Winch',
+            'ban_depan_kanan'            => 'Ban Depan Kanan',
+            'ban_depan_kiri'             => 'Ban Depan Kiri',
+            'ban_belakang_kanan'         => 'Ban Belakang Kanan',
+            'ban_belakang_kiri'          => 'Ban Belakang Kiri',
+            'ban_cadangan'               => 'Ban Cadangan',
+            'lampu_rotary'               => 'Lampu Rotary',
+            'lampu_rem_kanan'            => 'Lampu Rem Kanan',
+            'lampu_rem_kiri'             => 'Lampu Rem Kiri',
+            'pintu_kompartemen_kanan'    => 'Pintu Kompartemen Kanan',
+            'pintu_kompartemen_kiri'     => 'Pintu Kompartemen Kiri',
+            'pintu_kompartemen_belakang' => 'Pintu Kompartemen Belakang',
+            'ganjal_ban'                 => 'Ganjal Ban',
+            'dongkrak'                   => 'Dongkrak',
+            'kabin'                      => 'Kabin',
+            'body_unit'                  => 'Body Unit',
+            'kunci_kunci'                => 'Kunci-Kunci',
+            'kebersihan_bagian_luar'     => 'Kebersihan Bagian Luar',
+        ];
+    }
+
     /**
      * Menampilkan form wizard Cek Harian Unit Kendaraan Pemadam.
      */
     public function index()
     {
-        // Contoh data unit/kendaraan untuk dropdown (ganti dengan query Model asli, mis. Unit::all())
-        $unitList = collect([
-            (object) ['id' => 1, 'nama' => 'Damkar 01 - Toyota Dyna'],
-            (object) ['id' => 2, 'nama' => 'Damkar 02 - Hino Ranger'],
-            (object) ['id' => 3, 'nama' => 'Damkar 03 - Isuzu Elf'],
-        ]);
+        $unitList = $this->unitList();
+        $posList = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
 
-        return view('auth.unit-pemadam.cek-harian-unit', compact('unitList'));
+        return view('auth.unit-pemadam.cek-harian-unit', compact('unitList', 'posList'));
     }
 
     /**
@@ -28,52 +100,10 @@ class CekHarianUnitPemadamController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            // Step 1 - Identitas
-            'nama_pemeriksa'   => 'required|string|max:255',
-            'jabatan'          => 'required|string|max:255',
-            'unit_id'          => 'required|integer',
-            'shift'            => 'required|in:pagi,siang,malam',
-
-            // Step 2 - Pemanasan & BBM
-            'bukti_pemanasan'  => 'nullable|image|max:2048',
-            'jenis_bbm'        => 'required|in:solar,bensin',
-            'level_bbm'        => 'required|in:penuh,3_4,1_2,kosong',
-            'jumlah_bbm_liter' => 'nullable|numeric|min:0',
-
-            // Step 3 - Tangki & Pompa
-            'level_air'               => 'required|in:penuh,3_4,1_2,kosong',
-            'kondisi_tangki'          => 'required|in:baik,perlu_perhatian,rusak',
-            'kebocoran_tangki'        => 'required|in:ada,tidak_ada',
-            'tekanan_pompa'           => 'required|in:baik,rusak',
-            'pengisian_pompa'         => 'required|in:baik,rusak',
-            'selang_induk'            => 'required|in:baik,rusak',
-            'catatan_tangki_pompa'    => 'nullable|string',
-            'dokumentasi_tangki_pompa'   => 'nullable|array|max:3',
-            'dokumentasi_tangki_pompa.*' => 'image|max:2048',
-
-            // Step 4 - Perlengkapan
-            'perlengkapan'                    => 'required|array',
-            'perlengkapan.*.status'           => 'required|in:baik,rusak',
-            'perlengkapan.*.catatan'          => 'nullable|string',
-        ]);
-
-        // TODO: simpan header pemeriksaan + upload file (bukti_pemanasan,
-        // dokumentasi_tangki_pompa[]) ke storage, lalu simpan tiap baris
-        // perlengkapan, mis:
-        //
-        // $fotoPemanasanPath = $request->hasFile('bukti_pemanasan')
-        //     ? $request->file('bukti_pemanasan')->store('cek-harian-unit', 'public')
-        //     : null;
-        //
-        // foreach ($request->file('dokumentasi_tangki_pompa', []) as $foto) {
-        //     $foto->store('cek-harian-unit', 'public');
-        // }
-        //
-        // CekHarianUnit::create([...]);
+        $record = $this->storeCekHarianUnit($request, 'pemadam', $this->perlengkapanLabels());
 
         return redirect()
             ->route('unit-pemadam.cek-harian-unit')
-            ->with('success', 'Pemeriksaan unit kendaraan pemadam berhasil disimpan.');
+            ->with('success', "Pemeriksaan harian unit Pemadam '{$record->unit_nama}' berhasil disimpan!");
     }
 }

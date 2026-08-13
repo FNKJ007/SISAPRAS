@@ -3,6 +3,19 @@
 @section('content')
 <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 max-w-4xl mx-auto" id="wizardCekHarianUnit">
 
+    {{-- Flash Message Success --}}
+    @if(session('success'))
+        <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between shadow-xs">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">✓</div>
+                <div>
+                    <h4 class="font-bold text-sm">Pemeriksaan Berhasil Disimpan!</h4>
+                    <p class="text-xs text-emerald-700 mt-0.5">{{ session('success') }}</p>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Cek Harian Unit Kendaraan Rescue</h1>
 
     {{-- ===================== STEPPER ===================== --}}
@@ -38,24 +51,35 @@
         <div data-step-panel="1">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label for="nama_pemeriksa" class="block text-sm font-medium mb-1">Nama Pemeriksa</label>
-                    <input type="text" id="nama_pemeriksa" name="nama_pemeriksa" value="{{ old('nama_pemeriksa') }}"
-                           placeholder="Masukkan nama pemeriksa"
+                    <label for="pos" class="block text-sm font-medium mb-1">Pos Damkar <span class="text-red-500">*</span></label>
+                    <select id="pos" name="pos" required
+                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+                        <option value="" selected disabled>Pilih Pos Damkar</option>
+                        @foreach($posList ?? [] as $p)
+                            <option value="{{ $p->nama }}" @selected(old('pos') == $p->nama)>{{ $p->nama }}</option>
+                        @endforeach
+                    </select>
+                    @error('pos') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="nama_pemeriksa" class="block text-sm font-medium mb-1">Nama Pemeriksa <span class="text-red-500">*</span></label>
+                    <input type="text" id="nama_pemeriksa" name="nama_pemeriksa" value="{{ old('nama_pemeriksa', auth()->user()->name ?? '') }}"
+                           placeholder="Masukkan nama pemeriksa" required
                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
                     @error('nama_pemeriksa') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label for="jabatan" class="block text-sm font-medium mb-1">Jabatan</label>
-                    <input type="text" id="jabatan" name="jabatan" value="{{ old('jabatan') }}"
-                           placeholder="Masukkan jabatan"
+                    <label for="jabatan" class="block text-sm font-medium mb-1">Jabatan <span class="text-red-500">*</span></label>
+                    <input type="text" id="jabatan" name="jabatan" value="{{ old('jabatan', 'Petugas Regu') }}"
+                           placeholder="Masukkan jabatan" required
                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
                     @error('jabatan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label for="unit_id" class="block text-sm font-medium mb-1">Unit</label>
-                    <select id="unit_id" name="unit_id"
+                    <label for="unit_id" class="block text-sm font-medium mb-1">Unit Kendaraan Rescue <span class="text-red-500">*</span></label>
+                    <select id="unit_id" name="unit_id" required
                             class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Unit / Kendaraan</option>
+                        <option value="" selected disabled>Pilih Unit / Kendaraan Rescue</option>
                         @foreach($unitList ?? [] as $unit)
                             <option value="{{ $unit->id }}" @selected(old('unit_id') == $unit->id)>{{ $unit->nama }}</option>
                         @endforeach
@@ -71,37 +95,39 @@
                 <p class="font-medium text-sm mb-1">Pemanasan Kendaraan</p>
                 <p class="text-xs text-gray-500 mb-2">(Unit harus dioperasikan dan dikendarai minimal sejauh 1 KM. Silakan lampirkan dokumentasi sebagai bukti)</p>
                 <label for="bukti_pemanasan"
-                       class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500">
+                       class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
                     <span id="buktiPemanasanLabel">Lampirkan Bukti Pemanasan</span>
                     <span>📎</span>
                 </label>
                 <input id="bukti_pemanasan" type="file" name="bukti_pemanasan" accept="image/*" class="hidden">
+                <div id="buktiPemanasanPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
                 @error('bukti_pemanasan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <p class="font-medium text-sm mb-2">BBM</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                 <div>
-                    <label for="jenis_bbm" class="block text-sm font-medium mb-1">Jenis BBM</label>
-                    <select id="jenis_bbm" name="jenis_bbm"
+                    <label for="jenis_bbm" class="block text-sm font-medium mb-1">Jenis BBM <span class="text-red-500">*</span></label>
+                    <p class="text-xs text-gray-500 mb-2">(Pilih jenis bahan bakar kendaraan)</p>
+                    <select id="jenis_bbm" name="jenis_bbm" required
                             class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
                         <option value="" selected disabled>Pilih Jenis BBM</option>
-                        <option value="solar" @selected(old('jenis_bbm') === 'solar')>Solar</option>
+                        <option value="solar" @selected(old('jenis_bbm', 'solar') === 'solar')>Solar</option>
                         <option value="bensin" @selected(old('jenis_bbm') === 'bensin')>Bensin</option>
                     </select>
                     @error('jenis_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
-                <div></div>
-                <div class="mb-5">
-                <p class="font-medium text-sm mb-1">Level BBM</p>
-                <p class="text-xs text-gray-500 mb-2">(fotokan Speedometer untuk bukti level bbm)</p>
-                <label for="bukti_pemanasan"
-                       class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500">
-                    <span id="buktiPemanasanLabel">Lampirkan Bukti Level BBM</span>
-                    <span>📎</span>
-                </label>
-                <input id="bukti_bbm" type="file" name="bukti_bbm" accept="image/*" class="hidden">
-                @error('bukti_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                <div>
+                    <p class="font-medium text-sm mb-1">Bukti Foto Level BBM</p>
+                    <p class="text-xs text-gray-500 mb-2">(Fotokan Speedometer untuk bukti level BBM)</p>
+                    <label for="bukti_bbm"
+                           class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
+                        <span id="buktiBbmLabel">Lampirkan Bukti Level BBM</span>
+                        <span>📎</span>
+                    </label>
+                    <input id="bukti_bbm" type="file" name="bukti_bbm" accept="image/*" class="hidden">
+                    <div id="buktiBbmPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
+                    @error('bukti_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
             </div>
         </div>
@@ -184,19 +210,19 @@
             </div>
         </div>
 
-        {{-- ===================== STEP 5 - KONFIRMASI ===================== --}}
+        {{-- ===================== STEP 4 - KONFIRMASI ===================== --}}
         <div data-step-panel="4" class="hidden">
             <p class="font-medium text-base mb-3">Ringkasan Pemeriksaan</p>
             <div class="border border-gray-200 rounded-xl divide-y divide-gray-200">
                 @foreach(['Identitas Pemeriksaan', 'Pemanasan & BBM', 'Perlengkapan Kendaraan'] as $ringkasan)
                     <div class="flex items-center justify-between px-4 py-3 text-sm">
                         <span>{{ $ringkasan }}</span>
-                        <span class="text-green-600 font-medium flex items-center gap-1">Lengkap <span>✓</span></span>
+                        <span class="text-emerald-600 font-bold flex items-center gap-1">Lengkap <span>✓</span></span>
                     </div>
                 @endforeach
             </div>
 
-            <div class="mt-4 flex items-start gap-2 bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-3">
+            <div class="mt-4 flex items-start gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-lg px-4 py-3 font-semibold">
                 <span>✅</span>
                 <span>Pastikan semua data sudah benar sebelum menyimpan pemeriksaan.</span>
             </div>
@@ -225,7 +251,7 @@
 <script>
 (function () {
     var wizard = document.getElementById('wizardCekHarianUnit');
-    var totalSteps = 5;
+    var totalSteps = 4;
     var currentStep = 1;
 
     var panels     = wizard.querySelectorAll('[data-step-panel]');
@@ -310,23 +336,67 @@
         }
     });
 
-    // Update label nama file yang dipilih pada input file
-    function bindFileLabel(inputId, labelId, placeholder) {
+    // Update label & render thumbnail preview for file inputs
+    function bindFilePreview(inputId, labelId, previewId, placeholder) {
         var input = document.getElementById(inputId);
         var labelEl = document.getElementById(labelId);
+        var previewEl = document.getElementById(previewId);
         if (!input || !labelEl) return;
+
         input.addEventListener('change', function () {
+            if (previewEl) previewEl.innerHTML = '';
+
             if (input.files.length === 0) {
                 labelEl.textContent = placeholder;
-            } else if (input.files.length === 1) {
-                labelEl.textContent = input.files[0].name;
+                labelEl.parentElement.classList.remove('border-emerald-500', 'bg-emerald-50/50');
+                if (previewEl) previewEl.classList.add('hidden');
+                return;
+            }
+
+            labelEl.parentElement.classList.add('border-emerald-500', 'bg-emerald-50/50');
+
+            if (input.files.length === 1) {
+                labelEl.textContent = '✓ ' + input.files[0].name;
             } else {
-                labelEl.textContent = input.files.length + ' file dipilih';
+                labelEl.textContent = '✓ ' + input.files.length + ' file foto terpilih';
+            }
+
+            if (previewEl) {
+                previewEl.classList.remove('hidden');
+                Array.from(input.files).forEach(function (file) {
+                    if (file.type.startsWith('image/')) {
+                        var reader = new FileReader();
+                        reader.onload = function (e) {
+                            var item = document.createElement('div');
+                            item.className = 'relative border border-emerald-300 rounded-lg p-1.5 bg-emerald-50/30 flex items-center gap-2.5 shadow-2xs';
+                            item.innerHTML = `
+                                <img src="${e.target.result}" alt="Preview" class="w-12 h-12 object-cover rounded-md border border-emerald-200">
+                                <div>
+                                    <span class="block text-xs font-bold text-emerald-900 truncate max-w-[160px]">${file.name}</span>
+                                    <span class="block text-[10px] text-emerald-700 font-semibold">${(file.size / 1024).toFixed(1)} KB · Foto Terpilih ✓</span>
+                                </div>
+                            `;
+                            previewEl.appendChild(item);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
             }
         });
     }
-    bindFileLabel('bukti_pemanasan', 'buktiPemanasanLabel', 'Lampirkan Bukti Pemanasan');
-    bindFileLabel('dokumentasi_tangki_pompa', 'dokumentasiTangkiLabel', 'Lampirkan Foto (Maks. 3 file)');
+
+    bindFilePreview('bukti_pemanasan', 'buktiPemanasanLabel', 'buktiPemanasanPreview', 'Lampirkan Bukti Pemanasan');
+    bindFilePreview('bukti_bbm', 'buktiBbmLabel', 'buktiBbmPreview', 'Lampirkan Bukti Level BBM');
+
+    @if($errors->any())
+        var firstError = wizard.querySelector('.text-red-600');
+        if (firstError) {
+            var errPanel = firstError.closest('[data-step-panel]');
+            if (errPanel) {
+                currentStep = parseInt(errPanel.getAttribute('data-step-panel'), 10);
+            }
+        }
+    @endif
 
     showStep(currentStep);
 })();

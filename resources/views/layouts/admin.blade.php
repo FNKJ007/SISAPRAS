@@ -6,17 +6,18 @@
     <title>@yield('title', 'Admin') — Dinas Damkar</title>
     <meta name="description" content="Admin Panel Sistem Informasi Dinas Pemadam Kebakaran">
 
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     {{-- Identik dengan app.blade.php milik user --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         [x-cloak] { display: none !important; }
     </style>
-    @stack('styles')
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    {{-- CSS admin: identik dengan app.css --}}
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v={{ file_exists(public_path('css/admin.css')) ? filemtime(public_path('css/admin.css')) : '1' }}">
     @stack('styles')
 </head>
@@ -88,6 +89,24 @@
                                     Kartu Kendali
                                 </a>
                             </li>
+                            <li>
+                                <a href="{{ route('admin.pemeliharaan.data-unit') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-unit') ? 'active' : '' }}">
+                                    Data Unit
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('admin.pemeliharaan.data-peralatan') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-peralatan') ? 'active' : '' }}">
+                                    Data Peralatan
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('admin.pemeliharaan.data-pos') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-pos') ? 'active' : '' }}">
+                                    Data Pos
+                                </a>
+                            </li>
                         </ul>
                     </div>
 
@@ -102,12 +121,6 @@
                             <i data-lucide="chevron-down" class="chevron"></i>
                         </button>
                         <ul class="submenu" id="menuPemadam">
-                            <li>
-                                <a href="{{ route('admin.unit-pemadam.data-unit') }}"
-                                   class="{{ request()->routeIs('admin.unit-pemadam.data-unit') ? 'active' : '' }}">
-                                    Data Unit
-                                </a>
-                            </li>
                             <li>
                                 <a href="{{ route('admin.unit-pemadam.pengecekan') }}"
                                    class="{{ request()->routeIs('admin.unit-pemadam.pengecekan') ? 'active' : '' }}">
@@ -135,12 +148,6 @@
                         </button>
                         <ul class="submenu" id="menuRescue">
                             <li>
-                                <a href="{{ route('admin.unit-rescue.data-unit') }}"
-                                   class="{{ request()->routeIs('admin.unit-rescue.data-unit') ? 'active' : '' }}">
-                                    Data Unit
-                                </a>
-                            </li>
-                            <li>
                                 <a href="{{ route('admin.unit-rescue.pengecekan') }}"
                                    class="{{ request()->routeIs('admin.unit-rescue.pengecekan') ? 'active' : '' }}">
                                     Pengecekan
@@ -166,12 +173,6 @@
                             <i data-lucide="chevron-down" class="chevron"></i>
                         </button>
                         <ul class="submenu" id="menuCommand">
-                            <li>
-                                <a href="{{ route('admin.command-center.data-peralatan') }}"
-                                   class="{{ request()->routeIs('admin.command-center.data-peralatan') ? 'active' : '' }}">
-                                    Data Peralatan
-                                </a>
-                            </li>
                             <li>
                                 <a href="{{ route('admin.command-center.pengecekan') }}"
                                    class="{{ request()->routeIs('admin.command-center.pengecekan') ? 'active' : '' }}">

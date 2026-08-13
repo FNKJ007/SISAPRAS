@@ -2,87 +2,54 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CekHarianAlat;
+use App\Models\Peralatan;
+use App\Models\Pos;
 use Illuminate\Http\Request;
-// use App\Models\Unit;
-// use App\Models\AlatPemadam;
-// use App\Models\CekHarianAlat;
+
+use App\Traits\HandlesCekHarianAlat;
 
 class CekAlatCcController extends Controller
 {
+    use HandlesCekHarianAlat;
+
     /**
-     * Menampilkan form Cek Harian Alat Pemadam.
+     * Menampilkan form Cek Harian Alat Command Center.
      */
     public function index()
     {
-        // Contoh data unit/kendaraan untuk dropdown (ganti dengan query Model asli)
-        $unitList = collect([
-            (object) ['id' => 1, 'nama' => 'Regu 1'],
-            (object) ['id' => 2, 'nama' => 'Regu 2'],
-            
-        ]);
+        $reguList = [
+            'Regu 1',
+            'Regu 2',
+            'Regu 3',
+            'Regu 4',
+        ];
 
-        // Daftar alat pemadam sesuai data yang diberikan (26 item, termasuk varian
-        // ukuran/kapasitas yang dipisah jadi baris tersendiri: Y Connection 2 ukuran,
-        // APAR 3 kapasitas). Ganti dengan query Model asli, mis. AlatPemadam::all(),
-        // jika data ini nantinya disimpan di database.
-        $namaAlat = [
-            'Telepon',
-            'Tablet/Handphone',
-            'Handy Talky',
-            'Walky Talky',
-            'RIG',
-            'Komputer',
-            'Speaker Komputer',
-            'UPS',
-            'Headphone',
-            'Megaphone (TOA)',
-            'TV',
-            'Monitor',
-            'Laser Distance',
-            
-        ]; // total = 26 item
+        // Ambil data peralatan Command Center dari database Admin Data Peralatan (Urut A-Z)
+        $peralatanDb = Peralatan::where('kategori', 'command_center')->orderBy('nama', 'asc')->get();
 
-        $daftarAlat = collect($namaAlat)->map(function ($nama, $index) {
+        $daftarAlat = $peralatanDb->map(function ($item) {
             return (object) [
-                'id'     => $index + 1,
-                'nama'   => $nama,
-                'status' => 'baik',
+                'id'           => $item->id,
+                'nama'         => $item->nama,
+                'jumlah_total' => $item->jumlah_total,
+                'jumlah_baik'  => 0,
+                'jumlah_rusak' => 0,
             ];
         });
 
-        return view('auth.alat-cc.cek-alat-cc', compact('unitList', 'daftarAlat'));
+        return view('auth.alat-cc.cek-alat-cc', compact('reguList', 'daftarAlat'));
     }
 
     /**
-     * Menyimpan hasil pemeriksaan.
+     * Menyimpan hasil pemeriksaan alat Command Center.
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nama_pemeriksa'      => 'required|string|max:255',
-            'jabatan'             => 'required|string|max:255',
-            'unit_id'             => 'required|integer',
-            'tanggal_pemeriksaan' => 'required|date',
-            'alat'                => 'required|array|min:1',
-            'alat.*.id'           => 'required|integer',
-            'alat.*.status'       => 'required|in:baik,rusak',
-            'alat.*.keterangan'   => 'nullable|string',
-            'alat.*.foto'         => 'nullable|image|max:2048', // maks 2MB
-        ]);
-
-        // TODO: simpan header pemeriksaan, lalu loop $validated['alat']
-        // untuk simpan tiap baris + upload foto ke storage, mis:
-        //
-        // foreach ($validated['alat'] as $item) {
-        //     $fotoPath = null;
-        //     if ($request->hasFile("alat.{$loopIndex}.foto")) {
-        //         $fotoPath = $request->file("alat.{$loopIndex}.foto")->store('cek-harian-alat', 'public');
-        //     }
-        //     CekHarianAlat::create([...]);
-        // }
+        $record = $this->storeCekHarianAlat($request, 'command_center');
 
         return redirect()
             ->route('alat-cc.cek-alat-cc')
-            ->with('success', 'Pemeriksaan alat berhasil disimpan.');
+            ->with('success', "Pemeriksaan harian alat Command Center berhasil disimpan!");
     }
 }

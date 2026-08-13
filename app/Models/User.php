@@ -32,18 +32,25 @@ class User extends Authenticatable
     }
 
     /**
-     * Kolom yang digunakan untuk autentikasi login (ganti default 'email' → 'nip')
-     */
-    public function getAuthIdentifierName(): string
-    {
-        return 'nip';
-    }
-
-    /**
      * Cek apakah user adalah admin
      */
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public function pengajuans()
+    {
+        return $this->hasMany(Pengajuan::class);
+    }
+
+    public function cekHarianUnits()
+    {
+        return $this->hasMany(CekHarianUnit::class);
+    }
+
+    public function cekHarianAlats()
+    {
+        return $this->hasMany(CekHarianAlat::class);
     }
 }

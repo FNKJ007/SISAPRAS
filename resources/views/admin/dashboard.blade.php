@@ -13,7 +13,7 @@
         </div>
         <div style="display:flex; align-items:center; gap:8px; background:#FFFFFF; padding:6px 14px; border-radius:10px; border:1px solid #E2E8F0; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
             <i data-lucide="calendar" style="width:16px; height:16px; color:#C0201F;"></i>
-            <span style="font-size:12.5px; font-weight:600; color:#1E293B;">{{ date('d F Y') }}</span>
+            <span style="font-size:12.5px; font-weight:600; color:#1E293B;">{{ \Illuminate\Support\Carbon::now()->translatedFormat('d F Y') }}</span>
         </div>
     </div>
 
@@ -29,8 +29,8 @@
                     <i data-lucide="truck" style="width:18px; height:18px;"></i>
                 </div>
             </div>
-            <div style="font-size:36px; font-weight:800; line-height:1.1; color:#0F172A; margin:12px 0 6px 0;">{{ $totalUnit ?? 12 }}</div>
-            <a href="#" style="font-size:12.5px; color:#1B2A6B; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+            <div style="font-size:36px; font-weight:800; line-height:1.1; color:#0F172A; margin:12px 0 6px 0;">{{ $totalUnit }}</div>
+            <a href="{{ route('admin.pemeliharaan.data-unit') }}" style="font-size:12.5px; color:#1B2A6B; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
                 Lihat detail <i data-lucide="arrow-right" style="width:14px; height:14px;"></i>
             </a>
         </div>
@@ -44,8 +44,8 @@
                     <i data-lucide="wrench" style="width:18px; height:18px;"></i>
                 </div>
             </div>
-            <div style="font-size:36px; font-weight:800; line-height:1.1; color:#0F172A; margin:12px 0 6px 0;">{{ $totalPemeliharaan ?? 5 }}</div>
-            <a href="{{ route('admin.pemeliharaan.pemeliharaan') }}" style="font-size:12.5px; color:#C0201F; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+            <div style="font-size:36px; font-weight:800; line-height:1.1; color:#0F172A; margin:12px 0 6px 0;">{{ $totalPemeliharaan }}</div>
+            <a href="{{ route('admin.pemeliharaan.pengajuan') }}" style="font-size:12.5px; color:#C0201F; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
                 Lihat detail <i data-lucide="arrow-right" style="width:14px; height:14px;"></i>
             </a>
         </div>
@@ -59,8 +59,8 @@
                     <i data-lucide="clipboard-check" style="width:18px; height:18px;"></i>
                 </div>
             </div>
-            <div style="font-size:36px; font-weight:800; line-height:1.1; color:#0F172A; margin:12px 0 6px 0;">{{ $totalPemeriksaan ?? 3 }}</div>
-            <a href="{{ route('admin.pemeliharaan.pemeriksaan') }}" style="font-size:12.5px; color:#D97706; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+            <div style="font-size:36px; font-weight:800; line-height:1.1; color:#0F172A; margin:12px 0 6px 0;">{{ $totalPemeriksaan }}</div>
+            <a href="{{ route('admin.unit-pemadam.pengecekan') }}" style="font-size:12.5px; color:#D97706; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
                 Lihat detail <i data-lucide="arrow-right" style="width:14px; height:14px;"></i>
             </a>
         </div>
@@ -82,7 +82,6 @@
                 </div>
                 <select style="padding:6px 12px; font-size:12px; font-weight:600; border-radius:8px; border:1px solid #CBD5E1; background:#F8FAFC; color:#334155; outline:none; cursor:pointer;">
                     <option value="2026">Tahun {{ date('Y') }}</option>
-                    <option value="2025">Tahun 2025</option>
                 </select>
             </div>
 
@@ -114,26 +113,21 @@
                 </span>
             </div>
             <div style="padding:0 20px;">
-                @php
-                $activities = [
-                    ['icon'=>'wrench',          'color'=>'#C0201F', 'bg'=>'rgba(192,32,31,.10)', 'text'=>'Pengajuan pemeliharaan Unit Damkar-01', 'time'=>'2 menit lalu'],
-                    ['icon'=>'truck',           'color'=>'#1B2A6B', 'bg'=>'rgba(27,42,107,.10)',  'text'=>'Cek harian Unit Pemadam selesai',        'time'=>'30 menit lalu'],
-                    ['icon'=>'clipboard-check', 'color'=>'#D97706', 'bg'=>'rgba(217,119,6,.10)',  'text'=>'Pemeriksaan APAR Pos-3 selesai',         'time'=>'1 jam lalu'],
-                    ['icon'=>'radio-tower',     'color'=>'#1B2A6B', 'bg'=>'rgba(27,42,107,.10)',  'text'=>'Cek alat Command Center diperbarui',     'time'=>'3 jam lalu'],
-                    ['icon'=>'life-buoy',       'color'=>'#C0201F', 'bg'=>'rgba(192,32,31,.10)', 'text'=>'Riwayat Unit Rescue baru ditambahkan',   'time'=>'Kemarin'],
-                ];
-                @endphp
-                @foreach($activities as $act)
-                <div style="display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid #F1F5F9;">
-                    <div style="width:32px; height:32px; border-radius:10px; background:{{ $act['bg'] }}; color:{{ $act['color'] }}; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">
-                        <i data-lucide="{{ $act['icon'] }}" style="width:15px; height:15px;"></i>
+                @forelse($activities as $act)
+                    <div style="display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid #F1F5F9;">
+                        <div style="width:32px; height:32px; border-radius:10px; background:{{ $act->bg }}; color:{{ $act->color }}; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">
+                            <i data-lucide="{{ $act->icon }}" style="width:15px; height:15px;"></i>
+                        </div>
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-size:12.5px; font-weight:600; color:#1E293B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $act->text }}</div>
+                            <div style="font-size:11px; color:#64748B; margin-top:2px;">{{ $act->created_at->diffForHumans() }}</div>
+                        </div>
                     </div>
-                    <div style="flex:1; min-width:0;">
-                        <div style="font-size:12.5px; font-weight:600; color:#1E293B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $act['text'] }}</div>
-                        <div style="font-size:11px; color:#64748B; margin-top:2px;">{{ $act['time'] }}</div>
+                @empty
+                    <div style="padding:32px 10px; text-align:center; color:#94A3B8; font-size:12.5px;">
+                        Belum ada aktivitas terbaru hari ini.
                     </div>
-                </div>
-                @endforeach
+                @endforelse
             </div>
         </div>
 
@@ -149,7 +143,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     const ctx = document.getElementById('chartPemeliharaan').getContext('2d');
 
-    // Gradien Warna untuk Datasets Chart
     const gradientBlue = ctx.createLinearGradient(0, 0, 0, 260);
     gradientBlue.addColorStop(0, 'rgba(27, 42, 107, 0.85)');
     gradientBlue.addColorStop(1, 'rgba(27, 42, 107, 0.15)');
@@ -169,7 +162,7 @@ document.addEventListener("DOMContentLoaded", function () {
             datasets: [
                 {
                     label: 'Unit Pemadam',
-                    data: [12, 19, 14, 25, 18, 12, 22, 28, 15, 20, 24, 30],
+                    data: {{ json_encode($chartPemadam) }},
                     backgroundColor: gradientBlue,
                     borderColor: '#1B2A6B',
                     borderWidth: 1.5,
@@ -178,7 +171,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 {
                     label: 'Unit Rescue',
-                    data: [8, 15, 10, 20, 14, 9, 17, 24, 11, 16, 19, 25],
+                    data: {{ json_encode($chartRescue) }},
                     backgroundColor: gradientRed,
                     borderColor: '#C0201F',
                     borderWidth: 1.5,
@@ -187,7 +180,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 {
                     label: 'Command Center',
-                    data: [5, 9, 6, 12, 8, 5, 11, 15, 7, 10, 13, 18],
+                    data: {{ json_encode($chartCC) }},
                     backgroundColor: gradientAmber,
                     borderColor: '#D97706',
                     borderWidth: 1.5,
@@ -204,9 +197,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 easing: 'easeOutQuart'
             },
             plugins: {
-                legend: {
-                    display: false // Menggunakan legend custom HTML di bawah
-                },
+                legend: { display: false },
                 tooltip: {
                     backgroundColor: '#0F172A',
                     titleFont: { family: 'Poppins', size: 13, weight: 'bold' },
@@ -233,7 +224,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     ticks: {
                         font: { family: 'Poppins', size: 11, weight: '500' },
                         color: '#64748B',
-                        stepSize: 5
+                        stepSize: 1
                     }
                 }
             }

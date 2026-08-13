@@ -19,6 +19,7 @@
 
 html, body {
     height: 100%;
+    scrollbar-gutter: stable;
 }
 
 body {
@@ -43,7 +44,9 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    transition: width 0.15s ease-out, min-width 0.15s ease-out;
+    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                min-width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     height: 100vh;
     box-shadow: 2px 0 16px rgba(0, 0, 0, 0.12);
     z-index: 20;
@@ -57,9 +60,30 @@ body {
 .sidebar.collapsed .menu-label,
 .sidebar.collapsed .menu-title-left > span,
 .sidebar.collapsed .chevron,
-.sidebar.collapsed .submenu,
 .sidebar.collapsed .brand-text {
-    display: none !important;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.collapsed .submenu {
+    height: 0 !important;
+    opacity: 0 !important;
+    overflow: hidden !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    pointer-events: none;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), height 0.2s ease;
+}
+
+/* Elemen yang harus tampil saat sidebar terbuka */
+.menu-label,
+.menu-title-left > span,
+.chevron,
+.brand-text {
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
 }
 
 /* Saat sidebar ditutup (collapsed 48px), ikon dikunci diam di posisi X yang sama persis seperti saat dibuka */
@@ -225,6 +249,30 @@ body {
     transition: background-color 0.2s ease;
 }
 
+/* Custom Scrollbar Ultra-Thin & Minimalis untuk Modal / Popup */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(203, 213, 225, 0.8) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #CBD5E1;
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #94A3B8;
+}
+
 .sidebar-menu::-webkit-scrollbar-thumb:hover {
     background-color: rgba(255, 255, 255, 0.45);
 }
@@ -304,7 +352,7 @@ body {
     height: 12px !important;
     color: rgba(255, 255, 255, 0.6);
     margin-right: 6px;
-    transition: transform 0.2s ease;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
 }
 
@@ -315,20 +363,43 @@ body {
 
 .submenu {
     list-style: none;
-    max-height: 0;
+    height: 0;
     overflow: hidden;
-    transition: max-height 0.25s ease;
+    transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     padding-left: 6px;
+    opacity: 0;
 }
 
 .submenu.open {
-    max-height: 500px;
+    opacity: 1;
     padding-top: 2px;
     padding-bottom: 2px;
 }
 
 .submenu li {
     padding: 1px 0;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.submenu.open li {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Stagger delay untuk setiap submenu item agar muncul bertahap */
+.submenu.open li:nth-child(1) { transition-delay: 0.04s; }
+.submenu.open li:nth-child(2) { transition-delay: 0.08s; }
+.submenu.open li:nth-child(3) { transition-delay: 0.12s; }
+.submenu.open li:nth-child(4) { transition-delay: 0.16s; }
+.submenu.open li:nth-child(5) { transition-delay: 0.20s; }
+.submenu.open li:nth-child(6) { transition-delay: 0.24s; }
+
+/* Reset delay saat menutup agar semua item hilang bersamaan */
+.submenu:not(.open) li {
+    transition-delay: 0s !important;
 }
 
 .submenu li a {
@@ -339,7 +410,7 @@ body {
     padding: 6px 8px 6px 26px;
     border-radius: 6px;
     white-space: nowrap;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .submenu li a:hover {
@@ -485,7 +556,8 @@ body {
     flex: 1;
     background-color: var(--content-bg);
     padding: 20px 24px;
-    overflow-y: auto;
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
     overflow-x: hidden;
     min-height: 0;
     -webkit-overflow-scrolling: touch;
@@ -794,14 +866,16 @@ body {
         width: 210px;
         min-width: 210px;
         transform: translateX(-100%);
-        transition: transform 0.25s ease;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 1000;
-        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
         border-radius: 0 16px 16px 0;
     }
 
     .sidebar.mobile-open {
         transform: translateX(0);
+        box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
     }
 
     .sidebar-backdrop {
@@ -810,15 +884,24 @@ body {
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: rgba(17, 24, 39, 0.65);
+        background-color: rgba(15, 23, 42, 0.65);
         z-index: 999;
         opacity: 0;
         pointer-events: none;
-        transition: opacity 0.25s ease;
+        transition: opacity 0.35s ease;
     }
 
     .sidebar-backdrop.show {
         display: block;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Override: di mobile, collapsed elements harus benar-benar visible */
+    .sidebar:not(.mobile-open) .menu-label,
+    .sidebar:not(.mobile-open) .menu-title-left > span,
+    .sidebar:not(.mobile-open) .chevron,
+    .sidebar:not(.mobile-open) .brand-text {
         opacity: 1;
         pointer-events: auto;
     }
@@ -841,5 +924,205 @@ body {
     .user-card-topbar {
         padding: 5px;
         border-radius: 50%;
+    }
+}
+
+/* =========================================================================
+   UNIVERSAL DEAD-CENTER MODAL OVERLAY & DIALOG (MOBILE & DESKTOP)
+   ========================================================================= */
+.admin-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    background-color: rgba(15, 23, 42, 0.65);
+    box-sizing: border-box;
+}
+
+.admin-modal-dialog {
+    margin: auto;
+    max-height: 86vh;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    .admin-modal-overlay {
+        padding: 10px;
+        align-items: center;
+        justify-content: center;
+    }
+    .admin-modal-dialog {
+        max-height: 86vh;
+        margin: auto;
+        width: 100%;
+    }
+}
+
+/* =========================================================================
+   STABLE KPI GRID & ZERO LAYOUT SHIFT RULES
+   ========================================================================= */
+.kpi-grid-container {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 16px !important;
+    margin-bottom: 24px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.kpi-grid-container-2 {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+    margin-bottom: 24px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.kpi-card {
+    box-sizing: border-box !important;
+    width: 100% !important;
+}
+
+/* =========================================================================
+   UNIVERSAL BADGE PILLS (BAIK / RUSAK / STATUS)
+   ========================================================================= */
+.badge-pill-baik {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    padding: 3px 10px !important;
+    border-radius: 20px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    background-color: #D1FAE5 !important;
+    color: #065F46 !important;
+    border: 1px solid #A7F3D0 !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+}
+
+.badge-pill-rusak {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    padding: 3px 10px !important;
+    border-radius: 20px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    background-color: #FEE2E2 !important;
+    color: #991B1B !important;
+    border: 1px solid #FCA5A5 !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+}
+
+/* =========================================================================
+   MOBILE & TABLET RESPONSIVE STYLES
+   ========================================================================= */
+@media (max-width: 992px) {
+    .kpi-grid-container {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .kpi-grid-container {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+    .kpi-grid-container-2 {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+
+    .admin-filter-bar form {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .admin-filter-bar .filter-group {
+        width: 100% !important;
+        justify-content: space-between !important;
+    }
+
+    .admin-filter-bar .search-box {
+        width: 100% !important;
+    }
+
+    .admin-filter-bar .search-box input {
+        width: 100% !important;
+    }
+
+    .admin-modal-overlay {
+        padding: 10px !important;
+    }
+
+    .admin-modal-dialog {
+        max-width: 100% !important;
+        max-height: 92vh !important;
+        border-radius: 14px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .kpi-grid-container {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+}
+
+/* =========================================================================
+   RESPONSIVE FORM & MODAL GRID UTILITIES
+   ========================================================================= */
+.admin-filter-bar {
+    background: #FFFFFF;
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: 1px solid #E2E8F0;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.modal-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.modal-form-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+@media (max-width: 640px) {
+    .modal-form-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .modal-form-grid-3 {
+        grid-template-columns: 1fr !important;
+    }
+    .modal-form-grid .full-mobile {
+        grid-column: span 1 !important;
+    }
+    .admin-filter-bar form {
+        gap: 10px !important;
+    }
+    .admin-filter-bar input[type="text"] {
+        width: 100% !important;
     }
 }
