@@ -80,12 +80,23 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Dashboard
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
+    // Akses Halaman User sebagai Admin (set session flag)
+    Route::get('/view-as-user/{target}', function ($target) {
+        session(['admin_viewing_as_user' => true]);
+        $routes = [
+            'pengajuan' => 'pemeliharaan.pengajuan',
+            'home'      => 'home',
+        ];
+        return redirect()->route($routes[$target] ?? 'home');
+    })->name('view-as-user');
+
     // Pemeliharaan
     Route::prefix('pemeliharaan')->name('pemeliharaan.')->group(function () {
         Route::get('/pengajuan',                    [AdminController::class, 'pemeliharaanPengajuan'])->name('pengajuan');
         Route::post('/pengajuan/{id}/verifikasi',   [AdminController::class, 'verifikasiPengajuan'])->name('pengajuan.verifikasi');
         Route::get('/pemeriksaan',                  [AdminController::class, 'pemeliharaanPemeriksaan'])->name('pemeriksaan');
         Route::get('/pemeliharaan',                 [AdminController::class, 'pemeliharaanPemeliharaan'])->name('pemeliharaan');
+        Route::get('/cetak-dokumen/{id}/{type}',    [AdminController::class, 'cetakDokumen'])->name('cetak-dokumen');
         Route::get('/invoice',                      [AdminController::class, 'pemeliharaanInvoice'])->name('invoice');
         Route::get('/kartu-kendali',                [AdminController::class, 'pemeliharaanKartuKendali'])->name('kartu-kendali');
         
