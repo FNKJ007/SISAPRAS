@@ -196,11 +196,24 @@
                                     Laporan Kejadian
                                 </a>
                             </li>
-                            <li>
-                                <a href="{{ route('admin.apar.monitoring') }}"
-                                   class="{{ request()->routeIs('admin.apar.monitoring') ? 'active' : '' }}">
-                                    Monitoring Kejadian
+                            <!-- Menu APAR & Kejadian -->
+                            <li class="nav-item {{ request()->is('admin/apar-kejadian*') ? 'menu-open active' : '' }}">
+                                <a href="#" class="nav-link {{ request()->is('admin/apar-kejadian*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-fire-extinguisher"></i>
+                                    <p>
+                                        APAR & Kejadian
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
                                 </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ route('admin.apar.monitoring-kejadian') }}"
+                                           class="nav-link {{ request()->routeIs('admin.apar.monitoring-kejadian') ? 'active' : '' }}">
+                                            <i class="far fa-circle nav-icon text-danger"></i>
+                                            <p>Monitoring Kejadian</p>
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
                         </ul>
                     </div>

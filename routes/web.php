@@ -13,7 +13,9 @@ use App\Http\Controllers\CekHarianUnitRescueController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\Admin\InvoiceController;
+use App\Http\Controllers\Admin\MonitoringKejadianController;
 use Illuminate\Support\Facades\Route;
+
 
 // Redirect Halaman Utama ( / )
 Route::get('/', function () {
@@ -145,7 +147,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::prefix('apar')->name('apar.')->group(function () {
         Route::get('/data-apar',        [AdminController::class, 'aparDataApar'])->name('data-apar');
         Route::get('/laporan-kejadian', [AdminController::class, 'aparLaporanKejadian'])->name('laporan-kejadian');
-        Route::get('/monitoring',       [AdminController::class, 'aparMonitoring'])->name('monitoring');
+        // Monitoring Kejadian CRUD Routes
+        Route::get('/monitoring-kejadian',          [MonitoringKejadianController::class, 'index'])->name('monitoring-kejadian');
+        Route::post('/monitoring-kejadian',         [MonitoringKejadianController::class, 'store'])->name('monitoring-kejadian.store');
+        Route::put('/monitoring-kejadian/{id}',     [MonitoringKejadianController::class, 'update'])->name('monitoring-kejadian.update');
+        Route::delete('/monitoring-kejadian/{id}',  [MonitoringKejadianController::class, 'destroy'])->name('monitoring-kejadian.destroy');
     });
 
     // Laporan
