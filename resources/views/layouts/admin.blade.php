@@ -65,18 +65,21 @@
                                     Pengajuan
                                 </a>
                             </li>
+
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.pemeliharaan') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.pemeliharaan') || request()->routeIs('admin.pemeliharaan.surat-permohonan') || request()->routeIs('admin.pemeliharaan.cetak-dokumen') ? 'active' : '' }}">
-                                    Surat Permohonan
+                                   class="{{ request()->routeIs('admin.pemeliharaan.pemeliharaan') ? 'active' : '' }}">
+                                    Surat Permohonan 
                                 </a>
                             </li>
+
                             <li>
-                                <a href="{{ route('admin.pemeliharaan.monitoring-aktual') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.monitoring-aktual') ? 'active' : '' }}">
+                                <a href="{{ route('admin.pemeliharaan.pemeriksaan') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.pemeriksaan') ? 'active' : '' }}">
                                     Monitoring Aktual
                                 </a>
                             </li>
+                            
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.invoice.index') }}"
                                    class="{{ request()->routeIs('admin.pemeliharaan.invoice.*') ? 'active' : '' }}">
@@ -127,12 +130,6 @@
                                     Pengecekan
                                 </a>
                             </li>
-                            <li>
-                                <a href="{{ route('admin.unit-pemadam.riwayat') }}"
-                                   class="{{ request()->routeIs('admin.unit-pemadam.riwayat') ? 'active' : '' }}">
-                                    Riwayat
-                                </a>
-                            </li>
                         </ul>
                     </div>
 
@@ -153,12 +150,6 @@
                                     Pengecekan
                                 </a>
                             </li>
-                            <li>
-                                <a href="{{ route('admin.unit-rescue.riwayat') }}"
-                                   class="{{ request()->routeIs('admin.unit-rescue.riwayat') ? 'active' : '' }}">
-                                    Riwayat
-                                </a>
-                            </li>
                         </ul>
                     </div>
 
@@ -177,12 +168,6 @@
                                 <a href="{{ route('admin.command-center.pengecekan') }}"
                                    class="{{ request()->routeIs('admin.command-center.pengecekan') ? 'active' : '' }}">
                                     Pengecekan
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.command-center.riwayat') }}"
-                                   class="{{ request()->routeIs('admin.command-center.riwayat') ? 'active' : '' }}">
-                                    Riwayat
                                 </a>
                             </li>
                         </ul>
@@ -234,33 +219,28 @@
                             <li>
                                 <a href="{{ route('admin.laporan.pemeliharaan') }}"
                                    class="{{ request()->routeIs('admin.laporan.pemeliharaan') ? 'active' : '' }}">
-                                    Pemeliharaan
+                                    SOP Bidang SPI
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.laporan.pemadam') }}"
                                    class="{{ request()->routeIs('admin.laporan.pemadam') ? 'active' : '' }}">
-                                    Pemadam
+                                   Laporan Bulanan Infokom
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.laporan.rescue') }}"
                                    class="{{ request()->routeIs('admin.laporan.rescue') ? 'active' : '' }}">
-                                    Rescue
+                                   Laporan Bulanan Sarpras
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.laporan.command-center') }}"
                                    class="{{ request()->routeIs('admin.laporan.command-center') ? 'active' : '' }}">
-                                    Command Center
+                                    Monev bulanan
                                 </a>
                             </li>
-                            <li>
-                                <a href="{{ route('admin.laporan.bulanan') }}"
-                                   class="{{ request()->routeIs('admin.laporan.bulanan') ? 'active' : '' }}">
-                                    Laporan Bulanan
-                                </a>
-                            </li>
+                            
                         </ul>
                     </div>
 
