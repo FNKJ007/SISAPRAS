@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
+use App\Models\Pengajuan;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -32,44 +33,71 @@ class InvoiceController extends Controller
         return view('admin.pemeliharaan.invoice.index', compact('invoices'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        $units = Unit::orderBy('no_lambung')->get();
+        $pengajuans = Pengajuan::where('status', 'disetujui')->latest()->get();
+        $units = Unit::orderBy('nomor_lambung')->get();
         $nomorInvoice = Invoice::generateNomorInvoice();
+        $selectedPengajuanId = $request->query('pengajuan_id');
 
-        return view('admin.pemeliharaan.invoice.create', compact('units', 'nomorInvoice'));
+        return view('admin.pemeliharaan.invoice.create', compact('pengajuans', 'units', 'nomorInvoice', 'selectedPengajuanId'));
     }
 
     public function store(Request $request)
     {
         $validated = $this->validateInvoice($request);
 
-        DB::transaction(function () use ($validated) {
-            $unit = Unit::findOrFail($validated['unit_id']);
+        DB::transaction(function () use ($validated, $request) {
+            $unit = null;
+            if (!empty($validated['unit_id'])) {
+                $unit = Unit::find($validated['unit_id']);
+            }
+
+            $pengajuan = null;
+            if ($request->filled('pengajuan_id')) {
+                $pengajuan = Pengajuan::find($request->pengajuan_id);
+            }
+
+            $noLambung  = $request->input('no_lambung') ?: ($unit?->nomor_lambung ?? $pengajuan?->nomor_lambung ?? '');
+            $noPol      = $request->input('no_pol') ?: ($unit?->plat_nomor ?? '');
+            $jenisMobil = $request->input('jenis_mobil') ?: ($unit?->merk_tipe ?? $pengajuan?->jenis_kendaraan_label ?? '');
+            $lokasi     = $request->input('lokasi') ?: ($unit?->pos ?? $pengajuan?->pos_label ?? '');
+
+            if (!$unit && $noLambung) {
+                $parts = explode('/', $noLambung);
+                $lambungCode = trim($parts[0] ?? '');
+                $platCode = trim($parts[1] ?? '');
+                $unit = Unit::where('nomor_lambung', $lambungCode)
+                    ->orWhere('plat_nomor', $platCode)
+                    ->orWhere('nomor_lambung', $noLambung)
+                    ->first();
+            }
+
+            $unitId = $unit ? $unit->id : (Unit::first()->id ?? 1);
 
             $invoice = Invoice::create([
-                'nomor_invoice' => $validated['nomor_invoice'],
+                'nomor_invoice'   => $validated['nomor_invoice'],
                 'tanggal_invoice' => $validated['tanggal_invoice'],
-                'unit_id' => $unit->id,
-                'no_pol' => $unit->no_pol,
-                'no_lambung' => $unit->no_lambung,
-                'jenis_mobil' => $unit->jenis_mobil,
-                'lokasi' => $unit->lokasi,
-                'kode_rekening' => $validated['kode_rekening'] ?? null,
-                'tahun_anggaran' => $validated['tahun_anggaran'],
-                'status' => $validated['status'],
-                'catatan' => $validated['catatan'] ?? null,
-                'created_by' => auth()->id(),
+                'unit_id'         => $unitId,
+                'no_pol'          => $noPol,
+                'no_lambung'      => $noLambung,
+                'jenis_mobil'     => $jenisMobil,
+                'lokasi'          => $lokasi,
+                'kode_rekening'   => $validated['kode_rekening'] ?? null,
+                'tahun_anggaran'  => $validated['tahun_anggaran'],
+                'status'          => $validated['status'],
+                'catatan'         => $validated['catatan'] ?? null,
+                'created_by'      => auth()->id(),
             ]);
 
             foreach ($validated['items'] as $item) {
                 $invoice->items()->create([
-                    'tanggal' => $item['tanggal'],
+                    'tanggal'         => $item['tanggal'],
                     'jenis_perbaikan' => $item['jenis_perbaikan'],
-                    'vol' => $item['vol'],
-                    'satuan' => $item['satuan'],
-                    'harga_satuan' => $item['harga_satuan'],
-                    'total_biaya' => $item['vol'] * $item['harga_satuan'],
+                    'vol'             => $item['vol'],
+                    'satuan'          => $item['satuan'],
+                    'harga_satuan'    => $item['harga_satuan'],
+                    'total_biaya'     => $item['vol'] * $item['harga_satuan'],
                 ]);
             }
 
@@ -91,43 +119,69 @@ class InvoiceController extends Controller
     public function edit(Invoice $invoice)
     {
         $invoice->load('items');
-        $units = Unit::orderBy('no_lambung')->get();
+        $pengajuans = Pengajuan::where('status', 'disetujui')->latest()->get();
+        $units = Unit::orderBy('nomor_lambung')->get();
 
-        return view('admin.pemeliharaan.invoice.edit', compact('invoice', 'units'));
+        return view('admin.pemeliharaan.invoice.edit', compact('invoice', 'pengajuans', 'units'));
     }
 
     public function update(Request $request, Invoice $invoice)
     {
         $validated = $this->validateInvoice($request, $invoice->id);
 
-        DB::transaction(function () use ($validated, $invoice) {
-            $unit = Unit::findOrFail($validated['unit_id']);
+        DB::transaction(function () use ($validated, $request, $invoice) {
+            $unit = null;
+            if (!empty($validated['unit_id'])) {
+                $unit = Unit::find($validated['unit_id']);
+            }
+
+            $pengajuan = null;
+            if ($request->filled('pengajuan_id')) {
+                $pengajuan = Pengajuan::find($request->pengajuan_id);
+            }
+
+            $noLambung  = $request->input('no_lambung') ?: ($unit?->nomor_lambung ?? $pengajuan?->nomor_lambung ?? $invoice->no_lambung);
+            $noPol      = $request->input('no_pol') ?: ($unit?->plat_nomor ?? $invoice->no_pol);
+            $jenisMobil = $request->input('jenis_mobil') ?: ($unit?->merk_tipe ?? $pengajuan?->jenis_kendaraan_label ?? $invoice->jenis_mobil);
+            $lokasi     = $request->input('lokasi') ?: ($unit?->pos ?? $pengajuan?->pos_label ?? $invoice->lokasi);
+
+            if (!$unit && $noLambung) {
+                $parts = explode('/', $noLambung);
+                $lambungCode = trim($parts[0] ?? '');
+                $platCode = trim($parts[1] ?? '');
+                $unit = Unit::where('nomor_lambung', $lambungCode)
+                    ->orWhere('plat_nomor', $platCode)
+                    ->orWhere('nomor_lambung', $noLambung)
+                    ->first();
+            }
+
+            $unitId = $unit ? $unit->id : ($invoice->unit_id ?: (Unit::first()->id ?? 1));
 
             $invoice->update([
-                'nomor_invoice' => $validated['nomor_invoice'],
+                'nomor_invoice'   => $validated['nomor_invoice'],
                 'tanggal_invoice' => $validated['tanggal_invoice'],
-                'unit_id' => $unit->id,
-                'no_pol' => $unit->no_pol,
-                'no_lambung' => $unit->no_lambung,
-                'jenis_mobil' => $unit->jenis_mobil,
-                'lokasi' => $unit->lokasi,
-                'kode_rekening' => $validated['kode_rekening'] ?? null,
-                'tahun_anggaran' => $validated['tahun_anggaran'],
-                'status' => $validated['status'],
-                'catatan' => $validated['catatan'] ?? null,
+                'unit_id'         => $unitId,
+                'no_pol'          => $noPol,
+                'no_lambung'      => $noLambung,
+                'jenis_mobil'     => $jenisMobil,
+                'lokasi'          => $lokasi,
+                'kode_rekening'   => $validated['kode_rekening'] ?? null,
+                'tahun_anggaran'  => $validated['tahun_anggaran'],
+                'status'          => $validated['status'],
+                'catatan'         => $validated['catatan'] ?? null,
             ]);
 
-            // Ganti seluruh item (paling sederhana untuk form dinamis)
+            // Ganti seluruh item
             $invoice->items()->delete();
 
             foreach ($validated['items'] as $item) {
                 $invoice->items()->create([
-                    'tanggal' => $item['tanggal'],
+                    'tanggal'         => $item['tanggal'],
                     'jenis_perbaikan' => $item['jenis_perbaikan'],
-                    'vol' => $item['vol'],
-                    'satuan' => $item['satuan'],
-                    'harga_satuan' => $item['harga_satuan'],
-                    'total_biaya' => $item['vol'] * $item['harga_satuan'],
+                    'vol'             => $item['vol'],
+                    'satuan'          => $item['satuan'],
+                    'harga_satuan'    => $item['harga_satuan'],
+                    'total_biaya'     => $item['vol'] * $item['harga_satuan'],
                 ]);
             }
 
@@ -151,23 +205,28 @@ class InvoiceController extends Controller
     private function validateInvoice(Request $request, ?int $ignoreId = null): array
     {
         return $request->validate([
-            'nomor_invoice' => [
+            'nomor_invoice'   => [
                 'required', 'string', 'max:50',
                 Rule::unique('invoices', 'nomor_invoice')->ignore($ignoreId),
             ],
             'tanggal_invoice' => ['required', 'date'],
-            'unit_id' => ['required', 'exists:units,id'],
-            'kode_rekening' => ['nullable', 'string', 'max:100'],
-            'tahun_anggaran' => ['required', 'digits:4'],
-            'status' => ['required', Rule::in(['draft', 'diajukan', 'disetujui', 'lunas'])],
-            'catatan' => ['nullable', 'string'],
+            'unit_id'         => ['nullable'],
+            'pengajuan_id'    => ['nullable'],
+            'no_lambung'      => ['nullable', 'string', 'max:50'],
+            'no_pol'          => ['nullable', 'string', 'max:50'],
+            'jenis_mobil'     => ['nullable', 'string', 'max:100'],
+            'lokasi'          => ['nullable', 'string', 'max:100'],
+            'kode_rekening'   => ['nullable', 'string', 'max:100'],
+            'tahun_anggaran'  => ['required', 'digits:4'],
+            'status'          => ['required', Rule::in(['draft', 'diajukan', 'disetujui', 'lunas'])],
+            'catatan'         => ['nullable', 'string'],
 
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.tanggal' => ['required', 'date'],
+            'items'                 => ['required', 'array', 'min:1'],
+            'items.*.tanggal'       => ['required', 'date'],
             'items.*.jenis_perbaikan' => ['required', 'string', 'max:150'],
-            'items.*.vol' => ['required', 'numeric', 'min:0.01'],
-            'items.*.satuan' => ['required', 'string', 'max:20'],
-            'items.*.harga_satuan' => ['required', 'numeric', 'min:0'],
+            'items.*.vol'           => ['required', 'numeric', 'min:0.01'],
+            'items.*.satuan'        => ['required', 'string', 'max:20'],
+            'items.*.harga_satuan'  => ['required', 'numeric', 'min:0'],
         ]);
     }
 }

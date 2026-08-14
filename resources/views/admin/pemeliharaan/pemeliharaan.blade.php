@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Monitoring Pemeliharaan — Admin')
+@section('title', 'Surat Permohonan — Admin')
 
 @section('content')
 
@@ -8,8 +8,8 @@
     {{-- Page Header --}}
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
         <div>
-            <h1 style="font-size:22px; font-weight:800; color:#121E4E; margin-bottom:2px;">Monitoring Pemeliharaan Kendaraan</h1>
-            <p style="font-size:13px; color:#64748B; margin:0;">Portal ekspor dokumen pemeliharaan — data langsung dari pengajuan permohonan user.</p>
+            <h1 style="font-size:22px; font-weight:800; color:#121E4E; margin-bottom:2px;">Surat Permohonan Pemeliharaan Kendaraan</h1>
+            <p style="font-size:13px; color:#64748B; margin:0;">Cetak dan kelola surat permohonan bidang, bengkel, dan surat pesanan pemeliharaan unit.</p>
         </div>
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
             <a href="{{ route('admin.view-as-user', 'pengajuan') }}"
@@ -127,6 +127,14 @@
                                        onmouseout="this.style.background='#FFFFFF'; this.style.color='#D97706';">
                                         <i data-lucide="shopping-bag" style="width:13px; height:13px;"></i>
                                         Surat Pesanan
+                                    </a>
+                                    <a href="{{ route('admin.pemeliharaan.invoice.create', ['pengajuan_id' => $rec->id]) }}"
+                                       title="Buat Invoice dari Permohonan Ini"
+                                       style="display:inline-flex; align-items:center; gap:4px; padding:6px 10px; background:#1B2A6B; color:#FFFFFF; border:1px solid #1B2A6B; border-radius:6px; font-size:11.5px; font-weight:600; text-decoration:none; transition:all 0.2s; box-shadow:0 2px 6px rgba(27,42,107,0.2);"
+                                       onmouseover="this.style.background='#0F172A';"
+                                       onmouseout="this.style.background='#1B2A6B';">
+                                        <i data-lucide="receipt" style="width:13px; height:13px;"></i>
+                                        + Invoice
                                     </a>
                                 </div>
                             </td>

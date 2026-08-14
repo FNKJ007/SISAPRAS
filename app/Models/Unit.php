@@ -46,4 +46,24 @@ class Unit extends Model
     {
         return $this->hasMany(CekHarianAlat::class, 'unit_id');
     }
+
+    public function getNoPolAttribute()
+    {
+        return $this->plat_nomor;
+    }
+
+    public function getNoLambungAttribute()
+    {
+        return $this->nomor_lambung;
+    }
+
+    public function getJenisMobilAttribute()
+    {
+        return $this->merk_tipe ?: $this->jenis_peruntukan;
+    }
+
+    public function getLokasiAttribute()
+    {
+        return $this->pos;
+    }
 }

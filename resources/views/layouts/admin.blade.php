@@ -66,21 +66,21 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('admin.pemeliharaan.pemeriksaan') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.pemeriksaan') ? 'active' : '' }}">
-                                    Pemeriksaan
+                                <a href="{{ route('admin.pemeliharaan.pemeliharaan') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.pemeliharaan') || request()->routeIs('admin.pemeliharaan.surat-permohonan') || request()->routeIs('admin.pemeliharaan.cetak-dokumen') ? 'active' : '' }}">
+                                    Surat Permohonan
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('admin.pemeliharaan.pemeliharaan') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.pemeliharaan') ? 'active' : '' }}">
-                                    Pemeliharaan
+                                <a href="{{ route('admin.pemeliharaan.monitoring-aktual') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.monitoring-aktual') ? 'active' : '' }}">
+                                    Monitoring Aktual
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.invoice.index') }}"
                                    class="{{ request()->routeIs('admin.pemeliharaan.invoice.*') ? 'active' : '' }}">
-                                    Invoice
+                                    Monitoring Invoice
                                 </a>
                             </li>
                             <li>
@@ -91,19 +91,19 @@
                             </li>
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.data-unit') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.data-unit') ? 'active' : '' }}">
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-unit*') ? 'active' : '' }}">
                                     Data Unit
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.data-peralatan') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.data-peralatan') ? 'active' : '' }}">
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-peralatan*') ? 'active' : '' }}">
                                     Data Peralatan
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.data-pos') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.data-pos') ? 'active' : '' }}">
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-pos*') ? 'active' : '' }}">
                                     Data Pos
                                 </a>
                             </li>

@@ -253,6 +253,14 @@ class AdminController extends Controller
         return view('admin.pemeliharaan.cetak-dokumen', compact('pengajuan', 'type', 'title'));
     }
 
+    public function pemeliharaanMonitoringAktual()
+    {
+        return view('admin.placeholder', [
+            'pageTitle'  => 'Monitoring Aktual',
+            'breadcrumb' => ['Pemeliharaan', 'Monitoring Aktual'],
+        ]);
+    }
+
     public function pemeliharaanKartuKendali()
     {
         return view('admin.placeholder', [
