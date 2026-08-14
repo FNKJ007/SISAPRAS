@@ -97,6 +97,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/pengajuan/{id}/verifikasi',   [AdminController::class, 'verifikasiPengajuan'])->name('pengajuan.verifikasi');
         Route::get('/pemeriksaan',                  [AdminController::class, 'pemeliharaanPemeriksaan'])->name('pemeriksaan');
         Route::get('/pemeliharaan',                 [AdminController::class, 'pemeliharaanPemeliharaan'])->name('pemeliharaan');
+        Route::get('/surat-permohonan',             [AdminController::class, 'pemeliharaanPemeliharaan'])->name('surat-permohonan');
+        Route::get('/monitoring-aktual',            [AdminController::class, 'pemeliharaanMonitoringAktual'])->name('monitoring-aktual');
         Route::get('/cetak-dokumen/{id}/{type}',    [AdminController::class, 'cetakDokumen'])->name('cetak-dokumen');
         Route::resource('invoice', InvoiceController::class);
         Route::get('/kartu-kendali',                [AdminController::class, 'pemeliharaanKartuKendali'])->name('kartu-kendali');

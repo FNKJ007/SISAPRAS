@@ -94,19 +94,19 @@
                             </li>
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.data-unit') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.data-unit') ? 'active' : '' }}">
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-unit*') ? 'active' : '' }}">
                                     Data Unit
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.data-peralatan') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.data-peralatan') ? 'active' : '' }}">
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-peralatan*') ? 'active' : '' }}">
                                     Data Peralatan
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.data-pos') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.data-pos') ? 'active' : '' }}">
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-pos*') ? 'active' : '' }}">
                                     Data Pos
                                 </a>
                             </li>
