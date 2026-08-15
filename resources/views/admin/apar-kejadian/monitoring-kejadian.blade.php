@@ -3,13 +3,28 @@
 @section('title', 'Monitoring Kejadian — Admin')
 
 @section('content')
-<div x-data="monitoringKejadianAdmin()">
+<div x-data="monitoringKejadianAdmin({{ ($errors->any() && old('_form_source') === 'create') ? 'true' : 'false' }})">
 
-    {{-- Flash Message --}}
+    {{-- Flash Message: Sukses --}}
     @if(session('success'))
         <div style="background:#D1FAE5; color:#065F46; border:1px solid #A7F3D0; padding:12px 16px; border-radius:12px; margin-bottom:20px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px;">
             <i data-lucide="check-circle-2" style="width:18px; height:18px; color:#059669;"></i>
             <span>{{ session('success') }}</span>
+        </div>
+    @endif
+
+    {{-- Flash Message: Gagal Validasi --}}
+    @if($errors->any())
+        <div style="background:#FEF2F2; color:#991B1B; border:1px solid #FCA5A5; padding:14px 16px; border-radius:12px; margin-bottom:20px; font-size:13px;">
+            <div style="display:flex; align-items:center; gap:8px; font-weight:700; margin-bottom:6px;">
+                <i data-lucide="alert-triangle" style="width:18px; height:18px; color:#DC2626;"></i>
+                <span>Data gagal disimpan. Mohon perbaiki hal berikut:</span>
+            </div>
+            <ul style="margin:0; padding-left:34px; list-style:disc;">
+                @foreach($errors->all() as $error)
+                    <li style="margin-bottom:2px;">{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
     @endif
 
@@ -243,7 +258,15 @@
                             <tr style="border-bottom:1px solid #F1F5F9;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='transparent'">
                                 <td style="padding:14px 18px; font-weight:600; color:#94A3B8;">{{ $dataKejadian->firstItem() + $index }}</td>
                                 <td style="padding:14px 18px; white-space:nowrap;">
-                                    <div style="font-weight:700; color:#1E293B;">{{ $item->kode_kejadian }}</div>
+                                    <div style="font-weight:700; color:#1E293B; display:flex; align-items:center; gap:6px;">
+                                        {{ $item->kode_kejadian }}
+                                        @if($item->file_laporan)
+                                            <a href="{{ asset('storage/' . $item->file_laporan) }}" target="_blank" title="Lihat Dokumen PDF"
+                                               style="display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; background:#FEE2E2; color:#DC2626; border-radius:4px;">
+                                                <i data-lucide="file-text" style="width:11px; height:11px;"></i>
+                                            </a>
+                                        @endif
+                                    </div>
                                     <div style="font-size:11px; color:#94A3B8;">{{ optional($item->waktu_kejadian)->format('d/m/Y H:i') ?? '-' }} WIB</div>
                                 </td>
                                 <td style="padding:14px 18px;">
@@ -386,6 +409,19 @@
                     <span style="font-weight:500; color:#334155;" x-text="activeItem.keterangan || 'Tidak ada catatan tambahan.'"></span>
                 </div>
 
+                <template x-if="activeItem.file_laporan">
+                    <a :href="'/storage/' + activeItem.file_laporan" target="_blank"
+                       style="margin-top:14px; display:flex; align-items:center; gap:10px; background:#FEF2F2; border:1px solid #FCA5A5; border-radius:10px; padding:12px 14px; text-decoration:none;">
+                        <div style="width:34px; height:34px; border-radius:8px; background:#FEE2E2; color:#DC2626; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                            <i data-lucide="file-text" style="width:17px; height:17px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:12.5px; font-weight:700; color:#991B1B;">Dokumen Laporan (PDF)</div>
+                            <div style="font-size:11px; color:#B91C1C;">Klik untuk membuka / mengunduh</div>
+                        </div>
+                    </a>
+                </template>
+
             </div>
             <div style="display:flex; justify-content:flex-end; gap:8px; padding:14px 20px; border-top:1px solid #E2E8F0;">
                 <button type="button" @click="detailModalOpen = false"
@@ -408,8 +444,9 @@
                     <i data-lucide="x" style="width:18px; height:18px;"></i>
                 </button>
             </div>
-            <form action="{{ route('admin.apar.monitoring-kejadian.store') }}" method="POST" style="padding:20px;">
+            <form action="{{ route('admin.apar.monitoring-kejadian.store') }}" method="POST" enctype="multipart/form-data" style="padding:20px;">
                 @csrf
+                <input type="hidden" name="_form_source" value="create">
                 @include('admin.apar-kejadian.partials.form-fields', ['mode' => 'create'])
 
                 <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid #E2E8F0; padding-top:14px; margin-top:4px;">
@@ -439,7 +476,7 @@
                     <i data-lucide="x" style="width:18px; height:18px;"></i>
                 </button>
             </div>
-            <form :action="editUrl" method="POST" style="padding:20px;">
+            <form :action="editUrl" method="POST" enctype="multipart/form-data" style="padding:20px;">
                 @csrf
                 @method('PUT')
                 @include('admin.apar-kejadian.partials.form-fields', ['mode' => 'edit'])
@@ -655,9 +692,9 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 <script>
-function monitoringKejadianAdmin() {
+function monitoringKejadianAdmin(openCreateOnError = false) {
     return {
-        createModalOpen: false,
+        createModalOpen: openCreateOnError,
         detailModalOpen: false,
         editModalOpen: false,
         deleteModalOpen: false,

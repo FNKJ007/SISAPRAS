@@ -35,6 +35,7 @@ class Kejadian extends Model
         'waktu_selesai',
         'status',
         'keterangan',
+        'file_laporan',
     ];
 
     protected $casts = [
