@@ -18,7 +18,7 @@ class CekHarianUnitRescueController extends Controller
      */
     protected function unitList()
     {
-        $units = Unit::where('kategori', 'rescue')->orderBy('nomor_lambung', 'asc')->get();
+        $units = Unit::where('kategori', 'LIKE', 'rescue')->orderBy('nomor_lambung', 'asc')->get();
 
         return $units;
     }

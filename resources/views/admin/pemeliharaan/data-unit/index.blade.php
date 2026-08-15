@@ -123,16 +123,17 @@
                 <table style="width:100%; min-width:1100px; table-layout:fixed; border-collapse:collapse; font-size:12.5px; text-align:left;">
                     <thead>
                         <tr style="background:#F8FAFC; border-bottom:1.5px solid #E2E8F0; color:#475569; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; font-weight:800;">
-                            <th style="padding:12px 14px; width:100px;">NO. LAMBUNG</th>
-                            <th style="padding:12px 14px; width:110px;">TNKB</th>
-                            <th style="padding:12px 14px; width:140px;">NO. RANGKA MESIN</th>
-                            <th style="padding:12px 14px; width:150px;">MERK</th>
-                            <th style="padding:12px 14px; width:75px; text-align:center;">TAHUN</th>
-                            <th style="padding:12px 14px; width:70px; text-align:center;">CC</th>
-                            <th style="padding:12px 14px; width:160px;">JENIS / PERUNTUKAN</th>
-                            <th style="padding:12px 14px; width:120px;">PENEMPATAN</th>
-                            <th style="padding:12px 14px; width:170px;">PENGEMUDI 1 &amp; 2</th>
-                            <th style="padding:12px 14px; width:110px; text-align:center;">AKSI</th>
+                            <th style="padding:12px 14px; width:95px;">NO. LAMBUNG</th>
+                            <th style="padding:12px 14px; width:100px;">TNKB</th>
+                            <th style="padding:12px 14px; width:130px;">NO. RANGKA MESIN</th>
+                            <th style="padding:12px 14px; width:140px;">MERK</th>
+                            <th style="padding:12px 14px; width:70px; text-align:center;">TAHUN</th>
+                            <th style="padding:12px 14px; width:65px; text-align:center;">CC</th>
+                            <th style="padding:12px 14px; width:135px;">JENIS KENDARAAN</th>
+                            <th style="padding:12px 14px; width:125px;">PERUNTUKAN</th>
+                            <th style="padding:12px 14px; width:110px;">PENEMPATAN</th>
+                            <th style="padding:12px 14px; width:160px;">PENGEMUDI 1 &amp; 2</th>
+                            <th style="padding:12px 14px; width:100px; text-align:center;">AKSI</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -170,13 +171,20 @@
                                     {{ $item->cc ?? '—' }}
                                 </td>
 
-                                {{-- Jenis / Peruntukan --}}
+                                {{-- Jenis Kendaraan --}}
                                 <td style="padding:12px 14px;">
-                                    <div style="font-weight:700; font-size:11.5px; color:#0F172A;">{{ $item->jenis_peruntukan ?? '—' }}</div>
-                                    @if($item->kategori === 'pemadam')
-                                        <span style="font-size:10px; color:#991B1B; font-weight:700;">● Pemadaman</span>
+                                    <span style="font-weight:700; font-size:11.5px; color:#0F172A; background:#F1F5F9; padding:3px 8px; border-radius:6px; border:1px solid #E2E8F0; display:inline-block;">
+                                        {{ $item->jenis_kendaraan ?: ($item->jenis_peruntukan ?? '—') }}
+                                    </span>
+                                </td>
+
+                                {{-- Peruntukan --}}
+                                <td style="padding:12px 14px;">
+                                    <div style="font-weight:700; font-size:11.5px; color:#1E293B;">{{ $item->peruntukan ?: '—' }}</div>
+                                    @if(strtolower($item->kategori) === 'pemadam')
+                                        <span style="font-size:10px; color:#991B1B; font-weight:700;">● Pemadam</span>
                                     @else
-                                        <span style="font-size:10px; color:#1D4ED8; font-weight:700;">● Rescue</span>
+                                        <span style="font-size:10px; color:#1D4ED8; font-weight:700;">● {{ $item->kategori ?: 'Rescue' }}</span>
                                     @endif
                                 </td>
 
@@ -263,17 +271,83 @@
                         <input type="text" name="no_rangka_mesin" placeholder="Contoh: FG8JJ1D-BGJ"
                                style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
                     </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Jenis / Peruntukan</label>
-                        <input type="text" name="jenis_peruntukan" placeholder="Contoh: PANCAR/PEMADAMAN"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+
+                    {{-- Jenis Kendaraan (Input Manual + Dropdown Riwayat) --}}
+                    <div x-data="{ open: false, val: '', list: {{ json_encode($existingJenisList ?? []) }} }" style="position:relative;">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Jenis Kendaraan</label>
+                        <div style="position:relative; display:flex; align-items:center;">
+                            <input type="text" name="jenis_kendaraan" x-model="val" placeholder="Ketik atau pilih jenis..."
+                                   style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
+                                   @focus="if(list.length > 0) open = true"
+                                   @click.outside="open = false">
+                            <button type="button" @click="open = !open" tabindex="-1"
+                                    style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
+                                <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+                            </button>
+                        </div>
+                        <div x-show="open && list.length > 0" x-cloak
+                             style="position:absolute; top:100%; left:0; right:0; max-height:160px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
+                            <template x-for="item in list" :key="item">
+                                <div @click="val = item; open = false;"
+                                     style="padding:8px 12px; font-size:12.5px; cursor:pointer; color:#1E293B; border-bottom:1px solid #F1F5F9;"
+                                     onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
+                                     x-text="item">
+                                </div>
+                            </template>
+                        </div>
                     </div>
-                    <div>
+
+                    {{-- Peruntukan (Input Manual + Dropdown Riwayat) --}}
+                    <div x-data="{ open: false, val: '', list: {{ json_encode($existingPeruntukanList ?? []) }} }" style="position:relative;">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Peruntukan</label>
+                        <div style="position:relative; display:flex; align-items:center;">
+                            <input type="text" name="peruntukan" x-model="val" placeholder="Ketik atau pilih peruntukan..."
+                                   style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
+                                   @focus="if(list.length > 0) open = true"
+                                   @click.outside="open = false">
+                            <button type="button" @click="open = !open" tabindex="-1"
+                                    style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
+                                <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+                            </button>
+                        </div>
+                        <div x-show="open && list.length > 0" x-cloak
+                             style="position:absolute; top:100%; left:0; right:0; max-height:160px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
+                            <template x-for="item in list" :key="item">
+                                <div @click="val = item; open = false;"
+                                     style="padding:8px 12px; font-size:12.5px; cursor:pointer; color:#1E293B; border-bottom:1px solid #F1F5F9;"
+                                     onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
+                                     x-text="item">
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    {{-- Kategori (Input Manual + Dropdown Riwayat) --}}
+                    <div x-data="{ open: false, val: 'Pemadam', list: {{ json_encode($existingKategoriList ?? ['Pemadam', 'Rescue']) }} }" style="position:relative;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Kategori <span style="color:#DC2626;">*</span></label>
-                        <select name="kategori" required style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
-                            <option value="pemadam">Pemadam</option>
-                            <option value="rescue">Rescue</option>
-                        </select>
+                        <div style="position:relative; display:flex; align-items:center;">
+                            <input type="text" name="kategori" required x-model="val" placeholder="Ketik atau pilih kategori..."
+                                   style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
+                                   @focus="if(list.length > 0) open = true"
+                                   @click.outside="open = false">
+                            <button type="button" @click="open = !open" tabindex="-1"
+                                    style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
+                                <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+                            </button>
+                        </div>
+                        <div x-show="open && list.length > 0" x-cloak
+                             style="position:absolute; top:100%; left:0; right:0; max-height:160px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
+                            <template x-for="item in list" :key="item">
+                                <div @click="val = item; open = false;"
+                                     style="padding:8px 12px; font-size:12.5px; cursor:pointer; color:#1E293B; border-bottom:1px solid #F1F5F9;"
+                                     onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
+                                     x-text="item">
+                                </div>
+                            </template>
+                        </div>
                     </div>
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Penempatan (Pos)</label>
@@ -374,17 +448,83 @@
                         <input type="text" name="no_rangka_mesin" x-model="activeUnit.no_rangka_mesin"
                                style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
                     </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Jenis / Peruntukan</label>
-                        <input type="text" name="jenis_peruntukan" x-model="activeUnit.jenis_peruntukan"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+
+                    {{-- Edit: Jenis Kendaraan (Input Manual + Dropdown Riwayat) --}}
+                    <div x-data="{ open: false, list: {{ json_encode($existingJenisList ?? []) }} }" style="position:relative;">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Jenis Kendaraan</label>
+                        <div style="position:relative; display:flex; align-items:center;">
+                            <input type="text" name="jenis_kendaraan" x-model="activeUnit.jenis_kendaraan" placeholder="Ketik atau pilih jenis..."
+                                   style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
+                                   @focus="if(list.length > 0) open = true"
+                                   @click.outside="open = false">
+                            <button type="button" @click="open = !open" tabindex="-1"
+                                    style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
+                                <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+                            </button>
+                        </div>
+                        <div x-show="open && list.length > 0" x-cloak
+                             style="position:absolute; top:100%; left:0; right:0; max-height:160px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
+                            <template x-for="item in list" :key="item">
+                                <div @click="activeUnit.jenis_kendaraan = item; open = false;"
+                                     style="padding:8px 12px; font-size:12.5px; cursor:pointer; color:#1E293B; border-bottom:1px solid #F1F5F9;"
+                                     onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
+                                     x-text="item">
+                                </div>
+                            </template>
+                        </div>
                     </div>
-                    <div>
+
+                    {{-- Edit: Peruntukan (Input Manual + Dropdown Riwayat) --}}
+                    <div x-data="{ open: false, list: {{ json_encode($existingPeruntukanList ?? []) }} }" style="position:relative;">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Peruntukan</label>
+                        <div style="position:relative; display:flex; align-items:center;">
+                            <input type="text" name="peruntukan" x-model="activeUnit.peruntukan" placeholder="Ketik atau pilih peruntukan..."
+                                   style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
+                                   @focus="if(list.length > 0) open = true"
+                                   @click.outside="open = false">
+                            <button type="button" @click="open = !open" tabindex="-1"
+                                    style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
+                                <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+                            </button>
+                        </div>
+                        <div x-show="open && list.length > 0" x-cloak
+                             style="position:absolute; top:100%; left:0; right:0; max-height:160px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
+                            <template x-for="item in list" :key="item">
+                                <div @click="activeUnit.peruntukan = item; open = false;"
+                                     style="padding:8px 12px; font-size:12.5px; cursor:pointer; color:#1E293B; border-bottom:1px solid #F1F5F9;"
+                                     onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
+                                     x-text="item">
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    {{-- Edit: Kategori (Input Manual + Dropdown Riwayat) --}}
+                    <div x-data="{ open: false, list: {{ json_encode($existingKategoriList ?? ['Pemadam', 'Rescue']) }} }" style="position:relative;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Kategori <span style="color:#DC2626;">*</span></label>
-                        <select name="kategori" required x-model="activeUnit.kategori" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
-                            <option value="pemadam">Pemadam</option>
-                            <option value="rescue">Rescue</option>
-                        </select>
+                        <div style="position:relative; display:flex; align-items:center;">
+                            <input type="text" name="kategori" required x-model="activeUnit.kategori" placeholder="Ketik atau pilih kategori..."
+                                   style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
+                                   @focus="if(list.length > 0) open = true"
+                                   @click.outside="open = false">
+                            <button type="button" @click="open = !open" tabindex="-1"
+                                    style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
+                                <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+                            </button>
+                        </div>
+                        <div x-show="open && list.length > 0" x-cloak
+                             style="position:absolute; top:100%; left:0; right:0; max-height:160px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
+                            <template x-for="item in list" :key="item">
+                                <div @click="activeUnit.kategori = item; open = false;"
+                                     style="padding:8px 12px; font-size:12.5px; cursor:pointer; color:#1E293B; border-bottom:1px solid #F1F5F9;"
+                                     onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
+                                     x-text="item">
+                                </div>
+                            </template>
+                        </div>
                     </div>
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Penempatan (Pos)</label>
@@ -427,7 +567,7 @@
 
                 <div style="margin-bottom:18px;">
                     <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Catatan Khusus</label>
-                    <textarea name="catatan" rows="2" x-model="activeUnit.catatan"
+                    <textarea name="catatan" rows="2" x-model="activeUnit.catatan" placeholder="Tuliskan catatan tambahan armada..."
                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; resize:none;"></textarea>
                 </div>
 

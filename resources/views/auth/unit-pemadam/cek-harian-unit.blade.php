@@ -82,7 +82,9 @@
                             class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
                         <option value="" selected disabled>Pilih Unit / Kendaraan Pemadam</option>
                         @foreach($unitList ?? [] as $unit)
-                            <option value="{{ $unit->id }}" @selected(old('unit_id') == $unit->id)>{{ $unit->nama }}</option>
+                            <option value="{{ $unit->id }}" @selected(old('unit_id') == $unit->id)>
+                                {{ $unit->nomor_lambung ? $unit->nomor_lambung . ' — ' . $unit->plat_nomor . ($unit->pos ? ' [' . $unit->pos . ']' : '') . ($unit->merk_tipe ? ' (' . $unit->merk_tipe . ')' : '') : $unit->nama }}
+                            </option>
                         @endforeach
                     </select>
                     @error('unit_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror

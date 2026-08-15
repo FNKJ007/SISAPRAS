@@ -24,10 +24,21 @@ class Peralatan extends Model
         'catatan',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($peralatan) {
+            if ($peralatan->kategori) {
+                $peralatan->kategori = ucwords(strtolower(str_replace('_', ' ', trim($peralatan->kategori))));
+            }
+        });
+    }
+
     public static array $kategoriMap = [
-        'pemadam'        => 'Pemadam',
-        'rescue'         => 'Rescue',
-        'command_center' => 'Command Center',
+        'Pemadam'        => 'Pemadam',
+        'Rescue'         => 'Rescue',
+        'Command Center' => 'Command Center',
     ];
 
     public static array $statusMap = [

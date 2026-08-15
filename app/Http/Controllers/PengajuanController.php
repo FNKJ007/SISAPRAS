@@ -27,13 +27,51 @@ class PengajuanController extends Controller
 
         // Ambil Unit Kendaraan dari Database Admin Data Unit
         $unitDb = Unit::where('status', 'aktif')->orderBy('nomor_lambung', 'asc')->get();
+        $unitList = [];
         $nomorLambungList = [];
+        $unitDetails = [];
         foreach ($unitDb as $u) {
             $key = strtolower(str_replace(['-', ' ', '/'], '', $u->nomor_lambung));
             $label = $u->nomor_lambung;
             if ($u->plat_nomor) $label .= ' / ' . $u->plat_nomor;
-            if ($u->merk_tipe) $label .= ' (' . $u->merk_tipe . ')';
+            if ($u->pos) $label .= ' [' . $u->pos . ']';
+            if ($u->jenis_kendaraan) $label .= ' (' . $u->jenis_kendaraan . ')';
+
+            $unitData = [
+                'key'             => $key,
+                'label'           => $label,
+                'nomor_lambung'   => $u->nomor_lambung,
+                'plat_nomor'      => $u->plat_nomor,
+                'jenis_kendaraan' => strtoupper(trim($u->jenis_kendaraan ?? '')),
+                'peruntukan'      => $u->peruntukan,
+                'pos'             => $u->pos,
+                'kategori'        => $u->kategori,
+                'pengemudi_1'     => $u->pengemudi_1 && $u->pengemudi_1 !== '—' ? $u->pengemudi_1 : '',
+            ];
+
+            $unitList[] = $unitData;
             $nomorLambungList[$key] = $label;
+            $unitDetails[$key] = $unitData;
+        }
+
+        // Ambil daftar Jenis Kendaraan langsung dari Master Data Unit (Deduplikasi & Normalisasi Huruf)
+        $jenisKendaraanDb = Unit::whereNotNull('jenis_kendaraan')
+            ->where('jenis_kendaraan', '!=', '')
+            ->get()
+            ->pluck('jenis_kendaraan')
+            ->map(fn($v) => strtoupper(trim($v)))
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
+
+        $jenisKendaraanList = [];
+        if (!empty($jenisKendaraanDb)) {
+            foreach ($jenisKendaraanDb as $jk) {
+                $jenisKendaraanList[$jk] = $jk;
+            }
+        } else {
+            $jenisKendaraanList = Pengajuan::$jenisKendaraanMap;
         }
 
         return view('pemeliharaan.pengajuan', compact(
@@ -41,7 +79,9 @@ class PengajuanController extends Controller
             'posList',
             'reguList',
             'jenisKendaraanList',
-            'nomorLambungList'
+            'nomorLambungList',
+            'unitList',
+            'unitDetails'
         ));
     }
 

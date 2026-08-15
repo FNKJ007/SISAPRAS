@@ -19,7 +19,7 @@ class CekHarianAlatRescueController extends Controller
      */
     protected function unitList()
     {
-        return Unit::where('kategori', 'rescue')->orderBy('nomor_lambung', 'asc')->get();
+        return Unit::where('kategori', 'LIKE', 'rescue')->orderBy('nomor_lambung', 'asc')->get();
     }
 
     /**
@@ -31,7 +31,7 @@ class CekHarianAlatRescueController extends Controller
         $posList  = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
 
         // Ambil data peralatan rescue dari database Admin Data Peralatan (Urut A-Z)
-        $peralatanDb = Peralatan::where('kategori', 'rescue')->orderBy('nama', 'asc')->get();
+        $peralatanDb = Peralatan::where('kategori', 'LIKE', 'rescue')->orderBy('nama', 'asc')->get();
 
         $daftarAlat = $peralatanDb->map(function ($item) {
             return (object) [
