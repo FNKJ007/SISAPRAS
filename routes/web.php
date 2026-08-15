@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\PeralatanManagementController;
 use App\Http\Controllers\Admin\PosManagementController;
 use App\Http\Controllers\Admin\UnitManagementController;
+use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CekAlatCcController;
 use App\Http\Controllers\CekHarianAlatController;
@@ -110,12 +111,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/data-unit',                   [UnitManagementController::class, 'store'])->name('data-unit.store');
         Route::put('/data-unit/{id}',               [UnitManagementController::class, 'update'])->name('data-unit.update');
         Route::delete('/data-unit/{id}',            [UnitManagementController::class, 'destroy'])->name('data-unit.destroy');
+        Route::post('/data-unit/remove-history-option', [UnitManagementController::class, 'removeHistoryOption'])->name('data-unit.remove-history-option');
 
         // Data Peralatan CRUD Routes
         Route::get('/data-peralatan',              [PeralatanManagementController::class, 'index'])->name('data-peralatan');
         Route::post('/data-peralatan',             [PeralatanManagementController::class, 'store'])->name('data-peralatan.store');
         Route::put('/data-peralatan/{id}',         [PeralatanManagementController::class, 'update'])->name('data-peralatan.update');
         Route::delete('/data-peralatan/{id}',      [PeralatanManagementController::class, 'destroy'])->name('data-peralatan.destroy');
+        Route::post('/data-peralatan/remove-history-option', [PeralatanManagementController::class, 'removeHistoryOption'])->name('data-peralatan.remove-history-option');
 
         // Data Pos CRUD Routes
         Route::get('/data-pos',                    [PosManagementController::class, 'index'])->name('data-pos');
@@ -163,8 +166,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/bulanan',        [AdminController::class, 'laporanBulanan'])->name('bulanan');
     });
 
-    // Pengaturan
+    // Pengaturan & Manajemen Akun
     Route::get('/pengaturan', [AdminController::class, 'pengaturan'])->name('pengaturan');
+    Route::post('/pengaturan/users', [UserManagementController::class, 'store'])->name('pengaturan.users.store');
+    Route::put('/pengaturan/users/{id}', [UserManagementController::class, 'update'])->name('pengaturan.users.update');
+    Route::post('/pengaturan/users/{id}/reset-password', [UserManagementController::class, 'resetPassword'])->name('pengaturan.users.reset-password');
+    Route::patch('/pengaturan/users/{id}/status', [UserManagementController::class, 'toggleStatus'])->name('pengaturan.users.toggle-status');
+    Route::delete('/pengaturan/users/{id}', [UserManagementController::class, 'destroy'])->name('pengaturan.users.destroy');
+    Route::post('/pengaturan/remove-history-option', [UserManagementController::class, 'removeHistoryOption'])->name('pengaturan.remove-history-option');
 
     // Lihat Halaman User (switch mode)
     Route::post('/switch-to-user', [AdminController::class, 'switchToUser'])->name('switch-to-user');

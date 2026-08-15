@@ -180,4 +180,31 @@ class UnitManagementController extends Controller
             ->route('admin.pemeliharaan.data-unit')
             ->with('success', "Data unit '{$nama}' berhasil dihapus.");
     }
+
+    /**
+     * Hapus Opsi Riwayat (Typo/Kesalahan) dari Database Data Unit.
+     */
+    public function removeHistoryOption(Request $request)
+    {
+        $request->validate([
+            'type'  => 'required|string|in:jenis_kendaraan,peruntukan,kategori',
+            'value' => 'required|string',
+        ]);
+
+        $type  = $request->input('type');
+        $value = trim($request->input('value'));
+
+        if ($type === 'jenis_kendaraan') {
+            Unit::where('jenis_kendaraan', 'LIKE', $value)->update(['jenis_kendaraan' => null]);
+        } elseif ($type === 'peruntukan') {
+            Unit::where('peruntukan', 'LIKE', $value)->update(['peruntukan' => null]);
+        } elseif ($type === 'kategori') {
+            Unit::where('kategori', 'LIKE', $value)->update(['kategori' => null]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Opsi riwayat '{$value}' berhasil dihapus dari data unit."
+        ]);
+    }
 }

@@ -124,4 +124,23 @@ class PeralatanManagementController extends Controller
             ->route('admin.pemeliharaan.data-peralatan')
             ->with('success', "Data peralatan '{$nama}' berhasil dihapus.");
     }
+
+    /**
+     * Hapus Opsi Riwayat (Typo/Kesalahan) dari Database Data Peralatan.
+     */
+    public function removeHistoryOption(Request $request)
+    {
+        $request->validate([
+            'type'  => 'required|string|in:kategori',
+            'value' => 'required|string',
+        ]);
+
+        $value = trim($request->input('value'));
+        Peralatan::where('kategori', 'LIKE', $value)->update(['kategori' => null]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Opsi riwayat '{$value}' berhasil dihapus dari data peralatan."
+        ]);
+    }
 }

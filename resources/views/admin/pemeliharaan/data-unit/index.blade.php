@@ -3,14 +3,7 @@
 @section('title', 'Data Unit Kendaraan — Admin')
 
 @section('content')
-<div x-data="{
-    createModalOpen: false,
-    editModalOpen: false,
-    deleteModalOpen: false,
-    activeUnit: {},
-    editUrl: '',
-    deleteUrl: ''
-}">
+<div x-data="dataUnitApp()">
 
     {{-- Flash Message --}}
     @if(session('success'))
@@ -272,79 +265,97 @@
                                style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
                     </div>
 
-                    {{-- Jenis Kendaraan (Input Manual + Dropdown Riwayat) --}}
-                    <div x-data="{ open: false, val: '', list: {{ json_encode($existingJenisList ?? []) }} }" style="position:relative;">
+                    {{-- Jenis Kendaraan (Input Manual + Dropdown Riwayat + Hapus) --}}
+                    <div x-data="{ open: false, val: '' }" style="position:relative;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Jenis Kendaraan</label>
                         <div style="position:relative; display:flex; align-items:center;">
                             <input type="text" name="jenis_kendaraan" x-model="val" placeholder="Ketik atau pilih jenis..."
                                    style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
-                                   @focus="if(list.length > 0) open = true"
+                                   @focus="if(existingJenisList.length > 0) open = true"
                                    @click.outside="open = false">
                             <button type="button" @click="open = !open" tabindex="-1"
                                     style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
                                 <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
                             </button>
                         </div>
-                        <div x-show="open && list.length > 0" x-cloak
-                             style="position:absolute; top:100%; left:0; right:0; max-height:160px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
-                            <template x-for="item in list" :key="item">
-                                <div @click="val = item; open = false;"
-                                     style="padding:8px 12px; font-size:12.5px; cursor:pointer; color:#1E293B; border-bottom:1px solid #F1F5F9;"
+                        <div x-show="open && existingJenisList.length > 0" x-cloak
+                             style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
+                            <template x-for="item in existingJenisList" :key="item">
+                                <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
                                      onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
-                                     x-text="item">
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
+                                    <span @click="val = item; open = false;" style="flex:1;" x-text="item"></span>
+                                    <button type="button" @click.stop="removeOption('jenis_kendaraan', item)"
+                                            title="Hapus opsi ini dari riwayat"
+                                            style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
+                                            onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
+                                            onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
+                                        <i data-lucide="x" style="width:13px; height:13px;"></i>
+                                    </button>
                                 </div>
                             </template>
                         </div>
                     </div>
 
-                    {{-- Peruntukan (Input Manual + Dropdown Riwayat) --}}
-                    <div x-data="{ open: false, val: '', list: {{ json_encode($existingPeruntukanList ?? []) }} }" style="position:relative;">
+                    {{-- Peruntukan (Input Manual + Dropdown Riwayat + Hapus) --}}
+                    <div x-data="{ open: false, val: '' }" style="position:relative;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Peruntukan</label>
                         <div style="position:relative; display:flex; align-items:center;">
                             <input type="text" name="peruntukan" x-model="val" placeholder="Ketik atau pilih peruntukan..."
                                    style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
-                                   @focus="if(list.length > 0) open = true"
+                                   @focus="if(existingPeruntukanList.length > 0) open = true"
                                    @click.outside="open = false">
                             <button type="button" @click="open = !open" tabindex="-1"
                                     style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
                                 <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
                             </button>
                         </div>
-                        <div x-show="open && list.length > 0" x-cloak
-                             style="position:absolute; top:100%; left:0; right:0; max-height:160px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
-                            <template x-for="item in list" :key="item">
-                                <div @click="val = item; open = false;"
-                                     style="padding:8px 12px; font-size:12.5px; cursor:pointer; color:#1E293B; border-bottom:1px solid #F1F5F9;"
+                        <div x-show="open && existingPeruntukanList.length > 0" x-cloak
+                             style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
+                            <template x-for="item in existingPeruntukanList" :key="item">
+                                <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
                                      onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
-                                     x-text="item">
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
+                                    <span @click="val = item; open = false;" style="flex:1;" x-text="item"></span>
+                                    <button type="button" @click.stop="removeOption('peruntukan', item)"
+                                            title="Hapus opsi ini dari riwayat"
+                                            style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
+                                            onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
+                                            onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
+                                        <i data-lucide="x" style="width:13px; height:13px;"></i>
+                                    </button>
                                 </div>
                             </template>
                         </div>
                     </div>
 
-                    {{-- Kategori (Input Manual + Dropdown Riwayat) --}}
-                    <div x-data="{ open: false, val: 'Pemadam', list: {{ json_encode($existingKategoriList ?? ['Pemadam', 'Rescue']) }} }" style="position:relative;">
+                    {{-- Kategori (Input Manual + Dropdown Riwayat + Hapus) --}}
+                    <div x-data="{ open: false, val: 'Pemadam' }" style="position:relative;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Kategori <span style="color:#DC2626;">*</span></label>
                         <div style="position:relative; display:flex; align-items:center;">
                             <input type="text" name="kategori" required x-model="val" placeholder="Ketik atau pilih kategori..."
                                    style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
-                                   @focus="if(list.length > 0) open = true"
+                                   @focus="if(existingKategoriList.length > 0) open = true"
                                    @click.outside="open = false">
                             <button type="button" @click="open = !open" tabindex="-1"
                                     style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
                                 <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
                             </button>
                         </div>
-                        <div x-show="open && list.length > 0" x-cloak
-                             style="position:absolute; top:100%; left:0; right:0; max-height:160px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
-                            <template x-for="item in list" :key="item">
-                                <div @click="val = item; open = false;"
-                                     style="padding:8px 12px; font-size:12.5px; cursor:pointer; color:#1E293B; border-bottom:1px solid #F1F5F9;"
+                        <div x-show="open && existingKategoriList.length > 0" x-cloak
+                             style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
+                            <template x-for="item in existingKategoriList" :key="item">
+                                <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
                                      onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
-                                     x-text="item">
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
+                                    <span @click="val = item; open = false;" style="flex:1;" x-text="item"></span>
+                                    <button type="button" @click.stop="removeOption('kategori', item)"
+                                            title="Hapus opsi ini dari riwayat"
+                                            style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
+                                            onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
+                                            onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
+                                        <i data-lucide="x" style="width:13px; height:13px;"></i>
+                                    </button>
                                 </div>
                             </template>
                         </div>
@@ -449,79 +460,97 @@
                                style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
                     </div>
 
-                    {{-- Edit: Jenis Kendaraan (Input Manual + Dropdown Riwayat) --}}
-                    <div x-data="{ open: false, list: {{ json_encode($existingJenisList ?? []) }} }" style="position:relative;">
+                    {{-- Edit: Jenis Kendaraan (Input Manual + Dropdown Riwayat + Hapus) --}}
+                    <div x-data="{ open: false }" style="position:relative;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Jenis Kendaraan</label>
                         <div style="position:relative; display:flex; align-items:center;">
                             <input type="text" name="jenis_kendaraan" x-model="activeUnit.jenis_kendaraan" placeholder="Ketik atau pilih jenis..."
                                    style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
-                                   @focus="if(list.length > 0) open = true"
+                                   @focus="if(existingJenisList.length > 0) open = true"
                                    @click.outside="open = false">
                             <button type="button" @click="open = !open" tabindex="-1"
                                     style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
                                 <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
                             </button>
                         </div>
-                        <div x-show="open && list.length > 0" x-cloak
-                             style="position:absolute; top:100%; left:0; right:0; max-height:160px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
-                            <template x-for="item in list" :key="item">
-                                <div @click="activeUnit.jenis_kendaraan = item; open = false;"
-                                     style="padding:8px 12px; font-size:12.5px; cursor:pointer; color:#1E293B; border-bottom:1px solid #F1F5F9;"
+                        <div x-show="open && existingJenisList.length > 0" x-cloak
+                             style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
+                            <template x-for="item in existingJenisList" :key="item">
+                                <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
                                      onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
-                                     x-text="item">
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
+                                    <span @click="activeUnit.jenis_kendaraan = item; open = false;" style="flex:1;" x-text="item"></span>
+                                    <button type="button" @click.stop="removeOption('jenis_kendaraan', item)"
+                                            title="Hapus opsi ini dari riwayat"
+                                            style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
+                                            onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
+                                            onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
+                                        <i data-lucide="x" style="width:13px; height:13px;"></i>
+                                    </button>
                                 </div>
                             </template>
                         </div>
                     </div>
 
-                    {{-- Edit: Peruntukan (Input Manual + Dropdown Riwayat) --}}
-                    <div x-data="{ open: false, list: {{ json_encode($existingPeruntukanList ?? []) }} }" style="position:relative;">
+                    {{-- Edit: Peruntukan (Input Manual + Dropdown Riwayat + Hapus) --}}
+                    <div x-data="{ open: false }" style="position:relative;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Peruntukan</label>
                         <div style="position:relative; display:flex; align-items:center;">
                             <input type="text" name="peruntukan" x-model="activeUnit.peruntukan" placeholder="Ketik atau pilih peruntukan..."
                                    style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
-                                   @focus="if(list.length > 0) open = true"
+                                   @focus="if(existingPeruntukanList.length > 0) open = true"
                                    @click.outside="open = false">
                             <button type="button" @click="open = !open" tabindex="-1"
                                     style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
                                 <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
                             </button>
                         </div>
-                        <div x-show="open && list.length > 0" x-cloak
-                             style="position:absolute; top:100%; left:0; right:0; max-height:160px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
-                            <template x-for="item in list" :key="item">
-                                <div @click="activeUnit.peruntukan = item; open = false;"
-                                     style="padding:8px 12px; font-size:12.5px; cursor:pointer; color:#1E293B; border-bottom:1px solid #F1F5F9;"
+                        <div x-show="open && existingPeruntukanList.length > 0" x-cloak
+                             style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
+                            <template x-for="item in existingPeruntukanList" :key="item">
+                                <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
                                      onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
-                                     x-text="item">
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
+                                    <span @click="activeUnit.peruntukan = item; open = false;" style="flex:1;" x-text="item"></span>
+                                    <button type="button" @click.stop="removeOption('peruntukan', item)"
+                                            title="Hapus opsi ini dari riwayat"
+                                            style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
+                                            onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
+                                            onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
+                                        <i data-lucide="x" style="width:13px; height:13px;"></i>
+                                    </button>
                                 </div>
                             </template>
                         </div>
                     </div>
 
-                    {{-- Edit: Kategori (Input Manual + Dropdown Riwayat) --}}
-                    <div x-data="{ open: false, list: {{ json_encode($existingKategoriList ?? ['Pemadam', 'Rescue']) }} }" style="position:relative;">
+                    {{-- Edit: Kategori (Input Manual + Dropdown Riwayat + Hapus) --}}
+                    <div x-data="{ open: false }" style="position:relative;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Kategori <span style="color:#DC2626;">*</span></label>
                         <div style="position:relative; display:flex; align-items:center;">
                             <input type="text" name="kategori" required x-model="activeUnit.kategori" placeholder="Ketik atau pilih kategori..."
                                    style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
-                                   @focus="if(list.length > 0) open = true"
+                                   @focus="if(existingKategoriList.length > 0) open = true"
                                    @click.outside="open = false">
                             <button type="button" @click="open = !open" tabindex="-1"
                                     style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
                                 <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
                             </button>
                         </div>
-                        <div x-show="open && list.length > 0" x-cloak
-                             style="position:absolute; top:100%; left:0; right:0; max-height:160px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
-                            <template x-for="item in list" :key="item">
-                                <div @click="activeUnit.kategori = item; open = false;"
-                                     style="padding:8px 12px; font-size:12.5px; cursor:pointer; color:#1E293B; border-bottom:1px solid #F1F5F9;"
+                        <div x-show="open && existingKategoriList.length > 0" x-cloak
+                             style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
+                            <template x-for="item in existingKategoriList" :key="item">
+                                <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
                                      onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
-                                     x-text="item">
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
+                                    <span @click="activeUnit.kategori = item; open = false;" style="flex:1;" x-text="item"></span>
+                                    <button type="button" @click.stop="removeOption('kategori', item)"
+                                            title="Hapus opsi ini dari riwayat"
+                                            style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
+                                            onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
+                                            onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
+                                        <i data-lucide="x" style="width:13px; height:13px;"></i>
+                                    </button>
                                 </div>
                             </template>
                         </div>
@@ -613,4 +642,42 @@
     </div>
 
 </div>
+
+<script>
+function dataUnitApp() {
+    return {
+        createModalOpen: false,
+        editModalOpen: false,
+        deleteModalOpen: false,
+        activeUnit: {},
+        editUrl: '',
+        deleteUrl: '',
+        existingJenisList: @json($existingJenisList ?? []),
+        existingPeruntukanList: @json($existingPeruntukanList ?? []),
+        existingKategoriList: @json($existingKategoriList ?? []),
+        removeOption(type, value) {
+            if (!confirm("Hapus '" + value + "' dari daftar pilihan riwayat?")) return;
+
+            if (type === 'jenis_kendaraan') {
+                this.existingJenisList = this.existingJenisList.filter(item => item !== value);
+            } else if (type === 'peruntukan') {
+                this.existingPeruntukanList = this.existingPeruntukanList.filter(item => item !== value);
+            } else if (type === 'kategori') {
+                this.existingKategoriList = this.existingKategoriList.filter(item => item !== value);
+            }
+
+            fetch("{{ route('admin.pemeliharaan.data-unit.remove-history-option') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ type: type, value: value })
+            }).then(res => res.json()).then(data => {
+                console.log(data.message);
+            }).catch(err => console.error(err));
+        }
+    };
+}
+</script>
 @endsection
