@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Kejadian;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class MonitoringKejadianController extends Controller
 {
@@ -99,15 +100,25 @@ class MonitoringKejadianController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'kode_kejadian'   => 'required|unique:kejadian,kode_kejadian',
-            'waktu_kejadian'  => 'required|date',
-            'jenis_kejadian'  => 'required',
-            'kategori_detail' => 'required|string',
-            'lokasi'          => 'required|string',
-            'status'          => 'required',
+            'kode_kejadian'      => 'required|unique:kejadian,kode_kejadian',
+            'waktu_kejadian'     => 'required|date',
+            'jenis_kejadian'     => 'required',
+            'kategori_detail'    => 'required|string',
+            'lokasi'             => 'required|string',
+            'status'             => 'required',
+            'estimasi_kerugian'  => 'nullable|integer|min:0',
+            'korban_luka'        => 'nullable|integer|min:0',
+            'korban_jiwa'        => 'nullable|integer|min:0',
+            'file_laporan'       => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
-        Kejadian::create($request->all());
+        $data = $this->sanitizeAngka($request->except('file_laporan'));
+
+        if ($request->hasFile('file_laporan')) {
+            $data['file_laporan'] = $request->file('file_laporan')->store('kejadian-dokumen', 'public');
+        }
+
+        Kejadian::create($data);
 
         return redirect()->back()->with('success', 'Data kejadian berhasil ditambahkan.');
     }
@@ -117,22 +128,57 @@ class MonitoringKejadianController extends Controller
         $kejadian = Kejadian::findOrFail($id);
 
         $validated = $request->validate([
-            'kode_kejadian'   => 'required|unique:kejadian,kode_kejadian,' . $kejadian->id,
-            'waktu_kejadian'  => 'required|date',
-            'jenis_kejadian'  => 'required',
-            'kategori_detail' => 'required|string',
-            'lokasi'          => 'required|string',
-            'status'          => 'required',
+            'kode_kejadian'      => 'required|unique:kejadian,kode_kejadian,' . $kejadian->id,
+            'waktu_kejadian'     => 'required|date',
+            'jenis_kejadian'     => 'required',
+            'kategori_detail'    => 'required|string',
+            'lokasi'             => 'required|string',
+            'status'             => 'required',
+            'estimasi_kerugian'  => 'nullable|integer|min:0',
+            'korban_luka'        => 'nullable|integer|min:0',
+            'korban_jiwa'        => 'nullable|integer|min:0',
+            'file_laporan'       => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
-        $kejadian->update($request->all());
+        $data = $this->sanitizeAngka($request->except('file_laporan'));
+
+        if ($request->hasFile('file_laporan')) {
+            if ($kejadian->file_laporan) {
+                Storage::disk('public')->delete($kejadian->file_laporan);
+            }
+            $data['file_laporan'] = $request->file('file_laporan')->store('kejadian-dokumen', 'public');
+        }
+
+        $kejadian->update($data);
 
         return redirect()->back()->with('success', 'Data kejadian berhasil diperbarui.');
+    }
+
+    /**
+     * Kolom angka (estimasi_kerugian, korban_luka, korban_jiwa) bersifat NOT NULL
+     * dengan default 0 di database. Middleware bawaan Laravel (ConvertEmptyStringsToNull)
+     * mengubah input kosong menjadi null, sehingga perlu dikembalikan ke 0 di sini
+     * agar tidak melanggar constraint NOT NULL saat disimpan.
+     */
+    private function sanitizeAngka(array $data): array
+    {
+        foreach (['estimasi_kerugian', 'korban_luka', 'korban_jiwa'] as $kolom) {
+            if (!isset($data[$kolom]) || $data[$kolom] === '' || $data[$kolom] === null) {
+                $data[$kolom] = 0;
+            }
+        }
+
+        return $data;
     }
 
     public function destroy($id)
     {
         $kejadian = Kejadian::findOrFail($id);
+
+        if ($kejadian->file_laporan) {
+            Storage::disk('public')->delete($kejadian->file_laporan);
+        }
+
         $kejadian->delete();
 
         return redirect()->back()->with('success', 'Data kejadian berhasil dihapus.');
