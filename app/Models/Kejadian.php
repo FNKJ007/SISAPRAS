@@ -24,6 +24,7 @@ class Kejadian extends Model
         'objek_terdampak',
         'penyebab',
         'pos_regu',
+        'komandan_regu',
         'unit_armada',
         'estimasi_kerugian',
         'korban_luka',

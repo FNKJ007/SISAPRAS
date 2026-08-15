@@ -8,8 +8,9 @@
             <input type="text" name="kode_kejadian" required x-model="editForm.kode_kejadian"
                    style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
         @else
-            <input type="text" name="kode_kejadian" required value="KEJ-{{ date('Ymd') }}-{{ rand(100, 999) }}" readonly
+            <input type="text" id="createKodeKejadian" name="kode_kejadian" required value="KEJ-{{ date('Ymd') }}-{{ rand(100, 999) }}" readonly
                    style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#64748B;">
+            <span style="display:block; font-size:10.5px; color:#94A3B8; margin-top:3px;">Otomatis mengikuti Jenis &amp; Status: TK65 (Kebakaran), RESC (Rescue), PRESC (Rescue Pending).</span>
         @endif
     </div>
     <div>
@@ -36,7 +37,7 @@
                 <option value="Non-Kebakaran">Non-Kebakaran</option>
             </select>
         @else
-            <select name="jenis_kejadian" required
+            <select id="createJenisKejadian" name="jenis_kejadian" required
                     style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
                 <option value="">-- Pilih Jenis --</option>
                 <option value="Kebakaran">Kebakaran</option>
@@ -56,10 +57,10 @@
                 <option value="Dibatalkan">Dibatalkan</option>
             </select>
         @else
-            <select name="status" required
+            <select id="createStatusKejadian" name="status" required
                     style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
                 <option value="Selesai">Selesai</option>
-                <option value="Proses">Proses</option>
+                <option value="Proses">Proses (Pending)</option>
                 <option value="Dibatalkan">Dibatalkan</option>
             </select>
         @endif
@@ -114,7 +115,7 @@
 {{-- Section: Penanganan --}}
 <div style="background:#F8FAFC; padding:14px; border-radius:10px; border:1px solid #E2E8F0; margin-bottom:14px;">
     <div style="font-size:12px; font-weight:800; color:#1E3A8A; margin-bottom:10px;">PENANGANAN</div>
-    <div class="modal-form-grid">
+    <div class="modal-form-grid-3">
         <div>
             <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Pos / Regu <span style="color:#DC2626;">*</span></label>
             @if($isEdit)
@@ -122,6 +123,16 @@
                        style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
             @else
                 <input type="text" name="pos_regu" required placeholder="Contoh: Pos Mako / Regu A"
+                       style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
+            @endif
+        </div>
+        <div>
+            <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Danru / Komandan Regu</label>
+            @if($isEdit)
+                <input type="text" name="komandan_regu" x-model="editForm.komandan_regu" placeholder="Nama Danru bertugas"
+                       style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
+            @else
+                <input type="text" name="komandan_regu" placeholder="Nama Danru bertugas"
                        style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
             @endif
         </div>
