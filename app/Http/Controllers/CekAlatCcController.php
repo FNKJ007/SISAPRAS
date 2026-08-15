@@ -26,7 +26,7 @@ class CekAlatCcController extends Controller
         ];
 
         // Ambil data peralatan Command Center dari database Admin Data Peralatan (Urut A-Z)
-        $peralatanDb = Peralatan::where('kategori', 'command_center')->orderBy('nama', 'asc')->get();
+        $peralatanDb = Peralatan::where('kategori', 'LIKE', '%command%')->orderBy('nama', 'asc')->get();
 
         $daftarAlat = $peralatanDb->map(function ($item) {
             return (object) [

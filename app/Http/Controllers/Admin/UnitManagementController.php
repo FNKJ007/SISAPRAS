@@ -20,8 +20,8 @@ class UnitManagementController extends Controller
 
         $query = Unit::orderBy('id', 'asc');
 
-        if ($kategoriFilter !== 'semua' && in_array($kategoriFilter, ['pemadam', 'rescue'])) {
-            $query->where('kategori', $kategoriFilter);
+        if ($kategoriFilter !== 'semua') {
+            $query->where('kategori', 'LIKE', $kategoriFilter);
         }
 
         if ($statusFilter !== 'semua' && in_array($statusFilter, ['aktif', 'perbaikan', 'nonaktif'])) {
@@ -36,6 +36,8 @@ class UnitManagementController extends Controller
                   ->orWhere('no_rangka_mesin', 'LIKE', "%{$searchQuery}%")
                   ->orWhere('pos', 'LIKE', "%{$searchQuery}%")
                   ->orWhere('merk_tipe', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('jenis_kendaraan', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('peruntukan', 'LIKE', "%{$searchQuery}%")
                   ->orWhere('jenis_peruntukan', 'LIKE', "%{$searchQuery}%")
                   ->orWhere('pengemudi_1', 'LIKE', "%{$searchQuery}%")
                   ->orWhere('pengemudi_2', 'LIKE', "%{$searchQuery}%");
@@ -46,15 +48,59 @@ class UnitManagementController extends Controller
 
         $kpi = [
             'total'     => Unit::count(),
-            'pemadam'   => Unit::where('kategori', 'pemadam')->count(),
-            'rescue'    => Unit::where('kategori', 'rescue')->count(),
+            'pemadam'   => Unit::where('kategori', 'LIKE', 'pemadam')->count(),
+            'rescue'    => Unit::where('kategori', 'LIKE', 'rescue')->count(),
             'aktif'     => Unit::where('status', 'aktif')->count(),
             'perbaikan' => Unit::where('status', 'perbaikan')->count(),
         ];
 
         $posList = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
 
-        return view('admin.pemeliharaan.data-unit.index', compact('unitList', 'kpi', 'kategoriFilter', 'statusFilter', 'searchQuery', 'posList'));
+        $existingJenisList = Unit::whereNotNull('jenis_kendaraan')
+            ->where('jenis_kendaraan', '!=', '')
+            ->get()
+            ->pluck('jenis_kendaraan')
+            ->map(fn($v) => strtoupper(trim($v)))
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
+
+        $existingPeruntukanList = Unit::whereNotNull('peruntukan')
+            ->where('peruntukan', '!=', '')
+            ->get()
+            ->pluck('peruntukan')
+            ->map(fn($v) => strtoupper(trim($v)))
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
+
+        $existingKategoriList = Unit::whereNotNull('kategori')
+            ->where('kategori', '!=', '')
+            ->get()
+            ->pluck('kategori')
+            ->map(fn($v) => ucwords(strtolower(str_replace('_', ' ', trim($v)))))
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
+
+        if (empty($existingKategoriList)) {
+            $existingKategoriList = ['Pemadam', 'Rescue'];
+        }
+
+        return view('admin.pemeliharaan.data-unit.index', compact(
+            'unitList',
+            'kpi',
+            'kategoriFilter',
+            'statusFilter',
+            'searchQuery',
+            'posList',
+            'existingJenisList',
+            'existingPeruntukanList',
+            'existingKategoriList'
+        ));
     }
 
     /**
@@ -64,13 +110,15 @@ class UnitManagementController extends Controller
     {
         $validated = $request->validate([
             'nama'             => 'required|string|max:255',
-            'kategori'         => 'required|in:pemadam,rescue',
+            'kategori'         => 'required|string|max:100',
             'nomor_lambung'    => 'nullable|string|max:100',
             'plat_nomor'       => 'nullable|string|max:100',
             'no_rangka_mesin'  => 'nullable|string|max:100',
             'merk_tipe'        => 'nullable|string|max:255',
             'tahun_pembuatan'  => 'nullable|integer|min:1950|max:' . (date('Y') + 1),
             'cc'               => 'nullable|string|max:50',
+            'jenis_kendaraan'  => 'nullable|string|max:100',
+            'peruntukan'       => 'nullable|string|max:100',
             'jenis_peruntukan' => 'nullable|string|max:255',
             'pos'              => 'nullable|string|max:255',
             'pengemudi_1'      => 'nullable|string|max:255',
@@ -95,13 +143,15 @@ class UnitManagementController extends Controller
 
         $validated = $request->validate([
             'nama'             => 'required|string|max:255',
-            'kategori'         => 'required|in:pemadam,rescue',
+            'kategori'         => 'required|string|max:100',
             'nomor_lambung'    => 'nullable|string|max:100',
             'plat_nomor'       => 'nullable|string|max:100',
             'no_rangka_mesin'  => 'nullable|string|max:100',
             'merk_tipe'        => 'nullable|string|max:255',
             'tahun_pembuatan'  => 'nullable|integer|min:1950|max:' . (date('Y') + 1),
             'cc'               => 'nullable|string|max:50',
+            'jenis_kendaraan'  => 'nullable|string|max:100',
+            'peruntukan'       => 'nullable|string|max:100',
             'jenis_peruntukan' => 'nullable|string|max:255',
             'pos'              => 'nullable|string|max:255',
             'pengemudi_1'      => 'nullable|string|max:255',

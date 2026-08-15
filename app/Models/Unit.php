@@ -18,6 +18,8 @@ class Unit extends Model
         'merk_tipe',
         'tahun_pembuatan',
         'cc',
+        'jenis_kendaraan',
+        'peruntukan',
         'jenis_peruntukan',
         'pos',
         'pengemudi_1',
@@ -25,6 +27,27 @@ class Unit extends Model
         'status',
         'catatan',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($unit) {
+            if ($unit->kategori) {
+                $unit->kategori = ucwords(strtolower(str_replace('_', ' ', trim($unit->kategori))));
+            }
+            if ($unit->jenis_kendaraan) {
+                $unit->jenis_kendaraan = strtoupper(trim($unit->jenis_kendaraan));
+            }
+            if ($unit->peruntukan) {
+                $unit->peruntukan = strtoupper(trim($unit->peruntukan));
+            }
+            if ($unit->jenis_kendaraan || $unit->peruntukan) {
+                $parts = array_filter([$unit->jenis_kendaraan, $unit->peruntukan]);
+                $unit->jenis_peruntukan = implode('/', $parts);
+            }
+        });
+    }
 
     public static array $kategoriMap = [
         'pemadam' => 'Pemadam',
@@ -59,7 +82,7 @@ class Unit extends Model
 
     public function getJenisMobilAttribute()
     {
-        return $this->merk_tipe ?: $this->jenis_peruntukan;
+        return $this->jenis_kendaraan ?: ($this->merk_tipe ?: $this->jenis_peruntukan);
     }
 
     public function getLokasiAttribute()

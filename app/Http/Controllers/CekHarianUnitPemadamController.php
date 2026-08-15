@@ -18,7 +18,7 @@ class CekHarianUnitPemadamController extends Controller
      */
     protected function unitList()
     {
-        $units = Unit::where('kategori', 'pemadam')->orderBy('nomor_lambung', 'asc')->get();
+        $units = Unit::where('kategori', 'LIKE', 'pemadam')->orderBy('nomor_lambung', 'asc')->get();
 
         return $units;
     }
