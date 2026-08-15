@@ -270,7 +270,12 @@
                                         <div style="font-size:11px; color:#94A3B8;">Kec. {{ $item->kecamatan }}</div>
                                     @endif
                                 </td>
-                                <td style="padding:14px 18px; color:#334155;">{{ $item->pos_regu ?? '-' }}</td>
+                                <td style="padding:14px 18px; color:#334155;">
+                                    {{ $item->pos_regu ?? '-' }}
+                                    @if($item->komandan_regu)
+                                        <div style="font-size:11px; color:#94A3B8;">Danru: {{ $item->komandan_regu }}</div>
+                                    @endif
+                                </td>
                                 <td style="padding:14px 18px;">
                                     @php
                                         $statusStyle = match($item->status) {
@@ -347,6 +352,7 @@
                     <div style="font-size:11px; font-weight:800; color:#1E3A8A; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">Penanganan</div>
                     <div class="modal-form-grid" style="margin-bottom:0;">
                         <div><span style="display:block; font-size:11px; color:#94A3B8;">Pos / Regu</span><span style="font-weight:700; color:#1E293B;" x-text="activeItem.pos_regu || '-'"></span></div>
+                        <div><span style="display:block; font-size:11px; color:#94A3B8;">Danru / Komandan Regu</span><span style="font-weight:700; color:#1E293B;" x-text="activeItem.komandan_regu || '-'"></span></div>
                         <div><span style="display:block; font-size:11px; color:#94A3B8;">Unit / Armada</span><span style="font-weight:700; color:#1E293B;" x-text="activeItem.unit_armada || '-'"></span></div>
                         <div><span style="display:block; font-size:11px; color:#94A3B8;">Waktu Terima Laporan</span><span style="font-weight:600; color:#334155;" x-text="activeItem.waktu_terima_laporan || '-'"></span></div>
                         <div><span style="display:block; font-size:11px; color:#94A3B8;">Waktu Berangkat</span><span style="font-weight:600; color:#334155;" x-text="activeItem.waktu_berangkat || '-'"></span></div>
@@ -497,6 +503,40 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    // ===================== AUTO KODE KEJADIAN (TAMBAH KEJADIAN) =====================
+    // TK65      -> Kebakaran
+    // RESC      -> Rescue / Penyelamatan
+    // PRESC     -> Rescue / Penyelamatan yang berstatus Proses (pending)
+    // KEJ       -> Jenis belum dipilih (default)
+    const kodeInput   = document.getElementById('createKodeKejadian');
+    const jenisSelect = document.getElementById('createJenisKejadian');
+    const statusSelect = document.getElementById('createStatusKejadian');
+
+    function generateKodeKejadian() {
+        if (!kodeInput || !jenisSelect) return;
+
+        const jenis  = jenisSelect.value;
+        const status = statusSelect ? statusSelect.value : '';
+
+        let prefix = 'KEJ';
+        if (jenis === 'Kebakaran') {
+            prefix = 'TK65';
+        } else if (jenis === 'Rescue' || jenis === 'Penyelamatan') {
+            prefix = (status === 'Proses') ? 'PRESC' : 'RESC';
+        }
+
+        const today = new Date();
+        const tanggal = today.getFullYear().toString()
+            + String(today.getMonth() + 1).padStart(2, '0')
+            + String(today.getDate()).padStart(2, '0');
+        const acak = Math.floor(100 + Math.random() * 900);
+
+        kodeInput.value = `${prefix}-${tanggal}-${acak}`;
+    }
+
+    if (jenisSelect) jenisSelect.addEventListener('change', generateKodeKejadian);
+    if (statusSelect) statusSelect.addEventListener('change', generateKodeKejadian);
+
     // ===================== GRAFIK: TREN KEJADIAN PER BULAN =====================
     const trenCanvas = document.getElementById('chartTrenKejadian');
     if (trenCanvas) {
