@@ -14,9 +14,41 @@ class PengajuanController extends Controller
      */
     public function index()
     {
-        $bidangList         = Pengajuan::$bidangMap;
-        $reguList           = Pengajuan::$reguMap;
-        $jenisKendaraanList = Pengajuan::$jenisKendaraanMap;
+        // Ambil Bidang dari Database Akun Pengguna (Generate Akun) + Fallback
+        $bidangUserDb = \App\Models\User::whereNotNull('bidang')
+            ->where('bidang', '!=', '')
+            ->get()
+            ->pluck('bidang')
+            ->map(fn($b) => ucwords(strtolower(trim($b))))
+            ->concat(['Pemadam', 'Rescue', 'Command Center', 'Sekretariat', 'Sarana Prasarana'])
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
+
+        $bidangList = [];
+        foreach ($bidangUserDb as $b) {
+            $key = strtolower(str_replace([' ', '-'], '_', $b));
+            $bidangList[$key] = $b;
+        }
+
+        // Ambil Regu dari Database Akun Pengguna (Generate Akun) + Fallback
+        $reguUserDb = \App\Models\User::whereNotNull('regu')
+            ->where('regu', '!=', '')
+            ->get()
+            ->pluck('regu')
+            ->map(fn($r) => ucwords(strtolower(trim($r))))
+            ->concat(['Regu 1', 'Regu 2', 'Regu 3', 'Regu 4'])
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
+
+        $reguList = [];
+        foreach ($reguUserDb as $r) {
+            $key = strtolower(str_replace([' ', '-'], '_', $r));
+            $reguList[$key] = $r;
+        }
 
         // Ambil Pos dari Database Admin Data Pos
         $posDb = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
@@ -74,6 +106,26 @@ class PengajuanController extends Controller
             $jenisKendaraanList = Pengajuan::$jenisKendaraanMap;
         }
 
+        $currentUser = auth()->user();
+
+        // Ambil User Pejabat/Atasan (Danru & Kabid) dari Generate Akun
+        $officials = \App\Models\User::whereNotNull('jabatan')
+            ->where('jabatan', '!=', '')
+            ->get(['name', 'nip', 'jabatan', 'bidang', 'pos', 'regu']);
+
+        $danruUsers = $officials->filter(function($u) {
+            $j = strtolower($u->jabatan);
+            return str_contains($j, 'danru') || str_contains($j, 'komandan') || str_contains($j, 'kasi') || str_contains($j, 'seksi');
+        })->values();
+
+        $kabidUsers = $officials->filter(function($u) {
+            $j = strtolower($u->jabatan);
+            return str_contains($j, 'kabid') || str_contains($j, 'bidang');
+        })->values();
+
+        $defaultDanru = $danruUsers->first();
+        $defaultKabid = $kabidUsers->first();
+
         return view('pemeliharaan.pengajuan', compact(
             'bidangList',
             'posList',
@@ -81,7 +133,12 @@ class PengajuanController extends Controller
             'jenisKendaraanList',
             'nomorLambungList',
             'unitList',
-            'unitDetails'
+            'unitDetails',
+            'currentUser',
+            'danruUsers',
+            'kabidUsers',
+            'defaultDanru',
+            'defaultKabid'
         ));
     }
 

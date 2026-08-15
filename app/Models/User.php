@@ -15,6 +15,12 @@ class User extends Authenticatable
         'nip',
         'email',
         'role',
+        'jabatan',
+        'bidang',
+        'pos',
+        'regu',
+        'no_hp',
+        'status',
         'password',
     ];
 
@@ -29,6 +35,23 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
         ];
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($user) {
+            if ($user->bidang) {
+                $user->bidang = ucwords(strtolower(trim($user->bidang)));
+            }
+            if ($user->regu) {
+                $user->regu = ucwords(strtolower(trim($user->regu)));
+            }
+            if ($user->jabatan) {
+                $user->jabatan = ucwords(strtolower(trim($user->jabatan)));
+            }
+        });
     }
 
     /**

@@ -21,9 +21,14 @@
             <div class="form-group has-caret">
                 <label for="bidang">Bidang</label>
                 <select name="bidang" id="bidang" required>
-                    <option value="" disabled {{ old('bidang') ? '' : 'selected' }}></option>
+                    <option value="" disabled {{ !old('bidang') && !($currentUser->bidang ?? false) ? 'selected' : '' }}></option>
                     @foreach ($bidangList as $value => $label)
-                        <option value="{{ $value }}" {{ old('bidang') == $value ? 'selected' : '' }}>
+                        @php
+                            $userBidang = strtolower($currentUser->bidang ?? '');
+                            $isUserBidang = $userBidang && (strtolower($value) === $userBidang || strtolower($label) === $userBidang);
+                            $isSelected = old('bidang') ? (old('bidang') == $value) : $isUserBidang;
+                        @endphp
+                        <option value="{{ $value }}" {{ $isSelected ? 'selected' : '' }}>
                             {{ $label }}
                         </option>
                     @endforeach
@@ -34,9 +39,16 @@
             <div class="form-group has-caret">
                 <label for="pos">Pos</label>
                 <select name="pos" id="pos" required>
-                    <option value="" disabled {{ old('pos') ? '' : 'selected' }}></option>
+                    <option value="" disabled {{ !old('pos') && !($currentUser->pos ?? false) ? 'selected' : '' }}></option>
                     @foreach ($posList as $value => $label)
-                        <option value="{{ $value }}" {{ old('pos') == $value ? 'selected' : '' }}>
+                        @php
+                            $userPosClean = strtolower(str_replace(' ', '', $currentUser->pos ?? ''));
+                            $valPosClean = strtolower(str_replace(' ', '', $value));
+                            $labelPosClean = strtolower(str_replace(' ', '', $label));
+                            $isUserPos = $userPosClean && ($valPosClean === $userPosClean || $labelPosClean === $userPosClean);
+                            $isSelected = old('pos') ? (old('pos') == $value) : $isUserPos;
+                        @endphp
+                        <option value="{{ $value }}" {{ $isSelected ? 'selected' : '' }}>
                             {{ $label }}
                         </option>
                     @endforeach
@@ -47,9 +59,16 @@
             <div class="form-group has-caret">
                 <label for="regu">Regu</label>
                 <select name="regu" id="regu" required>
-                    <option value="" disabled {{ old('regu') ? '' : 'selected' }}></option>
+                    <option value="" disabled {{ !old('regu') && !($currentUser->regu ?? false) ? 'selected' : '' }}></option>
                     @foreach ($reguList as $value => $label)
-                        <option value="{{ $value }}" {{ old('regu') == $value ? 'selected' : '' }}>
+                        @php
+                            $userRegu = strtolower(str_replace(' ', '', $currentUser->regu ?? ''));
+                            $valRegu = strtolower(str_replace(' ', '', $value));
+                            $labelRegu = strtolower(str_replace(' ', '', $label));
+                            $isUserRegu = $userRegu && ($valRegu === $userRegu || $labelRegu === $userRegu);
+                            $isSelected = old('regu') ? (old('regu') == $value) : $isUserRegu;
+                        @endphp
+                        <option value="{{ $value }}" {{ $isSelected ? 'selected' : '' }}>
                             {{ $label }}
                         </option>
                     @endforeach
@@ -93,42 +112,42 @@
             <div class="form-group">
                 <label for="nama_pemegang">Nama Pemegang/Penanggung Jawab Kendaraan</label>
                 <input type="text" name="nama_pemegang" id="nama_pemegang"
-                       value="{{ old('nama_pemegang') }}" required>
+                       value="{{ old('nama_pemegang', $currentUser->name ?? '') }}" required>
             </div>
 
             {{-- ============ NIP Pemegang/Penanggung Jawab Kendaraan ============ --}}
             <div class="form-group">
                 <label for="nip_pemegang">NIP Pemegang/Penanggung Jawab Kendaraan</label>
                 <input type="text" name="nip_pemegang" id="nip_pemegang"
-                       value="{{ old('nip_pemegang') }}" required>
+                       value="{{ old('nip_pemegang', $currentUser->nip ?? '') }}" required>
             </div>
 
             {{-- ============ Nama Komandan Regu/Kepala Seksi ============ --}}
             <div class="form-group">
                 <label for="nama_komandan_regu">Nama Komandan Regu/Kepala Seksi</label>
                 <input type="text" name="nama_komandan_regu" id="nama_komandan_regu"
-                       value="{{ old('nama_komandan_regu') }}" required>
+                       value="{{ old('nama_komandan_regu', $defaultDanru->name ?? '') }}" data-autofilled="true" required>
             </div>
 
             {{-- ============ NIP Komandan Regu/Kepala Seksi ============ --}}
             <div class="form-group">
                 <label for="nip_komandan_regu">NIP Komandan Regu/Kepala Seksi</label>
                 <input type="text" name="nip_komandan_regu" id="nip_komandan_regu"
-                       value="{{ old('nip_komandan_regu') }}" required>
+                       value="{{ old('nip_komandan_regu', $defaultDanru->nip ?? '') }}" data-autofilled="true" required>
             </div>
 
             {{-- ============ Nama Kepala Bidang ============ --}}
             <div class="form-group">
                 <label for="nama_kepala_bidang">Nama Kepala Bidang</label>
                 <input type="text" name="nama_kepala_bidang" id="nama_kepala_bidang"
-                       value="{{ old('nama_kepala_bidang') }}" required>
+                       value="{{ old('nama_kepala_bidang', $defaultKabid->name ?? '') }}" data-autofilled="true" required>
             </div>
 
             {{-- ============ NIP Kepala Bidang ============ --}}
             <div class="form-group">
                 <label for="nip_kepala_bidang">NIP Kepala Bidang</label>
                 <input type="text" name="nip_kepala_bidang" id="nip_kepala_bidang"
-                       value="{{ old('nip_kepala_bidang') }}" required>
+                       value="{{ old('nip_kepala_bidang', $defaultKabid->nip ?? '') }}" data-autofilled="true" required>
             </div>
 
             <div class="form-actions">
@@ -142,13 +161,56 @@
         document.addEventListener('DOMContentLoaded', function () {
             const allUnits = @json($unitList ?? []);
             const unitDetails = @json($unitDetails ?? []);
+            const danruUsers = @json($danruUsers ?? []);
+            const kabidUsers = @json($kabidUsers ?? []);
             const lambungSelect = document.getElementById('nomor_lambung');
             const jenisSelect = document.getElementById('jenis_kendaraan');
             const posSelect = document.getElementById('pos');
+            const reguSelect = document.getElementById('regu');
             const bidangSelect = document.getElementById('bidang');
             const namaPemegangInput = document.getElementById('nama_pemegang');
+            const namaDanruInput = document.getElementById('nama_komandan_regu');
+            const nipDanruInput = document.getElementById('nip_komandan_regu');
+            const namaKabidInput = document.getElementById('nama_kepala_bidang');
+            const nipKabidInput = document.getElementById('nip_kepala_bidang');
 
             let isSyncing = false;
+
+            // Auto-match pejabat (Danru & Kabid) berdasarkan Pos/Regu/Bidang
+            function updateOfficialsFromProfile() {
+                const selectedPos = posSelect && posSelect.selectedIndex >= 0 ? posSelect.options[posSelect.selectedIndex].text.trim().toLowerCase() : '';
+                const selectedRegu = reguSelect && reguSelect.selectedIndex >= 0 ? reguSelect.options[reguSelect.selectedIndex].text.trim().toLowerCase() : '';
+                const selectedBidang = bidangSelect && bidangSelect.selectedIndex >= 0 ? bidangSelect.options[bidangSelect.selectedIndex].text.trim().toLowerCase() : '';
+
+                if (danruUsers.length > 0) {
+                    let matchedDanru = danruUsers.find(u => {
+                        const uPos = (u.pos || '').toLowerCase();
+                        const uRegu = (u.regu || '').toLowerCase();
+                        return (uPos && selectedPos && uPos === selectedPos) || (uRegu && selectedRegu && uRegu === selectedRegu);
+                    }) || danruUsers[0];
+
+                    if (matchedDanru) {
+                        if (namaDanruInput) namaDanruInput.value = matchedDanru.name;
+                        if (nipDanruInput) nipDanruInput.value = matchedDanru.nip;
+                    }
+                }
+
+                if (kabidUsers.length > 0) {
+                    let matchedKabid = kabidUsers.find(u => {
+                        const uBidang = (u.bidang || '').toLowerCase();
+                        return uBidang && selectedBidang && uBidang === selectedBidang;
+                    }) || kabidUsers[0];
+
+                    if (matchedKabid) {
+                        if (namaKabidInput) namaKabidInput.value = matchedKabid.name;
+                        if (nipKabidInput) nipKabidInput.value = matchedKabid.nip;
+                    }
+                }
+            }
+
+            if (posSelect) posSelect.addEventListener('change', updateOfficialsFromProfile);
+            if (reguSelect) reguSelect.addEventListener('change', updateOfficialsFromProfile);
+            if (bidangSelect) bidangSelect.addEventListener('change', updateOfficialsFromProfile);
 
             // Filter opsi Nomor Lambung berdasarkan Jenis Kendaraan yang dipilih
             function filterNomorLambung(preserveSelected = true) {

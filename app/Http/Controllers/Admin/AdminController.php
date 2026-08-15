@@ -532,10 +532,113 @@ class AdminController extends Controller
         ]);
     }
 
-    /* ==================== PENGATURAN ==================== */
-    public function pengaturan()
+    /* ==================== PENGATURAN & MANAJEMEN AKUN ==================== */
+    public function pengaturan(Request $request)
     {
-        return view('admin.pengaturan');
+        $roleFilter   = $request->query('role', 'semua');
+        $posFilter    = $request->query('pos', 'semua');
+        $reguFilter   = $request->query('regu', 'semua');
+        $bidangFilter = $request->query('bidang', 'semua');
+        $statusFilter = $request->query('status', 'semua');
+        $searchQuery  = $request->query('search', '');
+
+        $query = \App\Models\User::orderBy('id', 'asc');
+
+        if ($roleFilter !== 'semua') {
+            $query->where('role', $roleFilter);
+        }
+
+        if ($posFilter !== 'semua') {
+            $query->where('pos', 'LIKE', $posFilter);
+        }
+
+        if ($reguFilter !== 'semua') {
+            $query->where('regu', 'LIKE', $reguFilter);
+        }
+
+        if ($bidangFilter !== 'semua') {
+            $query->where('bidang', 'LIKE', $bidangFilter);
+        }
+
+        if ($statusFilter !== 'semua') {
+            $query->where('status', $statusFilter);
+        }
+
+        if (!empty($searchQuery)) {
+            $query->where(function ($q) use ($searchQuery) {
+                $q->where('name', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nip', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('email', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('jabatan', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
+        $userList = $query->paginate(12)->withQueryString();
+
+        $kpi = [
+            'total'   => \App\Models\User::count(),
+            'admin'   => \App\Models\User::where('role', 'admin')->count(),
+            'pemadam' => \App\Models\User::where('bidang', 'LIKE', '%pemadam%')->count(),
+            'rescue'  => \App\Models\User::where('bidang', 'LIKE', '%rescue%')->count(),
+            'aktif'   => \App\Models\User::where('status', 'aktif')->count(),
+        ];
+
+        $posList = \App\Models\Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
+
+        $existingBidangList = \App\Models\User::whereNotNull('bidang')
+            ->where('bidang', '!=', '')
+            ->get()
+            ->pluck('bidang')
+            ->map(fn($v) => ucwords(strtolower(trim($v))))
+            ->concat(['Pemadam', 'Rescue', 'Command Center', 'Sekretariat', 'Sarana Prasarana'])
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
+
+        $existingReguList = \App\Models\User::whereNotNull('regu')
+            ->where('regu', '!=', '')
+            ->get()
+            ->pluck('regu')
+            ->map(fn($v) => ucwords(strtolower(trim($v))))
+            ->concat(['Regu 1', 'Regu 2', 'Regu 3', 'Regu 4'])
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
+
+        $defaultJabatan = [
+            'Komandan Regu (Danru)',
+            'Kepala Seksi (Kasi)',
+            'Kepala Bidang (Kabid)',
+            'Anggota / Petugas',
+            'Pengemudi / Driver',
+        ];
+
+        $existingJabatanList = \App\Models\User::whereNotNull('jabatan')
+            ->where('jabatan', '!=', '')
+            ->get()
+            ->pluck('jabatan')
+            ->map(fn($v) => trim($v))
+            ->concat($defaultJabatan)
+            ->unique()
+            ->values()
+            ->toArray();
+
+        return view('admin.pengaturan', compact(
+            'userList',
+            'kpi',
+            'roleFilter',
+            'posFilter',
+            'reguFilter',
+            'bidangFilter',
+            'statusFilter',
+            'searchQuery',
+            'posList',
+            'existingBidangList',
+            'existingReguList',
+            'existingJabatanList'
+        ));
     }
 
     /**
