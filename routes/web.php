@@ -102,10 +102,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/pemeliharaan',                 [AdminController::class, 'pemeliharaanPemeliharaan'])->name('pemeliharaan');
         Route::get('/surat-permohonan',             [AdminController::class, 'pemeliharaanPemeliharaan'])->name('surat-permohonan');
         Route::get('/monitoring-aktual',            [AdminController::class, 'pemeliharaanMonitoringAktual'])->name('monitoring-aktual');
+        Route::post('/monitoring-aktual/{id}/progres', [AdminController::class, 'updateProgresPengerjaan'])->name('monitoring-aktual.progres');
         Route::get('/cetak-dokumen/{id}/{type}',    [AdminController::class, 'cetakDokumen'])->name('cetak-dokumen');
         Route::resource('invoice', InvoiceController::class);
-        Route::get('/kartu-kendali',                [AdminController::class, 'pemeliharaanKartuKendali'])->name('kartu-kendali');
-        
+        Route::get('/kartu-kendali-aktual',                [AdminController::class, 'pemeliharaanKartuKendali'])->name('kartu-kendali-aktual');
+        Route::get('/kartu-kendali-pembayaran',                [AdminController::class, 'pemeliharaanKartuKendali'])->name('kartu-kendali-pembayaran');
+
         // Data Unit CRUD Routes
         Route::get('/data-unit',                    [UnitManagementController::class, 'index'])->name('data-unit');
         Route::post('/data-unit',                   [UnitManagementController::class, 'store'])->name('data-unit.store');

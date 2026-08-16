@@ -27,11 +27,24 @@ class Pengajuan extends Model
         'status',
         'tanggal_keberangkatan',
         'catatan_admin',
+        'status_pengerjaan',
+        'tanggal_mulai_pengerjaan',
+        'tanggal_selesai_pengerjaan',
+        'progress_persen',
+        'progress_catatan',
     ];
 
     protected $casts = [
-        'tanggal_keberangkatan' => 'date',
-        'item_verifikasis'      => 'array',
+        'tanggal_keberangkatan'      => 'date',
+        'item_verifikasis'           => 'array',
+        'tanggal_mulai_pengerjaan'   => 'date',
+        'tanggal_selesai_pengerjaan' => 'date',
+    ];
+
+    public static array $statusPengerjaanMap = [
+        'belum_mulai' => 'Belum Mulai',
+        'proses'      => 'Dalam Pengerjaan',
+        'selesai'     => 'Selesai',
     ];
 
     public static array $bidangMap = [

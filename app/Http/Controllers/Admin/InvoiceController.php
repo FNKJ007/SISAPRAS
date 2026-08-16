@@ -30,7 +30,89 @@ class InvoiceController extends Controller
 
         $invoices = $query->paginate(10)->withQueryString();
 
-        return view('admin.pemeliharaan.invoice.index', compact('invoices'));
+        // ===================== DASHBOARD MONITORING =====================
+        $units = Unit::orderBy('nomor_lambung')->get();
+
+        $bulanList = [
+            '01' => 'JAN', '02' => 'FEB', '03' => 'MAR', '04' => 'APR',
+            '05' => 'MEI', '06' => 'JUN', '07' => 'JUL', '08' => 'AGS',
+            '09' => 'SEP', '10' => 'OKT', '11' => 'NOV', '12' => 'DES',
+        ];
+
+        $availableTahun = Invoice::whereNotNull('tahun_anggaran')
+            ->distinct()
+            ->orderByDesc('tahun_anggaran')
+            ->pluck('tahun_anggaran')
+            ->filter()
+            ->values()
+            ->toArray();
+        if (empty($availableTahun)) {
+            $availableTahun = [date('Y')];
+        }
+
+        $selectedTahun   = $request->query('tahun') ?: $availableTahun[0];
+        $selectedUnitIds = array_values(array_filter((array) $request->query('unit', [])));
+        $selectedBulan   = array_values(array_filter((array) $request->query('bulan', [])));
+
+        $dashboardInvoices = Invoice::with('unit')
+            ->where(function ($q) use ($selectedTahun) {
+                $q->where('tahun_anggaran', $selectedTahun)
+                  ->orWhereYear('tanggal_invoice', $selectedTahun);
+            })
+            ->when(!empty($selectedUnitIds), fn ($q) => $q->whereIn('unit_id', $selectedUnitIds))
+            ->when(!empty($selectedBulan), function ($q) use ($selectedBulan) {
+                $q->where(function ($qq) use ($selectedBulan) {
+                    foreach ($selectedBulan as $bulan) {
+                        $qq->orWhereMonth('tanggal_invoice', (int) $bulan);
+                    }
+                });
+            })
+            ->get();
+
+        $dashboardTotalAnggaran = (float) $dashboardInvoices->sum('total_biaya');
+        $dashboardTotalUnit     = $dashboardInvoices->pluck('unit_id')->filter()->unique()->count();
+
+        $biayaPerUnit = $dashboardInvoices
+            ->groupBy('unit_id')
+            ->map(function ($group) {
+                $first = $group->first();
+                $label = optional($first->unit)->nomor_lambung ?: ($first->no_lambung ?: '—');
+
+                return [
+                    'label' => $label,
+                    'total' => (float) $group->sum('total_biaya'),
+                ];
+            })
+            ->sortBy('label')
+            ->values();
+
+        $bulanKeys = !empty($selectedBulan) ? $selectedBulan : array_keys($bulanList);
+        sort($bulanKeys);
+
+        $biayaPerBulan = collect($bulanKeys)->map(function ($bulanKey) use ($dashboardInvoices, $bulanList) {
+            $total = $dashboardInvoices
+                ->filter(fn ($inv) => $inv->tanggal_invoice && $inv->tanggal_invoice->format('m') === $bulanKey)
+                ->sum('total_biaya');
+
+            return [
+                'label' => ($bulanList[$bulanKey] ?? $bulanKey),
+                'total' => (float) $total,
+            ];
+        })->values();
+
+        return view('admin.pemeliharaan.invoice.index', compact(
+            'invoices',
+            'units',
+            'bulanList',
+            'availableTahun',
+            'selectedTahun',
+            'selectedUnitIds',
+            'selectedBulan',
+            'dashboardTotalAnggaran',
+            'dashboardTotalUnit',
+            'biayaPerUnit',
+            'biayaPerBulan'
+        ));
     }
 
     public function create(Request $request)

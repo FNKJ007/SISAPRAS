@@ -71,6 +71,31 @@
         box-sizing: border-box !important;
     }
 }
+
+[x-cloak] { display: none !important; }
+
+@media (max-width: 900px) {
+    .dashboard-chart-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .dashboard-kpi-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .dashboard-filter-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+    .dashboard-filter-row > div {
+        width: 100% !important;
+    }
+    .dashboard-filter-row button[type="button"] {
+        min-width: 100% !important;
+        width: 100% !important;
+    }
+}
 </style>
 
 <div class="form-card" style="max-width:100%; box-shadow:none; padding:0; background:transparent;">
@@ -98,12 +123,201 @@
         </div>
     @endif
 
+    {{-- ===================== DASHBOARD MONITORING ===================== --}}
+    <div class="dashboard-monitoring-card" style="background:#FFFFFF; border-radius:16px; border:1px solid #E2E8F0; box-shadow:0px 18px 40px rgba(112,144,176,0.08); overflow:hidden; margin-bottom:20px;" x-data="{ unitOpen:false, bulanOpen:false }">
+
+        <div style="padding:18px 22px; border-bottom:1px solid #F1F5F9; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+            <div>
+                <span style="font-size:15px; font-weight:700; color:#0F172A; display:flex; align-items:center; gap:8px;">
+                    <i data-lucide="layout-dashboard" style="width:18px; height:18px; color:#1B2A6B;"></i>
+                    Dashboard Monitoring — {{ $selectedTahun }}
+                </span>
+                <span style="font-size:12px; color:#64748B; margin-top:2px; display:block;">Ringkasan biaya pemeliharaan unit berdasarkan filter unit &amp; bulan yang dipilih.</span>
+            </div>
+        </div>
+
+        <form method="GET" action="{{ route('admin.pemeliharaan.invoice.index') }}" style="padding:18px 22px; border-bottom:1px solid #F1F5F9; background:#FAFAFA;">
+            {{-- Pertahankan filter tabel (search/status) saat filter dashboard disubmit --}}
+            @if(request('q'))<input type="hidden" name="q" value="{{ request('q') }}">@endif
+            @if(request('status'))<input type="hidden" name="status" value="{{ request('status') }}">@endif
+
+            <div class="dashboard-filter-row" style="display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap;">
+
+                {{-- Filter Tahun --}}
+                <div>
+                    <label style="display:block; font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Tahun</label>
+                    <select name="tahun" onchange="this.form.submit()"
+                            style="padding:8px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; font-weight:600; background:#FFFFFF; color:#1E293B; outline:none; cursor:pointer;">
+                        @foreach($availableTahun as $th)
+                            <option value="{{ $th }}" {{ (string) $selectedTahun === (string) $th ? 'selected' : '' }}>{{ $th }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Filter Unit (multi-select checkbox dropdown) --}}
+                <div style="position:relative;">
+                    <label style="display:block; font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Unit Dipilih</label>
+                    <button type="button" @click="unitOpen = !unitOpen; bulanOpen = false" @click.outside="unitOpen = false"
+                            style="display:flex; align-items:center; justify-content:space-between; gap:10px; min-width:220px; padding:8px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; font-weight:600; background:#FFFFFF; color:#1E293B; cursor:pointer;">
+                        <span>
+                            @if(empty($selectedUnitIds))
+                                Semua Unit ({{ $units->count() }})
+                            @else
+                                {{ count($selectedUnitIds) }} Unit Dipilih
+                            @endif
+                        </span>
+                        <i data-lucide="chevron-down" style="width:14px; height:14px; color:#64748B;"></i>
+                    </button>
+                    <div x-show="unitOpen" x-cloak
+                         style="position:absolute; z-index:20; top:calc(100% + 6px); left:0; width:260px; max-height:280px; overflow-y:auto; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:10px; box-shadow:0 12px 28px rgba(15,23,42,0.12); padding:10px;">
+                        <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:12.5px; font-weight:700; color:#1B2A6B; border-bottom:1px solid #F1F5F9; margin-bottom:4px; cursor:pointer;">
+                            <input type="checkbox" onclick="this.closest('div').querySelectorAll('input[name=\'unit[]\']').forEach(cb => cb.checked = this.checked)">
+                            Pilih Semua
+                        </label>
+                        @foreach($units as $unit)
+                            <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:12.5px; color:#334155; cursor:pointer; border-radius:6px;"
+                                   onmouseover="this.style.background='#F8FAFC';" onmouseout="this.style.background='transparent';">
+                                <input type="checkbox" name="unit[]" value="{{ $unit->id }}"
+                                       {{ in_array((string) $unit->id, array_map('strval', $selectedUnitIds)) ? 'checked' : '' }}>
+                                {{ $unit->nomor_lambung ?? $unit->nama }}
+                            </label>
+                        @endforeach
+                        <button type="submit"
+                                style="width:100%; margin-top:8px; padding:8px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;">
+                            Terapkan
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Filter Bulan (multi-select checkbox dropdown) --}}
+                <div style="position:relative;">
+                    <label style="display:block; font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Bulan Dipilih</label>
+                    <button type="button" @click="bulanOpen = !bulanOpen; unitOpen = false" @click.outside="bulanOpen = false"
+                            style="display:flex; align-items:center; justify-content:space-between; gap:10px; min-width:220px; padding:8px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; font-weight:600; background:#FFFFFF; color:#1E293B; cursor:pointer;">
+                        <span>
+                            @if(empty($selectedBulan))
+                                Semua Bulan (12)
+                            @else
+                                {{ count($selectedBulan) }} Bulan Dipilih
+                            @endif
+                        </span>
+                        <i data-lucide="chevron-down" style="width:14px; height:14px; color:#64748B;"></i>
+                    </button>
+                    <div x-show="bulanOpen" x-cloak
+                         style="position:absolute; z-index:20; top:calc(100% + 6px); left:0; width:220px; max-height:280px; overflow-y:auto; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:10px; box-shadow:0 12px 28px rgba(15,23,42,0.12); padding:10px;">
+                        @foreach($bulanList as $key => $label)
+                            <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:12.5px; color:#334155; cursor:pointer; border-radius:6px;"
+                                   onmouseover="this.style.background='#F8FAFC';" onmouseout="this.style.background='transparent';">
+                                <input type="checkbox" name="bulan[]" value="{{ $key }}"
+                                       {{ in_array($key, $selectedBulan) ? 'checked' : '' }}>
+                                {{ $key }} ({{ $label }})
+                            </label>
+                        @endforeach
+                        <button type="submit"
+                                style="width:100%; margin-top:8px; padding:8px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;">
+                            Terapkan
+                        </button>
+                    </div>
+                </div>
+
+                @if(!empty($selectedUnitIds) || !empty($selectedBulan) || request('tahun'))
+                    <a href="{{ route('admin.pemeliharaan.invoice.index') }}"
+                       style="display:inline-flex; align-items:center; gap:4px; padding:8px 14px; background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; text-decoration:none; font-weight:600;">
+                        <i data-lucide="rotate-ccw" style="width:13px; height:13px;"></i>
+                        <span>Reset Filter</span>
+                    </a>
+                @endif
+            </div>
+        </form>
+
+        {{-- KPI Cards --}}
+        <div style="padding:20px 22px 6px 22px; display:grid; grid-template-columns:repeat(2, 1fr); gap:16px;" class="dashboard-kpi-grid">
+            <div style="background:linear-gradient(135deg, #1B2A6B 0%, #26398C 100%); border-radius:14px; padding:18px 20px; display:flex; align-items:center; justify-content:space-between; gap:10px; box-shadow:0 8px 20px rgba(27,42,107,0.2);">
+                <div>
+                    <div style="font-size:11px; font-weight:700; color:#C7D2FE; text-transform:uppercase; letter-spacing:0.5px;">Total Anggaran Terpakai</div>
+                    <div style="font-size:22px; font-weight:800; color:#FFFFFF; margin-top:6px;">Rp {{ number_format($dashboardTotalAnggaran, 0, ',', '.') }}</div>
+                </div>
+                <div style="width:42px; height:42px; border-radius:12px; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <i data-lucide="wallet" style="width:20px; height:20px; color:#FFFFFF;"></i>
+                </div>
+            </div>
+            <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:14px; padding:18px 20px; display:flex; align-items:center; justify-content:space-between; gap:10px; box-shadow:0 4px 14px rgba(0,0,0,0.03);">
+                <div>
+                    <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:0.5px;">Total Unit</div>
+                    <div style="font-size:22px; font-weight:800; color:#0F172A; margin-top:6px;">{{ $dashboardTotalUnit }}</div>
+                </div>
+                <div style="width:42px; height:42px; border-radius:12px; background:#EFF6FF; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <i data-lucide="truck" style="width:20px; height:20px; color:#1D4ED8;"></i>
+                </div>
+            </div>
+        </div>
+
+        {{-- Grafik + Tabel Rincian --}}
+        <div style="padding:20px 22px 22px 22px; display:grid; grid-template-columns:1fr 1fr; gap:18px;" class="dashboard-chart-grid">
+
+            {{-- Biaya per Unit --}}
+            <div style="border:1px solid #E2E8F0; border-radius:14px; overflow:hidden;">
+                <div style="padding:14px 16px; border-bottom:1px solid #F1F5F9; font-size:13px; font-weight:700; color:#0F172A;">Biaya Pemeliharaan per Unit</div>
+                <div style="padding:14px 16px; height:220px;">
+                    <canvas id="chartBiayaPerUnit"></canvas>
+                </div>
+                <div style="max-height:180px; overflow-y:auto; border-top:1px solid #F1F5F9;">
+                    <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+                        <tbody>
+                            @forelse($biayaPerUnit as $row)
+                                <tr style="border-bottom:1px solid #F8FAFC;">
+                                    <td style="padding:8px 16px; font-weight:700; color:#1B2A6B;">{{ $row['label'] }} Total</td>
+                                    <td style="padding:8px 16px; text-align:right; font-weight:700; color:#0F172A;">{{ number_format($row['total'], 0, ',', '.') }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="2" style="padding:14px 16px; text-align:center; color:#94A3B8;">Tidak ada data.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- Biaya per Bulan --}}
+            <div style="border:1px solid #E2E8F0; border-radius:14px; overflow:hidden;">
+                <div style="padding:14px 16px; border-bottom:1px solid #F1F5F9; font-size:13px; font-weight:700; color:#0F172A;">Biaya Pemeliharaan per Bulan</div>
+                <div style="padding:14px 16px; height:220px;">
+                    <canvas id="chartBiayaPerBulan"></canvas>
+                </div>
+                <div style="max-height:180px; overflow-y:auto; border-top:1px solid #F1F5F9;">
+                    <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+                        <tbody>
+                            @forelse($biayaPerBulan as $row)
+                                <tr style="border-bottom:1px solid #F8FAFC;">
+                                    <td style="padding:8px 16px; font-weight:700; color:#1B2A6B;">{{ $row['label'] }} Total</td>
+                                    <td style="padding:8px 16px; text-align:right; font-weight:700; color:#0F172A;">{{ number_format($row['total'], 0, ',', '.') }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="2" style="padding:14px 16px; text-align:center; color:#94A3B8;">Tidak ada data.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Main Data Card --}}
     <div style="background:#FFFFFF; border-radius:16px; border:1px solid #E2E8F0; box-shadow:0px 18px 40px rgba(112,144,176,0.08); overflow:hidden;">
 
         {{-- Filter & Search Toolbar --}}
         <div style="padding:16px 20px; border-bottom:1px solid #F1F5F9; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; background:#FAFAFA;">
             <form method="GET" action="{{ route('admin.pemeliharaan.invoice.index') }}" class="invoice-filter-form">
+                @if(!empty($selectedUnitIds))
+                    @foreach($selectedUnitIds as $uid)
+                        <input type="hidden" name="unit[]" value="{{ $uid }}">
+                    @endforeach
+                @endif
+                @if(!empty($selectedBulan))
+                    @foreach($selectedBulan as $bl)
+                        <input type="hidden" name="bulan[]" value="{{ $bl }}">
+                    @endforeach
+                @endif
+                @if(request('tahun'))<input type="hidden" name="tahun" value="{{ request('tahun') }}">@endif
                 <div class="invoice-filter-inputs">
                     {{-- Search Input --}}
                     <div class="invoice-search-wrap">
@@ -284,4 +498,101 @@
     </div>
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const perUnitCanvas = document.getElementById('chartBiayaPerUnit');
+    if (perUnitCanvas) {
+        new Chart(perUnitCanvas.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: {!! json_encode($biayaPerUnit->pluck('label')) !!},
+                datasets: [{
+                    label: 'Total Biaya',
+                    data: {!! json_encode($biayaPerUnit->pluck('total')) !!},
+                    backgroundColor: '#1B2A6B',
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 800, easing: 'easeOutQuart' },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0F172A',
+                        padding: 10,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: (ctx) => 'Rp ' + Number(ctx.parsed.y).toLocaleString('id-ID')
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#64748B' } },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#F1F5F9', drawBorder: false },
+                        ticks: {
+                            font: { size: 10 },
+                            color: '#64748B',
+                            callback: (val) => 'Rp' + (val / 1000000).toFixed(1) + 'jt'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    const perBulanCanvas = document.getElementById('chartBiayaPerBulan');
+    if (perBulanCanvas) {
+        new Chart(perBulanCanvas.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: {!! json_encode($biayaPerBulan->pluck('label')) !!},
+                datasets: [{
+                    label: 'Total Biaya',
+                    data: {!! json_encode($biayaPerBulan->pluck('total')) !!},
+                    backgroundColor: '#0891B2',
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 800, easing: 'easeOutQuart' },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0F172A',
+                        padding: 10,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: (ctx) => 'Rp ' + Number(ctx.parsed.y).toLocaleString('id-ID')
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#64748B' } },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#F1F5F9', drawBorder: false },
+                        ticks: {
+                            font: { size: 10 },
+                            color: '#64748B',
+                            callback: (val) => 'Rp' + (val / 1000000).toFixed(1) + 'jt'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    if (window.lucide) { window.lucide.createIcons(); }
+});
+</script>
 @endsection

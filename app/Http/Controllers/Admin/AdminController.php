@@ -253,12 +253,67 @@ class AdminController extends Controller
         return view('admin.pemeliharaan.cetak-dokumen', compact('pengajuan', 'type', 'title'));
     }
 
-    public function pemeliharaanMonitoringAktual()
+    public function pemeliharaanMonitoringAktual(Request $request)
     {
-        return view('admin.placeholder', [
-            'pageTitle'  => 'Monitoring Aktual',
-            'breadcrumb' => ['Pemeliharaan', 'Monitoring Aktual'],
+        $statusFilter = $request->query('status_pengerjaan', 'semua');
+        $searchQuery  = $request->query('search', '');
+
+        // Hanya unit yang sudah disetujui yang masuk pipeline pengerjaan aktual
+        $query = Pengajuan::where('status', 'disetujui')->latest();
+
+        if ($statusFilter !== 'semua' && in_array($statusFilter, ['belum_mulai', 'proses', 'selesai'])) {
+            $query->where('status_pengerjaan', $statusFilter);
+        }
+
+        if (!empty($searchQuery)) {
+            $query->where(function ($q) use ($searchQuery) {
+                $q->where('nomor_lambung', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('pos', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemegang', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('item_perbaikan', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
+        $records = $query->paginate(10)->withQueryString();
+
+        $kpi = [
+            'total'       => Pengajuan::where('status', 'disetujui')->count(),
+            'belum_mulai' => Pengajuan::where('status', 'disetujui')->where('status_pengerjaan', 'belum_mulai')->count(),
+            'proses'      => Pengajuan::where('status', 'disetujui')->where('status_pengerjaan', 'proses')->count(),
+            'selesai'     => Pengajuan::where('status', 'disetujui')->where('status_pengerjaan', 'selesai')->count(),
+        ];
+
+        return view('admin.pemeliharaan.monitoring-aktual', compact('records', 'kpi', 'statusFilter', 'searchQuery'));
+    }
+
+    /**
+     * Update progres pengerjaan aktual (dipakai oleh modal Update Progres).
+     */
+    public function updateProgresPengerjaan(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status_pengerjaan'          => 'required|in:belum_mulai,proses,selesai',
+            'tanggal_mulai_pengerjaan'   => 'nullable|date',
+            'tanggal_selesai_pengerjaan' => 'nullable|date',
+            'progress_persen'            => 'required|integer|min:0|max:100',
+            'progress_catatan'           => 'nullable|string|max:1000',
         ]);
+
+        $pengajuan = Pengajuan::findOrFail($id);
+
+        // Konsistensi otomatis: selesai -> 100%, belum mulai -> 0%
+        if ($validated['status_pengerjaan'] === 'selesai') {
+            $validated['progress_persen'] = 100;
+            $validated['tanggal_selesai_pengerjaan'] = $validated['tanggal_selesai_pengerjaan'] ?? now()->format('Y-m-d');
+        } elseif ($validated['status_pengerjaan'] === 'belum_mulai') {
+            $validated['progress_persen'] = 0;
+        }
+
+        $pengajuan->update($validated);
+
+        return redirect()
+            ->route('admin.pemeliharaan.monitoring-aktual')
+            ->with('success', "Progres pengerjaan unit '{$pengajuan->nomor_lambung}' berhasil diperbarui.");
     }
 
     public function pemeliharaanKartuKendali()
