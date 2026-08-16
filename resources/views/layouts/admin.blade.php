@@ -74,8 +74,8 @@
                             </li>
 
                             <li>
-                                <a href="{{ route('admin.pemeliharaan.pemeriksaan') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.pemeriksaan') ? 'active' : '' }}">
+                                <a href="{{ route('admin.pemeliharaan.monitoring-aktual') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.monitoring-aktual') ? 'active' : '' }}">
                                     Monitoring Aktual
                                 </a>
                             </li>
@@ -87,9 +87,15 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('admin.pemeliharaan.kartu-kendali') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.kartu-kendali') ? 'active' : '' }}">
-                                    Kartu Kendali
+                                <a href="{{ route('admin.pemeliharaan.kartu-kendali-pembayaran') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.kartu-kendali-pembayaran') ? 'active' : '' }}">
+                                    Kartu Kendali pembayaran
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('admin.pemeliharaan.kartu-kendali-aktual') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.kartu-kendali-aktual') ? 'active' : '' }}">
+                                    Kartu Kendali aktual
                                 </a>
                             </li>
                             <li>
@@ -183,28 +189,7 @@
                             </span>
                             <i data-lucide="chevron-down" class="chevron"></i>
                         </button>
-                        <ul class="submenu" id="menuApar">
-                            <li>
-                                <a href="{{ route('admin.apar.data-apar') }}"
-                                   class="{{ request()->routeIs('admin.apar.data-apar') ? 'active' : '' }}">
-                                    Data APAR
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.apar.laporan-kejadian') }}"
-                                   class="{{ request()->routeIs('admin.apar.laporan-kejadian') ? 'active' : '' }}">
-                                    Laporan Kejadian
-                                </a>
-                            </li>
-                            <!-- Menu APAR & Kejadian -->
-                            <li class="nav-item {{ request()->is('admin/apar-kejadian*') ? 'menu-open active' : '' }}">
-                                <a href="#" class="nav-link {{ request()->is('admin/apar-kejadian*') ? 'active' : '' }}">
-                                    <i class="nav-icon fas fa-fire-extinguisher"></i>
-                                    <p>
-                                        APAR & Kejadian
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
+                        <ul class="submenu" id="menuApar">  
                                 <ul class="nav nav-treeview">
                                     <li class="nav-item">
                                         <a href="{{ route('admin.apar.monitoring-kejadian') }}"
