@@ -112,7 +112,7 @@
                                     {{ \Illuminate\Support\Str::limit($rec->item_perbaikan, 60) }}
                                 </td>
                                 <td style="padding:12px 14px; font-size:11.5px; color:#475569;">
-                                    <div>Mulai: <strong>{{ $rec->tanggal_mulai_pengerjaan?->format('d/m/Y') ?? '—' }}</strong></div>
+                                    <div>Mulai: <strong>{{ ($rec->tanggal_mulai_pengerjaan ?? $rec->tanggal_keberangkatan)?->format('d/m/Y') ?? '—' }}</strong></div>
                                     <div>Selesai: <strong>{{ $rec->tanggal_selesai_pengerjaan?->format('d/m/Y') ?? '—' }}</strong></div>
                                 </td>
                                 <td style="padding:12px 14px;">

@@ -89,13 +89,13 @@
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.kartu-kendali-pembayaran') }}"
                                    class="{{ request()->routeIs('admin.pemeliharaan.kartu-kendali-pembayaran') ? 'active' : '' }}">
-                                    Kartu Kendali pembayaran
+                                    Kartu Kendali Pembayaran
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.kartu-kendali-aktual') }}"
                                    class="{{ request()->routeIs('admin.pemeliharaan.kartu-kendali-aktual') ? 'active' : '' }}">
-                                    Kartu Kendali aktual
+                                    Kartu Kendali Aktual
                                 </a>
                             </li>
                             <li>
@@ -235,7 +235,7 @@
                             <li>
                                 <a href="{{ route('admin.laporan.command-center') }}"
                                    class="{{ request()->routeIs('admin.laporan.command-center') ? 'active' : '' }}">
-                                    Monev bulanan
+                                    Monev Bulanan
                                 </a>
                             </li>
                             

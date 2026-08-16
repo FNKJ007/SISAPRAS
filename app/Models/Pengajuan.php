@@ -35,10 +35,10 @@ class Pengajuan extends Model
     ];
 
     protected $casts = [
-        'tanggal_keberangkatan'      => 'date',
+        'tanggal_keberangkatan'      => 'date:Y-m-d',
         'item_verifikasis'           => 'array',
-        'tanggal_mulai_pengerjaan'   => 'date',
-        'tanggal_selesai_pengerjaan' => 'date',
+        'tanggal_mulai_pengerjaan'   => 'date:Y-m-d',
+        'tanggal_selesai_pengerjaan' => 'date:Y-m-d',
     ];
 
     public static array $statusPengerjaanMap = [

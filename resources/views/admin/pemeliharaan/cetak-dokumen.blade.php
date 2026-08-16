@@ -21,46 +21,22 @@
             line-height: 1.5;
         }
 
-        /* Toolbar Top (Non-printable) */
-        .no-print-bar {
-            max-width: 820px;
-            margin: 0 auto 20px auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #1B2A6B;
-            color: #FFFFFF;
-            padding: 14px 22px;
-            border-radius: 12px;
-            box-shadow: 0 4px 14px rgba(27,42,107,0.25);
-        }
-        .no-print-bar button {
-            background: #22C55E;
-            color: #FFFFFF;
-            border: none;
-            padding: 9px 20px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 13px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-        }
-        .no-print-bar button:hover {
-            background: #16A34A;
+        @page {
+            size: A4 portrait;
+            margin: 8mm 10mm;
         }
 
-        /* Paper Document Layout */
+        /* Formal Paper Container (Standard 1:1 A4 Kertas Print: 794px) */
         .paper {
-            max-width: 820px;
+            max-width: 794px;
+            width: 100%;
             margin: 0 auto;
             background: #FFFFFF;
-            padding: 45px 50px;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            padding: 30px 36px;
+            border-radius: 4px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
             position: relative;
+            box-sizing: border-box;
         }
 
         /* Kop Surat Resmi Dinas */

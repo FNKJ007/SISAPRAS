@@ -488,7 +488,18 @@ function pengajuanAdminModal() {
         openModal(item) {
             this.activeItem = item;
             this.selectedStatus = item.status === 'menunggu' ? 'disetujui' : item.status;
-            this.tanggalKeberangkatan = item.tanggal_keberangkatan ? item.tanggal_keberangkatan.substring(0, 10) : new Date().toISOString().substring(0, 10);
+            
+            if (item.tanggal_keberangkatan) {
+                let match = String(item.tanggal_keberangkatan).match(/^(\d{4}-\d{2}-\d{2})/);
+                this.tanggalKeberangkatan = match ? match[1] : item.tanggal_keberangkatan.substring(0, 10);
+            } else {
+                let today = new Date();
+                let year = today.getFullYear();
+                let month = String(today.getMonth() + 1).padStart(2, '0');
+                let day = String(today.getDate()).padStart(2, '0');
+                this.tanggalKeberangkatan = `${year}-${month}-${day}`;
+            }
+
             this.catatanAdmin = item.catatan_admin || '';
 
             // Split item_perbaikan by comma / newline

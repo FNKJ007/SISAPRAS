@@ -37,10 +37,13 @@ class Unit extends Model
                 $unit->kategori = ucwords(strtolower(str_replace('_', ' ', trim($unit->kategori))));
             }
             if ($unit->jenis_kendaraan) {
-                $unit->jenis_kendaraan = strtoupper(trim($unit->jenis_kendaraan));
+                $jk = trim($unit->jenis_kendaraan);
+                $unit->jenis_kendaraan = in_array(strtoupper($jk), ['R2', 'R3', 'R4'])
+                    ? strtoupper($jk)
+                    : ucwords(strtolower($jk));
             }
             if ($unit->peruntukan) {
-                $unit->peruntukan = strtoupper(trim($unit->peruntukan));
+                $unit->peruntukan = ucwords(strtolower(trim($unit->peruntukan)));
             }
             if ($unit->jenis_kendaraan || $unit->peruntukan) {
                 $parts = array_filter([$unit->jenis_kendaraan, $unit->peruntukan]);

@@ -31,10 +31,8 @@ class UserManagementController extends Controller
 
         $validated['nip'] = trim($validated['nip']);
 
-        // Auto-generate fallback email jika tidak diisi
         if (empty($validated['email'])) {
-            $cleanedNip = preg_replace('/[^A-Za-z0-9]/', '', $validated['nip']);
-            $validated['email'] = strtolower($cleanedNip) . '@damkar.local';
+            $validated['email'] = null;
         }
 
         $validated['password'] = Hash::make($validated['password']);
@@ -67,6 +65,9 @@ class UserManagementController extends Controller
         ]);
 
         $validated['nip'] = trim($validated['nip']);
+        if (empty($validated['email'])) {
+            $validated['email'] = null;
+        }
 
         $user->update($validated);
 

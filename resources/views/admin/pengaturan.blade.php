@@ -24,21 +24,27 @@
         </div>
     @endif
 
-    {{-- Navigation Tabs --}}
-    <div style="display:flex; align-items:center; gap:8px; border-bottom:2px solid #E2E8F0; margin-bottom:24px; padding-bottom:2px;">
-        <button type="button" @click="activeTab = 'users'"
-                :style="activeTab === 'users' ? 'color:#1B2A6B; border-bottom:3px solid #1B2A6B; font-weight:800;' : 'color:#64748B; font-weight:600;'"
-                style="padding:10px 18px; background:none; border:none; font-size:14px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:all 0.2s; margin-bottom:-2px;">
-            <i data-lucide="users" style="width:18px; height:18px;"></i>
-            <span>Manajemen &amp; Generate Akun</span>
-        </button>
+    {{-- Sleek Compact Tab Switcher Bar --}}
+    <div class="w-full flex items-center mb-6">
+        <div class="inline-flex items-center gap-1 p-1 bg-white border border-slate-300 rounded-lg shadow-2xs">
+            <button type="button" @click="activeTab = 'users'"
+                    :class="activeTab === 'users' ? 'bg-[#1B2A6B] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
+                    class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-colors duration-150 whitespace-nowrap cursor-pointer border-0">
+                <i data-lucide="users" class="w-4 h-4"></i>
+                <span>Manajemen &amp; Generate Akun</span>
+                <span :class="activeTab === 'users' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'"
+                      class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ml-0.5">
+                    {{ $userList->total() }}
+                </span>
+            </button>
 
-        <button type="button" @click="activeTab = 'view_user'"
-                :style="activeTab === 'view_user' ? 'color:#1B2A6B; border-bottom:3px solid #1B2A6B; font-weight:800;' : 'color:#64748B; font-weight:600;'"
-                style="padding:10px 18px; background:none; border:none; font-size:14px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:all 0.2s; margin-bottom:-2px;">
-            <i data-lucide="eye" style="width:18px; height:18px;"></i>
-            <span>Akses Tampilan User</span>
-        </button>
+            <button type="button" @click="activeTab = 'view_user'"
+                    :class="activeTab === 'view_user' ? 'bg-[#1B2A6B] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
+                    class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-colors duration-150 whitespace-nowrap cursor-pointer border-0">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+                <span>Akses Tampilan User</span>
+            </button>
+        </div>
     </div>
 
     {{-- ================= TAB 1: MANAJEMEN & GENERATE AKUN ================= --}}
