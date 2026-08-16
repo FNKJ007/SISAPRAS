@@ -70,7 +70,7 @@
         </div>
 
         {{-- KPI Cards --}}
-        <div class="kpi-grid-container" style="margin-bottom:24px; display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:16px;">
+        <div class="kpi-grid-container" style="margin-bottom:24px; display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:16px;">
             <div style="background:#FFFFFF; padding:18px; border-radius:14px; border:1px solid #E2E8F0; box-shadow:0 2px 8px rgba(15,23,42,0.04);">
                 <div style="color:#64748B; font-size:11.5px; font-weight:700; text-transform:uppercase;">Total Pengguna</div>
                 <div style="font-size:24px; font-weight:800; color:#0F172A; margin-top:6px;">{{ $kpi['total'] }}</div>
@@ -79,14 +79,28 @@
                 <div style="color:#7C3AED; font-size:11.5px; font-weight:700; text-transform:uppercase;">Administrator</div>
                 <div style="font-size:24px; font-weight:800; color:#7C3AED; margin-top:6px;">{{ $kpi['admin'] }}</div>
             </div>
-            <div style="background:#FFFFFF; padding:18px; border-radius:14px; border:1px solid #E2E8F0; box-shadow:0 2px 8px rgba(15,23,42,0.04);">
-                <div style="color:#DC2626; font-size:11.5px; font-weight:700; text-transform:uppercase;">Petugas Pemadam</div>
-                <div style="font-size:24px; font-weight:800; color:#DC2626; margin-top:6px;">{{ $kpi['pemadam'] }}</div>
-            </div>
-            <div style="background:#FFFFFF; padding:18px; border-radius:14px; border:1px solid #E2E8F0; box-shadow:0 2px 8px rgba(15,23,42,0.04);">
-                <div style="color:#2563EB; font-size:11.5px; font-weight:700; text-transform:uppercase;">Petugas Rescue</div>
-                <div style="font-size:24px; font-weight:800; color:#2563EB; margin-top:6px;">{{ $kpi['rescue'] }}</div>
-            </div>
+
+            {{-- Dynamic Bidang Cards (Tanpa kata "Petugas") --}}
+            @php
+                $colorPalette = ['#DC2626', '#2563EB', '#D97706', '#0891B2', '#4F46E5', '#059669', '#7C3AED', '#DB2777'];
+            @endphp
+            @foreach($kpi['bidang'] as $bidangName => $count)
+                @php
+                    $color = match (strtolower(trim($bidangName))) {
+                        'pemadam'            => '#DC2626',
+                        'rescue'             => '#2563EB',
+                        'command center'     => '#D97706',
+                        'sekretariat'        => '#0891B2',
+                        'sarana prasarana'   => '#4F46E5',
+                        default              => $colorPalette[$loop->index % count($colorPalette)],
+                    };
+                @endphp
+                <div style="background:#FFFFFF; padding:18px; border-radius:14px; border:1px solid #E2E8F0; box-shadow:0 2px 8px rgba(15,23,42,0.04);">
+                    <div style="color:{{ $color }}; font-size:11.5px; font-weight:700; text-transform:uppercase;">{{ strtoupper($bidangName) }}</div>
+                    <div style="font-size:24px; font-weight:800; color:{{ $color }}; margin-top:6px;">{{ $count }}</div>
+                </div>
+            @endforeach
+
             <div style="background:#FFFFFF; padding:18px; border-radius:14px; border:1px solid #E2E8F0; box-shadow:0 2px 8px rgba(15,23,42,0.04);">
                 <div style="color:#059669; font-size:11.5px; font-weight:700; text-transform:uppercase;">Akun Aktif</div>
                 <div style="font-size:24px; font-weight:800; color:#059669; margin-top:6px;">{{ $kpi['aktif'] }}</div>
@@ -194,7 +208,7 @@
                                 <th style="padding:14px 16px; width:18%;">Pos &amp; Regu</th>
                                 <th style="padding:14px 16px; width:100px; text-align:center;">Role</th>
                                 <th style="padding:14px 16px; width:90px; text-align:center;">Status</th>
-                                <th style="padding:14px 16px; width:150px; text-align:center;">Aksi</th>
+                                <th style="padding:14px 16px; width:180px; text-align:center;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -254,7 +268,7 @@
 
                                     {{-- Aksi --}}
                                     <td style="padding:12px 16px; text-align:center; white-space:nowrap;">
-                                        <div style="display:inline-flex; align-items:center; gap:6px;">
+                                        <div style="display:inline-flex; align-items:center; justify-content:flex-start; width:160px; gap:6px;">
                                             {{-- Edit Button --}}
                                             <button type="button" @click="
                                                 activeUser = {{ json_encode($item) }};
@@ -412,23 +426,17 @@
                             <div x-show="open && existingJabatanList.length > 0" x-cloak
                                  style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                                 <template x-for="item in existingJabatanList" :key="item">
-                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                    <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                         @click="val = item; open = false;"
                                          onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
                                          onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                        <span @click="val = item; open = false;" style="flex:1;" x-text="item"></span>
-                                        <button type="button" @click.stop="removeOption('jabatan', item)"
-                                                title="Hapus opsi ini dari riwayat"
-                                                style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
-                                                onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
-                                                onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
-                                            <i data-lucide="x" style="width:13px; height:13px;"></i>
-                                        </button>
+                                        <span x-text="item"></span>
                                     </div>
                                 </template>
                             </div>
                         </div>
 
-                        {{-- Bidang (Input Manual + Dropdown Riwayat + Hapus) --}}
+                        {{-- Bidang (Input Manual + Dropdown Riwayat) --}}
                         <div x-data="{ open: false, val: '' }" style="position:relative;">
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Bidang</label>
                             <div style="position:relative; display:flex; align-items:center;">
@@ -444,17 +452,11 @@
                             <div x-show="open && existingBidangList.length > 0" x-cloak
                                  style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                                 <template x-for="item in existingBidangList" :key="item">
-                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                    <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                         @click="val = item; open = false;"
                                          onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
                                          onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                        <span @click="val = item; open = false;" style="flex:1;" x-text="item"></span>
-                                        <button type="button" @click.stop="removeOption('bidang', item)"
-                                                title="Hapus opsi ini dari riwayat"
-                                                style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
-                                                onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
-                                                onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
-                                            <i data-lucide="x" style="width:13px; height:13px;"></i>
-                                        </button>
+                                        <span x-text="item"></span>
                                     </div>
                                 </template>
                             </div>
@@ -472,7 +474,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        {{-- Regu (Input Manual + Dropdown Riwayat + Hapus) --}}
+                        {{-- Regu (Input Manual + Dropdown Riwayat) --}}
                         <div x-data="{ open: false, val: '' }" style="position:relative;">
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Regu</label>
                             <div style="position:relative; display:flex; align-items:center;">
@@ -488,17 +490,11 @@
                             <div x-show="open && existingReguList.length > 0" x-cloak
                                  style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                                 <template x-for="item in existingReguList" :key="item">
-                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                    <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                         @click="val = item; open = false;"
                                          onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
                                          onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                        <span @click="val = item; open = false;" style="flex:1;" x-text="item"></span>
-                                        <button type="button" @click.stop="removeOption('regu', item)"
-                                                title="Hapus opsi ini dari riwayat"
-                                                style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
-                                                onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
-                                                onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
-                                            <i data-lucide="x" style="width:13px; height:13px;"></i>
-                                        </button>
+                                        <span x-text="item"></span>
                                     </div>
                                 </template>
                             </div>
@@ -606,22 +602,16 @@
                             <div x-show="open && existingJabatanList.length > 0" x-cloak
                                  style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                                 <template x-for="item in existingJabatanList" :key="item">
-                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                    <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                         @click="activeUser.jabatan = item; open = false;"
                                          onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
                                          onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                        <span @click="activeUser.jabatan = item; open = false;" style="flex:1;" x-text="item"></span>
-                                        <button type="button" @click.stop="removeOption('jabatan', item)"
-                                                title="Hapus opsi ini dari riwayat"
-                                                style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
-                                                onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
-                                                onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
-                                            <i data-lucide="x" style="width:13px; height:13px;"></i>
-                                        </button>
+                                        <span x-text="item"></span>
                                     </div>
                                 </template>
                             </div>
                         </div>
-                        {{-- Edit: Bidang (Input Manual + Dropdown Riwayat + Hapus) --}}
+                        {{-- Edit: Bidang (Input Manual + Dropdown Riwayat) --}}
                         <div x-data="{ open: false }" style="position:relative;">
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Bidang</label>
                             <div style="position:relative; display:flex; align-items:center;">
@@ -637,17 +627,11 @@
                             <div x-show="open && existingBidangList.length > 0" x-cloak
                                  style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                                 <template x-for="item in existingBidangList" :key="item">
-                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                    <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                         @click="activeUser.bidang = item; open = false;"
                                          onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
                                          onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                        <span @click="activeUser.bidang = item; open = false;" style="flex:1;" x-text="item"></span>
-                                        <button type="button" @click.stop="removeOption('bidang', item)"
-                                                title="Hapus opsi ini dari riwayat"
-                                                style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
-                                                onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
-                                                onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
-                                            <i data-lucide="x" style="width:13px; height:13px;"></i>
-                                        </button>
+                                        <span x-text="item"></span>
                                     </div>
                                 </template>
                             </div>
@@ -665,7 +649,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        {{-- Edit: Regu (Input Manual + Dropdown Riwayat + Hapus) --}}
+                        {{-- Edit: Regu (Input Manual + Dropdown Riwayat) --}}
                         <div x-data="{ open: false }" style="position:relative;">
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Regu</label>
                             <div style="position:relative; display:flex; align-items:center;">
@@ -681,17 +665,11 @@
                             <div x-show="open && existingReguList.length > 0" x-cloak
                                  style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                                 <template x-for="item in existingReguList" :key="item">
-                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                    <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                         @click="activeUser.regu = item; open = false;"
                                          onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
                                          onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                        <span @click="activeUser.regu = item; open = false;" style="flex:1;" x-text="item"></span>
-                                        <button type="button" @click.stop="removeOption('regu', item)"
-                                                title="Hapus opsi ini dari riwayat"
-                                                style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
-                                                onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
-                                                onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
-                                            <i data-lucide="x" style="width:13px; height:13px;"></i>
-                                        </button>
+                                        <span x-text="item"></span>
                                     </div>
                                 </template>
                             </div>
@@ -712,13 +690,6 @@
                                 <option value="nonaktif">Nonaktif</option>
                             </select>
                         </div>
-                    </div>
-
-                    {{-- Password Baru (Optional) --}}
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Ubah Password <span style="font-weight:400; color:#64748B;">(Biarkan kosong jika tidak diganti)</span></label>
-                        <input type="password" name="password" placeholder="Ketik password baru..."
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; font-family:monospace;">
                     </div>
 
                 </div>
@@ -834,28 +805,6 @@ function pengaturanApp() {
         existingJabatanList: @json($existingJabatanList ?? []),
         existingBidangList: @json($existingBidangList ?? []),
         existingReguList: @json($existingReguList ?? []),
-        removeOption(type, value) {
-            if (!confirm("Hapus '" + value + "' dari daftar pilihan riwayat?")) return;
-
-            if (type === 'jabatan') {
-                this.existingJabatanList = this.existingJabatanList.filter(item => item !== value);
-            } else if (type === 'bidang') {
-                this.existingBidangList = this.existingBidangList.filter(item => item !== value);
-            } else if (type === 'regu') {
-                this.existingReguList = this.existingReguList.filter(item => item !== value);
-            }
-
-            fetch("{{ route('admin.pengaturan.remove-history-option') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ type: type, value: value })
-            }).then(res => res.json()).then(data => {
-                console.log(data.message);
-            }).catch(err => console.error(err));
-        },
         generateNewPassword() {
             const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$';
             let res = 'Dmk-';

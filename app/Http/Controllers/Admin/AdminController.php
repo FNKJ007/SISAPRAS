@@ -630,55 +630,64 @@ class AdminController extends Controller
 
         $userList = $query->paginate(12)->withQueryString();
 
-        $kpi = [
-            'total'   => \App\Models\User::count(),
-            'admin'   => \App\Models\User::where('role', 'admin')->count(),
-            'pemadam' => \App\Models\User::where('bidang', 'LIKE', '%pemadam%')->count(),
-            'rescue'  => \App\Models\User::where('bidang', 'LIKE', '%rescue%')->count(),
-            'aktif'   => \App\Models\User::where('status', 'aktif')->count(),
-        ];
-
         $posList = \App\Models\Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
 
         $existingBidangList = \App\Models\User::whereNotNull('bidang')
             ->where('bidang', '!=', '')
-            ->get()
             ->pluck('bidang')
             ->map(fn($v) => ucwords(strtolower(trim($v))))
-            ->concat(['Pemadam', 'Rescue', 'Command Center', 'Sekretariat', 'Sarana Prasarana'])
             ->unique()
             ->sort()
             ->values()
             ->toArray();
+
+        if (empty($existingBidangList)) {
+            $existingBidangList = ['Pemadam', 'Rescue', 'Command Center', 'Sekretariat', 'Sarana Prasarana'];
+        }
+
+        // Hitung statistik per Bidang secara dinamis
+        $bidangCounts = [];
+        foreach ($existingBidangList as $b) {
+            $bidangCounts[$b] = \App\Models\User::where('bidang', 'LIKE', $b)->count();
+        }
+
+        $kpi = [
+            'total'   => \App\Models\User::count(),
+            'admin'   => \App\Models\User::where('role', 'admin')->count(),
+            'aktif'   => \App\Models\User::where('status', 'aktif')->count(),
+            'bidang'  => $bidangCounts,
+        ];
 
         $existingReguList = \App\Models\User::whereNotNull('regu')
             ->where('regu', '!=', '')
-            ->get()
             ->pluck('regu')
             ->map(fn($v) => ucwords(strtolower(trim($v))))
-            ->concat(['Regu 1', 'Regu 2', 'Regu 3', 'Regu 4'])
             ->unique()
             ->sort()
             ->values()
             ->toArray();
 
-        $defaultJabatan = [
-            'Komandan Regu (Danru)',
-            'Kepala Seksi (Kasi)',
-            'Kepala Bidang (Kabid)',
-            'Anggota / Petugas',
-            'Pengemudi / Driver',
-        ];
+        if (empty($existingReguList)) {
+            $existingReguList = ['Regu 1', 'Regu 2', 'Regu 3', 'Regu 4'];
+        }
 
         $existingJabatanList = \App\Models\User::whereNotNull('jabatan')
             ->where('jabatan', '!=', '')
-            ->get()
             ->pluck('jabatan')
             ->map(fn($v) => trim($v))
-            ->concat($defaultJabatan)
             ->unique()
             ->values()
             ->toArray();
+
+        if (empty($existingJabatanList)) {
+            $existingJabatanList = [
+                'Komandan Regu (Danru)',
+                'Kepala Seksi (Kasi)',
+                'Kepala Bidang (Kabid)',
+                'Anggota / Petugas',
+                'Pengemudi / Driver',
+            ];
+        }
 
         return view('admin.pengaturan', compact(
             'userList',
