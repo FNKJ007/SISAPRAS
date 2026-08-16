@@ -29,6 +29,8 @@ class UserManagementController extends Controller
             'status'   => 'required|in:aktif,nonaktif',
         ]);
 
+        $validated['nip'] = trim($validated['nip']);
+
         // Auto-generate fallback email jika tidak diisi
         if (empty($validated['email'])) {
             $cleanedNip = preg_replace('/[^A-Za-z0-9]/', '', $validated['nip']);
@@ -62,14 +64,9 @@ class UserManagementController extends Controller
             'regu'     => 'nullable|string|max:50',
             'no_hp'    => 'nullable|string|max:30',
             'status'   => 'required|in:aktif,nonaktif',
-            'password' => 'nullable|string|min:6',
         ]);
 
-        if (!empty($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
-            unset($validated['password']);
-        }
+        $validated['nip'] = trim($validated['nip']);
 
         $user->update($validated);
 

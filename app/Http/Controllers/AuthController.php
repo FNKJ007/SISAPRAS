@@ -37,7 +37,7 @@ class AuthController extends Controller
 
         // 2. VALIDASI INPUT
         $request->merge([
-            'nip' => strip_tags($request->input('nip')),
+            'nip' => trim(strip_tags($request->input('nip'))),
         ]);
 
         $request->validate([
@@ -47,7 +47,7 @@ class AuthController extends Controller
 
         // 3. PROSES AUTENTIKASI menggunakan NIP
         $credentials = [
-            'nip'      => $request->input('nip'),
+            'nip'      => trim($request->input('nip')),
             'password' => $request->input('password'),
         ];
 
