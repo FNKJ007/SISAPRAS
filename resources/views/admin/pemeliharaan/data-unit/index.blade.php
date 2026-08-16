@@ -74,6 +74,17 @@
                         <option value="nonaktif" @selected($statusFilter === 'nonaktif')>Non-Aktif</option>
                     </select>
                 </div>
+
+                {{-- Filter Posko (Pos Damkar Kabupaten Bandung) --}}
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:12px; font-weight:600; color:#64748B;">Posko:</span>
+                    <select name="pos" onchange="this.form.submit()" style="padding:6px 12px; font-size:12px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#1E293B; font-weight:600;">
+                        <option value="semua" @selected($posFilter === 'semua')>Semua Posko</option>
+                        @foreach($posList as $pos)
+                            <option value="{{ $pos->nama }}" @selected($posFilter === $pos->nama)>{{ $pos->nama }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
 
             {{-- Input Pencarian --}}

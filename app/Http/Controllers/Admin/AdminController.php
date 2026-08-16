@@ -357,6 +357,86 @@ class AdminController extends Controller
             ->with('success', "Progres pengerjaan unit '{$pengajuan->nomor_lambung}' berhasil diperbarui.");
     }
 
+    /**
+     * Kartu Kendali Pembayaran Pemeliharaan — ledger berjalan berbasis
+     * data Monitoring Invoice (poin 1.e), menampilkan saldo kumulatif
+     * per kode rekening / tahun anggaran (poin 1.g).
+     */
+    public function pemeliharaanKartuKendaliPembayaran(Request $request)
+    {
+        $tahunList = \App\Models\Invoice::whereNotNull('tahun_anggaran')
+            ->distinct()
+            ->orderByDesc('tahun_anggaran')
+            ->pluck('tahun_anggaran')
+            ->filter()
+            ->values();
+
+        $rekeningList = \App\Models\Invoice::whereNotNull('kode_rekening')
+            ->where('kode_rekening', '!=', '')
+            ->distinct()
+            ->orderBy('kode_rekening')
+            ->pluck('kode_rekening');
+
+        $tahunFilter    = $request->query('tahun', $tahunList->first() ?? date('Y'));
+        $rekeningFilter = $request->query('kode_rekening', 'semua');
+        $statusFilter   = $request->query('status', 'semua');
+        $searchQuery    = $request->query('search', '');
+
+        $query = \App\Models\Invoice::with('unit')
+            ->where(function ($q) use ($tahunFilter) {
+                $q->where('tahun_anggaran', $tahunFilter)
+                  ->orWhereYear('tanggal_invoice', $tahunFilter);
+            })
+            ->orderBy('tanggal_invoice', 'asc')
+            ->orderBy('id', 'asc');
+
+        if ($rekeningFilter !== 'semua') {
+            $query->where('kode_rekening', $rekeningFilter);
+        }
+
+        if ($statusFilter !== 'semua' && in_array($statusFilter, ['draft', 'diajukan', 'disetujui', 'lunas'])) {
+            $query->where('status', $statusFilter);
+        }
+
+        if (!empty($searchQuery)) {
+            $query->where(function ($q) use ($searchQuery) {
+                $q->where('nomor_invoice', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('no_pol', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('no_lambung', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
+        $invoiceList = $query->get();
+
+        // Hitung saldo kumulatif berjalan (running total) — inti dari kartu kendali
+        $saldoBerjalan = 0;
+        $kartuKendaliRows = $invoiceList->map(function ($invoice) use (&$saldoBerjalan) {
+            $saldoBerjalan += (float) $invoice->total_biaya;
+            $invoice->saldo_kumulatif = $saldoBerjalan;
+            return $invoice;
+        });
+
+        $kpi = [
+            'total_invoice'  => $invoiceList->count(),
+            'total_nilai'    => $invoiceList->sum('total_biaya'),
+            'total_lunas'    => $invoiceList->where('status', 'lunas')->sum('total_biaya'),
+            'total_belum'    => $invoiceList->whereIn('status', ['draft', 'diajukan', 'disetujui'])->sum('total_biaya'),
+            'jumlah_lunas'   => $invoiceList->where('status', 'lunas')->count(),
+            'jumlah_belum'   => $invoiceList->whereIn('status', ['draft', 'diajukan', 'disetujui'])->count(),
+        ];
+
+        return view('admin.pemeliharaan.kartu-kendali-pembayaran', [
+            'kartuKendaliRows' => $kartuKendaliRows,
+            'kpi'              => $kpi,
+            'tahunList'        => $tahunList,
+            'rekeningList'     => $rekeningList,
+            'tahunFilter'      => $tahunFilter,
+            'rekeningFilter'   => $rekeningFilter,
+            'statusFilter'     => $statusFilter,
+            'searchQuery'      => $searchQuery,
+        ]);
+    }
+
     public function pemeliharaanKartuKendali()
     {
         return view('admin.placeholder', [
