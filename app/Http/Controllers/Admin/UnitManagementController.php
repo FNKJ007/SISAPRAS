@@ -16,6 +16,7 @@ class UnitManagementController extends Controller
     {
         $kategoriFilter = $request->query('kategori', 'semua');
         $statusFilter   = $request->query('status', 'semua');
+        $posFilter      = $request->query('pos', 'semua');
         $searchQuery    = $request->query('search', '');
 
         $query = Unit::orderBy('id', 'asc');
@@ -26,6 +27,15 @@ class UnitManagementController extends Controller
 
         if ($statusFilter !== 'semua' && in_array($statusFilter, ['aktif', 'perbaikan', 'nonaktif'])) {
             $query->where('status', $statusFilter);
+        }
+
+        if ($posFilter !== 'semua') {
+            $aliases = $this->posAliases($posFilter);
+            $query->where(function ($q) use ($aliases) {
+                foreach ($aliases as $alias) {
+                    $q->orWhereRaw('UPPER(pos) LIKE ?', ['%' . strtoupper($alias) . '%']);
+                }
+            });
         }
 
         if (!empty($searchQuery)) {
@@ -101,12 +111,36 @@ class UnitManagementController extends Controller
             'kpi',
             'kategoriFilter',
             'statusFilter',
+            'posFilter',
             'searchQuery',
             'posList',
             'existingJenisList',
             'existingPeruntukanList',
             'existingKategoriList'
         ));
+    }
+
+    /**
+     * Alias/kode singkat posko — data lama pada kolom `pos` unit sering
+     * tersimpan sebagai kode singkat (SOREANG, TKI, PACIRA) alih-alih
+     * nama lengkap posko (Soreang (MAKO), Margaasih (TKI), Ciwidey (Pacira)).
+     * Mapping ini menyamakan keduanya supaya filter Posko tetap match.
+     */
+    protected function posAliases(string $namaPos): array
+    {
+        $map = [
+            'Baleendah'        => ['Baleendah'],
+            'Cicalengka'       => ['Cicalengka'],
+            'Cileunyi'         => ['Cileunyi'],
+            'Ciparay'          => ['Ciparay'],
+            'Ciwidey (Pacira)' => ['Ciwidey', 'Pacira'],
+            'Majalaya'         => ['Majalaya'],
+            'Margaasih (TKI)'  => ['Margaasih', 'TKI'],
+            'Pangalengan'      => ['Pangalengan'],
+            'Soreang (MAKO)'   => ['Soreang', 'MAKO'],
+        ];
+
+        return $map[$namaPos] ?? [$namaPos];
     }
 
     /**
