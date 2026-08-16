@@ -105,7 +105,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/monitoring-aktual/{id}/progres', [AdminController::class, 'updateProgresPengerjaan'])->name('monitoring-aktual.progres');
         Route::get('/cetak-dokumen/{id}/{type}',    [AdminController::class, 'cetakDokumen'])->name('cetak-dokumen');
         Route::resource('invoice', InvoiceController::class);
-        Route::get('/kartu-kendali-aktual',                [AdminController::class, 'pemeliharaanKartuKendali'])->name('kartu-kendali-aktual');
+        Route::get('/kartu-kendali-aktual',                [AdminController::class, 'pemeliharaanKartuKendaliAktual'])->name('kartu-kendali-aktual');
         Route::get('/kartu-kendali-pembayaran',                [AdminController::class, 'pemeliharaanKartuKendaliPembayaran'])->name('kartu-kendali-pembayaran');
 
         // Data Unit CRUD Routes

@@ -437,6 +437,78 @@ class AdminController extends Controller
         ]);
     }
 
+    /**
+     * Kartu Kendali Aktual Pemeliharaan — ledger realisasi fisik pekerjaan
+     * berbasis data Monitoring Aktual (poin 1.f), menampilkan progres
+     * pengerjaan tiap unit per tahun (poin 1.h).
+     */
+    public function pemeliharaanKartuKendaliAktual(Request $request)
+    {
+        $tahunList = Pengajuan::where('status', 'disetujui')
+            ->whereNotNull('tanggal_keberangkatan')
+            ->pluck('tanggal_keberangkatan')
+            ->map(fn ($tgl) => \Carbon\Carbon::parse($tgl)->format('Y'))
+            ->unique()
+            ->sortDesc()
+            ->values();
+
+        $tahunFilter  = $request->query('tahun', $tahunList->first() ?? date('Y'));
+        $statusFilter = $request->query('status_pengerjaan', 'semua');
+        $posFilter    = $request->query('pos', 'semua');
+        $searchQuery  = $request->query('search', '');
+
+        $query = Pengajuan::where('status', 'disetujui')
+            ->where(function ($q) use ($tahunFilter) {
+                $q->whereYear('tanggal_mulai_pengerjaan', $tahunFilter)
+                  ->orWhereYear('tanggal_keberangkatan', $tahunFilter);
+            })
+            ->orderBy('tanggal_mulai_pengerjaan', 'asc')
+            ->orderBy('id', 'asc');
+
+        if ($statusFilter !== 'semua' && in_array($statusFilter, ['belum_mulai', 'proses', 'selesai'])) {
+            $query->where('status_pengerjaan', $statusFilter);
+        }
+
+        if ($posFilter !== 'semua') {
+            $query->where('pos', $posFilter);
+        }
+
+        if (!empty($searchQuery)) {
+            $query->where(function ($q) use ($searchQuery) {
+                $q->where('nomor_lambung', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('pos', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemegang', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('item_perbaikan', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
+        $kartuKendaliRows = $query->get();
+
+        $posList = Pengajuan::where('status', 'disetujui')
+            ->whereNotNull('pos')
+            ->distinct()
+            ->orderBy('pos')
+            ->pluck('pos');
+
+        $kpi = [
+            'total'       => $kartuKendaliRows->count(),
+            'belum_mulai' => $kartuKendaliRows->where('status_pengerjaan', 'belum_mulai')->count(),
+            'proses'      => $kartuKendaliRows->where('status_pengerjaan', 'proses')->count(),
+            'selesai'     => $kartuKendaliRows->where('status_pengerjaan', 'selesai')->count(),
+        ];
+
+        return view('admin.pemeliharaan.kartu-kendali-aktual', [
+            'kartuKendaliRows' => $kartuKendaliRows,
+            'kpi'              => $kpi,
+            'tahunList'        => $tahunList,
+            'tahunFilter'      => $tahunFilter,
+            'statusFilter'     => $statusFilter,
+            'posFilter'        => $posFilter,
+            'posList'          => $posList,
+            'searchQuery'      => $searchQuery,
+        ]);
+    }
+
     public function pemeliharaanKartuKendali()
     {
         return view('admin.placeholder', [
