@@ -162,6 +162,9 @@
                         <span>
                             @if(empty($selectedUnitIds))
                                 Semua Unit ({{ $units->count() }})
+                            @elseif(count($selectedUnitIds) === 1)
+                                @php $sUnit = $units->firstWhere('id', (int)$selectedUnitIds[0]); @endphp
+                                {{ $sUnit->nomor_lambung ?? ($sUnit->nama ?? '1 Unit Dipilih') }}
                             @else
                                 {{ count($selectedUnitIds) }} Unit Dipilih
                             @endif
@@ -171,21 +174,17 @@
                     <div x-show="unitOpen" x-cloak
                          style="position:absolute; z-index:20; top:calc(100% + 6px); left:0; width:260px; max-height:280px; overflow-y:auto; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:10px; box-shadow:0 12px 28px rgba(15,23,42,0.12); padding:10px;">
                         <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:12.5px; font-weight:700; color:#1B2A6B; border-bottom:1px solid #F1F5F9; margin-bottom:4px; cursor:pointer;">
-                            <input type="checkbox" onclick="this.closest('div').querySelectorAll('input[name=\'unit[]\']').forEach(cb => cb.checked = this.checked)">
+                            <input type="checkbox" onchange="this.closest('div').querySelectorAll('input[name=\'unit[]\']').forEach(cb => cb.checked = this.checked); this.form.submit();">
                             Pilih Semua
                         </label>
                         @foreach($units as $unit)
                             <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:12.5px; color:#334155; cursor:pointer; border-radius:6px;"
                                    onmouseover="this.style.background='#F8FAFC';" onmouseout="this.style.background='transparent';">
-                                <input type="checkbox" name="unit[]" value="{{ $unit->id }}"
+                                <input type="checkbox" name="unit[]" value="{{ $unit->id }}" onchange="this.form.submit()"
                                        {{ in_array((string) $unit->id, array_map('strval', $selectedUnitIds)) ? 'checked' : '' }}>
                                 {{ $unit->nomor_lambung ?? $unit->nama }}
                             </label>
                         @endforeach
-                        <button type="submit"
-                                style="width:100%; margin-top:8px; padding:8px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;">
-                            Terapkan
-                        </button>
                     </div>
                 </div>
 
@@ -197,6 +196,8 @@
                         <span>
                             @if(empty($selectedBulan))
                                 Semua Bulan (12)
+                            @elseif(count($selectedBulan) === 1)
+                                {{ $bulanList[$selectedBulan[0]] ?? $selectedBulan[0] }}
                             @else
                                 {{ count($selectedBulan) }} Bulan Dipilih
                             @endif
@@ -205,18 +206,18 @@
                     </button>
                     <div x-show="bulanOpen" x-cloak
                          style="position:absolute; z-index:20; top:calc(100% + 6px); left:0; width:220px; max-height:280px; overflow-y:auto; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:10px; box-shadow:0 12px 28px rgba(15,23,42,0.12); padding:10px;">
+                        <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:12.5px; font-weight:700; color:#1B2A6B; border-bottom:1px solid #F1F5F9; margin-bottom:4px; cursor:pointer;">
+                            <input type="checkbox" onchange="this.closest('div').querySelectorAll('input[name=\'bulan[]\']').forEach(cb => cb.checked = this.checked); this.form.submit();">
+                            Pilih Semua
+                        </label>
                         @foreach($bulanList as $key => $label)
                             <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:12.5px; color:#334155; cursor:pointer; border-radius:6px;"
                                    onmouseover="this.style.background='#F8FAFC';" onmouseout="this.style.background='transparent';">
-                                <input type="checkbox" name="bulan[]" value="{{ $key }}"
+                                <input type="checkbox" name="bulan[]" value="{{ $key }}" onchange="this.form.submit()"
                                        {{ in_array($key, $selectedBulan) ? 'checked' : '' }}>
                                 {{ $key }} ({{ $label }})
                             </label>
                         @endforeach
-                        <button type="submit"
-                                style="width:100%; margin-top:8px; padding:8px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;">
-                            Terapkan
-                        </button>
                     </div>
                 </div>
 

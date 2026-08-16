@@ -60,7 +60,13 @@ class UnitManagementController extends Controller
             ->where('jenis_kendaraan', '!=', '')
             ->get()
             ->pluck('jenis_kendaraan')
-            ->map(fn($v) => strtoupper(trim($v)))
+            ->map(function ($v) {
+                $v = trim($v);
+                if (in_array(strtoupper($v), ['R2', 'R3', 'R4'])) {
+                    return strtoupper($v);
+                }
+                return ucwords(strtolower($v));
+            })
             ->unique()
             ->sort()
             ->values()
@@ -70,7 +76,7 @@ class UnitManagementController extends Controller
             ->where('peruntukan', '!=', '')
             ->get()
             ->pluck('peruntukan')
-            ->map(fn($v) => strtoupper(trim($v)))
+            ->map(fn($v) => ucwords(strtolower(trim($v))))
             ->unique()
             ->sort()
             ->values()
@@ -127,6 +133,13 @@ class UnitManagementController extends Controller
             'catatan'          => 'nullable|string',
         ]);
 
+        if (!empty($validated['jenis_kendaraan'])) {
+            $jk = trim($validated['jenis_kendaraan']);
+            $validated['jenis_kendaraan'] = in_array(strtoupper($jk), ['R2', 'R3', 'R4'])
+                ? strtoupper($jk)
+                : ucwords(strtolower($jk));
+        }
+
         Unit::create($validated);
 
         return redirect()
@@ -159,6 +172,13 @@ class UnitManagementController extends Controller
             'status'           => 'required|in:aktif,perbaikan,nonaktif',
             'catatan'          => 'nullable|string',
         ]);
+
+        if (!empty($validated['jenis_kendaraan'])) {
+            $jk = trim($validated['jenis_kendaraan']);
+            $validated['jenis_kendaraan'] = in_array(strtoupper($jk), ['R2', 'R3', 'R4'])
+                ? strtoupper($jk)
+                : ucwords(strtolower($jk));
+        }
 
         $unit->update($validated);
 
@@ -206,5 +226,241 @@ class UnitManagementController extends Controller
             'success' => true,
             'message' => "Opsi riwayat '{$value}' berhasil dihapus dari data unit."
         ]);
+    }
+
+    /**
+     * Ambil data Buku Servis Digital (Riwayat Pemeliharaan per Unit Kendaraan).
+     */
+    public function riwayatServis($id)
+    {
+        $unit = Unit::findOrFail($id);
+        $today = now()->format('Y-m-d');
+
+        $unitLambungClean = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $unit->nomor_lambung ?? ''));
+        $unitPlatClean    = $unit->plat_nomor ? strtolower(preg_replace('/[^A-Za-z0-9]/', '', $unit->plat_nomor)) : '';
+
+        // Cari Pengajuan Perbaikan yang terkait dengan Unit ini
+        $pengajuanList = \App\Models\Pengajuan::all()->filter(function ($p) use ($unit, $unitLambungClean, $unitPlatClean) {
+            if (!empty($p->unit_id) && $p->unit_id == $unit->id) {
+                return true;
+            }
+            $pLambungClean = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $p->nomor_lambung ?? ''));
+            if ($unitLambungClean && str_contains($pLambungClean, $unitLambungClean)) {
+                return true;
+            }
+            if ($unitPlatClean && str_contains($pLambungClean, $unitPlatClean)) {
+                return true;
+            }
+            return false;
+        })->sortByDesc('created_at')->values();
+
+        // Cari Invoice / Realisasi Pembayaran yang terkait dengan Unit ini
+        $invoiceList = \App\Models\Invoice::all()->filter(function ($inv) use ($unit, $unitLambungClean, $unitPlatClean) {
+            if (!empty($inv->unit_id) && $inv->unit_id == $unit->id) {
+                return true;
+            }
+            $invLambungClean = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $inv->no_lambung ?? ''));
+            if ($unitLambungClean && str_contains($invLambungClean, $unitLambungClean)) {
+                return true;
+            }
+            $invPolClean = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $inv->no_pol ?? ''));
+            if ($unitPlatClean && str_contains($invPolClean, $unitPlatClean)) {
+                return true;
+            }
+            return false;
+        })->sortByDesc('tanggal_invoice')->values();
+
+        // Pisahkan pengajuan yang SUDAH TERLAKSANA/BERJALAN vs JADWAL MENDATANG
+        $terlaksanaList = $pengajuanList->filter(function ($p) use ($today) {
+            if (in_array($p->status_pengerjaan, ['proses', 'selesai'])) {
+                return true;
+            }
+            $keberangkatan = $p->tanggal_keberangkatan ? $p->tanggal_keberangkatan->format('Y-m-d') : null;
+            return $keberangkatan && $keberangkatan <= $today;
+        });
+
+        $mendatangList = $pengajuanList->filter(function ($p) use ($today) {
+            $keberangkatan = $p->tanggal_keberangkatan ? $p->tanggal_keberangkatan->format('Y-m-d') : null;
+            return $keberangkatan && $keberangkatan > $today && $p->status_pengerjaan === 'belum_mulai';
+        });
+
+        // Filter invoice yang SUDAH TERLAKSANA (tidak menghitung realisasi biaya jika perbaikan masih di masa depan)
+        $terlaksanaInvoiceList = $invoiceList->filter(function ($inv) use ($today, $terlaksanaList) {
+            $tglInv = $inv->tanggal_invoice ? $inv->tanggal_invoice->format('Y-m-d') : null;
+            if ($tglInv && $tglInv > $today) {
+                return false;
+            }
+            if ($terlaksanaList->count() === 0) {
+                return false;
+            }
+            return true;
+        });
+
+        $totalTerlaksana = $terlaksanaList->count();
+        $totalMendatang  = $mendatangList->count();
+        $totalBiaya      = (float) $terlaksanaInvoiceList->sum('total_biaya');
+
+        $latestTerlaksana = $terlaksanaList->first();
+        $latestTerlaksanaInvoice = $terlaksanaInvoiceList->first();
+
+        $terakhirServisDate = $latestTerlaksana?->tanggal_mulai_pengerjaan
+            ?? ($latestTerlaksana?->tanggal_keberangkatan
+            ?? ($latestTerlaksana?->created_at
+            ?? $latestTerlaksanaInvoice?->tanggal_invoice));
+
+        $terakhirServis = $terakhirServisDate ? $terakhirServisDate->format('d/m/Y') : '—';
+        $jadwalMendatang = $mendatangList->first()?->tanggal_keberangkatan?->format('d/m/Y');
+
+        return response()->json([
+            'success' => true,
+            'unit' => [
+                'id'              => $unit->id,
+                'nama'            => $unit->nama,
+                'nomor_lambung'   => $unit->nomor_lambung,
+                'plat_nomor'      => $unit->plat_nomor,
+                'jenis_kendaraan' => $unit->jenis_kendaraan ?? '—',
+                'merk_tipe'       => $unit->merk_tipe ?? '—',
+                'tahun_pembuatan' => $unit->tahun_pembuatan ?? '—',
+                'pos'             => $unit->pos ?? '—',
+                'status'          => $unit->status ?? 'aktif',
+                'pengemudi_1'     => $unit->pengemudi_1 ?? '—',
+                'pengemudi_2'     => $unit->pengemudi_2 ?? '—',
+            ],
+            'summary' => [
+                'total_pengajuan'  => $totalTerlaksana,
+                'total_mendatang'  => $totalMendatang,
+                'total_biaya'      => 'Rp ' . number_format($totalBiaya, 0, ',', '.'),
+                'terakhir_servis'  => $terakhirServis,
+                'jadwal_mendatang' => $jadwalMendatang,
+            ],
+            'pengajuan_history' => $pengajuanList->map(function ($p) use ($today) {
+                $keberangkatan = $p->tanggal_keberangkatan ? $p->tanggal_keberangkatan->format('Y-m-d') : null;
+                $isFuture = $keberangkatan && $keberangkatan > $today && $p->status_pengerjaan === 'belum_mulai';
+
+                $tglFormat = ($p->tanggal_mulai_pengerjaan ?? $p->tanggal_keberangkatan)?->format('d/m/Y')
+                    ?? ($p->created_at ? $p->created_at->format('d/m/Y') : '—');
+
+                return [
+                    'id'                => $p->id,
+                    'created_at'        => $tglFormat,
+                    'item_perbaikan'    => $p->item_perbaikan,
+                    'nama_pemegang'     => $p->nama_pemegang,
+                    'pos'               => $p->pos,
+                    'status'            => $p->status,
+                    'status_pengerjaan' => $isFuture ? 'jadwal_mendatang' : ($p->status_pengerjaan ?? 'belum_mulai'),
+                    'is_future'         => $isFuture,
+                    'jadwal_keberangkatan' => $p->tanggal_keberangkatan ? $p->tanggal_keberangkatan->format('d/m/Y') : null,
+                    'progress_persen'   => $p->progress_persen ?? 0,
+                    'progress_catatan'  => $p->progress_catatan ?? '—',
+                ];
+            }),
+            'invoice_history' => $invoiceList->map(function ($inv) {
+                return [
+                    'id'              => $inv->id,
+                    'nomor_invoice'   => $inv->nomor_invoice,
+                    'tanggal_invoice' => $inv->tanggal_invoice ? $inv->tanggal_invoice->format('d/m/Y') : '—',
+                    'total_biaya'     => 'Rp ' . number_format((float)$inv->total_biaya, 0, ',', '.'),
+                    'status'          => $inv->status,
+                ];
+            })
+        ]);
+    }
+
+    /**
+     * Cetak Dokumen Formal Buku Servis Digital Armada Kendaraan Dinas.
+     */
+    public function cetakBukuServis($id)
+    {
+        $unit = Unit::findOrFail($id);
+        $today = now()->format('Y-m-d');
+
+        $unitLambungClean = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $unit->nomor_lambung ?? ''));
+        $unitPlatClean    = $unit->plat_nomor ? strtolower(preg_replace('/[^A-Za-z0-9]/', '', $unit->plat_nomor)) : '';
+
+        // Cari Pengajuan Perbaikan yang terkait dengan Unit ini
+        $pengajuanList = \App\Models\Pengajuan::all()->filter(function ($p) use ($unit, $unitLambungClean, $unitPlatClean) {
+            if (!empty($p->unit_id) && $p->unit_id == $unit->id) {
+                return true;
+            }
+            $pLambungClean = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $p->nomor_lambung ?? ''));
+            if ($unitLambungClean && str_contains($pLambungClean, $unitLambungClean)) {
+                return true;
+            }
+            if ($unitPlatClean && str_contains($pLambungClean, $unitPlatClean)) {
+                return true;
+            }
+            return false;
+        })->sortByDesc('created_at')->values();
+
+        // Cari Invoice / Realisasi Pembayaran yang terkait dengan Unit ini
+        $invoiceList = \App\Models\Invoice::all()->filter(function ($inv) use ($unit, $unitLambungClean, $unitPlatClean) {
+            if (!empty($inv->unit_id) && $inv->unit_id == $unit->id) {
+                return true;
+            }
+            $invLambungClean = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $inv->no_lambung ?? ''));
+            if ($unitLambungClean && str_contains($invLambungClean, $unitLambungClean)) {
+                return true;
+            }
+            $invPolClean = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $inv->no_pol ?? ''));
+            if ($unitPlatClean && str_contains($invPolClean, $unitPlatClean)) {
+                return true;
+            }
+            return false;
+        })->sortByDesc('tanggal_invoice')->values();
+
+        // Pisahkan pengajuan yang SUDAH TERLAKSANA/BERJALAN vs JADWAL MENDATANG
+        $terlaksanaList = $pengajuanList->filter(function ($p) use ($today) {
+            if (in_array($p->status_pengerjaan, ['proses', 'selesai'])) {
+                return true;
+            }
+            $keberangkatan = $p->tanggal_keberangkatan ? $p->tanggal_keberangkatan->format('Y-m-d') : null;
+            return $keberangkatan && $keberangkatan <= $today;
+        });
+
+        $mendatangList = $pengajuanList->filter(function ($p) use ($today) {
+            $keberangkatan = $p->tanggal_keberangkatan ? $p->tanggal_keberangkatan->format('Y-m-d') : null;
+            return $keberangkatan && $keberangkatan > $today && $p->status_pengerjaan === 'belum_mulai';
+        });
+
+        $terlaksanaInvoiceList = $invoiceList->filter(function ($inv) use ($today, $terlaksanaList) {
+            $tglInv = $inv->tanggal_invoice ? $inv->tanggal_invoice->format('Y-m-d') : null;
+            if ($tglInv && $tglInv > $today) {
+                return false;
+            }
+            if ($terlaksanaList->count() === 0) {
+                return false;
+            }
+            return true;
+        });
+
+        $totalTerlaksana = $terlaksanaList->count();
+        $totalMendatang  = $mendatangList->count();
+        $totalBiaya      = (float) $terlaksanaInvoiceList->sum('total_biaya');
+
+        $latestTerlaksana = $terlaksanaList->first();
+        $latestTerlaksanaInvoice = $terlaksanaInvoiceList->first();
+
+        $terakhirServisDate = $latestTerlaksana?->tanggal_mulai_pengerjaan
+            ?? ($latestTerlaksana?->tanggal_keberangkatan
+            ?? ($latestTerlaksana?->created_at
+            ?? $latestTerlaksanaInvoice?->tanggal_invoice));
+
+        $terakhirServis = $terakhirServisDate ? $terakhirServisDate->format('d/m/Y') : '—';
+        $jadwalMendatang = $mendatangList->first()?->tanggal_keberangkatan?->format('d/m/Y');
+
+        return view('admin.pemeliharaan.data-unit.cetak-buku-servis', compact(
+            'unit',
+            'pengajuanList',
+            'invoiceList',
+            'terlaksanaList',
+            'mendatangList',
+            'terlaksanaInvoiceList',
+            'totalTerlaksana',
+            'totalMendatang',
+            'totalBiaya',
+            'terakhirServis',
+            'jadwalMendatang',
+            'today'
+        ));
     }
 }

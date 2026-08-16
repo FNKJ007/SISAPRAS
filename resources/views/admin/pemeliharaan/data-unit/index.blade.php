@@ -198,6 +198,11 @@
                                 {{-- Aksi --}}
                                 <td style="padding:12px 14px; text-align:center; white-space:nowrap;">
                                     <div style="display:inline-flex; align-items:center; gap:4px;">
+                                        <button type="button" @click="openBukuServis({{ $item->id }})"
+                                                style="padding:4px 9px; background:#EEF2FF; color:#1B2A6B; border:1px solid #C7D2FE; border-radius:6px; font-size:11.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+                                            <i data-lucide="book-open" style="width:12px; height:12px;"></i>
+                                            <span>Buku Servis</span>
+                                        </button>
                                         <button type="button" @click="
                                             activeUnit = {{ json_encode($item) }};
                                             editUrl = '{{ route('admin.pemeliharaan.data-unit.update', $item->id) }}';
@@ -281,17 +286,11 @@
                         <div x-show="open && existingJenisList.length > 0" x-cloak
                              style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                             <template x-for="item in existingJenisList" :key="item">
-                                <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                     @click="val = item; open = false;"
                                      onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                    <span @click="val = item; open = false;" style="flex:1;" x-text="item"></span>
-                                    <button type="button" @click.stop="removeOption('jenis_kendaraan', item)"
-                                            title="Hapus opsi ini dari riwayat"
-                                            style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
-                                            onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
-                                            onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
-                                        <i data-lucide="x" style="width:13px; height:13px;"></i>
-                                    </button>
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
+                                     x-text="item">
                                 </div>
                             </template>
                         </div>
@@ -313,17 +312,11 @@
                         <div x-show="open && existingPeruntukanList.length > 0" x-cloak
                              style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                             <template x-for="item in existingPeruntukanList" :key="item">
-                                <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                     @click="val = item; open = false;"
                                      onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                    <span @click="val = item; open = false;" style="flex:1;" x-text="item"></span>
-                                    <button type="button" @click.stop="removeOption('peruntukan', item)"
-                                            title="Hapus opsi ini dari riwayat"
-                                            style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
-                                            onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
-                                            onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
-                                        <i data-lucide="x" style="width:13px; height:13px;"></i>
-                                    </button>
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
+                                     x-text="item">
                                 </div>
                             </template>
                         </div>
@@ -345,17 +338,11 @@
                         <div x-show="open && existingKategoriList.length > 0" x-cloak
                              style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                             <template x-for="item in existingKategoriList" :key="item">
-                                <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                     @click="val = item; open = false;"
                                      onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                    <span @click="val = item; open = false;" style="flex:1;" x-text="item"></span>
-                                    <button type="button" @click.stop="removeOption('kategori', item)"
-                                            title="Hapus opsi ini dari riwayat"
-                                            style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
-                                            onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
-                                            onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
-                                        <i data-lucide="x" style="width:13px; height:13px;"></i>
-                                    </button>
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
+                                     x-text="item">
                                 </div>
                             </template>
                         </div>
@@ -476,17 +463,11 @@
                         <div x-show="open && existingJenisList.length > 0" x-cloak
                              style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                             <template x-for="item in existingJenisList" :key="item">
-                                <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                     @click="activeUnit.jenis_kendaraan = item; open = false;"
                                      onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                    <span @click="activeUnit.jenis_kendaraan = item; open = false;" style="flex:1;" x-text="item"></span>
-                                    <button type="button" @click.stop="removeOption('jenis_kendaraan', item)"
-                                            title="Hapus opsi ini dari riwayat"
-                                            style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
-                                            onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
-                                            onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
-                                        <i data-lucide="x" style="width:13px; height:13px;"></i>
-                                    </button>
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
+                                     x-text="item">
                                 </div>
                             </template>
                         </div>
@@ -508,17 +489,11 @@
                         <div x-show="open && existingPeruntukanList.length > 0" x-cloak
                              style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                             <template x-for="item in existingPeruntukanList" :key="item">
-                                <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                     @click="activeUnit.peruntukan = item; open = false;"
                                      onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                    <span @click="activeUnit.peruntukan = item; open = false;" style="flex:1;" x-text="item"></span>
-                                    <button type="button" @click.stop="removeOption('peruntukan', item)"
-                                            title="Hapus opsi ini dari riwayat"
-                                            style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
-                                            onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
-                                            onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
-                                        <i data-lucide="x" style="width:13px; height:13px;"></i>
-                                    </button>
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
+                                     x-text="item">
                                 </div>
                             </template>
                         </div>
@@ -540,17 +515,11 @@
                         <div x-show="open && existingKategoriList.length > 0" x-cloak
                              style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                             <template x-for="item in existingKategoriList" :key="item">
-                                <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                     @click="activeUnit.kategori = item; open = false;"
                                      onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                    <span @click="activeUnit.kategori = item; open = false;" style="flex:1;" x-text="item"></span>
-                                    <button type="button" @click.stop="removeOption('kategori', item)"
-                                            title="Hapus opsi ini dari riwayat"
-                                            style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
-                                            onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
-                                            onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
-                                        <i data-lucide="x" style="width:13px; height:13px;"></i>
-                                    </button>
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
+                                     x-text="item">
                                 </div>
                             </template>
                         </div>
@@ -641,6 +610,201 @@
         </div>
     </div>
 
+    {{-- ===================== MODAL: BUKU SERVIS DIGITAL ===================== --}}
+    <div x-show="bukuServisModalOpen" x-cloak class="admin-modal-overlay"
+         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
+         @click.self="bukuServisModalOpen = false">
+        <div class="custom-scrollbar admin-modal-dialog"
+             style="background:#FFFFFF; border-radius:18px; width:100%; max-width:820px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 50px -12px rgba(15,23,42,0.3); border:1px solid #E2E8F0; margin:auto;" @click.stop>
+            
+            {{-- Modal Header --}}
+            <div style="padding:18px 24px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#FFFFFF; z-index:10;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="width:40px; height:40px; border-radius:12px; background:#EEF2FF; border:1px solid #C7D2FE; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <i data-lucide="book-open" style="width:22px; height:22px; color:#1B2A6B;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size:16px; font-weight:800; color:#0F172A; margin:0; display:flex; align-items:center; gap:8px;">
+                            <span>Buku Servis Digital Armada</span>
+                            <span x-text="bukuServisData?.unit?.nomor_lambung" style="background:#1B2A6B; color:#FFFFFF; padding:2px 8px; border-radius:6px; font-size:12px; font-weight:700;"></span>
+                        </h3>
+                        <p style="font-size:12px; color:#64748B; margin:2px 0 0 0;">
+                            Rekam Medis Perbaikan &amp; Pemeliharaan Kendaraan Dinas <strong style="color:#1E293B;" x-text="bukuServisData?.unit?.plat_nomor"></strong>
+                        </p>
+                    </div>
+                </div>
+                <button type="button" @click="bukuServisModalOpen = false" style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:6px; border-radius:8px;">
+                    <i data-lucide="x" style="width:20px; height:20px;"></i>
+                </button>
+            </div>
+
+            {{-- Modal Body --}}
+            <div style="padding:22px;">
+
+                {{-- Loading State --}}
+                <div x-show="bukuServisLoading" style="text-align:center; padding:40px 20px; color:#64748B;">
+                    <div style="display:inline-block; width:32px; height:32px; border:3px solid #E2E8F0; border-top-color:#1B2A6B; border-radius:50%; animation:spin 0.8s linear infinite; margin-bottom:12px;"></div>
+                    <div style="font-size:13px; font-weight:600;">Memuat Rekam Medis Servis Armada...</div>
+                </div>
+
+                <template x-if="!bukuServisLoading && bukuServisData">
+                    <div>
+                        {{-- Identity Banner --}}
+                        <div style="background:linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 100%); border:1px solid #E2E8F0; border-radius:14px; padding:16px 20px; margin-bottom:20px; display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:14px;">
+                            <div>
+                                <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase;">Pos Penempatan</div>
+                                <div style="font-size:13px; font-weight:800; color:#0F172A; margin-top:2px;" x-text="bukuServisData.unit.pos || '—'"></div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase;">Jenis Kendaraan</div>
+                                <div style="font-size:13px; font-weight:800; color:#1B2A6B; margin-top:2px;" x-text="bukuServisData.unit.jenis_kendaraan"></div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase;">Merk / Tipe</div>
+                                <div style="font-size:13px; font-weight:800; color:#334155; margin-top:2px;" x-text="bukuServisData.unit.merk_tipe"></div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase;">Pengemudi Utama</div>
+                                <div style="font-size:13px; font-weight:800; color:#334155; margin-top:2px;" x-text="'👤 ' + (bukuServisData.unit.pengemudi_1 || '—')"></div>
+                            </div>
+                        </div>
+
+                        {{-- KPI Cards --}}
+                        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:24px;">
+                            <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:12px; padding:14px 16px; box-shadow:0 2px 6px rgba(0,0,0,0.02);">
+                                <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase;">Total Perbaikan</div>
+                                <div style="font-size:20px; font-weight:800; color:#1B2A6B; margin-top:4px;" x-text="bukuServisData.summary.total_pengajuan + ' Kali'"></div>
+                                <template x-if="bukuServisData.summary.total_mendatang > 0">
+                                    <div style="font-size:10.5px; font-weight:700; color:#2563EB; margin-top:3px;" x-text="'+ ' + bukuServisData.summary.total_mendatang + ' Jadwal Mendatang'"></div>
+                                </template>
+                            </div>
+                            <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:12px; padding:14px 16px; box-shadow:0 2px 6px rgba(0,0,0,0.02);">
+                                <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase;">Total Biaya Servis</div>
+                                <div style="font-size:20px; font-weight:800; color:#059669; margin-top:4px;" x-text="bukuServisData.summary.total_biaya"></div>
+                            </div>
+                            <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:12px; padding:14px 16px; box-shadow:0 2px 6px rgba(0,0,0,0.02);">
+                                <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase;">Terakhir Servis</div>
+                                <div style="font-size:16px; font-weight:800; color:#0F172A; margin-top:6px;" x-text="bukuServisData.summary.terakhir_servis"></div>
+                                <template x-if="bukuServisData.summary.jadwal_mendatang">
+                                    <div style="font-size:10.5px; font-weight:700; color:#2563EB; margin-top:3px;" x-text="'🗓️ Jadwal: ' + bukuServisData.summary.jadwal_mendatang"></div>
+                                </template>
+                            </div>
+                        </div>
+
+                        {{-- Section: Riwayat Pengajuan & Pemeliharaan --}}
+                        <div style="margin-bottom:24px;">
+                            <h4 style="font-size:13.5px; font-weight:800; color:#0F172A; margin:0 0 10px 0; display:flex; align-items:center; gap:6px;">
+                                <i data-lucide="wrench" style="width:16px; height:16px; color:#1B2A6B;"></i>
+                                <span>Riwayat Pengajuan Perbaikan &amp; Fisik</span>
+                            </h4>
+                            
+                            <template x-if="bukuServisData.pengajuan_history.length === 0">
+                                <div style="background:#F8FAFC; border:1px dashed #CBD5E1; border-radius:10px; padding:20px; text-align:center; color:#64748B; font-size:12.5px;">
+                                    Belum ada rekam medis pengajuan perbaikan untuk unit kendaraan ini.
+                                </div>
+                            </template>
+
+                            <template x-if="bukuServisData.pengajuan_history.length > 0">
+                                <div style="border:1px solid #E2E8F0; border-radius:12px; overflow:hidden;">
+                                    <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                                        <thead style="background:#F8FAFC; border-bottom:1px solid #E2E8F0; color:#475569; font-weight:700;">
+                                            <tr>
+                                                <th style="padding:10px 14px; text-align:left;">Tanggal</th>
+                                                <th style="padding:10px 14px; text-align:left;">Item / Kerusakan Perbaikan</th>
+                                                <th style="padding:10px 14px; text-align:left;">Pemohon &amp; Pos</th>
+                                                <th style="padding:10px 14px; text-align:center;">Progres Fisik</th>
+                                                <th style="padding:10px 14px; text-align:center;">Cetak Dokumen</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template x-for="p in bukuServisData.pengajuan_history" :key="p.id">
+                                                <tr style="border-bottom:1px solid #F1F5F9;">
+                                                    <td style="padding:10px 14px; font-weight:700; color:#1E293B; white-space:nowrap;" x-text="p.created_at"></td>
+                                                    <td style="padding:10px 14px; font-weight:700; color:#1B2A6B;" x-text="p.item_perbaikan"></td>
+                                                    <td style="padding:10px 14px; color:#475569;">
+                                                        <div style="font-weight:600;" x-text="p.nama_pemegang"></div>
+                                                        <div style="font-size:11px; color:#64748B;" x-text="p.pos"></div>
+                                                    </td>
+                                                    <td style="padding:10px 14px; text-align:center;">
+                                                        <span :style="p.is_future ? 'background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; border-radius:20px; padding:3px 9px; font-weight:700; font-size:10.5px; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;' : (p.status_pengerjaan === 'selesai' ? 'background:#D1FAE5; color:#065F46; border:1px solid #A7F3D0; border-radius:20px; padding:3px 9px; font-weight:700; font-size:10.5px; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;' : (p.status_pengerjaan === 'proses' ? 'background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; border-radius:20px; padding:3px 9px; font-weight:700; font-size:10.5px; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;' : 'background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; border-radius:20px; padding:3px 9px; font-weight:700; font-size:10.5px; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;'))"
+                                                              x-text="p.is_future ? '🗓️ Dijadwalkan (' + p.jadwal_keberangkatan + ')' : (p.status_pengerjaan === 'selesai' ? '✓ Selesai (100%)' : (p.status_pengerjaan === 'proses' ? '⚙️ Proses (' + p.progress_persen + '%)' : 'Belum Mulai'))">
+                                                        </span>
+                                                    </td>
+                                                    <td style="padding:10px 14px; text-align:center; white-space:nowrap;">
+                                                        <a :href="'/admin/pemeliharaan/cetak-dokumen/' + p.id + '/spk'" target="_blank"
+                                                           style="padding:4px 10px; background:#EEF2FF; color:#1B2A6B; border:1px solid #C7D2FE; border-radius:6px; font-size:11px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+                                                            📄 SPK
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </template>
+                        </div>
+
+                        {{-- Section: Riwayat Realisasi Biaya & Invoice --}}
+                        <div style="margin-top:24px;">
+                            <h4 style="font-size:13.5px; font-weight:800; color:#0F172A; margin:0 0 10px 0; display:flex; align-items:center; gap:6px;">
+                                <i data-lucide="receipt" style="width:16px; height:16px; color:#059669;"></i>
+                                <span>Riwayat Realisasi Biaya &amp; Invoice</span>
+                            </h4>
+                            
+                            <template x-if="bukuServisData.invoice_history.length === 0">
+                                <div style="background:#F8FAFC; border:1px dashed #CBD5E1; border-radius:10px; padding:20px; text-align:center; color:#64748B; font-size:12.5px;">
+                                    Belum ada catatan invoice / realisasi pembayaran untuk unit kendaraan ini.
+                                </div>
+                            </template>
+
+                            <template x-if="bukuServisData.invoice_history.length > 0">
+                                <div style="border:1px solid #E2E8F0; border-radius:12px; overflow:hidden;">
+                                    <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                                        <thead style="background:#F8FAFC; border-bottom:1px solid #E2E8F0; color:#475569; font-weight:700;">
+                                            <tr>
+                                                <th style="padding:10px 14px; text-align:left;">Tanggal Invoice</th>
+                                                <th style="padding:10px 14px; text-align:left;">Nomor Invoice</th>
+                                                <th style="padding:10px 14px; text-align:center;">Status</th>
+                                                <th style="padding:10px 14px; text-align:right;">Total Biaya Realisasi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template x-for="inv in bukuServisData.invoice_history" :key="inv.id">
+                                                <tr style="border-bottom:1px solid #F1F5F9;">
+                                                    <td style="padding:10px 14px; font-weight:700; color:#1E293B;" x-text="inv.tanggal_invoice"></td>
+                                                    <td style="padding:10px 14px; font-weight:700; color:#1B2A6B;" x-text="inv.nomor_invoice"></td>
+                                                    <td style="padding:10px 14px; text-align:center;">
+                                                        <span :style="inv.status === 'lunas' || inv.status === 'disetujui' ? 'background:#D1FAE5; color:#065F46; border:1px solid #A7F3D0; border-radius:20px; padding:3px 9px; font-weight:700; font-size:10.5px; text-transform:uppercase; white-space:nowrap; display:inline-block;' : 'background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; border-radius:20px; padding:3px 9px; font-weight:700; font-size:10.5px; text-transform:uppercase; white-space:nowrap; display:inline-block;'"
+                                                              x-text="inv.status">
+                                                        </span>
+                                                    </td>
+                                                    <td style="padding:10px 14px; text-align:right; font-weight:800; color:#059669;" x-text="inv.total_biaya"></td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            {{-- Modal Footer --}}
+            <div style="padding:14px 24px; border-top:1px solid #E2E8F0; background:#FAFAFA; display:flex; align-items:center; justify-content:space-between;">
+                <a :href="'/admin/pemeliharaan/data-unit/' + (bukuServisData?.unit?.id || '') + '/cetak-buku-servis'" target="_blank"
+                   style="padding:8px 16px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
+                    <i data-lucide="printer" style="width:14px; height:14px;"></i>
+                    <span>Cetak Buku Servis</span>
+                </a>
+                <button type="button" @click="bukuServisModalOpen = false"
+                        style="padding:8px 18px; background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;">
+                    Tutup Buku Servis
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -649,12 +813,36 @@ function dataUnitApp() {
         createModalOpen: false,
         editModalOpen: false,
         deleteModalOpen: false,
+        bukuServisModalOpen: false,
+        bukuServisLoading: false,
+        bukuServisData: null,
         activeUnit: {},
         editUrl: '',
         deleteUrl: '',
         existingJenisList: @json($existingJenisList ?? []),
         existingPeruntukanList: @json($existingPeruntukanList ?? []),
         existingKategoriList: @json($existingKategoriList ?? []),
+        openBukuServis(unitId) {
+            this.bukuServisModalOpen = true;
+            this.bukuServisLoading = true;
+            this.bukuServisData = null;
+
+            fetch(`/admin/pemeliharaan/data-unit/${unitId}/riwayat-servis`)
+                .then(res => res.json())
+                .then(data => {
+                    this.bukuServisLoading = false;
+                    if (data.success) {
+                        this.bukuServisData = data;
+                        this.$nextTick(() => {
+                            if (window.lucide) lucide.createIcons();
+                        });
+                    }
+                })
+                .catch(err => {
+                    this.bukuServisLoading = false;
+                    console.error("Gagal memuat buku servis:", err);
+                });
+        },
         removeOption(type, value) {
             if (!confirm("Hapus '" + value + "' dari daftar pilihan riwayat?")) return;
 

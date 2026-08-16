@@ -176,6 +176,21 @@
         {{-- ===================== MAIN AREA ===================== --}}
         <div class="main-area">
 
+            @if(session('admin_viewing_as_user') && auth()->check() && auth()->user()->isAdmin())
+                <div style="background:#1B2A6B; color:#FFFFFF; padding:8px 20px; font-size:12.5px; font-weight:600; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 8px rgba(0,0,0,0.15); z-index:9999; flex-shrink:0;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="eye" style="width:16px; height:16px; color:#F59E0B;"></i>
+                        <span>Anda sedang dalam Mode Simulasi Tampilan User (Administrator)</span>
+                    </div>
+                    <form method="POST" action="{{ route('admin.switch-back-to-admin') }}" style="margin:0;">
+                        @csrf
+                        <button type="submit" style="background:#DC2626; color:#FFFFFF; border:none; padding:5px 14px; border-radius:6px; font-size:11.5px; font-weight:700; cursor:pointer;">
+                            Kembali ke Panel Admin
+                        </button>
+                    </form>
+                </div>
+            @endif
+
             <header class="topbar" style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Buka menu">

@@ -54,12 +54,21 @@ class InvoiceController extends Controller
         $selectedUnitIds = array_values(array_filter((array) $request->query('unit', [])));
         $selectedBulan   = array_values(array_filter((array) $request->query('bulan', [])));
 
+        $selectedLambungs = Unit::whereIn('id', $selectedUnitIds)->pluck('nomor_lambung')->filter()->toArray();
+
         $dashboardInvoices = Invoice::with('unit')
             ->where(function ($q) use ($selectedTahun) {
                 $q->where('tahun_anggaran', $selectedTahun)
                   ->orWhereYear('tanggal_invoice', $selectedTahun);
             })
-            ->when(!empty($selectedUnitIds), fn ($q) => $q->whereIn('unit_id', $selectedUnitIds))
+            ->when(!empty($selectedUnitIds), function ($q) use ($selectedUnitIds, $selectedLambungs) {
+                $q->where(function ($qq) use ($selectedUnitIds, $selectedLambungs) {
+                    $qq->whereIn('unit_id', $selectedUnitIds);
+                    if (!empty($selectedLambungs)) {
+                        $qq->orWhereIn('no_lambung', $selectedLambungs);
+                    }
+                });
+            })
             ->when(!empty($selectedBulan), function ($q) use ($selectedBulan) {
                 $q->where(function ($qq) use ($selectedBulan) {
                     foreach ($selectedBulan as $bulan) {

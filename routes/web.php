@@ -110,6 +110,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
         // Data Unit CRUD Routes
         Route::get('/data-unit',                    [UnitManagementController::class, 'index'])->name('data-unit');
+        Route::get('/data-unit/{id}/riwayat-servis', [UnitManagementController::class, 'riwayatServis'])->name('data-unit.riwayat-servis');
+        Route::get('/data-unit/{id}/cetak-buku-servis', [UnitManagementController::class, 'cetakBukuServis'])->name('data-unit.cetak-buku-servis');
         Route::post('/data-unit',                   [UnitManagementController::class, 'store'])->name('data-unit.store');
         Route::put('/data-unit/{id}',               [UnitManagementController::class, 'update'])->name('data-unit.update');
         Route::delete('/data-unit/{id}',            [UnitManagementController::class, 'destroy'])->name('data-unit.destroy');

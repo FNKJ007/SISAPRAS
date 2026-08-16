@@ -165,6 +165,20 @@ class AdminController extends Controller
 
         if ($pengajuan->status === 'disetujui' && $request->filled('tanggal_keberangkatan')) {
             $pengajuan->tanggal_keberangkatan = $request->tanggal_keberangkatan;
+            
+            // Otomatis isi tanggal_mulai_pengerjaan dengan tanggal keberangkatan jika belum diisi
+            if (empty($pengajuan->tanggal_mulai_pengerjaan)) {
+                $pengajuan->tanggal_mulai_pengerjaan = $request->tanggal_keberangkatan;
+            }
+
+            // Jika tanggal keberangkatan diset tanggal hari ini atau telah lewat, otomatis ubah status ke 'proses'
+            $today = now()->format('Y-m-d');
+            if ($request->tanggal_keberangkatan <= $today && $pengajuan->status_pengerjaan === 'belum_mulai') {
+                $pengajuan->status_pengerjaan = 'proses';
+                if ((int)$pengajuan->progress_persen === 0) {
+                    $pengajuan->progress_persen = 10;
+                }
+            }
         } elseif ($pengajuan->status !== 'disetujui') {
             $pengajuan->tanggal_keberangkatan = null;
         }
@@ -257,6 +271,33 @@ class AdminController extends Controller
     {
         $statusFilter = $request->query('status_pengerjaan', 'semua');
         $searchQuery  = $request->query('search', '');
+
+        // Auto-sync: pengajuan yang disetujui & punya tanggal keberangkatan
+        $today = now()->format('Y-m-d');
+        $approvedList = Pengajuan::where('status', 'disetujui')->whereNotNull('tanggal_keberangkatan')->get();
+        foreach ($approvedList as $item) {
+            $changed = false;
+            $keberangkatan = $item->tanggal_keberangkatan ? $item->tanggal_keberangkatan->format('Y-m-d') : null;
+
+            // 1. Auto-fill tanggal_mulai_pengerjaan dari tanggal_keberangkatan jika masih kosong
+            if ($keberangkatan && empty($item->tanggal_mulai_pengerjaan)) {
+                $item->tanggal_mulai_pengerjaan = $keberangkatan;
+                $changed = true;
+            }
+
+            // 2. Auto-update status_pengerjaan ke 'proses' jika jadwal keberangkatan <= hari ini dan masih 'belum_mulai'
+            if ($keberangkatan && $keberangkatan <= $today && $item->status_pengerjaan === 'belum_mulai') {
+                $item->status_pengerjaan = 'proses';
+                if ((int)$item->progress_persen === 0) {
+                    $item->progress_persen = 10;
+                }
+                $changed = true;
+            }
+
+            if ($changed) {
+                $item->save();
+            }
+        }
 
         // Hanya unit yang sudah disetujui yang masuk pipeline pengerjaan aktual
         $query = Pengajuan::where('status', 'disetujui')->latest();

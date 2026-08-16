@@ -222,17 +222,11 @@
                             <div x-show="open && existingKategoriList.length > 0" x-cloak
                                  style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                                 <template x-for="item in existingKategoriList" :key="item">
-                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                    <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                         @click="val = item; open = false;"
                                          onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                         onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                        <span @click="val = item; open = false;" style="flex:1;" x-text="item"></span>
-                                        <button type="button" @click.stop="removeOption('kategori', item)"
-                                                title="Hapus opsi ini dari riwayat"
-                                                style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
-                                                onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
-                                                onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
-                                            <i data-lucide="x" style="width:13px; height:13px;"></i>
-                                        </button>
+                                         onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
+                                         x-text="item">
                                     </div>
                                 </template>
                             </div>
@@ -310,17 +304,11 @@
                             <div x-show="open && existingKategoriList.length > 0" x-cloak
                                  style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                                 <template x-for="item in existingKategoriList" :key="item">
-                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                    <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                         @click="activeAlat.kategori = item; open = false;"
                                          onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                         onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                        <span @click="activeAlat.kategori = item; open = false;" style="flex:1;" x-text="item"></span>
-                                        <button type="button" @click.stop="removeOption('kategori', item)"
-                                                title="Hapus opsi ini dari riwayat"
-                                                style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:2px 5px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;"
-                                                onmouseover="this.style.color='#DC2626'; this.style.background='#FEE2E2';"
-                                                onmouseout="this.style.color='#94A3B8'; this.style.background='none';">
-                                            <i data-lucide="x" style="width:13px; height:13px;"></i>
-                                        </button>
+                                         onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
+                                         x-text="item">
                                     </div>
                                 </template>
                             </div>
