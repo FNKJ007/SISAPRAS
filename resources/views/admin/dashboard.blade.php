@@ -3,132 +3,255 @@
 
 @section('content')
 
-<div class="form-card" style="max-width:100%; box-shadow:none; padding:0; background:transparent;">
+<div style="max-width:100%;">
 
     {{-- Page Header --}}
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:12px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:14px;">
         <div>
-            <h1 style="font-size:22px; font-weight:800; color:#121E4E; margin-bottom:2px;">Dashboard Analitik</h1>
-            <p style="font-size:13px; color:#64748B; margin:0;">Ringkasan status sarana prasarana &amp; aktivitas pemeliharaan.</p>
+            <h1 style="font-size:22px; font-weight:800; color:#121E4E; margin-bottom:4px; display:flex; align-items:center; gap:10px;">
+                <span>Dashboard Analitik &amp; Monitoring Sektor</span>
+                <span style="font-size:11px; font-weight:700; background:#EEF2FF; color:#1B2A6B; border:1px solid #C7D2FE; border-radius:20px; padding:3px 10px;">Live Data</span>
+            </h1>
+            <p style="font-size:13px; color:#64748B; margin:0;">Ringkasan real-time status armada, peralatan sarpras, inspeksi harian &amp; realisasi biaya pemeliharaan.</p>
         </div>
-        <div style="display:flex; align-items:center; gap:8px; background:#FFFFFF; padding:6px 14px; border-radius:10px; border:1px solid #E2E8F0; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
-            <i data-lucide="calendar" style="width:16px; height:16px; color:#C0201F;"></i>
-            <span style="font-size:12.5px; font-weight:600; color:#1E293B;">{{ \Illuminate\Support\Carbon::now()->translatedFormat('d F Y') }}</span>
+
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            {{-- Filter Tahun --}}
+            <form method="GET" action="{{ route('admin.dashboard') }}" style="margin:0;">
+                <div style="display:flex; align-items:center; gap:6px; background:#FFFFFF; padding:4px 10px; border-radius:10px; border:1px solid #E2E8F0; box-shadow:0 2px 6px rgba(0,0,0,0.03);">
+                    <i data-lucide="filter" style="width:14px; height:14px; color:#64748B;"></i>
+                    <select name="tahun" onchange="this.form.submit()"
+                            style="padding:4px 6px; font-size:12.5px; font-weight:700; border:none; background:transparent; color:#1E293B; outline:none; cursor:pointer;">
+                        @for($y = max((int)date('Y'), 2026); $y >= 2026; $y--)
+                            <option value="{{ $y }}" {{ $currentYear == $y ? 'selected' : '' }}>Tahun {{ $y }}</option>
+                        @endfor
+                    </select>
+                </div>
+            </form>
+
+            {{-- Tanggal Hari Ini --}}
+            <div style="display:flex; align-items:center; gap:8px; background:#FFFFFF; padding:8px 14px; border-radius:10px; border:1px solid #E2E8F0; box-shadow:0 2px 6px rgba(0,0,0,0.03);">
+                <i data-lucide="calendar" style="width:16px; height:16px; color:#C0201F;"></i>
+                <span style="font-size:12.5px; font-weight:700; color:#1E293B;">{{ \Illuminate\Support\Carbon::now()->translatedFormat('d F Y') }}</span>
+            </div>
         </div>
     </div>
 
-    {{-- Stat Cards --}}
-    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; margin-bottom:24px;">
+    {{-- Stat Cards Grid (4 Cards Summary) --}}
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:20px; margin-bottom:24px;">
 
-        {{-- Total Unit --}}
-        <div style="background:#fff; border-radius:16px; box-shadow:0px 18px 40px rgba(112, 144, 176, 0.10); padding:22px 24px; border:1px solid #EAEFF8; position:relative; overflow:hidden;">
+        {{-- 1. Total Unit Armada --}}
+        <div style="background:#fff; border-radius:16px; box-shadow:0px 14px 30px rgba(15, 23, 42, 0.04); padding:20px 22px; border:1px solid #E2E8F0; position:relative; overflow:hidden;">
             <div style="position:absolute; top:0; left:0; width:100%; height:4px; background:linear-gradient(90deg, #1B2A6B, #3B82F6);"></div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="font-size:11.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:#64748B;">Total Unit</div>
-                <div style="width:36px; height:36px; border-radius:10px; background:rgba(27, 42, 107, 0.1); color:#1B2A6B; display:flex; align-items:center; justify-content:center;">
-                    <i data-lucide="truck" style="width:18px; height:18px;"></i>
+                <div style="font-size:11px; font-weight:800; letter-spacing:.6px; text-transform:uppercase; color:#64748B;">Total Unit Armada</div>
+                <div style="width:38px; height:38px; border-radius:10px; background:rgba(27, 42, 107, 0.08); color:#1B2A6B; display:flex; align-items:center; justify-content:center;">
+                    <i data-lucide="truck" style="width:20px; height:20px;"></i>
                 </div>
             </div>
-            <div style="font-size:36px; font-weight:800; line-height:1.1; color:#0F172A; margin:12px 0 6px 0;">{{ $totalUnit }}</div>
-            <a href="{{ route('admin.pemeliharaan.data-unit') }}" style="font-size:12.5px; color:#1B2A6B; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
-                Lihat detail <i data-lucide="arrow-right" style="width:14px; height:14px;"></i>
-            </a>
+            <div style="display:flex; align-items:baseline; gap:8px; margin:10px 0 4px 0;">
+                <div style="font-size:32px; font-weight:800; line-height:1.1; color:#0F172A;">{{ $totalUnit }}</div>
+                <span style="font-size:13px; font-weight:700; color:#64748B;">Armada</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; font-size:11.5px; font-weight:600; margin-top:8px; padding-top:10px; border-top:1px dashed #F1F5F9;">
+                <span style="color:#059669; background:#ECFDF5; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700;">
+                    ✓ {{ $unitAktif }} Siap Operasi
+                </span>
+                <a href="{{ route('admin.pemeliharaan.data-unit') }}" style="color:#1B2A6B; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
+                    Detail <i data-lucide="arrow-right" style="width:13px; height:13px;"></i>
+                </a>
+            </div>
         </div>
 
-        {{-- Pemeliharaan --}}
-        <div style="background:#fff; border-radius:16px; box-shadow:0px 18px 40px rgba(112, 144, 176, 0.10); padding:22px 24px; border:1px solid #EAEFF8; position:relative; overflow:hidden;">
-            <div style="position:absolute; top:0; left:0; width:100%; height:4px; background:linear-gradient(90deg, #C0201F, #EF4444);"></div>
+        {{-- 2. Total Peralatan Sarpras --}}
+        <div style="background:#fff; border-radius:16px; box-shadow:0px 14px 30px rgba(15, 23, 42, 0.04); padding:20px 22px; border:1px solid #E2E8F0; position:relative; overflow:hidden;">
+            <div style="position:absolute; top:0; left:0; width:100%; height:4px; background:linear-gradient(90deg, #059669, #10B981);"></div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="font-size:11.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:#64748B;">Pemeliharaan</div>
-                <div style="width:36px; height:36px; border-radius:10px; background:rgba(192, 32, 31, 0.1); color:#C0201F; display:flex; align-items:center; justify-content:center;">
-                    <i data-lucide="wrench" style="width:18px; height:18px;"></i>
+                <div style="font-size:11px; font-weight:800; letter-spacing:.6px; text-transform:uppercase; color:#64748B;">Peralatan Sarpras</div>
+                <div style="width:38px; height:38px; border-radius:10px; background:rgba(5, 150, 105, 0.08); color:#059669; display:flex; align-items:center; justify-content:center;">
+                    <i data-lucide="shield-check" style="width:20px; height:20px;"></i>
                 </div>
             </div>
-            <div style="font-size:36px; font-weight:800; line-height:1.1; color:#0F172A; margin:12px 0 6px 0;">{{ $totalPemeliharaan }}</div>
-            <a href="{{ route('admin.pemeliharaan.pengajuan') }}" style="font-size:12.5px; color:#C0201F; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
-                Lihat detail <i data-lucide="arrow-right" style="width:14px; height:14px;"></i>
-            </a>
+            <div style="display:flex; align-items:baseline; gap:8px; margin:10px 0 4px 0;">
+                <div style="font-size:32px; font-weight:800; line-height:1.1; color:#0F172A;">{{ number_format($totalPeralatan, 0, ',', '.') }}</div>
+                <span style="font-size:13px; font-weight:700; color:#64748B;">Pcs ({{ $jenisPeralatan }} Jenis)</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; font-size:11.5px; font-weight:600; margin-top:8px; padding-top:10px; border-top:1px dashed #F1F5F9;">
+                <span style="color:#059669; background:#ECFDF5; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700;">
+                    ✓ 100% Kondisi Baik
+                </span>
+                <a href="{{ route('admin.pemeliharaan.data-peralatan') }}" style="color:#059669; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
+                    Detail <i data-lucide="arrow-right" style="width:13px; height:13px;"></i>
+                </a>
+            </div>
         </div>
 
-        {{-- Pemeriksaan --}}
-        <div style="background:#fff; border-radius:16px; box-shadow:0px 18px 40px rgba(112, 144, 176, 0.10); padding:22px 24px; border:1px solid #EAEFF8; position:relative; overflow:hidden;">
+        {{-- 3. Inspeksi & Pemeliharaan --}}
+        <div style="background:#fff; border-radius:16px; box-shadow:0px 14px 30px rgba(15, 23, 42, 0.04); padding:20px 22px; border:1px solid #E2E8F0; position:relative; overflow:hidden;">
             <div style="position:absolute; top:0; left:0; width:100%; height:4px; background:linear-gradient(90deg, #D97706, #F59E0B);"></div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="font-size:11.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:#64748B;">Pemeriksaan</div>
-                <div style="width:36px; height:36px; border-radius:10px; background:rgba(217, 119, 6, 0.1); color:#D97706; display:flex; align-items:center; justify-content:center;">
-                    <i data-lucide="clipboard-check" style="width:18px; height:18px;"></i>
+                <div style="font-size:11px; font-weight:800; letter-spacing:.6px; text-transform:uppercase; color:#64748B;">Pemeriksaan &amp; Servis</div>
+                <div style="width:38px; height:38px; border-radius:10px; background:rgba(217, 119, 6, 0.08); color:#D97706; display:flex; align-items:center; justify-content:center;">
+                    <i data-lucide="clipboard-check" style="width:20px; height:20px;"></i>
                 </div>
             </div>
-            <div style="font-size:36px; font-weight:800; line-height:1.1; color:#0F172A; margin:12px 0 6px 0;">{{ $totalPemeriksaan }}</div>
-            <a href="{{ route('admin.unit-pemadam.pengecekan') }}" style="font-size:12.5px; color:#D97706; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
-                Lihat detail <i data-lucide="arrow-right" style="width:14px; height:14px;"></i>
-            </a>
+            <div style="display:flex; align-items:baseline; gap:8px; margin:10px 0 4px 0;">
+                <div style="font-size:32px; font-weight:800; line-height:1.1; color:#0F172A;">{{ $totalPemeriksaan }}</div>
+                <span style="font-size:13px; font-weight:700; color:#64748B;">Inspeksi ({{ $totalPengajuan }} Servis)</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; font-size:11.5px; font-weight:600; margin-top:8px; padding-top:10px; border-top:1px dashed #F1F5F9;">
+                <span style="color:#D97706; background:#FEF3C7; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700;">
+                    🗓️ Terjadwal &amp; Rutin
+                </span>
+                <a href="{{ route('admin.pemeliharaan.pengajuan') }}" style="color:#D97706; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
+                    Detail <i data-lucide="arrow-right" style="width:13px; height:13px;"></i>
+                </a>
+            </div>
+        </div>
+
+        {{-- 4. Realisasi Biaya Pemeliharaan --}}
+        <div style="background:#fff; border-radius:16px; box-shadow:0px 14px 30px rgba(15, 23, 42, 0.04); padding:20px 22px; border:1px solid #E2E8F0; position:relative; overflow:hidden;">
+            <div style="position:absolute; top:0; left:0; width:100%; height:4px; background:linear-gradient(90deg, #C0201F, #EF4444);"></div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-size:11px; font-weight:800; letter-spacing:.6px; text-transform:uppercase; color:#64748B;">Realisasi Biaya Servis</div>
+                <div style="width:38px; height:38px; border-radius:10px; background:rgba(192, 32, 31, 0.08); color:#C0201F; display:flex; align-items:center; justify-content:center;">
+                    <i data-lucide="receipt" style="width:20px; height:20px;"></i>
+                </div>
+            </div>
+            <div style="display:flex; align-items:baseline; gap:8px; margin:10px 0 4px 0;">
+                <div style="font-size:24px; font-weight:800; line-height:1.1; color:#0F172A;">Rp {{ number_format($totalInvoiceBiaya, 0, ',', '.') }}</div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; font-size:11.5px; font-weight:600; margin-top:8px; padding-top:10px; border-top:1px dashed #F1F5F9;">
+                <span style="color:#C0201F; background:#FEE2E2; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700;">
+                    💳 {{ $totalInvoiceCount }} Invoice Verified
+                </span>
+                <a href="{{ route('admin.pemeliharaan.invoice.index') }}" style="color:#C0201F; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
+                    Detail <i data-lucide="arrow-right" style="width:13px; height:13px;"></i>
+                </a>
+            </div>
         </div>
 
     </div>
 
-    {{-- Bottom: Modern Interactive Chart + Activity --}}
+    {{-- Main Grid: Charts (Left 2/3) + Activity & Distribution (Right 1/3) --}}
     <div class="dash-bottom-grid" style="display:grid; grid-template-columns:1fr 340px; gap:20px; align-items:start;">
 
-        {{-- Grafik Pemeliharaan Interactive Chart --}}
-        <div style="background:#fff; border-radius:16px; box-shadow:0px 18px 40px rgba(112, 144, 176, 0.10); border:1px solid #EAEFF8; overflow:hidden;">
-            <div style="padding:20px 24px; border-bottom:1px solid #F1F5F9; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                <div>
-                    <span style="font-size:15px; font-weight:700; color:#0F172A; display:flex; align-items:center; gap:8px;">
-                        <i data-lucide="bar-chart-3" style="width:18px; height:18px; color:#C0201F;"></i>
-                        Grafik Pemeliharaan Kendaraan &amp; Alat
+        {{-- Left Column: Charts Container --}}
+        <div style="display:flex; flex-direction:column; gap:20px;">
+
+            {{-- Chart 1: Grafik Tren Inspeksi & Perbaikan --}}
+            <div style="background:#fff; border-radius:16px; box-shadow:0px 14px 30px rgba(15, 23, 42, 0.04); border:1px solid #E2E8F0; overflow:hidden;">
+                <div style="padding:18px 22px; border-bottom:1px solid #F1F5F9; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <span style="font-size:15px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:8px;">
+                            <i data-lucide="bar-chart-3" style="width:18px; height:18px; color:#1B2A6B;"></i>
+                            Grafik Analitik Inspeksi &amp; Pemeliharaan {{ $currentYear }}
+                        </span>
+                        <span style="font-size:12px; color:#64748B; margin-top:2px; display:block;">Jumlah riwayat pemeriksaan harian unit, alat, dan pengajuan perbulan.</span>
+                    </div>
+                </div>
+
+                {{-- Canvas Chart.js --}}
+                <div style="padding:20px 22px; position:relative; height:270px;">
+                    <canvas id="chartPemeliharaan" style="width:100%; height:100%;"></canvas>
+                </div>
+
+                {{-- Legend Footer --}}
+                <div style="display:flex; gap:20px; padding:12px 22px; border-top:1px solid #F1F5F9; flex-wrap:wrap; background:#FAFCFE; justify-content:center;">
+                    <div style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:#1E293B;">
+                        <span style="width:12px; height:12px; border-radius:3px; background:#1B2A6B; display:inline-block;"></span> Inspeksi Unit
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:#1E293B;">
+                        <span style="width:12px; height:12px; border-radius:3px; background:#059669; display:inline-block;"></span> Inspeksi Alat
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:#1E293B;">
+                        <span style="width:12px; height:12px; border-radius:3px; background:#C0201F; display:inline-block;"></span> Pengajuan Servis
+                    </div>
+                </div>
+            </div>
+
+            {{-- Chart 2: Grafik Realisasi Biaya Pemeliharaan (Rp per Bulan) --}}
+            <div style="background:#fff; border-radius:16px; box-shadow:0px 14px 30px rgba(15, 23, 42, 0.04); border:1px solid #E2E8F0; overflow:hidden;">
+                <div style="padding:18px 22px; border-bottom:1px solid #F1F5F9; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <span style="font-size:15px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:8px;">
+                            <i data-lucide="trending-up" style="width:18px; height:18px; color:#C0201F;"></i>
+                            Grafik Realisasi Biaya Perbaikan (Rp)
+                        </span>
+                        <span style="font-size:12px; color:#64748B; margin-top:2px; display:block;">Total pengeluaran biaya servis terverifikasi invoice per bulan.</span>
+                    </div>
+                    <span style="font-size:12px; font-weight:800; color:#C0201F; background:#FEE2E2; padding:4px 10px; border-radius:8px;">
+                        Total: Rp {{ number_format($totalInvoiceBiaya, 0, ',', '.') }}
                     </span>
-                    <span style="font-size:12px; color:#64748B; margin-top:2px; display:block;">Tren riwayat pemeriksaan dan pengajuan per bulan.</span>
                 </div>
-                <select style="padding:6px 12px; font-size:12px; font-weight:600; border-radius:8px; border:1px solid #CBD5E1; background:#F8FAFC; color:#334155; outline:none; cursor:pointer;">
-                    <option value="2026">Tahun {{ date('Y') }}</option>
-                </select>
+
+                {{-- Canvas Biaya --}}
+                <div style="padding:20px 22px; position:relative; height:220px;">
+                    <canvas id="chartBiaya" style="width:100%; height:100%;"></canvas>
+                </div>
             </div>
 
-            {{-- Canvas Chart.js --}}
-            <div style="padding:20px 24px; position:relative; min-height:260px;">
-                <canvas id="chartPemeliharaan" style="max-height:260px; width:100%;"></canvas>
-            </div>
-
-            {{-- Legend Footer --}}
-            <div style="display:flex; gap:20px; padding:14px 24px; border-top:1px solid #F1F5F9; flex-wrap:wrap; background:#FAFCFE; justify-content:center;">
-                <div style="display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; color:#334155;">
-                    <span style="width:12px; height:12px; border-radius:3px; background:#1B2A6B; display:inline-block;"></span> Unit Pemadam
-                </div>
-                <div style="display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; color:#334155;">
-                    <span style="width:12px; height:12px; border-radius:3px; background:#C0201F; display:inline-block;"></span> Unit Rescue
-                </div>
-                <div style="display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; color:#334155;">
-                    <span style="width:12px; height:12px; border-radius:3px; background:#D97706; display:inline-block;"></span> Command Center
-                </div>
-            </div>
         </div>
 
-        {{-- Aktivitas Terbaru --}}
-        <div style="background:#fff; border-radius:16px; box-shadow:0px 18px 40px rgba(112, 144, 176, 0.10); border:1px solid #EAEFF8; overflow:hidden;">
-            <div style="padding:18px 24px 14px; border-bottom:1px solid #EDF2F7; display:flex; align-items:center; justify-content:space-between;">
-                <span style="font-size:15px; font-weight:700; color:#0F172A; display:flex; align-items:center; gap:8px;">
-                    <i data-lucide="activity" style="width:18px; height:18px; color:#1B2A6B;"></i>
-                    Aktivitas Terbaru
-                </span>
-            </div>
-            <div style="padding:0 20px;">
-                @forelse($activities as $act)
-                    <div style="display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid #F1F5F9;">
-                        <div style="width:32px; height:32px; border-radius:10px; background:{{ $act->bg }}; color:{{ $act->color }}; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">
-                            <i data-lucide="{{ $act->icon }}" style="width:15px; height:15px;"></i>
+        {{-- Right Column: Pos Distribution + Recent Activity --}}
+        <div style="display:flex; flex-direction:column; gap:20px;">
+
+            {{-- 1. Sebaran Armada per Pos / Sektor --}}
+            <div style="background:#fff; border-radius:16px; box-shadow:0px 14px 30px rgba(15, 23, 42, 0.04); border:1px solid #E2E8F0; overflow:hidden;">
+                <div style="padding:16px 20px; border-bottom:1px solid #F1F5F9; display:flex; align-items:center; justify-content:space-between;">
+                    <span style="font-size:14.5px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="map-pin" style="width:17px; height:17px; color:#1B2A6B;"></i>
+                        Sebaran Armada per Pos
+                    </span>
+                    <span style="font-size:11.5px; font-weight:700; color:#64748B;">Total {{ $totalUnit }} Unit</span>
+                </div>
+                <div style="padding:16px 20px; display:flex; flex-direction:column; gap:12px;">
+                    @forelse($posDistribution as $posItem)
+                        @php
+                            $pct = round(($posItem->total / max($totalUnit, 1)) * 100);
+                        @endphp
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">
+                                <span>{{ $posItem->pos }}</span>
+                                <span>{{ $posItem->total }} Unit ({{ $pct }}%)</span>
+                            </div>
+                            <div style="width:100%; height:7px; background:#F1F5F9; border-radius:10px; overflow:hidden;">
+                                <div style="width:{{ $pct }}%; height:100%; background:linear-gradient(90deg, #1B2A6B, #3B82F6); border-radius:10px;"></div>
+                            </div>
                         </div>
-                        <div style="flex:1; min-width:0;">
-                            <div style="font-size:12.5px; font-weight:600; color:#1E293B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $act->text }}</div>
-                            <div style="font-size:11px; color:#64748B; margin-top:2px;">{{ $act->created_at->diffForHumans() }}</div>
-                        </div>
-                    </div>
-                @empty
-                    <div style="padding:32px 10px; text-align:center; color:#94A3B8; font-size:12.5px;">
-                        Belum ada aktivitas terbaru hari ini.
-                    </div>
-                @endforelse
+                    @empty
+                        <div style="padding:20px; text-align:center; color:#94A3B8; font-size:12px;">Belum ada data penempatan pos.</div>
+                    @endforelse
+                </div>
             </div>
+
+            {{-- 2. Aktivitas Terbaru Stream --}}
+            <div style="background:#fff; border-radius:16px; box-shadow:0px 14px 30px rgba(15, 23, 42, 0.04); border:1px solid #E2E8F0; overflow:hidden;">
+                <div style="padding:16px 20px; border-bottom:1px solid #EDF2F7; display:flex; align-items:center; justify-content:space-between;">
+                    <span style="font-size:14.5px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="activity" style="width:17px; height:17px; color:#C0201F;"></i>
+                        Aktivitas Terbaru
+                    </span>
+                </div>
+                <div style="padding:4px 20px 16px 20px;">
+                    @forelse($activities as $act)
+                        <div style="display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid #F1F5F9;">
+                            <div style="width:32px; height:32px; border-radius:10px; background:{{ $act->bg }}; color:{{ $act->color }}; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">
+                                <i data-lucide="{{ $act->icon }}" style="width:15px; height:15px;"></i>
+                            </div>
+                            <div style="flex:1; min-width:0;">
+                                <div style="font-size:12px; font-weight:700; color:#1E293B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $act->text }}</div>
+                                <div style="font-size:10.5px; font-weight:600; color:#64748B; margin-top:2px;">{{ $act->created_at->diffForHumans() }}</div>
+                            </div>
+                        </div>
+                    @empty
+                        <div style="padding:32px 10px; text-align:center; color:#94A3B8; font-size:12.5px;">
+                            Belum ada aktivitas terbaru hari ini.
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
         </div>
 
     </div>
@@ -141,28 +264,30 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const ctx = document.getElementById('chartPemeliharaan').getContext('2d');
 
-    const gradientBlue = ctx.createLinearGradient(0, 0, 0, 260);
+    // ================= 1. CHART INSPEKSI & PEMELIHARAAN =================
+    const ctx1 = document.getElementById('chartPemeliharaan').getContext('2d');
+
+    const gradientBlue = ctx1.createLinearGradient(0, 0, 0, 250);
     gradientBlue.addColorStop(0, 'rgba(27, 42, 107, 0.85)');
     gradientBlue.addColorStop(1, 'rgba(27, 42, 107, 0.15)');
 
-    const gradientRed = ctx.createLinearGradient(0, 0, 0, 260);
+    const gradientEmerald = ctx1.createLinearGradient(0, 0, 0, 250);
+    gradientEmerald.addColorStop(0, 'rgba(5, 150, 105, 0.85)');
+    gradientEmerald.addColorStop(1, 'rgba(5, 150, 105, 0.15)');
+
+    const gradientRed = ctx1.createLinearGradient(0, 0, 0, 250);
     gradientRed.addColorStop(0, 'rgba(192, 32, 31, 0.85)');
     gradientRed.addColorStop(1, 'rgba(192, 32, 31, 0.15)');
 
-    const gradientAmber = ctx.createLinearGradient(0, 0, 0, 260);
-    gradientAmber.addColorStop(0, 'rgba(217, 119, 6, 0.85)');
-    gradientAmber.addColorStop(1, 'rgba(217, 119, 6, 0.15)');
-
-    new Chart(ctx, {
+    new Chart(ctx1, {
         type: 'bar',
         data: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'],
             datasets: [
                 {
-                    label: 'Unit Pemadam',
-                    data: {{ json_encode($chartPemadam) }},
+                    label: 'Inspeksi Unit',
+                    data: {{ json_encode($chartInspeksiUnit) }},
                     backgroundColor: gradientBlue,
                     borderColor: '#1B2A6B',
                     borderWidth: 1.5,
@@ -170,19 +295,19 @@ document.addEventListener("DOMContentLoaded", function () {
                     borderSkipped: false,
                 },
                 {
-                    label: 'Unit Rescue',
-                    data: {{ json_encode($chartRescue) }},
-                    backgroundColor: gradientRed,
-                    borderColor: '#C0201F',
+                    label: 'Inspeksi Alat',
+                    data: {{ json_encode($chartInspeksiAlat) }},
+                    backgroundColor: gradientEmerald,
+                    borderColor: '#059669',
                     borderWidth: 1.5,
                     borderRadius: 6,
                     borderSkipped: false,
                 },
                 {
-                    label: 'Command Center',
-                    data: {{ json_encode($chartCC) }},
-                    backgroundColor: gradientAmber,
-                    borderColor: '#D97706',
+                    label: 'Pengajuan Servis',
+                    data: {{ json_encode($chartPemeliharaan) }},
+                    backgroundColor: gradientRed,
+                    borderColor: '#C0201F',
                     borderWidth: 1.5,
                     borderRadius: 6,
                     borderSkipped: false,
@@ -193,18 +318,17 @@ document.addEventListener("DOMContentLoaded", function () {
             responsive: true,
             maintainAspectRatio: false,
             animation: {
-                duration: 1200,
+                duration: 1000,
                 easing: 'easeOutQuart'
             },
             plugins: {
                 legend: { display: false },
                 tooltip: {
                     backgroundColor: '#0F172A',
-                    titleFont: { family: 'Poppins', size: 13, weight: 'bold' },
-                    bodyFont: { family: 'Poppins', size: 12 },
-                    padding: 12,
-                    cornerRadius: 10,
-                    boxPadding: 6,
+                    titleFont: { family: 'Poppins', size: 12, weight: 'bold' },
+                    bodyFont: { family: 'Poppins', size: 11 },
+                    padding: 10,
+                    cornerRadius: 8,
                     usePointStyle: true,
                 }
             },
@@ -212,17 +336,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 x: {
                     grid: { display: false },
                     ticks: {
-                        font: { family: 'Poppins', size: 11, weight: '500' },
+                        font: { family: 'Poppins', size: 11, weight: '600' },
                         color: '#64748B'
                     }
                 },
                 y: {
-                    grid: {
-                        color: '#F1F5F9',
-                        drawBorder: false
-                    },
+                    grid: { color: '#F1F5F9', drawBorder: false },
                     ticks: {
-                        font: { family: 'Poppins', size: 11, weight: '500' },
+                        font: { family: 'Poppins', size: 11, weight: '600' },
                         color: '#64748B',
                         stepSize: 1
                     }
@@ -230,13 +351,81 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     });
+
+    // ================= 2. CHART REALISASI BIAYA (RP) =================
+    const ctx2 = document.getElementById('chartBiaya').getContext('2d');
+
+    const gradientRedLine = ctx2.createLinearGradient(0, 0, 0, 200);
+    gradientRedLine.addColorStop(0, 'rgba(192, 32, 31, 0.35)');
+    gradientRedLine.addColorStop(1, 'rgba(192, 32, 31, 0.0)');
+
+    new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'],
+            datasets: [{
+                label: 'Biaya Realisasi (Rp)',
+                data: {{ json_encode($chartBiaya) }},
+                borderColor: '#C0201F',
+                backgroundColor: gradientRedLine,
+                borderWidth: 2.5,
+                fill: true,
+                tension: 0.35,
+                pointRadius: 4,
+                pointBackgroundColor: '#C0201F',
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0F172A',
+                    titleFont: { family: 'Poppins', size: 12, weight: 'bold' },
+                    bodyFont: { family: 'Poppins', size: 11 },
+                    padding: 10,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            let value = context.raw || 0;
+                            return ' Biaya: Rp ' + value.toLocaleString('id-ID');
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        font: { family: 'Poppins', size: 11, weight: '600' },
+                        color: '#64748B'
+                    }
+                },
+                y: {
+                    grid: { color: '#F1F5F9', drawBorder: false },
+                    ticks: {
+                        font: { family: 'Poppins', size: 10.5, weight: '600' },
+                        color: '#64748B',
+                        callback: function(value) {
+                            if (value >= 1000000) return 'Rp ' + (value / 1000000) + ' Jt';
+                            if (value >= 1000) return 'Rp ' + (value / 1000) + ' Rb';
+                            return 'Rp ' + value;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
 });
 </script>
 @endpush
 
 @push('styles')
 <style>
-@media (max-width: 900px) {
+@media (max-width: 992px) {
     .dash-bottom-grid {
         grid-template-columns: 1fr !important;
     }

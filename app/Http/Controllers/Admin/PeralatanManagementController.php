@@ -74,13 +74,22 @@ class PeralatanManagementController extends Controller
      */
     public function store(Request $request)
     {
+        $messages = [
+            'nama.required'          => 'Nama peralatan wajib diisi.',
+            'kategori.required'      => 'Kategori peralatan wajib diisi.',
+            'jumlah_total.required'  => 'Jumlah total pcs peralatan wajib diisi.',
+            'jumlah_total.integer'   => 'Jumlah total pcs peralatan harus berupa angka bulat positif.',
+            'jumlah_total.min'       => 'Jumlah total pcs peralatan minimal 0.',
+            'status.required'        => 'Status kondisi peralatan wajib diisi.',
+        ];
+
         $validated = $request->validate([
             'nama'         => 'required|string|max:255',
             'kategori'     => 'required|string|max:100',
             'jumlah_total' => 'required|integer|min:0',
             'status'       => 'required|in:baik,perlu_perhatian,rusak',
             'catatan'      => 'nullable|string',
-        ]);
+        ], $messages);
 
         Peralatan::create($validated);
 
@@ -96,13 +105,22 @@ class PeralatanManagementController extends Controller
     {
         $peralatan = Peralatan::findOrFail($id);
 
+        $messages = [
+            'nama.required'          => 'Nama peralatan wajib diisi.',
+            'kategori.required'      => 'Kategori peralatan wajib diisi.',
+            'jumlah_total.required'  => 'Jumlah total pcs peralatan wajib diisi.',
+            'jumlah_total.integer'   => 'Jumlah total pcs peralatan harus berupa angka bulat positif.',
+            'jumlah_total.min'       => 'Jumlah total pcs peralatan minimal 0.',
+            'status.required'        => 'Status kondisi peralatan wajib diisi.',
+        ];
+
         $validated = $request->validate([
             'nama'         => 'required|string|max:255',
             'kategori'     => 'required|string|max:100',
             'jumlah_total' => 'required|integer|min:0',
             'status'       => 'required|in:baik,perlu_perhatian,rusak',
             'catatan'      => 'nullable|string',
-        ]);
+        ], $messages);
 
         $peralatan->update($validated);
 

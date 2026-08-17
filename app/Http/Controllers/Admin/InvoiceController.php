@@ -152,7 +152,8 @@ class InvoiceController extends Controller
             $noLambung  = $request->input('no_lambung') ?: ($unit?->nomor_lambung ?? $pengajuan?->nomor_lambung ?? '');
             $noPol      = $request->input('no_pol') ?: ($unit?->plat_nomor ?? '');
             $jenisMobil = $request->input('jenis_mobil') ?: ($unit?->merk_tipe ?? $pengajuan?->jenis_kendaraan_label ?? '');
-            $lokasi     = $request->input('lokasi') ?: ($unit?->pos ?? $pengajuan?->pos_label ?? '');
+            $rawLokasi  = $request->input('lokasi') ?: ($unit?->pos ?? $pengajuan?->pos_label ?? '');
+            $lokasi     = $this->formatLokasi($rawLokasi, $unit);
 
             if (!$unit && $noLambung) {
                 $parts = explode('/', $noLambung);
@@ -184,7 +185,7 @@ class InvoiceController extends Controller
             foreach ($validated['items'] as $item) {
                 $invoice->items()->create([
                     'tanggal'         => $item['tanggal'],
-                    'jenis_perbaikan' => $item['jenis_perbaikan'],
+                    'jenis_perbaikan' => ucwords(strtolower(trim($item['jenis_perbaikan']))),
                     'vol'             => $item['vol'],
                     'satuan'          => $item['satuan'],
                     'harga_satuan'    => $item['harga_satuan'],
@@ -234,7 +235,8 @@ class InvoiceController extends Controller
             $noLambung  = $request->input('no_lambung') ?: ($unit?->nomor_lambung ?? $pengajuan?->nomor_lambung ?? $invoice->no_lambung);
             $noPol      = $request->input('no_pol') ?: ($unit?->plat_nomor ?? $invoice->no_pol);
             $jenisMobil = $request->input('jenis_mobil') ?: ($unit?->merk_tipe ?? $pengajuan?->jenis_kendaraan_label ?? $invoice->jenis_mobil);
-            $lokasi     = $request->input('lokasi') ?: ($unit?->pos ?? $pengajuan?->pos_label ?? $invoice->lokasi);
+            $rawLokasi  = $request->input('lokasi') ?: ($unit?->pos ?? $pengajuan?->pos_label ?? $invoice->lokasi);
+            $lokasi     = $this->formatLokasi($rawLokasi, $unit);
 
             if (!$unit && $noLambung) {
                 $parts = explode('/', $noLambung);
@@ -268,7 +270,7 @@ class InvoiceController extends Controller
             foreach ($validated['items'] as $item) {
                 $invoice->items()->create([
                     'tanggal'         => $item['tanggal'],
-                    'jenis_perbaikan' => $item['jenis_perbaikan'],
+                    'jenis_perbaikan' => ucwords(strtolower(trim($item['jenis_perbaikan']))),
                     'vol'             => $item['vol'],
                     'satuan'          => $item['satuan'],
                     'harga_satuan'    => $item['harga_satuan'],
@@ -295,6 +297,23 @@ class InvoiceController extends Controller
 
     private function validateInvoice(Request $request, ?int $ignoreId = null): array
     {
+        $messages = [
+            'nomor_invoice.required'           => 'Nomor invoice / kuitansi wajib diisi.',
+            'nomor_invoice.unique'             => 'Nomor invoice ini sudah pernah digunakan.',
+            'tanggal_invoice.required'         => 'Tanggal invoice wajib diisi.',
+            'tanggal_invoice.date'             => 'Format tanggal invoice tidak valid.',
+            'tahun_anggaran.required'          => 'Tahun anggaran wajib diisi.',
+            'tahun_anggaran.digits'            => 'Tahun anggaran harus 4 digit angka (contoh: 2026).',
+            'status.required'                  => 'Status invoice wajib dipilih.',
+            'items.required'                   => 'Rincian perbaikan / suku cadang minimal 1 item.',
+            'items.min'                        => 'Rincian perbaikan / suku cadang minimal 1 item.',
+            'items.*.tanggal.required'         => 'Tanggal item perbaikan wajib diisi.',
+            'items.*.jenis_perbaikan.required' => 'Uraian jenis perbaikan wajib diisi.',
+            'items.*.vol.required'             => 'Volume / jumlah item wajib diisi.',
+            'items.*.satuan.required'          => 'Satuan item (pcs/unit/stel) wajib diisi.',
+            'items.*.harga_satuan.required'     => 'Harga satuan barang/jasa wajib diisi.',
+        ];
+
         return $request->validate([
             'nomor_invoice'   => [
                 'required', 'string', 'max:50',
@@ -318,6 +337,34 @@ class InvoiceController extends Controller
             'items.*.vol'           => ['required', 'numeric', 'min:0.01'],
             'items.*.satuan'        => ['required', 'string', 'max:20'],
             'items.*.harga_satuan'  => ['required', 'numeric', 'min:0'],
-        ]);
+        ], $messages);
+    }
+
+    private function formatLokasi(?string $rawLokasi, ?Unit $unit = null): string
+    {
+        $input = trim($rawLokasi ?? '');
+        if (empty($input) && $unit) {
+            $input = trim($unit->pos ?? '');
+        }
+
+        if (empty($input)) return '—';
+
+        // Match against official Pos model
+        $posList = \App\Models\Pos::all();
+        $matched = $posList->first(function ($p) use ($input) {
+            $pNameClean = strtolower(str_replace([' ', '(', ')', '-'], '', $p->nama));
+            $inputClean = strtolower(str_replace([' ', '(', ')', '-'], '', $input));
+            return $pNameClean === $inputClean || str_contains($pNameClean, $inputClean) || str_contains($inputClean, $pNameClean);
+        });
+
+        if ($matched) {
+            return $matched->nama;
+        }
+
+        if (str_starts_with(strtolower($input), 'pos ')) {
+            $input = trim(substr($input, 4));
+        }
+
+        return ucwords(strtolower($input));
     }
 }

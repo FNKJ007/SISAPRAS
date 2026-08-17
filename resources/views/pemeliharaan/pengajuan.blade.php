@@ -11,6 +11,19 @@
     @endif
 
     <div class="form-card">
+        @if(isset($errors) && $errors->any())
+            <div style="background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; padding:12px 16px; border-radius:10px; margin-bottom:18px; font-size:13px;">
+                <div style="display:flex; align-items:center; gap:6px; font-weight:800; color:#DC2626; margin-bottom:4px;">
+                    <i data-lucide="alert-triangle" style="width:16px; height:16px;"></i>
+                    <span>Gagal Mengirim Pengajuan:</span>
+                </div>
+                <ul style="margin:0; padding-left:20px; font-size:12.5px; font-weight:500;">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <div class="form-card-title">Pengajuan Pemeliharaan Unit Operasional</div>
 

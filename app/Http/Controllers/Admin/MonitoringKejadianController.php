@@ -99,6 +99,22 @@ class MonitoringKejadianController extends Controller
 
     public function store(Request $request)
     {
+        $messages = [
+            'kode_kejadian.required'   => 'Kode nomor kejadian wajib diisi.',
+            'kode_kejadian.unique'     => 'Kode kejadian ini sudah pernah diinput sebelumnya.',
+            'waktu_kejadian.required'  => 'Waktu & tanggal kejadian wajib diisi.',
+            'waktu_kejadian.date'      => 'Format waktu & tanggal kejadian tidak valid.',
+            'jenis_kejadian.required'  => 'Jenis kejadian (Kebakaran / Rescue) wajib dipilih.',
+            'kategori_detail.required' => 'Kategori detail kejadian wajib diisi.',
+            'lokasi.required'          => 'Lokasi kejadian wajib diisi.',
+            'status.required'          => 'Status penanganan kejadian wajib dipilih.',
+            'estimasi_kerugian.integer' => 'Estimasi kerugian harus berupa angka nominal rupiah.',
+            'korban_luka.integer'      => 'Jumlah korban luka-luka harus berupa angka bulat.',
+            'korban_jiwa.integer'      => 'Jumlah korban meninggal dunia (jiwa) harus berupa angka bulat.',
+            'file_laporan.mimes'       => 'File berkas laporan harus berformat PDF.',
+            'file_laporan.max'         => 'Ukuran file PDF laporan tidak boleh melebihi 5 MB.',
+        ];
+
         $validated = $request->validate([
             'kode_kejadian'      => 'required|unique:kejadian,kode_kejadian',
             'waktu_kejadian'     => 'required|date',
@@ -110,7 +126,7 @@ class MonitoringKejadianController extends Controller
             'korban_luka'        => 'nullable|integer|min:0',
             'korban_jiwa'        => 'nullable|integer|min:0',
             'file_laporan'       => 'nullable|file|mimes:pdf|max:5120',
-        ]);
+        ], $messages);
 
         $data = $this->sanitizeAngka($request->except('file_laporan'));
 
@@ -127,6 +143,22 @@ class MonitoringKejadianController extends Controller
     {
         $kejadian = Kejadian::findOrFail($id);
 
+        $messages = [
+            'kode_kejadian.required'   => 'Kode nomor kejadian wajib diisi.',
+            'kode_kejadian.unique'     => 'Kode kejadian ini sudah pernah diinput sebelumnya.',
+            'waktu_kejadian.required'  => 'Waktu & tanggal kejadian wajib diisi.',
+            'waktu_kejadian.date'      => 'Format waktu & tanggal kejadian tidak valid.',
+            'jenis_kejadian.required'  => 'Jenis kejadian (Kebakaran / Rescue) wajib dipilih.',
+            'kategori_detail.required' => 'Kategori detail kejadian wajib diisi.',
+            'lokasi.required'          => 'Lokasi kejadian wajib diisi.',
+            'status.required'          => 'Status penanganan kejadian wajib dipilih.',
+            'estimasi_kerugian.integer' => 'Estimasi kerugian harus berupa angka nominal rupiah.',
+            'korban_luka.integer'      => 'Jumlah korban luka-luka harus berupa angka bulat.',
+            'korban_jiwa.integer'      => 'Jumlah korban meninggal dunia (jiwa) harus berupa angka bulat.',
+            'file_laporan.mimes'       => 'File berkas laporan harus berformat PDF.',
+            'file_laporan.max'         => 'Ukuran file PDF laporan tidak boleh melebihi 5 MB.',
+        ];
+
         $validated = $request->validate([
             'kode_kejadian'      => 'required|unique:kejadian,kode_kejadian,' . $kejadian->id,
             'waktu_kejadian'     => 'required|date',
@@ -138,7 +170,7 @@ class MonitoringKejadianController extends Controller
             'korban_luka'        => 'nullable|integer|min:0',
             'korban_jiwa'        => 'nullable|integer|min:0',
             'file_laporan'       => 'nullable|file|mimes:pdf|max:5120',
-        ]);
+        ], $messages);
 
         $data = $this->sanitizeAngka($request->except('file_laporan'));
 

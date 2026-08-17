@@ -191,7 +191,7 @@
                             <tr style="border-bottom: 1px solid #F1F5F9; {{ $i % 2 == 1 ? 'background: #FAFAFA;' : 'background: #FFFFFF;' }}">
                                 <td style="padding: 10px 12px; text-align: center; color: #64748B; font-weight: 600;">{{ $i + 1 }}</td>
                                 <td style="padding: 10px 12px; text-align: center; color: #334155; font-weight: 500;">{{ $item->tanggal->format('d-m-Y') }}</td>
-                                <td style="padding: 10px 12px; font-weight: 600; color: #0F172A;">{{ $item->jenis_perbaikan }}</td>
+                                <td style="padding: 10px 12px; font-weight: 600; color: #0F172A;">{{ ucwords(strtolower(trim($item->jenis_perbaikan))) }}</td>
                                 <td style="padding: 10px 12px; text-align: center; color: #334155; font-weight: 600;">{{ rtrim(rtrim(number_format($item->vol, 2, ',', '.'), '0'), ',') }}</td>
                                 <td style="padding: 10px 12px; text-align: center; color: #64748B;">{{ $item->satuan }}</td>
                                 <td style="padding: 10px 12px; text-align: right; color: #334155; font-variant-numeric: tabular-nums;">{{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
