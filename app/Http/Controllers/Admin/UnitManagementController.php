@@ -66,7 +66,8 @@ class UnitManagementController extends Controller
 
         $posList = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
 
-        $existingJenisList = Unit::whereNotNull('jenis_kendaraan')
+        $defaultTypes = ['Pancar', 'Supply', 'Pompa', 'Rescue', 'R2', 'R3', 'Pick Up', 'Komando', 'Lainnya'];
+        $dbTypes = Unit::whereNotNull('jenis_kendaraan')
             ->where('jenis_kendaraan', '!=', '')
             ->get()
             ->pluck('jenis_kendaraan')
@@ -77,8 +78,11 @@ class UnitManagementController extends Controller
                 }
                 return ucwords(strtolower($v));
             })
+            ->toArray();
+
+        $existingJenisList = collect($defaultTypes)
+            ->merge($dbTypes)
             ->unique()
-            ->sort()
             ->values()
             ->toArray();
 
@@ -143,11 +147,20 @@ class UnitManagementController extends Controller
         return $map[$namaPos] ?? [$namaPos];
     }
 
-    /**
-     * Simpan data unit baru.
-     */
     public function store(Request $request)
     {
+        $messages = [
+            'nama.required'           => 'Nama unit kendaraan wajib diisi.',
+            'kategori.required'       => 'Kategori unit (Pemadam/Rescue) wajib diisi.',
+            'status.required'         => 'Status operasional unit wajib diisi.',
+            'tahun_pembuatan.integer' => 'Tahun pembuatan harus berupa angka tahun (contoh: 2018).',
+            'tahun_pembuatan.min'     => 'Tahun pembuatan minimal adalah tahun 1950.',
+            'tahun_pembuatan.max'     => 'Tahun pembuatan tidak boleh melebihi tahun ' . (date('Y') + 1) . '.',
+            'cc.integer'              => 'Kapasitas mesin (CC) harus berupa angka bulat (contoh: 7684).',
+            'cc.min'                  => 'Kapasitas mesin (CC) minimal 50 cc.',
+            'cc.max'                  => 'Kapasitas mesin (CC) tidak boleh melebihi 30.000 cc.',
+        ];
+
         $validated = $request->validate([
             'nama'             => 'required|string|max:255',
             'kategori'         => 'required|string|max:100',
@@ -156,7 +169,7 @@ class UnitManagementController extends Controller
             'no_rangka_mesin'  => 'nullable|string|max:100',
             'merk_tipe'        => 'nullable|string|max:255',
             'tahun_pembuatan'  => 'nullable|integer|min:1950|max:' . (date('Y') + 1),
-            'cc'               => 'nullable|string|max:50',
+            'cc'               => 'nullable|integer|min:50|max:30000',
             'jenis_kendaraan'  => 'nullable|string|max:100',
             'peruntukan'       => 'nullable|string|max:100',
             'jenis_peruntukan' => 'nullable|string|max:255',
@@ -165,7 +178,7 @@ class UnitManagementController extends Controller
             'pengemudi_2'      => 'nullable|string|max:255',
             'status'           => 'required|in:aktif,perbaikan,nonaktif',
             'catatan'          => 'nullable|string',
-        ]);
+        ], $messages);
 
         if (!empty($validated['jenis_kendaraan'])) {
             $jk = trim($validated['jenis_kendaraan']);
@@ -188,6 +201,18 @@ class UnitManagementController extends Controller
     {
         $unit = Unit::findOrFail($id);
 
+        $messages = [
+            'nama.required'           => 'Nama unit kendaraan wajib diisi.',
+            'kategori.required'       => 'Kategori unit (Pemadam/Rescue) wajib diisi.',
+            'status.required'         => 'Status operasional unit wajib diisi.',
+            'tahun_pembuatan.integer' => 'Tahun pembuatan harus berupa angka tahun (contoh: 2018).',
+            'tahun_pembuatan.min'     => 'Tahun pembuatan minimal adalah tahun 1950.',
+            'tahun_pembuatan.max'     => 'Tahun pembuatan tidak boleh melebihi tahun ' . (date('Y') + 1) . '.',
+            'cc.integer'              => 'Kapasitas mesin (CC) harus berupa angka bulat (contoh: 7684).',
+            'cc.min'                  => 'Kapasitas mesin (CC) minimal 50 cc.',
+            'cc.max'                  => 'Kapasitas mesin (CC) tidak boleh melebihi 30.000 cc.',
+        ];
+
         $validated = $request->validate([
             'nama'             => 'required|string|max:255',
             'kategori'         => 'required|string|max:100',
@@ -196,7 +221,7 @@ class UnitManagementController extends Controller
             'no_rangka_mesin'  => 'nullable|string|max:100',
             'merk_tipe'        => 'nullable|string|max:255',
             'tahun_pembuatan'  => 'nullable|integer|min:1950|max:' . (date('Y') + 1),
-            'cc'               => 'nullable|string|max:50',
+            'cc'               => 'nullable|integer|min:50|max:30000',
             'jenis_kendaraan'  => 'nullable|string|max:100',
             'peruntukan'       => 'nullable|string|max:100',
             'jenis_peruntukan' => 'nullable|string|max:255',
@@ -205,7 +230,7 @@ class UnitManagementController extends Controller
             'pengemudi_2'      => 'nullable|string|max:255',
             'status'           => 'required|in:aktif,perbaikan,nonaktif',
             'catatan'          => 'nullable|string',
-        ]);
+        ], $messages);
 
         if (!empty($validated['jenis_kendaraan'])) {
             $jk = trim($validated['jenis_kendaraan']);

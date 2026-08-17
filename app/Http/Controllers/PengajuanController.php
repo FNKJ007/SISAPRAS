@@ -147,6 +147,21 @@ class PengajuanController extends Controller
      */
     public function store(Request $request)
     {
+        $messages = [
+            'bidang.required'             => 'Silakan pilih Bidang / Sektor Anda.',
+            'pos.required'                => 'Silakan pilih Pos Penempatan armada.',
+            'regu.required'               => 'Silakan pilih Regu tugas.',
+            'jenis_kendaraan.required'    => 'Silakan pilih Jenis Kendaraan.',
+            'nomor_lambung.required'      => 'Silakan pilih No. Lambung / Armada.',
+            'item_perbaikan.required'     => 'Deskripsi perbaikan / kerusakan wajib diisi.',
+            'nama_pemegang.required'      => 'Nama pemegang / pengemudi wajib diisi.',
+            'nip_pemegang.required'       => 'NIP pemegang / pengemudi wajib diisi.',
+            'nama_komandan_regu.required' => 'Nama Komandan Regu (Danru) wajib diisi.',
+            'nip_komandan_regu.required'  => 'NIP Komandan Regu (Danru) wajib diisi.',
+            'nama_kepala_bidang.required' => 'Nama Kepala Bidang (Kabid) wajib diisi.',
+            'nip_kepala_bidang.required'  => 'NIP Kepala Bidang (Kabid) wajib diisi.',
+        ];
+
         $validated = $request->validate([
             'bidang'              => 'required|string',
             'pos'                 => 'required|string',
@@ -160,7 +175,24 @@ class PengajuanController extends Controller
             'nip_komandan_regu'    => 'required|string|max:50',
             'nama_kepala_bidang'   => 'required|string|max:255',
             'nip_kepala_bidang'    => 'required|string|max:50',
-        ]);
+        ], $messages);
+
+        if (!empty($validated['item_perbaikan'])) {
+            $rawItems = preg_split('/[,;\n\r]+/', $validated['item_perbaikan']);
+            $cleanItems = array_map(function ($item) {
+                return ucwords(strtolower(trim($item)));
+            }, $rawItems);
+            $cleanItems = array_values(array_filter($cleanItems));
+            $validated['item_perbaikan'] = implode(', ', $cleanItems);
+        }
+
+        if (!empty($validated['pos'])) {
+            $pos = trim($validated['pos']);
+            if (str_starts_with(strtolower($pos), 'pos ')) {
+                $pos = trim(substr($pos, 4));
+            }
+            $validated['pos'] = $pos;
+        }
 
         $validated['user_id'] = auth()->id();
         $validated['status']  = 'menunggu'; // Status awal: Menunggu verifikasi admin

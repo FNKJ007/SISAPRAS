@@ -14,6 +14,16 @@ trait HandlesCekHarianAlat
      */
     protected function storeCekHarianAlat(Request $request, string $kategori, ?string $customUnitNama = null): CekHarianAlat
     {
+        $messages = [
+            'nama_pemeriksa.required'      => 'Nama petugas pemeriksa wajib diisi.',
+            'jabatan.required'             => 'Jabatan petugas pemeriksa wajib diisi.',
+            'tanggal_pemeriksaan.required' => 'Tanggal pemeriksaan wajib diisi.',
+            'alat.required'                => 'Daftar peralatan yang diperiksa wajib diisi.',
+            'foto_umum.uploaded'           => 'File foto dokumentasi gagal diunggah. Ukuran foto terlalu besar (Maks 10MB).',
+            'foto_umum.image'              => 'File foto dokumentasi harus berupa gambar (JPG/PNG/WebP).',
+            'foto_umum.max'                => 'Ukuran foto dokumentasi tidak boleh lebih dari 10 MB.',
+        ];
+
         $validated = $request->validate([
             'nama_pemeriksa'      => 'required|string|max:255',
             'jabatan'             => 'required|string|max:255',
@@ -29,10 +39,7 @@ trait HandlesCekHarianAlat
 
             'catatan_umum'        => 'nullable|string',
             'foto_umum'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
-        ], [
-            'foto_umum.uploaded' => 'File foto dokumentasi gagal diunggah. Ukuran foto terlalu besar (Maks 10MB).',
-            'foto_umum.max'      => 'Ukuran foto dokumentasi tidak boleh lebih dari 10 MB.',
-        ]);
+        ], $messages);
 
         $unitId = $validated['unit_id'] ?? null;
         $unitNama = null;

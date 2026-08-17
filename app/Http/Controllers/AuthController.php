@@ -40,10 +40,15 @@ class AuthController extends Controller
             'nip' => trim(strip_tags($request->input('nip'))),
         ]);
 
+        $messages = [
+            'nip.required'      => 'Silakan masukkan NIP Anda.',
+            'password.required' => 'Silakan masukkan kata sandi / Password Anda.',
+        ];
+
         $request->validate([
             'nip'      => ['required', 'string', 'max:50'],
             'password' => ['required', 'string'],
-        ]);
+        ], $messages);
 
         // 3. PROSES AUTENTIKASI menggunakan NIP
         $credentials = [

@@ -139,7 +139,10 @@ class Pengajuan extends Model
             return [];
         }
         $items = preg_split('/[,;\n\r]+/', $this->item_perbaikan);
-        return array_values(array_filter(array_map('trim', $items)));
+        $cleaned = array_map(function($item) {
+            return ucwords(strtolower(trim($item)));
+        }, $items);
+        return array_values(array_filter($cleaned));
     }
 
     /**

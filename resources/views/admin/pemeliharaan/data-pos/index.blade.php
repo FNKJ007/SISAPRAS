@@ -4,7 +4,7 @@
 
 @section('content')
 <div x-data="{
-    createModalOpen: false,
+    createModalOpen: {{ isset($errors) && $errors->any() ? 'true' : 'false' }},
     editModalOpen: false,
     deleteModalOpen: false,
     activePos: {},
@@ -182,7 +182,47 @@
                                 <td style="padding:10px; font-weight:700; color:#1E293B; border-right:1px solid #F1F5F9;">{{ $item->unit_pompa ?: '-' }}</td>
                                 <td style="padding:10px; font-weight:700; color:#1E293B; border-right:1px solid #F1F5F9;">{{ $item->unit_rescue ?: '-' }}</td>
                                 <td style="padding:10px; font-weight:700; color:#1E293B; border-right:1px solid #F1F5F9;">{{ $item->unit_water_supply ?: '-' }}</td>
-                                <td style="padding:10px; font-weight:700; color:#1E293B; border-right:1px solid #E2E8F0;">{{ $item->unit_lainnya ?: '-' }}</td>
+                                <td style="padding:10px; font-weight:700; color:#1E293B; border-right:1px solid #E2E8F0; position:relative;" x-data="{ popoverOpen: false }">
+                                    @if($item->unit_lainnya > 0)
+                                        <button type="button" @click="popoverOpen = !popoverOpen" @click.outside="popoverOpen = false"
+                                                style="background:#EEF2FF; color:#1B2A6B; border:1px solid #C7D2FE; border-radius:12px; padding:3px 9px; font-size:12px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:4px; outline:none; transition:all 0.15s;"
+                                                onmouseover="this.style.background='#1B2A6B'; this.style.color='#FFFFFF';"
+                                                onmouseout="this.style.background='#EEF2FF'; this.style.color='#1B2A6B';"
+                                                title="Klik untuk melihat rincian armada di kategori Lainnya">
+                                            <span>{{ $item->unit_lainnya }}</span>
+                                            <i data-lucide="more-horizontal" style="width:13px; height:13px;"></i>
+                                        </button>
+
+                                        {{-- Popover Card Detail Armada Lainnya --}}
+                                        <div x-show="popoverOpen" x-cloak
+                                             style="position:absolute; right:100%; top:50%; transform:translateY(-50%); width:270px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:14px; box-shadow:0 12px 30px rgba(15,23,42,0.22); z-index:1000; padding:14px; text-align:left; margin-right:10px;">
+                                            <div style="font-size:12px; font-weight:800; color:#0F172A; margin-bottom:10px; border-bottom:1px solid #E2E8F0; padding-bottom:6px; display:flex; align-items:center; justify-content:space-between;">
+                                                <span>Armada Lainnya ({{ $item->nama }})</span>
+                                                <span style="font-size:10px; background:#1B2A6B; color:#FFFFFF; padding:2px 7px; border-radius:10px; font-weight:800;">{{ $item->unit_lainnya }} Unit</span>
+                                            </div>
+                                            <div style="display:flex; flex-direction:column; gap:6px; max-height:160px; overflow-y:auto; margin-bottom:12px;" class="custom-scrollbar">
+                                                @foreach($item->unit_lainnya_list as $uLain)
+                                                    <div style="font-size:11px; background:#F8FAFC; padding:7px 10px; border-radius:8px; border:1px solid #E2E8F0;">
+                                                        <div style="font-weight:800; color:#1E3A8A; display:flex; align-items:center; justify-content:space-between;">
+                                                            <span>🚗 {{ $uLain->nomor_lambung }}</span>
+                                                            <span style="color:#64748B; font-weight:600; font-size:10px;">[{{ $uLain->plat_nomor }}]</span>
+                                                        </div>
+                                                        <div style="color:#475569; font-size:10.5px; margin-top:2px; font-weight:600;">
+                                                            {{ $uLain->nama }} · <span style="color:#D97706; font-weight:800;">{{ $uLain->jenis_kendaraan ?: 'Lainnya' }}</span>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                            <a href="{{ route('admin.pemeliharaan.data-unit', ['search' => $item->nama]) }}"
+                                               style="display:flex; align-items:center; justify-content:center; gap:6px; padding:7px 12px; background:#1B2A6B; color:#FFFFFF; border-radius:8px; font-size:11px; font-weight:700; text-decoration:none; box-shadow:0 3px 8px rgba(27,42,107,0.25);">
+                                                <i data-lucide="external-link" style="width:12px; height:12px;"></i>
+                                                <span>Kelola di Data Unit ➔</span>
+                                            </a>
+                                        </div>
+                                    @else
+                                        <span style="color:#94A3B8;">-</span>
+                                    @endif
+                                </td>
 
                                 {{-- Totals --}}
                                 <td style="padding:10px; font-weight:900; color:#1E3A8A; background:#EFF6FF; border-right:1px solid #E2E8F0;">
@@ -260,16 +300,35 @@
             </div>
             <form action="{{ route('admin.pemeliharaan.data-pos.store') }}" method="POST" style="padding:20px;">
                 @csrf
+                @if(isset($errors) && $errors->any())
+                    <div style="background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; padding:12px 16px; border-radius:12px; margin-bottom:18px; font-size:12.5px;">
+                        <div style="display:flex; align-items:center; gap:6px; font-weight:800; color:#DC2626; margin-bottom:4px;">
+                            <i data-lucide="alert-triangle" style="width:16px; height:16px;"></i>
+                            <span>Gagal Menyimpan Data Pos:</span>
+                        </div>
+                        <ul style="margin:0; padding-left:20px; font-size:12px; font-weight:600;">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <div class="modal-form-grid">
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nama Pos <span style="color:#DC2626;">*</span></label>
-                        <input type="text" name="nama" required placeholder="Contoh: Baleendah"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                        <input type="text" name="nama" required value="{{ old('nama') }}" placeholder="Contoh: Baleendah"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('nama') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
+                        @error('nama')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Kode Pos</label>
-                        <input type="text" name="kode_pos" placeholder="Contoh: POS-BLD"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                        <input type="text" name="kode_pos" value="{{ old('kode_pos') }}" placeholder="Contoh: POS-BLD"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('kode_pos') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
+                        @error('kode_pos')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
 
@@ -279,76 +338,60 @@
                     <div class="modal-form-grid-3">
                         <div>
                             <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Pemadam</label>
-                            <input type="number" name="personil_pemadam" value="8" min="0" required
-                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; outline:none;">
+                            <input type="number" name="personil_pemadam" value="{{ old('personil_pemadam', 8) }}" min="0" required
+                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:{{ isset($errors) && $errors->has('personil_pemadam') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
+                            @error('personil_pemadam')
+                                <span style="font-size:10.5px; color:#DC2626; font-weight:600; margin-top:2px; display:block;">{{ $message }}</span>
+                            @enderror
                         </div>
                         <div>
                             <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Rescue</label>
-                            <input type="number" name="personil_rescue" value="0" min="0" required
-                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; outline:none;">
+                            <input type="number" name="personil_rescue" value="{{ old('personil_rescue', 0) }}" min="0" required
+                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:{{ isset($errors) && $errors->has('personil_rescue') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
+                            @error('personil_rescue')
+                                <span style="font-size:10.5px; color:#DC2626; font-weight:600; margin-top:2px; display:block;">{{ $message }}</span>
+                            @enderror
                         </div>
                         <div>
                             <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Command Center</label>
-                            <input type="number" name="personil_cc" value="0" min="0" required
-                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; outline:none;">
+                            <input type="number" name="personil_cc" value="{{ old('personil_cc', 0) }}" min="0" required
+                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:{{ isset($errors) && $errors->has('personil_cc') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
+                            @error('personil_cc')
+                                <span style="font-size:10.5px; color:#DC2626; font-weight:600; margin-top:2px; display:block;">{{ $message }}</span>
+                            @enderror
                         </div>
                     </div>
                 </div>
 
-                {{-- Section Jumlah Unit Operasional --}}
-                <div style="background:#FEF2F2; padding:14px; border-radius:10px; border:1px solid #FCA5A5; margin-bottom:16px;">
-                    <div style="font-size:12px; font-weight:800; color:#991B1B; margin-bottom:10px;">JUMLAH UNIT OPERASIONAL</div>
-                    <div class="modal-form-grid-3">
-                        <div>
-                            <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Truck Pancar</label>
-                            <input type="number" name="unit_truck_pancar" value="1" min="0" required
-                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; outline:none;">
-                        </div>
-                        <div>
-                            <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Motor Roda-3</label>
-                            <input type="number" name="unit_motor_roda3" value="0" min="0" required
-                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; outline:none;">
-                        </div>
-                        <div>
-                            <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Motor Roda-2</label>
-                            <input type="number" name="unit_motor_roda2" value="0" min="0" required
-                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; outline:none;">
-                        </div>
-                        <div>
-                            <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Unit Pompa</label>
-                            <input type="number" name="unit_pompa" value="0" min="0" required
-                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; outline:none;">
-                        </div>
-                        <div>
-                            <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Rescue</label>
-                            <input type="number" name="unit_rescue" value="0" min="0" required
-                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; outline:none;">
-                        </div>
-                        <div>
-                            <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Water Supply</label>
-                            <input type="number" name="unit_water_supply" value="0" min="0" required
-                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; outline:none;">
-                        </div>
-                        <div style="grid-column: span 3;">
-                            <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Lainnya (Komando, Investigasi)</label>
-                            <input type="number" name="unit_lainnya" value="0" min="0" required
-                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; outline:none;">
-                        </div>
+                {{-- Section Jumlah Unit Operasional (Otomatis dari Data Unit) --}}
+                <div style="background:#EFF6FF; padding:14px; border-radius:10px; border:1px solid #BFDBFE; margin-bottom:16px;">
+                    <div style="font-size:12px; font-weight:800; color:#1E3A8A; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                        <i data-lucide="sparkles" style="width:16px; height:16px; color:#2563EB;"></i>
+                        <span>JUMLAH UNIT OPERASIONAL (TERHITUNG OTOMATIS)</span>
                     </div>
+                    <p style="font-size:12px; color:#1E40AF; margin:0; line-height:1.5;">
+                        Jumlah armada unit operasional (Truck Pancar, Motor, Pompa, Rescue, Supply, &amp; Lainnya) dihitung <strong>secara otomatis &amp; real-time dari Data Unit Kendaraan</strong> berdasarkan penempatan pos ini.
+                    </p>
                 </div>
 
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Wilayah / Sektor</label>
-                        <input type="text" name="wilayah" placeholder="Contoh: Baleendah"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                        <input type="text" name="wilayah" value="{{ old('wilayah') }}" placeholder="Contoh: Baleendah"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('wilayah') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
+                        @error('wilayah')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Status Operasional <span style="color:#DC2626;">*</span></label>
-                        <select name="status" required style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
-                            <option value="aktif">Aktif (Siaga 24 Jam)</option>
-                            <option value="nonaktif">Non-Aktif</option>
+                        <select name="status" required style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('status') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none; background:#FFFFFF;">
+                            <option value="aktif" @selected(old('status', 'aktif') == 'aktif')>Aktif (Siaga 24 Jam)</option>
+                            <option value="nonaktif" @selected(old('status') == 'nonaktif')>Non-Aktif</option>
                         </select>
+                        @error('status')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
 
@@ -415,46 +458,15 @@
                     </div>
                 </div>
 
-                {{-- Section Jumlah Unit Operasional --}}
-                <div style="background:#FEF2F2; padding:14px; border-radius:10px; border:1px solid #FCA5A5; margin-bottom:16px;">
-                    <div style="font-size:12px; font-weight:800; color:#991B1B; margin-bottom:10px;">JUMLAH UNIT OPERASIONAL</div>
-                    <div class="modal-form-grid-3">
-                        <div>
-                            <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Truck Pancar</label>
-                            <input type="number" name="unit_truck_pancar" min="0" required x-model="activePos.unit_truck_pancar"
-                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; outline:none;">
-                        </div>
-                        <div>
-                            <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Motor Roda-3</label>
-                            <input type="number" name="unit_motor_roda3" min="0" required x-model="activePos.unit_motor_roda3"
-                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; outline:none;">
-                        </div>
-                        <div>
-                            <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Motor Roda-2</label>
-                            <input type="number" name="unit_motor_roda2" min="0" required x-model="activePos.unit_motor_roda2"
-                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; outline:none;">
-                        </div>
-                        <div>
-                            <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Unit Pompa</label>
-                            <input type="number" name="unit_pompa" min="0" required x-model="activePos.unit_pompa"
-                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; outline:none;">
-                        </div>
-                        <div>
-                            <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Rescue</label>
-                            <input type="number" name="unit_rescue" min="0" required x-model="activePos.unit_rescue"
-                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; outline:none;">
-                        </div>
-                        <div>
-                            <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Water Supply</label>
-                            <input type="number" name="unit_water_supply" min="0" required x-model="activePos.unit_water_supply"
-                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; outline:none;">
-                        </div>
-                        <div style="grid-column: span 3;">
-                            <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Lainnya (Komando, Investigasi)</label>
-                            <input type="number" name="unit_lainnya" min="0" required x-model="activePos.unit_lainnya"
-                                   style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; outline:none;">
-                        </div>
+                {{-- Section Jumlah Unit Operasional (Otomatis dari Data Unit) --}}
+                <div style="background:#EFF6FF; padding:14px; border-radius:10px; border:1px solid #BFDBFE; margin-bottom:16px;">
+                    <div style="font-size:12px; font-weight:800; color:#1E3A8A; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                        <i data-lucide="sparkles" style="width:16px; height:16px; color:#2563EB;"></i>
+                        <span>JUMLAH UNIT OPERASIONAL (TERHITUNG OTOMATIS)</span>
                     </div>
+                    <p style="font-size:12px; color:#1E40AF; margin:0; line-height:1.5;">
+                        Jumlah armada unit operasional (Truck Pancar, Motor, Pompa, Rescue, Supply, &amp; Lainnya) dihitung <strong>secara otomatis &amp; real-time dari Data Unit Kendaraan</strong> berdasarkan penempatan pos ini.
+                    </p>
                 </div>
 
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">

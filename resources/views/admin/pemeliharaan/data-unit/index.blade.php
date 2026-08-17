@@ -15,6 +15,8 @@
         </div>
     @endif
 
+
+
     {{-- Header Section --}}
     <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px;">
         <div>
@@ -254,39 +256,61 @@
             </div>
             <form action="{{ route('admin.pemeliharaan.data-unit.store') }}" method="POST" style="padding:20px;">
                 @csrf
+                @if(isset($errors) && $errors->any())
+                    <div style="background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; padding:12px 16px; border-radius:12px; margin-bottom:18px; font-size:12.5px;">
+                        <div style="display:flex; align-items:center; gap:6px; font-weight:800; color:#DC2626; margin-bottom:4px;">
+                            <i data-lucide="alert-triangle" style="width:16px; height:16px;"></i>
+                            <span>Gagal Menyimpan Data Unit:</span>
+                        </div>
+                        <ul style="margin:0; padding-left:20px; font-size:12px; font-weight:600;">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <div class="modal-form-grid">
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">No. Lambung <span style="color:#DC2626;">*</span></label>
-                        <input type="text" name="nomor_lambung" required placeholder="Contoh: P-01"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                        <input type="text" name="nomor_lambung" required value="{{ old('nomor_lambung') }}" placeholder="Contoh: P-01"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('nomor_lambung') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
+                        @error('nomor_lambung')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">TNKB (Plat Nomor) <span style="color:#DC2626;">*</span></label>
-                        <input type="text" name="plat_nomor" required placeholder="Contoh: D 8518 V"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                        <input type="text" name="plat_nomor" required value="{{ old('plat_nomor') }}" placeholder="Contoh: D 8518 V"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('plat_nomor') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
+                        @error('plat_nomor')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nama Unit <span style="color:#DC2626;">*</span></label>
-                        <input type="text" name="nama" required placeholder="Contoh: P-01 - HINO (4X4)"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                        <input type="text" name="nama" required value="{{ old('nama') }}" placeholder="Contoh: P-01 - HINO (4X4)"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('nama') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
+                        @error('nama')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Merk / Tipe</label>
-                        <input type="text" name="merk_tipe" placeholder="Contoh: HINO (4X4)"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                        <input type="text" name="merk_tipe" value="{{ old('merk_tipe') }}" placeholder="Contoh: HINO (4X4)"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('merk_tipe') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
                     </div>
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">No. Rangka Mesin</label>
-                        <input type="text" name="no_rangka_mesin" placeholder="Contoh: FG8JJ1D-BGJ"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                        <input type="text" name="no_rangka_mesin" value="{{ old('no_rangka_mesin') }}" placeholder="Contoh: FG8JJ1D-BGJ"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('no_rangka_mesin') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
                     </div>
 
                     {{-- Jenis Kendaraan (Input Manual + Dropdown Riwayat + Hapus) --}}
-                    <div x-data="{ open: false, val: '' }" style="position:relative;">
+                    <div x-data="{ open: false, val: '{{ old('jenis_kendaraan') }}' }" style="position:relative;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Jenis Kendaraan</label>
                         <div style="position:relative; display:flex; align-items:center;">
                             <input type="text" name="jenis_kendaraan" x-model="val" placeholder="Ketik atau pilih jenis..."
-                                   style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
+                                   style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('jenis_kendaraan') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;"
                                    @focus="if(existingJenisList.length > 0) open = true"
                                    @click.outside="open = false">
                             <button type="button" @click="open = !open" tabindex="-1"
@@ -294,6 +318,9 @@
                                 <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
                             </button>
                         </div>
+                        @error('jenis_kendaraan')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                         <div x-show="open && existingJenisList.length > 0" x-cloak
                              style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                             <template x-for="item in existingJenisList" :key="item">
@@ -308,11 +335,11 @@
                     </div>
 
                     {{-- Peruntukan (Input Manual + Dropdown Riwayat + Hapus) --}}
-                    <div x-data="{ open: false, val: '' }" style="position:relative;">
+                    <div x-data="{ open: false, val: '{{ old('peruntukan') }}' }" style="position:relative;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Peruntukan</label>
                         <div style="position:relative; display:flex; align-items:center;">
                             <input type="text" name="peruntukan" x-model="val" placeholder="Ketik atau pilih peruntukan..."
-                                   style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
+                                   style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('peruntukan') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;"
                                    @focus="if(existingPeruntukanList.length > 0) open = true"
                                    @click.outside="open = false">
                             <button type="button" @click="open = !open" tabindex="-1"
@@ -320,6 +347,9 @@
                                 <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
                             </button>
                         </div>
+                        @error('peruntukan')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                         <div x-show="open && existingPeruntukanList.length > 0" x-cloak
                              style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                             <template x-for="item in existingPeruntukanList" :key="item">
@@ -334,11 +364,11 @@
                     </div>
 
                     {{-- Kategori (Input Manual + Dropdown Riwayat + Hapus) --}}
-                    <div x-data="{ open: false, val: 'Pemadam' }" style="position:relative;">
+                    <div x-data="{ open: false, val: '{{ old('kategori', 'Pemadam') }}' }" style="position:relative;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Kategori <span style="color:#DC2626;">*</span></label>
                         <div style="position:relative; display:flex; align-items:center;">
                             <input type="text" name="kategori" required x-model="val" placeholder="Ketik atau pilih kategori..."
-                                   style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
+                                   style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('kategori') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;"
                                    @focus="if(existingKategoriList.length > 0) open = true"
                                    @click.outside="open = false">
                             <button type="button" @click="open = !open" tabindex="-1"
@@ -346,6 +376,9 @@
                                 <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
                             </button>
                         </div>
+                        @error('kategori')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                         <div x-show="open && existingKategoriList.length > 0" x-cloak
                              style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                             <template x-for="item in existingKategoriList" :key="item">
@@ -360,40 +393,52 @@
                     </div>
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Penempatan (Pos)</label>
-                        <select name="pos" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
+                        <select name="pos" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('pos') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none; background:#FFFFFF;">
                             <option value="">— Pilih Pos —</option>
                             @foreach($posList as $pos)
-                                <option value="{{ $pos->nama }}">{{ $pos->nama }}</option>
+                                <option value="{{ $pos->nama }}" @selected(old('pos') == $pos->nama)>{{ $pos->nama }}</option>
                             @endforeach
                         </select>
+                        @error('pos')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Tahun Pembuatan</label>
-                        <input type="number" name="tahun_pembuatan" placeholder="2018"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                        <input type="number" name="tahun_pembuatan" value="{{ old('tahun_pembuatan') }}" placeholder="2018"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('tahun_pembuatan') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
+                        @error('tahun_pembuatan')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">CC (Kapasitas Mesin)</label>
-                        <input type="text" name="cc" placeholder="Contoh: 7684"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                        <input type="number" name="cc" value="{{ old('cc') }}" placeholder="Contoh: 7684" min="0"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('cc') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
+                        @error('cc')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pengemudi 1</label>
-                        <input type="text" name="pengemudi_1" placeholder="Contoh: UDEN SUHENDI"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                        <input type="text" name="pengemudi_1" value="{{ old('pengemudi_1') }}" placeholder="Contoh: UDEN SUHENDI"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('pengemudi_1') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
                     </div>
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pengemudi 2</label>
-                        <input type="text" name="pengemudi_2" placeholder="Contoh: MUHAMAD ILHAM"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                        <input type="text" name="pengemudi_2" value="{{ old('pengemudi_2') }}" placeholder="Contoh: MUHAMAD ILHAM"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('pengemudi_2') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
                     </div>
                     <div style="grid-column: span 2;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Status Operasional <span style="color:#DC2626;">*</span></label>
-                        <select name="status" required style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
-                            <option value="aktif">Aktif (Siap Operasi)</option>
-                            <option value="perbaikan">Dalam Perbaikan</option>
-                            <option value="nonaktif">Non-Aktif</option>
+                        <select name="status" required style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('status') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none; background:#FFFFFF;">
+                            <option value="aktif" @selected(old('status', 'aktif') == 'aktif')>Aktif (Siaga Operasi)</option>
+                            <option value="perbaikan" @selected(old('status') == 'perbaikan')>Dalam Perbaikan</option>
+                            <option value="nonaktif" @selected(old('status') == 'nonaktif')>Non-Aktif</option>
                         </select>
+                        @error('status')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
 
@@ -821,7 +866,7 @@
 <script>
 function dataUnitApp() {
     return {
-        createModalOpen: false,
+        createModalOpen: {{ isset($errors) && $errors->any() ? 'true' : 'false' }},
         editModalOpen: false,
         deleteModalOpen: false,
         bukuServisModalOpen: false,

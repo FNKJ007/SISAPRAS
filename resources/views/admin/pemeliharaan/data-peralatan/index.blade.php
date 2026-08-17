@@ -199,19 +199,35 @@
             </div>
             <form action="{{ route('admin.pemeliharaan.data-peralatan.store') }}" method="POST" style="padding:20px;">
                 @csrf
+                @if(isset($errors) && $errors->any())
+                    <div style="background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; padding:12px 16px; border-radius:12px; margin-bottom:18px; font-size:12.5px;">
+                        <div style="display:flex; align-items:center; gap:6px; font-weight:800; color:#DC2626; margin-bottom:4px;">
+                            <i data-lucide="alert-triangle" style="width:16px; height:16px;"></i>
+                            <span>Gagal Menyimpan Data Peralatan:</span>
+                        </div>
+                        <ul style="margin:0; padding-left:20px; font-size:12px; font-weight:600;">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:16px;">
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nama Peralatan <span style="color:#DC2626;">*</span></label>
-                        <input type="text" name="nama" required placeholder="Contoh: Apar"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                        <input type="text" name="nama" required value="{{ old('nama') }}" placeholder="Contoh: Apar"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('nama') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
+                        @error('nama')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div style="display:grid; grid-template-columns:1.2fr 0.8fr; gap:12px;">
                         {{-- Kategori Peralatan (Input Manual + Dropdown Riwayat + Hapus) --}}
-                        <div x-data="{ open: false, val: 'Pemadam' }" style="position:relative;">
+                        <div x-data="{ open: false, val: '{{ old('kategori', 'Pemadam') }}' }" style="position:relative;">
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Kategori Peralatan <span style="color:#DC2626;">*</span></label>
                             <div style="position:relative; display:flex; align-items:center;">
                                 <input type="text" name="kategori" required x-model="val" placeholder="Ketik atau pilih kategori..."
-                                       style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
+                                       style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('kategori') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;"
                                        @focus="if(existingKategoriList.length > 0) open = true"
                                        @click.outside="open = false">
                                 <button type="button" @click="open = !open" tabindex="-1"
@@ -219,6 +235,9 @@
                                     <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
                                 </button>
                             </div>
+                            @error('kategori')
+                                <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                            @enderror
                             <div x-show="open && existingKategoriList.length > 0" x-cloak
                                  style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                                 <template x-for="item in existingKategoriList" :key="item">
@@ -234,22 +253,31 @@
 
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Jumlah Total <span style="color:#DC2626;">*</span></label>
-                            <input type="number" name="jumlah_total" value="1" min="0" required
-                                   style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                            <input type="number" name="jumlah_total" value="{{ old('jumlah_total', 1) }}" min="0" required
+                                   style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('jumlah_total') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
+                            @error('jumlah_total')
+                                <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                            @enderror
                         </div>
                     </div>
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Status Kondisi <span style="color:#DC2626;">*</span></label>
-                        <select name="status" required style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
-                            <option value="baik">Baik</option>
-                            <option value="perlu_perhatian">Perlu Perhatian</option>
-                            <option value="rusak">Rusak</option>
+                        <select name="status" required style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('status') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none; background:#FFFFFF;">
+                            <option value="baik" @selected(old('status', 'baik') == 'baik')>Baik</option>
+                            <option value="perlu_perhatian" @selected(old('status') == 'perlu_perhatian')>Perlu Perhatian</option>
+                            <option value="rusak" @selected(old('status') == 'rusak')>Rusak</option>
                         </select>
+                        @error('status')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Catatan Khusus</label>
                         <textarea name="catatan" rows="3" placeholder="Tuliskan catatan tambahan peralatan..."
-                                  style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; resize:none;"></textarea>
+                                  style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('catatan') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none; resize:none;">{{ old('catatan') }}</textarea>
+                        @error('catatan')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
 
@@ -381,7 +409,7 @@
 <script>
 function dataPeralatanApp() {
     return {
-        createModalOpen: false,
+        createModalOpen: {{ isset($errors) && $errors->any() ? 'true' : 'false' }},
         editModalOpen: false,
         deleteModalOpen: false,
         activeAlat: {},

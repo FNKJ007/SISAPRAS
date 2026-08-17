@@ -352,7 +352,7 @@
                     @if(trim($item) != '')
                     <tr>
                         <td style="text-align:center; font-weight:600;">{{ $idx + 1 }}</td>
-                        <td>{{ trim($item) }}</td>
+                        <td>{{ ucwords(strtolower(trim($item))) }}</td>
                         <td style="text-align:center; color:#16A34A; font-weight:700;">Disetujui</td>
                     </tr>
                     @endif

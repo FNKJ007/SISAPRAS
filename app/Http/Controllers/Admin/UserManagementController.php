@@ -15,6 +15,18 @@ class UserManagementController extends Controller
      */
     public function store(Request $request)
     {
+        $messages = [
+            'nip.required'        => 'NIP pengguna wajib diisi.',
+            'nip.unique'          => 'NIP ini sudah terdaftar untuk pengguna lain.',
+            'name.required'       => 'Nama lengkap pengguna wajib diisi.',
+            'email.email'         => 'Format alamat email tidak valid (contoh: user@gmail.com).',
+            'email.unique'        => 'Alamat email ini sudah terdaftar pada akun lain.',
+            'password.required'   => 'Kata sandi / Password wajib diisi.',
+            'password.min'        => 'Kata sandi / Password minimal terdiri dari 6 karakter.',
+            'role.required'       => 'Peran akun (Admin / User) wajib dipilih.',
+            'status.required'     => 'Status akun (Aktif / Non-Aktif) wajib dipilih.',
+        ];
+
         $validated = $request->validate([
             'nip'      => 'required|string|max:50|unique:users,nip',
             'name'     => 'required|string|max:255',
@@ -27,7 +39,7 @@ class UserManagementController extends Controller
             'regu'     => 'nullable|string|max:50',
             'no_hp'    => 'nullable|string|max:30',
             'status'   => 'required|in:aktif,nonaktif',
-        ]);
+        ], $messages);
 
         $validated['nip'] = trim($validated['nip']);
 
@@ -51,6 +63,16 @@ class UserManagementController extends Controller
     {
         $user = User::findOrFail($id);
 
+        $messages = [
+            'nip.required'        => 'NIP pengguna wajib diisi.',
+            'nip.unique'          => 'NIP ini sudah terdaftar untuk pengguna lain.',
+            'name.required'       => 'Nama lengkap pengguna wajib diisi.',
+            'email.email'         => 'Format alamat email tidak valid (contoh: user@gmail.com).',
+            'email.unique'        => 'Alamat email ini sudah terdaftar pada akun lain.',
+            'role.required'       => 'Peran akun (Admin / User) wajib dipilih.',
+            'status.required'     => 'Status akun (Aktif / Non-Aktif) wajib dipilih.',
+        ];
+
         $validated = $request->validate([
             'nip'      => ['required', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
             'name'     => 'required|string|max:255',
@@ -62,7 +84,7 @@ class UserManagementController extends Controller
             'regu'     => 'nullable|string|max:50',
             'no_hp'    => 'nullable|string|max:30',
             'status'   => 'required|in:aktif,nonaktif',
-        ]);
+        ], $messages);
 
         $validated['nip'] = trim($validated['nip']);
         if (empty($validated['email'])) {
@@ -83,9 +105,14 @@ class UserManagementController extends Controller
     {
         $user = User::findOrFail($id);
 
+        $messages = [
+            'new_password.required' => 'Password baru wajib diisi.',
+            'new_password.min'      => 'Password baru minimal terdiri dari 6 karakter.',
+        ];
+
         $validated = $request->validate([
             'new_password' => 'required|string|min:6',
-        ]);
+        ], $messages);
 
         $user->update([
             'password' => Hash::make($validated['new_password']),
