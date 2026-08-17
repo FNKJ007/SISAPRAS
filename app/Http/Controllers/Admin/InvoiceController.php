@@ -16,11 +16,12 @@ class InvoiceController extends Controller
     {
         $query = Invoice::with('unit')->latest('tanggal_invoice');
 
-        if ($search = $request->get('q')) {
+        if ($search = trim($request->get('q') ?? '')) {
             $query->where(function ($q) use ($search) {
-                $q->where('nomor_invoice', 'ilike', "%{$search}%")
-                  ->orWhere('no_pol', 'ilike', "%{$search}%")
-                  ->orWhere('no_lambung', 'ilike', "%{$search}%");
+                $q->where('nomor_invoice', 'LIKE', "%{$search}%")
+                  ->orWhere('no_pol', 'LIKE', "%{$search}%")
+                  ->orWhere('no_lambung', 'LIKE', "%{$search}%")
+                  ->orWhere('lokasi', 'LIKE', "%{$search}%");
             });
         }
 
@@ -34,9 +35,9 @@ class InvoiceController extends Controller
         $units = Unit::orderBy('nomor_lambung')->get();
 
         $bulanList = [
-            '01' => 'JAN', '02' => 'FEB', '03' => 'MAR', '04' => 'APR',
-            '05' => 'MEI', '06' => 'JUN', '07' => 'JUL', '08' => 'AGS',
-            '09' => 'SEP', '10' => 'OKT', '11' => 'NOV', '12' => 'DES',
+            '01' => 'Jan', '02' => 'Feb', '03' => 'Mar', '04' => 'Apr',
+            '05' => 'Mei', '06' => 'Jun', '07' => 'Jul', '08' => 'Agt',
+            '09' => 'Sep', '10' => 'Okt', '11' => 'Nov', '12' => 'Des',
         ];
 
         $availableTahun = Invoice::whereNotNull('tahun_anggaran')
