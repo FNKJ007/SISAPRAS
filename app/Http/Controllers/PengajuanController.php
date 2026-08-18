@@ -66,15 +66,14 @@ class PengajuanController extends Controller
             $key = strtolower(str_replace(['-', ' ', '/'], '', $u->nomor_lambung));
             $label = $u->nomor_lambung;
             if ($u->plat_nomor) $label .= ' / ' . $u->plat_nomor;
-            if ($u->pos) $label .= ' [' . $u->pos . ']';
-            if ($u->jenis_kendaraan) $label .= ' (' . $u->jenis_kendaraan . ')';
 
             $unitData = [
                 'key'             => $key,
                 'label'           => $label,
+                'clean_label'     => $label,
                 'nomor_lambung'   => $u->nomor_lambung,
                 'plat_nomor'      => $u->plat_nomor,
-                'jenis_kendaraan' => strtoupper(trim($u->jenis_kendaraan ?? '')),
+                'jenis_kendaraan' => in_array(strtoupper(trim($u->jenis_kendaraan ?? '')), ['R2', 'R3']) ? strtoupper(trim($u->jenis_kendaraan)) : ucwords(strtolower(trim($u->jenis_kendaraan ?? ''))),
                 'peruntukan'      => $u->peruntukan,
                 'pos'             => $u->pos,
                 'kategori'        => $u->kategori,
@@ -86,12 +85,12 @@ class PengajuanController extends Controller
             $unitDetails[$key] = $unitData;
         }
 
-        // Ambil daftar Jenis Kendaraan langsung dari Master Data Unit (Deduplikasi & Normalisasi Huruf)
+        // Ambil daftar Jenis Kendaraan langsung dari Master Data Unit (Deduplikasi & Title Case)
         $jenisKendaraanDb = Unit::whereNotNull('jenis_kendaraan')
             ->where('jenis_kendaraan', '!=', '')
             ->get()
             ->pluck('jenis_kendaraan')
-            ->map(fn($v) => strtoupper(trim($v)))
+            ->map(fn($v) => in_array(strtoupper(trim($v)), ['R2', 'R3']) ? strtoupper(trim($v)) : ucwords(strtolower(trim($v))))
             ->unique()
             ->sort()
             ->values()

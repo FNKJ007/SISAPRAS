@@ -74,12 +74,11 @@
                             </li>
 
                             <li>
-                                <a href="{{ route('admin.pemeliharaan.monitoring-aktual') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.monitoring-aktual') ? 'active' : '' }}">
+                                <a href="{{ route('admin.pemeliharaan.monitoring-aktual.index') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.monitoring-aktual.*') ? 'active' : '' }}">
                                     Monitoring Aktual
                                 </a>
                             </li>
-                            
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.invoice.index') }}"
                                    class="{{ request()->routeIs('admin.pemeliharaan.invoice.*') ? 'active' : '' }}">

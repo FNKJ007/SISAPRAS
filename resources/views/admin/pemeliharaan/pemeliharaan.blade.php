@@ -141,10 +141,14 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" style="padding:40px 20px; text-align:center; color:#94A3B8;">
-                                <i data-lucide="inbox" style="width:36px; height:36px; margin-bottom:8px; opacity:0.5;"></i>
-                                <div style="font-size:13.5px; font-weight:600; color:#475569;">Belum ada data permohonan pemeliharaan.</div>
-                                <div style="font-size:12px; margin-top:4px;">Data permohonan yang diajukan oleh user akan tampil di tabel ini secara otomatis.</div>
+                            <td colspan="4" style="padding:56px 20px; text-align:center; background:#FFFFFF;">
+                                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                                    <div style="width:64px; height:64px; background:#F8FAFC; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin:0 auto 16px auto; border:1px solid #E2E8F0;">
+                                        <i data-lucide="inbox" style="width:30px; height:30px; color:#64748B;"></i>
+                                    </div>
+                                    <div style="font-size:16px; font-weight:800; color:#0F172A; margin-bottom:6px;">Belum Ada Permohonan Pemeliharaan</div>
+                                    <div style="font-size:13px; color:#64748B; max-width:400px; margin:0 auto;">Data permohonan yang diajukan oleh user akan tampil di tabel ini secara otomatis.</div>
+                                </div>
                             </td>
                         </tr>
                     @endforelse

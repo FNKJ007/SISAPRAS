@@ -1161,3 +1161,29 @@ body {
         min-width: 100% !important;
     }
 }
+
+/* =========================================================================
+   UNIVERSAL EMPTY STATE CENTERING UTILITIES
+   ========================================================================= */
+.empty-state-container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    width: 100% !important;
+    padding: 56px 20px !important;
+    background: #FFFFFF !important;
+}
+
+.empty-state-icon-circle {
+    width: 64px !important;
+    height: 64px !important;
+    background: #F8FAFC !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto 16px auto !important;
+    border: 1px solid #E2E8F0 !important;
+}

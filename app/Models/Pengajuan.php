@@ -146,6 +146,39 @@ class Pengajuan extends Model
     }
 
     /**
+     * Accessor untuk mengambil item yang disetujui saja (menapis item yang ditolak)
+     */
+    public function getVerifiedItemListAttribute(): array
+    {
+        $rawVerifs = $this->item_verifikasis;
+
+        if (!empty($rawVerifs) && is_array($rawVerifs)) {
+            $approved = [];
+
+            foreach ($rawVerifs as $key => $val) {
+                // Format 1: Associative key => status ("Ban" => "disetujui", "Wiper" => "ditolak")
+                if (is_string($key) && is_string($val)) {
+                    if (strtolower(trim($val)) === 'disetujui') {
+                        $approved[] = ucwords(strtolower(trim($key)));
+                    }
+                }
+                // Format 2: Sequential array of objects/arrays
+                elseif (is_array($val)) {
+                    $name = $val['nama'] ?? $val['nama_item'] ?? (is_string($key) ? $key : '');
+                    $status = $val['status'] ?? '';
+                    if (strtolower(trim($status)) === 'disetujui' && !empty($name)) {
+                        $approved[] = ucwords(strtolower(trim($name)));
+                    }
+                }
+            }
+
+            return array_values(array_unique(array_filter($approved)));
+        }
+
+        return $this->item_list;
+    }
+
+    /**
      * Accessor untuk Bidang
      */
     public function getBidangAttribute($value)
