@@ -9,12 +9,99 @@ use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use App\Models\InvoiceItem;
 
 class InvoiceController extends Controller
 {
+    /**
+     * Auto-sync single Pengajuan to Invoice for Monitoring Aktual
+     */
+    public static function syncPengajuanToAktualInvoice(Pengajuan $p): Invoice
+    {
+        $cleanLambung = trim(explode('/', $p->nomor_lambung)[0]);
+        $unit = Unit::where('nomor_lambung', $cleanLambung)->first()
+             ?? Unit::where('nomor_lambung', 'LIKE', "%{$cleanLambung}%")->first()
+             ?? Unit::first();
+
+        $unitId = $unit ? $unit->id : 1;
+        $kodeVerif = $p->kode_verifikasi ?? ('HAR-' . $p->created_at->format('Ymd') . '-' . sprintf('%04d', $p->id));
+        $nomorInvoice = 'INV-AKTUAL/' . $kodeVerif;
+
+        $inv = Invoice::firstOrCreate(
+            [
+                'pengajuan_id' => $p->id,
+                'kategori_monitoring' => 'aktual',
+            ],
+            [
+                'nomor_invoice'    => $nomorInvoice,
+                'tanggal_invoice'  => $p->created_at ? $p->created_at->format('Y-m-d') : date('Y-m-d'),
+                'nama_bengkel'     => 'CV. Pratama Motor',
+                'unit_id'          => $unitId,
+                'no_pol'           => $unit ? $unit->plat_nomor : ($p->plat ?? ''),
+                'no_lambung'       => $unit ? $unit->nomor_lambung : ($p->nomor_lambung ?? ''),
+                'jenis_mobil'      => $unit ? $unit->merk_tipe : ($p->jenis_kendaraan ?? ''),
+                'lokasi'           => $p->pos ?? ($unit ? $unit->pos_penempatan : ''),
+                'kode_rekening'    => '5.1.02.03.02.0035',
+                'tahun_anggaran'   => $p->created_at ? $p->created_at->format('Y') : date('Y'),
+                'subtotal'         => 0,
+                'total_biaya'      => 0,
+                'status'           => 'disetujui',
+                'catatan'          => 'Otomatis bersumber dari Pengajuan ' . $kodeVerif,
+            ]
+        );
+
+        if ($inv->wasRecentlyCreated && $inv->items()->count() === 0) {
+            $itemsList = is_array($p->item_list) ? $p->item_list : explode("\n", $p->item_perbaikan ?? '');
+            $cleanItems = array_values(array_filter(array_map('trim', $itemsList)));
+
+            $subtotal = 0;
+            foreach ($cleanItems as $idx => $itemText) {
+                if (!$itemText) continue;
+                $hargaSatuan = 500000;
+                InvoiceItem::create([
+                    'invoice_id'      => $inv->id,
+                    'tanggal'         => $inv->tanggal_invoice,
+                    'kode_item'       => 'P-' . str_pad($idx + 1, 3, '0', STR_PAD_LEFT),
+                    'jenis_perbaikan' => $itemText,
+                    'vol'             => 1,
+                    'satuan'          => 'Pcs',
+                    'harga_satuan'    => $hargaSatuan,
+                    'potongan_persen' => 0,
+                    'total_biaya'     => $hargaSatuan,
+                ]);
+                $subtotal += $hargaSatuan;
+            }
+
+            $inv->subtotal = $subtotal;
+            $inv->total_biaya = $subtotal;
+            $inv->save();
+        }
+
+        return $inv;
+    }
+
     public function index(Request $request)
     {
-        $query = Invoice::with('unit')->latest('tanggal_invoice');
+        $isAktual = $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+
+        // Auto sync for Monitoring Aktual
+        if ($isAktual) {
+            $pengajuans = Pengajuan::all();
+            foreach ($pengajuans as $p) {
+                self::syncPengajuanToAktualInvoice($p);
+            }
+        }
+
+        $query = Invoice::with('unit')
+            ->when($isAktual, function ($q) {
+                $q->where('kategori_monitoring', 'aktual');
+            }, function ($q) {
+                $q->where(function ($qq) {
+                    $qq->where('kategori_monitoring', 'invoice')
+                       ->orWhereNull('kategori_monitoring');
+                });
+            })
+            ->latest('tanggal_invoice');
 
         if ($search = trim($request->get('q') ?? '')) {
             $query->where(function ($q) use ($search) {
@@ -41,12 +128,21 @@ class InvoiceController extends Controller
         ];
 
         $availableTahun = Invoice::whereNotNull('tahun_anggaran')
+            ->when($isAktual, function ($q) {
+                $q->where('kategori_monitoring', 'aktual');
+            }, function ($q) {
+                $q->where(function ($qq) {
+                    $qq->where('kategori_monitoring', 'invoice')
+                       ->orWhereNull('kategori_monitoring');
+                });
+            })
             ->distinct()
             ->orderByDesc('tahun_anggaran')
             ->pluck('tahun_anggaran')
             ->filter()
             ->values()
             ->toArray();
+
         if (empty($availableTahun)) {
             $availableTahun = [date('Y')];
         }
@@ -58,6 +154,14 @@ class InvoiceController extends Controller
         $selectedLambungs = Unit::whereIn('id', $selectedUnitIds)->pluck('nomor_lambung')->filter()->toArray();
 
         $dashboardInvoices = Invoice::with('unit')
+            ->when($isAktual, function ($q) {
+                $q->where('kategori_monitoring', 'aktual');
+            }, function ($q) {
+                $q->where(function ($qq) {
+                    $qq->where('kategori_monitoring', 'invoice')
+                       ->orWhereNull('kategori_monitoring');
+                });
+            })
             ->where(function ($q) use ($selectedTahun) {
                 $q->where('tahun_anggaran', $selectedTahun)
                   ->orWhereYear('tanggal_invoice', $selectedTahun);
@@ -168,23 +272,27 @@ class InvoiceController extends Controller
 
             $unitId = $unit ? $unit->id : (Unit::first()->id ?? 1);
 
+            $isAktual = $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+
             $invoice = Invoice::create([
-                'nomor_invoice'   => $validated['nomor_invoice'],
-                'tanggal_invoice' => $validated['tanggal_invoice'],
-                'nama_bengkel'    => $request->input('nama_bengkel') ?: 'CV. PRATAMA MOTOR',
-                'unit_id'         => $unitId,
-                'no_pol'          => $noPol,
-                'no_lambung'      => $noLambung,
-                'jenis_mobil'     => $jenisMobil,
-                'lokasi'          => $lokasi,
-                'kode_rekening'   => $validated['kode_rekening'] ?? null,
-                'tahun_anggaran'  => $validated['tahun_anggaran'],
-                'potongan'        => $validated['potongan'] ?? 0,
-                'pajak'           => $validated['pajak'] ?? 0,
-                'biaya_lain'      => $validated['biaya_lain'] ?? 0,
-                'status'          => $validated['status'],
-                'catatan'         => $validated['catatan'] ?? null,
-                'created_by'      => auth()->id(),
+                'nomor_invoice'       => $validated['nomor_invoice'],
+                'tanggal_invoice'     => $validated['tanggal_invoice'],
+                'nama_bengkel'        => $request->input('nama_bengkel') ?: 'CV. PRATAMA MOTOR',
+                'unit_id'             => $unitId,
+                'no_pol'              => $noPol,
+                'no_lambung'          => $noLambung,
+                'jenis_mobil'         => $jenisMobil,
+                'lokasi'              => $lokasi,
+                'kode_rekening'       => $validated['kode_rekening'] ?? null,
+                'tahun_anggaran'      => $validated['tahun_anggaran'],
+                'potongan'            => $validated['potongan'] ?? 0,
+                'pajak'               => $validated['pajak'] ?? 0,
+                'biaya_lain'          => $validated['biaya_lain'] ?? 0,
+                'status'              => $validated['status'],
+                'kategori_monitoring' => $isAktual ? 'aktual' : 'invoice',
+                'pengajuan_id'        => $request->input('pengajuan_id'),
+                'catatan'             => $validated['catatan'] ?? null,
+                'created_by'          => auth()->id(),
             ]);
 
             foreach ($validated['items'] as $item) {
@@ -208,9 +316,12 @@ class InvoiceController extends Controller
             $invoice->recalculateTotals();
         });
 
+        $isAktual = $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+        $routeTarget = $isAktual ? 'admin.pemeliharaan.monitoring-aktual.index' : 'admin.pemeliharaan.invoice.index';
+
         return redirect()
-            ->route('admin.pemeliharaan.invoice.index')
-            ->with('success', 'Invoice berhasil dibuat.');
+            ->route($routeTarget)
+            ->with('success', 'Data berhasil dibuat.');
     }
 
     public function show(Invoice $invoice)
@@ -304,18 +415,24 @@ class InvoiceController extends Controller
             $invoice->recalculateTotals();
         });
 
+        $isAktual = $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+        $routeTarget = $isAktual ? 'admin.pemeliharaan.monitoring-aktual.index' : 'admin.pemeliharaan.invoice.index';
+
         return redirect()
-            ->route('admin.pemeliharaan.invoice.index')
-            ->with('success', 'Invoice berhasil diperbarui.');
+            ->route($routeTarget)
+            ->with('success', 'Data berhasil diperbarui.');
     }
 
-    public function destroy(Invoice $invoice)
+    public function destroy(Request $request, Invoice $invoice)
     {
+        $isAktual = $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
         $invoice->delete();
 
+        $routeTarget = $isAktual ? 'admin.pemeliharaan.monitoring-aktual.index' : 'admin.pemeliharaan.invoice.index';
+
         return redirect()
-            ->route('admin.pemeliharaan.invoice.index')
-            ->with('success', 'Invoice berhasil dihapus.');
+            ->route($routeTarget)
+            ->with('success', 'Data berhasil dihapus.');
     }
 
     public function updateStatus(Request $request, Invoice $invoice)

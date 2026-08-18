@@ -196,7 +196,8 @@ class PengajuanController extends Controller
         $validated['user_id'] = auth()->id();
         $validated['status']  = 'menunggu'; // Status awal: Menunggu verifikasi admin
 
-        Pengajuan::create($validated);
+        $pengajuan = Pengajuan::create($validated);
+        \App\Http\Controllers\Admin\InvoiceController::syncPengajuanToAktualInvoice($pengajuan);
 
         return redirect()
             ->route('pemeliharaan.pengajuan')

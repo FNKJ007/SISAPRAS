@@ -1,7 +1,7 @@
 @php
     $isAktual = request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
     $pageTitle = $isAktual ? 'Monitoring Aktual' : 'Monitoring Invoice';
-    $subTitle  = $isAktual ? 'Monitoring data &amp; invoice pemeliharaan unit.' : 'Monitoring data invoice pemeliharaan unit.';
+    $subTitle  = $isAktual ? 'Monitoring data aktual pemeliharaan unit.' : 'Monitoring data invoice pemeliharaan unit.';
     $routePrefix = $isAktual ? 'admin.pemeliharaan.monitoring-aktual' : 'admin.pemeliharaan.invoice';
 @endphp
 
@@ -419,8 +419,11 @@
                             </td>
                             <td style="padding:14px 18px;">
                                 <div style="font-size:13px; font-weight:700; color:#0F172A;">{{ $invoice->no_lambung ?? '—' }}</div>
-                                @if($invoice->jenis_mobil)
-                                    <div style="font-size:11.5px; color:#64748B; margin-top:2px;">{{ $invoice->jenis_mobil }}</div>
+                                @php
+                                    $namaUnitSub = optional($invoice->unit)->merk_tipe ?: $invoice->jenis_mobil;
+                                @endphp
+                                @if($namaUnitSub)
+                                    <div style="font-size:11.5px; color:#64748B; margin-top:2px;">{{ $namaUnitSub }}</div>
                                 @endif
                             </td>
                             <td style="padding:14px 18px; font-size:12.5px; font-weight:600; color:#1E293B;">
