@@ -1,7 +1,12 @@
-{{-- resources/views/admin/pemeliharaan/invoice/create.blade.php --}}
+@php
+    $isAktual = request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+    $pageTitle = $isAktual ? 'Monitoring Aktual' : 'Monitoring Invoice';
+    $routePrefix = $isAktual ? 'admin.pemeliharaan.monitoring-aktual' : 'admin.pemeliharaan.invoice';
+@endphp
+
 @extends('layouts.admin')
 
-@section('title', 'Buat Invoice')
+@section('title', 'Buat Invoice — ' . $pageTitle)
 
 @section('content')
 <style>
@@ -49,7 +54,7 @@
     <div class="invoice-page-header">
         <div>
             <div style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:#64748B; margin-bottom:6px;">
-                <a href="{{ route('admin.pemeliharaan.invoice.index') }}" style="color:#64748B; text-decoration:none; transition:color 0.2s;">Monitoring Invoice</a>
+                <a href="{{ route($routePrefix . '.index') }}" style="color:#64748B; text-decoration:none; transition:color 0.2s;">{{ $pageTitle }}</a>
                 <span style="color:#94A3B8;">/</span>
                 <span style="color:#1B2A6B; font-weight:600;">Buat Baru</span>
             </div>
@@ -57,14 +62,14 @@
             <p style="font-size:13px; color:#64748B; margin:0;">Isi formulir data dan rincian item pemeliharaan untuk menerbitkan invoice baru.</p>
         </div>
 
-        <a href="{{ route('admin.pemeliharaan.invoice.index') }}" class="invoice-btn-back">
+        <a href="{{ route($routePrefix . '.index') }}" class="invoice-btn-back">
             <i data-lucide="arrow-left" style="width:16px; height:16px; color:#64748B;"></i>
             <span>Kembali ke Daftar</span>
         </a>
     </div>
 
     {{-- Form --}}
-    <form action="{{ route('admin.pemeliharaan.invoice.store') }}" method="POST">
+    <form action="{{ route($routePrefix . '.store') }}" method="POST">
         @csrf
         @include('admin.pemeliharaan.invoice._form')
     </form>

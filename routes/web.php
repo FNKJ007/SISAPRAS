@@ -101,10 +101,21 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/pemeriksaan',                  [AdminController::class, 'pemeliharaanPemeriksaan'])->name('pemeriksaan');
         Route::get('/pemeliharaan',                 [AdminController::class, 'pemeliharaanPemeliharaan'])->name('pemeliharaan');
         Route::get('/surat-permohonan',             [AdminController::class, 'pemeliharaanPemeliharaan'])->name('surat-permohonan');
-        Route::get('/monitoring-aktual',            [AdminController::class, 'pemeliharaanMonitoringAktual'])->name('monitoring-aktual');
-        Route::post('/monitoring-aktual/{id}/progres', [AdminController::class, 'updateProgresPengerjaan'])->name('monitoring-aktual.progres');
         Route::get('/cetak-dokumen/{id}/{type}',    [AdminController::class, 'cetakDokumen'])->name('cetak-dokumen');
-        Route::resource('invoice', InvoiceController::class);
+        
+        // Monitoring Aktual Routes
+        Route::post('/monitoring-aktual/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('monitoring-aktual.update-status');
+        Route::resource('monitoring-aktual', InvoiceController::class, [
+            'names' => 'monitoring-aktual',
+            'parameters' => ['monitoring-aktual' => 'invoice'],
+        ]);
+
+        // Monitoring Invoice Routes
+        Route::post('/invoice/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('invoice.update-status');
+        Route::resource('invoice', InvoiceController::class, [
+            'names' => 'invoice',
+            'parameters' => ['invoice' => 'invoice'],
+        ]);
         Route::get('/kartu-kendali-aktual',                [AdminController::class, 'pemeliharaanKartuKendaliAktual'])->name('kartu-kendali-aktual');
         Route::get('/kartu-kendali-pembayaran',                [AdminController::class, 'pemeliharaanKartuKendaliPembayaran'])->name('kartu-kendali-pembayaran');
 

@@ -420,14 +420,7 @@ class AdminController extends Controller
             ->filter()
             ->values();
 
-        $rekeningList = \App\Models\Invoice::whereNotNull('kode_rekening')
-            ->where('kode_rekening', '!=', '')
-            ->distinct()
-            ->orderBy('kode_rekening')
-            ->pluck('kode_rekening');
-
         $tahunFilter    = $request->query('tahun', $tahunList->first() ?? date('Y'));
-        $rekeningFilter = $request->query('kode_rekening', 'semua');
         $statusFilter   = $request->query('status', 'semua');
         $searchQuery    = $request->query('search', '');
 
@@ -438,10 +431,6 @@ class AdminController extends Controller
             })
             ->orderBy('tanggal_invoice', 'asc')
             ->orderBy('id', 'asc');
-
-        if ($rekeningFilter !== 'semua') {
-            $query->where('kode_rekening', $rekeningFilter);
-        }
 
         if ($statusFilter !== 'semua' && in_array($statusFilter, ['draft', 'diajukan', 'disetujui', 'lunas'])) {
             $query->where('status', $statusFilter);
@@ -478,9 +467,7 @@ class AdminController extends Controller
             'kartuKendaliRows' => $kartuKendaliRows,
             'kpi'              => $kpi,
             'tahunList'        => $tahunList,
-            'rekeningList'     => $rekeningList,
             'tahunFilter'      => $tahunFilter,
-            'rekeningFilter'   => $rekeningFilter,
             'statusFilter'     => $statusFilter,
             'searchQuery'      => $searchQuery,
         ]);

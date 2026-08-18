@@ -171,6 +171,7 @@ class InvoiceController extends Controller
             $invoice = Invoice::create([
                 'nomor_invoice'   => $validated['nomor_invoice'],
                 'tanggal_invoice' => $validated['tanggal_invoice'],
+                'nama_bengkel'    => $request->input('nama_bengkel') ?: 'CV. PRATAMA MOTOR',
                 'unit_id'         => $unitId,
                 'no_pol'          => $noPol,
                 'no_lambung'      => $noLambung,
@@ -178,19 +179,29 @@ class InvoiceController extends Controller
                 'lokasi'          => $lokasi,
                 'kode_rekening'   => $validated['kode_rekening'] ?? null,
                 'tahun_anggaran'  => $validated['tahun_anggaran'],
+                'potongan'        => $validated['potongan'] ?? 0,
+                'pajak'           => $validated['pajak'] ?? 0,
+                'biaya_lain'      => $validated['biaya_lain'] ?? 0,
                 'status'          => $validated['status'],
                 'catatan'         => $validated['catatan'] ?? null,
                 'created_by'      => auth()->id(),
             ]);
 
             foreach ($validated['items'] as $item) {
+                $vol = (float) $item['vol'];
+                $harga = (float) $item['harga_satuan'];
+                $discPct = (float) ($item['potongan_persen'] ?? 0);
+                $totalItem = ($vol * $harga) * (1 - ($discPct / 100));
+
                 $invoice->items()->create([
-                    'tanggal'         => $item['tanggal'],
+                    'tanggal'         => $validated['tanggal_invoice'],
+                    'kode_item'       => !empty($item['kode_item']) ? strtoupper(trim($item['kode_item'])) : null,
                     'jenis_perbaikan' => ucwords(strtolower(trim($item['jenis_perbaikan']))),
-                    'vol'             => $item['vol'],
-                    'satuan'          => $item['satuan'],
-                    'harga_satuan'    => $item['harga_satuan'],
-                    'total_biaya'     => $item['vol'] * $item['harga_satuan'],
+                    'vol'             => $vol,
+                    'satuan'          => ucwords(strtolower(trim($item['satuan']))),
+                    'harga_satuan'    => $harga,
+                    'potongan_persen' => $discPct,
+                    'total_biaya'     => $totalItem,
                 ]);
             }
 
@@ -254,6 +265,7 @@ class InvoiceController extends Controller
             $invoice->update([
                 'nomor_invoice'   => $validated['nomor_invoice'],
                 'tanggal_invoice' => $validated['tanggal_invoice'],
+                'nama_bengkel'    => $request->input('nama_bengkel') ?: ($invoice->nama_bengkel ?: 'CV. PRATAMA MOTOR'),
                 'unit_id'         => $unitId,
                 'no_pol'          => $noPol,
                 'no_lambung'      => $noLambung,
@@ -261,6 +273,9 @@ class InvoiceController extends Controller
                 'lokasi'          => $lokasi,
                 'kode_rekening'   => $validated['kode_rekening'] ?? null,
                 'tahun_anggaran'  => $validated['tahun_anggaran'],
+                'potongan'        => $validated['potongan'] ?? 0,
+                'pajak'           => $validated['pajak'] ?? 0,
+                'biaya_lain'      => $validated['biaya_lain'] ?? 0,
                 'status'          => $validated['status'],
                 'catatan'         => $validated['catatan'] ?? null,
             ]);
@@ -269,13 +284,20 @@ class InvoiceController extends Controller
             $invoice->items()->delete();
 
             foreach ($validated['items'] as $item) {
+                $vol = (float) $item['vol'];
+                $harga = (float) $item['harga_satuan'];
+                $discPct = (float) ($item['potongan_persen'] ?? 0);
+                $totalItem = ($vol * $harga) * (1 - ($discPct / 100));
+
                 $invoice->items()->create([
-                    'tanggal'         => $item['tanggal'],
+                    'tanggal'         => $validated['tanggal_invoice'],
+                    'kode_item'       => !empty($item['kode_item']) ? strtoupper(trim($item['kode_item'])) : null,
                     'jenis_perbaikan' => ucwords(strtolower(trim($item['jenis_perbaikan']))),
-                    'vol'             => $item['vol'],
-                    'satuan'          => $item['satuan'],
-                    'harga_satuan'    => $item['harga_satuan'],
-                    'total_biaya'     => $item['vol'] * $item['harga_satuan'],
+                    'vol'             => $vol,
+                    'satuan'          => ucwords(strtolower(trim($item['satuan']))),
+                    'harga_satuan'    => $harga,
+                    'potongan_persen' => $discPct,
+                    'total_biaya'     => $totalItem,
                 ]);
             }
 
@@ -296,6 +318,24 @@ class InvoiceController extends Controller
             ->with('success', 'Invoice berhasil dihapus.');
     }
 
+    public function updateStatus(Request $request, Invoice $invoice)
+    {
+        $request->validate([
+            'status' => 'required|in:draft,diajukan,disetujui,lunas',
+        ]);
+
+        $invoice->update(['status' => $request->status]);
+
+        $statusLabels = [
+            'draft'     => 'Draft',
+            'diajukan'  => 'Diajukan',
+            'disetujui' => 'Disetujui',
+            'lunas'     => 'Lunas',
+        ];
+
+        return redirect()->back()->with('success', 'Status Invoice ' . $invoice->nomor_invoice . ' berhasil diubah menjadi ' . ($statusLabels[$request->status] ?? $request->status) . '.');
+    }
+
     private function validateInvoice(Request $request, ?int $ignoreId = null): array
     {
         $messages = [
@@ -308,7 +348,6 @@ class InvoiceController extends Controller
             'status.required'                  => 'Status invoice wajib dipilih.',
             'items.required'                   => 'Rincian perbaikan / suku cadang minimal 1 item.',
             'items.min'                        => 'Rincian perbaikan / suku cadang minimal 1 item.',
-            'items.*.tanggal.required'         => 'Tanggal item perbaikan wajib diisi.',
             'items.*.jenis_perbaikan.required' => 'Uraian jenis perbaikan wajib diisi.',
             'items.*.vol.required'             => 'Volume / jumlah item wajib diisi.',
             'items.*.satuan.required'          => 'Satuan item (pcs/unit/stel) wajib diisi.',
@@ -321,6 +360,7 @@ class InvoiceController extends Controller
                 Rule::unique('invoices', 'nomor_invoice')->ignore($ignoreId),
             ],
             'tanggal_invoice' => ['required', 'date'],
+            'nama_bengkel'    => ['nullable', 'string', 'max:150'],
             'unit_id'         => ['nullable'],
             'pengajuan_id'    => ['nullable'],
             'no_lambung'      => ['nullable', 'string', 'max:50'],
@@ -329,15 +369,19 @@ class InvoiceController extends Controller
             'lokasi'          => ['nullable', 'string', 'max:100'],
             'kode_rekening'   => ['nullable', 'string', 'max:100'],
             'tahun_anggaran'  => ['required', 'digits:4'],
+            'potongan'        => ['nullable', 'numeric', 'min:0'],
+            'pajak'           => ['nullable', 'numeric', 'min:0'],
+            'biaya_lain'      => ['nullable', 'numeric', 'min:0'],
             'status'          => ['required', Rule::in(['draft', 'diajukan', 'disetujui', 'lunas'])],
             'catatan'         => ['nullable', 'string'],
 
             'items'                 => ['required', 'array', 'min:1'],
-            'items.*.tanggal'       => ['required', 'date'],
+            'items.*.kode_item'     => ['nullable', 'string', 'max:50'],
             'items.*.jenis_perbaikan' => ['required', 'string', 'max:150'],
             'items.*.vol'           => ['required', 'numeric', 'min:0.01'],
             'items.*.satuan'        => ['required', 'string', 'max:20'],
             'items.*.harga_satuan'  => ['required', 'numeric', 'min:0'],
+            'items.*.potongan_persen' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ], $messages);
     }
 

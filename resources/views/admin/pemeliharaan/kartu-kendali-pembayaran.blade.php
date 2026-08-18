@@ -54,15 +54,7 @@
                     </select>
                 </div>
 
-                <div style="display:flex; align-items:center; gap:6px;">
-                    <span style="font-size:12px; font-weight:600; color:#64748B;">Kode Rekening:</span>
-                    <select name="kode_rekening" onchange="this.form.submit()" style="padding:6px 12px; font-size:12px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#1E293B; font-weight:600;">
-                        <option value="semua" @selected($rekeningFilter === 'semua')>Semua Rekening</option>
-                        @foreach($rekeningList as $rek)
-                            <option value="{{ $rek }}" @selected($rekeningFilter === $rek)>{{ $rek }}</option>
-                        @endforeach
-                    </select>
-                </div>
+
 
                 <div style="display:flex; align-items:center; gap:6px;">
                     <span style="font-size:12px; font-weight:600; color:#64748B;">Status:</span>
@@ -85,7 +77,7 @@
                 <button type="submit" style="padding:7px 14px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;">
                     Cari
                 </button>
-                @if($rekeningFilter !== 'semua' || $statusFilter !== 'semua' || !empty($searchQuery))
+                @if($statusFilter !== 'semua' || !empty($searchQuery))
                     <a href="{{ route('admin.pemeliharaan.kartu-kendali-pembayaran', ['tahun' => $tahunFilter]) }}" style="padding:7px 12px; background:#E2E8F0; color:#475569; border-radius:8px; font-size:12px; text-decoration:none; font-weight:600;">
                         Reset
                     </a>
@@ -118,12 +110,12 @@
             </div>
 
             @if($kartuKendaliRows->isEmpty())
-                <div style="padding:56px 20px; text-align:center;">
-                    <div style="width:64px; height:64px; background:#F8FAFC; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:16px; border:1px solid #E2E8F0; margin-left:auto; margin-right:auto;">
+                <div style="padding:56px 20px; text-align:center; background:#FFFFFF; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                    <div style="width:64px; height:64px; background:#F8FAFC; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin:0 auto 16px auto; border:1px solid #E2E8F0;">
                         <i data-lucide="clipboard-list" style="width:30px; height:30px; color:#64748B;"></i>
                     </div>
                     <div style="font-size:16px; font-weight:800; color:#0F172A; margin-bottom:6px;">Belum Ada Data Invoice</div>
-                    <div style="font-size:12.5px; color:#94A3B8;">Tidak ditemukan invoice untuk tahun anggaran / filter yang dipilih.</div>
+                    <div style="font-size:13px; color:#64748B; max-width:400px; margin:0 auto;">Tidak ditemukan invoice untuk tahun anggaran / filter yang dipilih.</div>
                 </div>
             @else
                 {{-- Tabel Presisi A4 (Tanpa Kolom Kode Rekening & Tanpa Overflow Cut-off) --}}

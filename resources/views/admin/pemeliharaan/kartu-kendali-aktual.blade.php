@@ -118,12 +118,12 @@
             </div>
 
             @if($kartuKendaliRows->isEmpty())
-                <div style="padding:56px 20px; text-align:center;">
-                    <div style="width:64px; height:64px; background:#F8FAFC; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:16px; border:1px solid #E2E8F0; margin-left:auto; margin-right:auto;">
+                <div style="padding:56px 20px; text-align:center; background:#FFFFFF; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                    <div style="width:64px; height:64px; background:#F8FAFC; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin:0 auto 16px auto; border:1px solid #E2E8F0;">
                         <i data-lucide="clipboard-list" style="width:30px; height:30px; color:#64748B;"></i>
                     </div>
                     <div style="font-size:16px; font-weight:800; color:#0F172A; margin-bottom:6px;">Belum Ada Data Pengerjaan</div>
-                    <div style="font-size:12.5px; color:#94A3B8;">Tidak ditemukan unit untuk tahun / filter yang dipilih.</div>
+                    <div style="font-size:13px; color:#64748B; max-width:400px; margin:0 auto;">Tidak ditemukan unit untuk tahun / filter yang dipilih.</div>
                 </div>
             @else
                 {{-- Tabel Presisi A4 --}}

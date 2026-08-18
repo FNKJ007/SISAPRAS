@@ -68,8 +68,8 @@
     {{-- Table Container --}}
     <div style="background:#FFFFFF; border-radius:16px; border:1px solid #E2E8F0; box-shadow:0px 18px 40px rgba(112,144,176,0.08); overflow:hidden;">
         @if($cekAlatList->isEmpty())
-            <div style="padding:56px 20px; text-align:center; background:#FFFFFF;">
-                <div style="width:64px; height:64px; background:#F8FAFC; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:16px; border:1px solid #E2E8F0; margin-left:auto; margin-right:auto;">
+            <div style="padding:56px 20px; text-align:center; background:#FFFFFF; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <div style="width:64px; height:64px; background:#F8FAFC; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin:0 auto 16px auto; border:1px solid #E2E8F0;">
                     <i data-lucide="search-x" style="width:30px; height:30px; color:#64748B;"></i>
                 </div>
                 @if(!empty($searchQuery))

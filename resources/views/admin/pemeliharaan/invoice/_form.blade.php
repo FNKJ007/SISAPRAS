@@ -2,15 +2,19 @@
 @php
     $isEdit = isset($invoice);
     $selectedPengajuanId = $selectedPengajuanId ?? old('pengajuan_id', null);
+    $isAktual = request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+    $routePrefix = $isAktual ? 'admin.pemeliharaan.monitoring-aktual' : 'admin.pemeliharaan.invoice';
 
     $items = old('items', $isEdit ? $invoice->items->map(fn ($i) => [
         'tanggal' => $i->tanggal->format('Y-m-d'),
+        'kode_item' => $i->kode_item,
         'jenis_perbaikan' => $i->jenis_perbaikan,
         'vol' => (float) $i->vol,
         'satuan' => $i->satuan,
         'harga_satuan' => (float) $i->harga_satuan,
+        'potongan_persen' => (float) ($i->potongan_persen ?? 0),
     ])->toArray() : [
-        ['tanggal' => now()->format('Y-m-d'), 'jenis_perbaikan' => '', 'vol' => 1, 'satuan' => 'PCS', 'harga_satuan' => 0],
+        ['tanggal' => now()->format('Y-m-d'), 'kode_item' => '', 'jenis_perbaikan' => '', 'vol' => 1, 'satuan' => 'Pcs', 'harga_satuan' => 0, 'potongan_persen' => 0],
     ]);
 @endphp
 
@@ -127,12 +131,20 @@
 </style>
 
 <div class="invoice-card">
-    <h6 style="font-weight:700; text-transform:uppercase; color:#64748B; margin-bottom:16px; margin-top:0; font-size:13px; letter-spacing:0.5px;">Informasi Invoice</h6>
+    <h6 style="font-weight:700; text-transform:uppercase; color:#64748B; margin-bottom:16px; margin-top:0; font-size:13px; letter-spacing:0.5px;">Informasi Invoice &amp; Bengkel</h6>
     
     <div class="invoice-form-grid">
         <div class="invoice-col-1">
-            <label style="font-size:12.5px; font-weight:600; color:#475569; margin-bottom:4px; display:block;">Nomor Invoice</label>
+            <label style="font-size:12.5px; font-weight:600; color:#475569; margin-bottom:4px; display:block;">Nama Bengkel / Rekanan</label>
+            <input type="text" name="nama_bengkel" style="padding:9px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; width:100%; outline:none; box-sizing:border-box;"
+                   placeholder="Contoh: CV. PRATAMA MOTOR"
+                   value="{{ old('nama_bengkel', $isEdit ? $invoice->nama_bengkel : 'CV. PRATAMA MOTOR') }}">
+        </div>
+
+        <div class="invoice-col-1">
+            <label style="font-size:12.5px; font-weight:600; color:#475569; margin-bottom:4px; display:block;">Nomor Transaksi / Invoice</label>
             <input type="text" name="nomor_invoice" style="padding:9px 14px; border:1px solid {{ $errors->has('nomor_invoice') ? '#C0201F' : '#CBD5E1' }}; border-radius:8px; font-size:13px; width:100%; outline:none; box-sizing:border-box;"
+                   placeholder="Contoh: PRA/06/26/1354"
                    value="{{ old('nomor_invoice', $isEdit ? $invoice->nomor_invoice : $nomorInvoice) }}" required>
             @error('nomor_invoice') <div style="color:#C0201F; font-size:11px; margin-top:4px;">{{ $message }}</div> @enderror
         </div>
@@ -149,6 +161,20 @@
             <input type="text" name="tahun_anggaran" maxlength="4" style="padding:9px 14px; border:1px solid {{ $errors->has('tahun_anggaran') ? '#C0201F' : '#CBD5E1' }}; border-radius:8px; font-size:13px; width:100%; outline:none; box-sizing:border-box;"
                    value="{{ old('tahun_anggaran', $isEdit ? $invoice->tahun_anggaran : now()->format('Y')) }}" required>
             @error('tahun_anggaran') <div style="color:#C0201F; font-size:11px; margin-top:4px;">{{ $message }}</div> @enderror
+        </div>
+
+
+
+        <div class="invoice-col-1">
+            <label style="font-size:12.5px; font-weight:600; color:#475569; margin-bottom:4px; display:block;">Status</label>
+            <select name="status" style="padding:9px 14px; border:1px solid {{ $errors->has('status') ? '#C0201F' : '#CBD5E1' }}; border-radius:8px; font-size:13px; width:100%; outline:none; box-sizing:border-box; background:#FFFFFF;" required>
+                @foreach (['draft' => 'Draft', 'diajukan' => 'Diajukan', 'disetujui' => 'Disetujui', 'lunas' => 'Lunas'] as $value => $label)
+                    <option value="{{ $value }}" {{ old('status', $isEdit ? $invoice->status : 'disetujui') === $value ? 'selected' : '' }}>
+                        {{ $label }}
+                    </option>
+                @endforeach
+            </select>
+            @error('status') <div style="color:#C0201F; font-size:11px; margin-top:4px;">{{ $message }}</div> @enderror
         </div>
 
         {{-- Dropdown Pilih Unit dari Pengajuan yang Disetujui --}}
@@ -168,7 +194,7 @@
                             });
                             $unitIdVal = $matched?->id ?? ($units->first()->id ?? 1);
                             $isSelected = (string)$selectedPengajuanId === (string)$p->id || 
-                                          ($isEdit && ($invoice->no_lambung === $p->nomor_lambung || $invoice->no_lambung === $lambungCode));
+                                           ($isEdit && ($invoice->no_lambung === $p->nomor_lambung || $invoice->no_lambung === $lambungCode));
                             $posName = $p->pos_label ?: ($matched?->pos ?: 'Pos Dinas');
                             $jenisName = $p->jenis_kendaraan_label ?: ($matched?->merk_tipe ?: 'Unit Operasional');
                         @endphp
@@ -183,7 +209,7 @@
                             data-kode="{{ $p->kode_verifikasi }}"
                             data-pemegang="{{ $p->nama_pemegang ?: '-' }}"
                             data-tanggal="{{ $p->tanggal_keberangkatan ? $p->tanggal_keberangkatan->format('Y-m-d') : now()->format('Y-m-d') }}"
-                            data-items="{{ json_encode($p->item_list ?? []) }}"
+                            data-items="{{ json_encode($p->verified_item_list ?? []) }}"
                             {{ $isSelected ? 'selected' : '' }}>
                             {{ $p->kode_verifikasi }} — {{ $p->nomor_lambung }} [{{ $posName }}] ({{ $jenisName }})
                         </option>
@@ -204,25 +230,6 @@
             @error('unit_id') <div style="color:#C0201F; font-size:11px; margin-top:4px;">{{ $message }}</div> @enderror
         </div>
 
-        <div class="invoice-col-2">
-            <label style="font-size:12.5px; font-weight:600; color:#475569; margin-bottom:4px; display:block;">Kode Rekening Belanja</label>
-            <input type="text" name="kode_rekening" style="padding:9px 14px; border:1px solid {{ $errors->has('kode_rekening') ? '#C0201F' : '#CBD5E1' }}; border-radius:8px; font-size:13px; width:100%; outline:none; box-sizing:border-box;"
-                   value="{{ old('kode_rekening', $isEdit ? $invoice->kode_rekening : '5.1.02.03.002.00040') }}">
-            @error('kode_rekening') <div style="color:#C0201F; font-size:11px; margin-top:4px;">{{ $message }}</div> @enderror
-        </div>
-
-        <div class="invoice-col-1">
-            <label style="font-size:12.5px; font-weight:600; color:#475569; margin-bottom:4px; display:block;">Status</label>
-            <select name="status" style="padding:9px 14px; border:1px solid {{ $errors->has('status') ? '#C0201F' : '#CBD5E1' }}; border-radius:8px; font-size:13px; width:100%; outline:none; box-sizing:border-box; background:#FFFFFF;" required>
-                @foreach (['draft' => 'Draft', 'diajukan' => 'Diajukan', 'disetujui' => 'Disetujui', 'lunas' => 'Lunas'] as $value => $label)
-                    <option value="{{ $value }}" {{ old('status', $isEdit ? $invoice->status : 'disetujui') === $value ? 'selected' : '' }}>
-                        {{ $label }}
-                    </option>
-                @endforeach
-            </select>
-            @error('status') <div style="color:#C0201F; font-size:11px; margin-top:4px;">{{ $message }}</div> @enderror
-        </div>
-
         <div class="invoice-col-full">
             <label style="font-size:12.5px; font-weight:600; color:#475569; margin-bottom:4px; display:block;">Catatan / Keterangan</label>
             <textarea name="catatan" rows="2" style="padding:9px 14px; border:1px solid {{ $errors->has('catatan') ? '#C0201F' : '#CBD5E1' }}; border-radius:8px; font-size:13px; width:100%; outline:none; resize:vertical; box-sizing:border-box;" placeholder="Catatan opsional untuk invoice ini...">{{ old('catatan', $isEdit ? $invoice->catatan : '') }}</textarea>
@@ -234,8 +241,8 @@
 <div class="invoice-card">
     <div class="invoice-header-flex">
         <div>
-            <h6 style="font-weight:700; text-transform:uppercase; color:#64748B; margin:0 0 2px 0; font-size:13px; letter-spacing:0.5px;">Rincian Item Perbaikan</h6>
-            <p style="font-size:12px; color:#94A3B8; margin:0;">Item terisi otomatis dari permohonan pengajuan yang dipilih, Anda dapat menambah atau mengubah item.</p>
+            <h6 style="font-weight:700; text-transform:uppercase; color:#64748B; margin:0 0 2px 0; font-size:13px; letter-spacing:0.5px;">Rincian Item Perbaikan &amp; Sparepart (Sesuai Invoice Bengkel)</h6>
+            <p style="font-size:12px; color:#94A3B8; margin:0;">Isi rincian barang/jasa sesuai nota invoice bengkel. Kolom Kode Item dan Pot. (%) dapat diisi jika ada.</p>
         </div>
         <div class="invoice-btn-group">
             <button type="button" id="btn-sync-items" style="background:#EFF6FF; color:#1B2A6B; border:1px solid #BFDBFE; padding:8px 14px; border-radius:10px; font-weight:700; font-size:12px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
@@ -250,35 +257,41 @@
     @error('items') <div style="background:#FEF2F2; border:1px solid #FCA5A5; color:#C0201F; padding:10px 14px; border-radius:8px; margin-bottom:16px;">{{ $message }}</div> @enderror
 
     <div style="overflow-x:auto;">
-        <table style="width:100%; border-collapse:collapse; min-width:750px;" id="items-table">
+        <table style="width:100%; border-collapse:collapse; min-width:850px;" id="items-table">
             <thead>
                 <tr>
-                    <th style="background:#1B2A6B; color:#FFFFFF; font-size:11.5px; font-weight:700; text-transform:uppercase; padding:10px 12px; text-align:left; width:14%;">Tanggal</th>
-                    <th style="background:#1B2A6B; color:#FFFFFF; font-size:11.5px; font-weight:700; text-transform:uppercase; padding:10px 12px; text-align:left;">Jenis Perbaikan / Onderdil</th>
-                    <th style="background:#1B2A6B; color:#FFFFFF; font-size:11.5px; font-weight:700; text-transform:uppercase; padding:10px 12px; text-align:left; width:10%;">Vol</th>
-                    <th style="background:#1B2A6B; color:#FFFFFF; font-size:11.5px; font-weight:700; text-transform:uppercase; padding:10px 12px; text-align:left; width:11%;">Satuan</th>
-                    <th style="background:#1B2A6B; color:#FFFFFF; font-size:11.5px; font-weight:700; text-transform:uppercase; padding:10px 12px; text-align:left; width:16%;">Harga Satuan (Rp)</th>
+                    <th style="background:#1B2A6B; color:#FFFFFF; font-size:11.5px; font-weight:700; text-transform:uppercase; padding:10px 12px; text-align:center; width:4%;">No</th>
+                    <th style="background:#1B2A6B; color:#FFFFFF; font-size:11.5px; font-weight:700; text-transform:uppercase; padding:10px 12px; text-align:left; width:12%;">Kd. Item</th>
+                    <th style="background:#1B2A6B; color:#FFFFFF; font-size:11.5px; font-weight:700; text-transform:uppercase; padding:10px 12px; text-align:left;">Nama Item / Jenis Perbaikan</th>
+                    <th style="background:#1B2A6B; color:#FFFFFF; font-size:11.5px; font-weight:700; text-transform:uppercase; padding:10px 12px; text-align:center; width:8%;">Jml</th>
+                    <th style="background:#1B2A6B; color:#FFFFFF; font-size:11.5px; font-weight:700; text-transform:uppercase; padding:10px 12px; text-align:left; width:10%;">Satuan</th>
+                    <th style="background:#1B2A6B; color:#FFFFFF; font-size:11.5px; font-weight:700; text-transform:uppercase; padding:10px 12px; text-align:right; width:15%;">Harga (Rp)</th>
+                    <th style="background:#1B2A6B; color:#FFFFFF; font-size:11.5px; font-weight:700; text-transform:uppercase; padding:10px 12px; text-align:center; width:8%;">Pot. (%)</th>
                     <th style="background:#1B2A6B; color:#FFFFFF; font-size:11.5px; font-weight:700; text-transform:uppercase; padding:10px 12px; text-align:right; width:16%;">Total (Rp)</th>
-                    <th style="background:#1B2A6B; color:#FFFFFF; font-size:11.5px; font-weight:700; text-transform:uppercase; padding:10px 12px; text-align:center; width:5%;"></th>
+                    <th style="background:#1B2A6B; color:#FFFFFF; font-size:11.5px; font-weight:700; text-transform:uppercase; padding:10px 12px; text-align:center; width:4%;"></th>
                 </tr>
             </thead>
             <tbody id="items-body">
                 @foreach ($items as $i => $item)
                     <tr class="item-row">
+                        <td class="row-num" style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px; text-align:center; font-weight:700; color:#64748B;">{{ $i + 1 }}</td>
                         <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px;">
-                            <input type="date" name="items[{{ $i }}][tanggal]" style="padding:8px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; width:100%; outline:none; box-sizing:border-box;" value="{{ $item['tanggal'] }}" required>
+                            <input type="text" name="items[{{ $i }}][kode_item]" style="padding:8px 10px; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; width:100%; outline:none; box-sizing:border-box; text-transform:uppercase;" placeholder="Misal: M35" value="{{ $item['kode_item'] ?? '' }}">
                         </td>
                         <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px;">
-                            <input type="text" name="items[{{ $i }}][jenis_perbaikan]" style="padding:8px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; width:100%; outline:none; box-sizing:border-box;" placeholder="Contoh: GANTI OLI / BOHLAM" value="{{ $item['jenis_perbaikan'] }}" required>
+                            <input type="text" name="items[{{ $i }}][jenis_perbaikan]" style="padding:8px 10px; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; width:100%; outline:none; box-sizing:border-box;" placeholder="Misal: MASTER REM RODA" value="{{ $item['jenis_perbaikan'] }}" required>
                         </td>
                         <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px;">
-                            <input type="number" step="0.01" min="0.01" name="items[{{ $i }}][vol]" class="input-vol" style="padding:8px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; width:100%; outline:none; box-sizing:border-box;" value="{{ $item['vol'] }}" required>
+                            <input type="number" step="0.01" min="0.01" name="items[{{ $i }}][vol]" class="input-vol" style="padding:8px 10px; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; width:100%; outline:none; text-align:center; box-sizing:border-box;" value="{{ $item['vol'] }}" required>
                         </td>
                         <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px;">
-                            <input type="text" name="items[{{ $i }}][satuan]" style="padding:8px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; width:100%; outline:none; box-sizing:border-box;" value="{{ $item['satuan'] }}" required>
+                            <input type="text" name="items[{{ $i }}][satuan]" style="padding:8px 10px; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; width:100%; outline:none; box-sizing:border-box;" value="{{ $item['satuan'] }}" required>
                         </td>
                         <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px;">
-                            <input type="number" step="0.01" min="0" name="items[{{ $i }}][harga_satuan]" class="input-harga" style="padding:8px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; width:100%; outline:none; box-sizing:border-box;" value="{{ $item['harga_satuan'] }}" required>
+                            <input type="number" step="0.01" min="0" name="items[{{ $i }}][harga_satuan]" class="input-harga" style="padding:8px 10px; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; width:100%; outline:none; text-align:right; box-sizing:border-box;" value="{{ $item['harga_satuan'] }}" required>
+                        </td>
+                        <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px;">
+                            <input type="number" step="0.01" min="0" max="100" name="items[{{ $i }}][potongan_persen]" class="input-disc" style="padding:8px 10px; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; width:100%; outline:none; text-align:center; box-sizing:border-box;" value="{{ $item['potongan_persen'] ?? 0 }}">
                         </td>
                         <td class="cell-total" style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px; text-align:right; font-weight:700; color:#1E293B;">Rp 0</td>
                         <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px; text-align:center;">
@@ -291,8 +304,34 @@
             </tbody>
             <tfoot>
                 <tr style="background:#F8FAFC;">
-                    <td colspan="5" style="padding:12px 14px; font-size:13px; text-align:right; font-weight:800; color:#0F172A; text-transform:uppercase;">TOTAL BIAYA INVOICE</td>
-                    <td id="grand-total" style="padding:12px 14px; font-size:14px; text-align:right; font-weight:800; color:#1B2A6B;">Rp 0</td>
+                    <td colspan="7" style="padding:10px 14px; font-size:12.5px; text-align:right; font-weight:700; color:#475569;">SUBTOTAL ITEMS:</td>
+                    <td id="subtotal-items" style="padding:10px 14px; font-size:13px; text-align:right; font-weight:800; color:#0F172A;">Rp 0</td>
+                    <td></td>
+                </tr>
+                <tr style="background:#FFFFFF;">
+                    <td colspan="6" style="padding:6px 14px; font-size:12.5px; text-align:right; font-weight:600; color:#64748B;">Potongan / Diskon Tambahan (Rp):</td>
+                    <td colspan="2" style="padding:6px 14px; text-align:right;">
+                        <input type="number" step="0.01" min="0" name="potongan" id="input-potongan" style="padding:6px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12.5px; width:160px; text-align:right; outline:none;" value="{{ old('potongan', $isEdit ? (float)$invoice->potongan : 0) }}">
+                    </td>
+                    <td></td>
+                </tr>
+                <tr style="background:#FFFFFF;">
+                    <td colspan="6" style="padding:6px 14px; font-size:12.5px; text-align:right; font-weight:600; color:#64748B;">Pajak / PPN (Rp):</td>
+                    <td colspan="2" style="padding:6px 14px; text-align:right;">
+                        <input type="number" step="0.01" min="0" name="pajak" id="input-pajak" style="padding:6px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12.5px; width:160px; text-align:right; outline:none;" value="{{ old('pajak', $isEdit ? (float)$invoice->pajak : 0) }}">
+                    </td>
+                    <td></td>
+                </tr>
+                <tr style="background:#FFFFFF;">
+                    <td colspan="6" style="padding:6px 14px; font-size:12.5px; text-align:right; font-weight:600; color:#64748B;">Biaya Lainnya (Rp):</td>
+                    <td colspan="2" style="padding:6px 14px; text-align:right;">
+                        <input type="number" step="0.01" min="0" name="biaya_lain" id="input-biaya-lain" style="padding:6px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12.5px; width:160px; text-align:right; outline:none;" value="{{ old('biaya_lain', $isEdit ? (float)$invoice->biaya_lain : 0) }}">
+                    </td>
+                    <td></td>
+                </tr>
+                <tr style="background:#F1F5F9; border-top:1.5px solid #CBD5E1;">
+                    <td colspan="6" style="padding:12px 14px; font-size:13px; text-align:right; font-weight:800; color:#0F172A; text-transform:uppercase;">TOTAL AKHIR INVOICE:</td>
+                    <td colspan="2" id="grand-total" style="padding:12px 14px; font-size:15px; text-align:right; font-weight:800; color:#1B2A6B;">Rp 0</td>
                     <td></td>
                 </tr>
             </tfoot>
@@ -301,7 +340,7 @@
 </div>
 
 <div class="invoice-action-footer">
-    <a href="{{ route('admin.pemeliharaan.invoice.index') }}" style="background:#F1F5F9; color:#475569; border:1px solid #E2E8F0; padding:10px 20px; border-radius:10px; font-weight:700; font-size:13px; text-decoration:none; display:inline-flex; align-items:center; cursor:pointer;">Batal</a>
+    <a href="{{ route($routePrefix . '.index') }}" style="background:#F1F5F9; color:#475569; border:1px solid #E2E8F0; padding:10px 20px; border-radius:10px; font-weight:700; font-size:13px; text-decoration:none; display:inline-flex; align-items:center; cursor:pointer;">Batal</a>
     <button type="submit" style="background:#1B2A6B; color:#FFFFFF; border:none; padding:10px 24px; border-radius:10px; font-weight:700; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(27,42,107,0.25);">
         <i data-lucide="save" style="width:16px; height:16px;"></i> Simpan Invoice
     </button>
@@ -334,32 +373,57 @@
         return 'Rp ' + (Number(num) || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 });
     }
 
+    function updateRowNumbers() {
+        itemsBody.querySelectorAll('.item-row').forEach((row, idx) => {
+            const numCell = row.querySelector('.row-num');
+            if (numCell) numCell.textContent = idx + 1;
+        });
+    }
+
     function recalcRow(row) {
         const vol = parseFloat(row.querySelector('.input-vol').value) || 0;
         const harga = parseFloat(row.querySelector('.input-harga').value) || 0;
-        const total = vol * harga;
+        const disc = parseFloat(row.querySelector('.input-disc').value) || 0;
+        const total = (vol * harga) * (1 - (disc / 100));
         row.querySelector('.cell-total').textContent = formatRupiah(total);
         return total;
     }
 
     function recalcAll() {
-        let grand = 0;
+        let subtotal = 0;
         itemsBody.querySelectorAll('.item-row').forEach(row => {
-            grand += recalcRow(row);
+            subtotal += recalcRow(row);
         });
+
+        const subtotalEl = document.getElementById('subtotal-items');
+        if (subtotalEl) subtotalEl.textContent = formatRupiah(subtotal);
+
+        const pot = parseFloat(document.getElementById('input-potongan').value) || 0;
+        const pajak = parseFloat(document.getElementById('input-pajak').value) || 0;
+        const biaya = parseFloat(document.getElementById('input-biaya-lain').value) || 0;
+
+        const grand = Math.max(0, subtotal - pot + pajak + biaya);
         grandTotalEl.textContent = formatRupiah(grand);
+        updateRowNumbers();
     }
 
-    function renderRow(tgl, jenis, vol = 1, satuan = 'PCS', harga = 0) {
+    function toTitleCase(str) {
+        if (!str) return '';
+        return str.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+
+    function renderRow(jenis, vol = 1, satuan = 'Pcs', harga = 0, kode = '', disc = 0) {
         const tr = document.createElement('tr');
         tr.className = 'item-row';
         tr.innerHTML = `
-            <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px;"><input type="date" name="items[${rowIndex}][tanggal]" style="padding:8px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; width:100%; outline:none;" value="${tgl || '{{ now()->format('Y-m-d') }}'}" required></td>
-            <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px;"><input type="text" name="items[${rowIndex}][jenis_perbaikan]" style="padding:8px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; width:100%; outline:none;" placeholder="Contoh: GANTI OLI / BOHLAM" value="${jenis || ''}" required></td>
-            <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px;"><input type="number" step="0.01" min="0.01" name="items[${rowIndex}][vol]" class="input-vol" style="padding:8px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; width:100%; outline:none;" value="${vol}" required></td>
-            <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px;"><input type="text" name="items[${rowIndex}][satuan]" style="padding:8px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; width:100%; outline:none;" value="${satuan}" required></td>
-            <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px;"><input type="number" step="0.01" min="0" name="items[${rowIndex}][harga_satuan]" class="input-harga" style="padding:8px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; width:100%; outline:none;" value="${harga}" required></td>
-            <td class="cell-total" style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px; text-align:right; font-weight:700; color:#1E293B;">${formatRupiah(vol * harga)}</td>
+            <td class="row-num" style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px; text-align:center; font-weight:700; color:#64748B;">${rowIndex + 1}</td>
+            <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px;"><input type="text" name="items[${rowIndex}][kode_item]" style="padding:8px 10px; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; width:100%; outline:none; text-transform:uppercase;" placeholder="Misal: M35" value="${kode || ''}"></td>
+            <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px;"><input type="text" name="items[${rowIndex}][jenis_perbaikan]" style="padding:8px 10px; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; width:100%; outline:none;" placeholder="Misal: MASTER REM RODA" value="${jenis || ''}" required></td>
+            <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px;"><input type="number" step="0.01" min="0.01" name="items[${rowIndex}][vol]" class="input-vol" style="padding:8px 10px; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; width:100%; outline:none; text-align:center;" value="${vol}" required></td>
+            <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px;"><input type="text" name="items[${rowIndex}][satuan]" style="padding:8px 10px; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; width:100%; outline:none;" value="${satuan}" required></td>
+            <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px;"><input type="number" step="0.01" min="0" name="items[${rowIndex}][harga_satuan]" class="input-harga" style="padding:8px 10px; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; width:100%; outline:none; text-align:right;" value="${harga}" required></td>
+            <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px;"><input type="number" step="0.01" min="0" max="100" name="items[${rowIndex}][potongan_persen]" class="input-disc" style="padding:8px 10px; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; width:100%; outline:none; text-align:center;" value="${disc}"></td>
+            <td class="cell-total" style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px; text-align:right; font-weight:700; color:#1E293B;">${formatRupiah(vol * harga * (1 - disc / 100))}</td>
             <td style="padding:10px 12px; border-bottom:1px solid #E2E8F0; font-size:12.5px; text-align:center;"><button type="button" class="btn-remove-item" style="background:#FFFFFF; color:#C0201F; border:1px solid #C0201F; padding:6px 10px; border-radius:8px; font-weight:700; font-size:12.5px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;"><i data-lucide="trash-2" style="width:16px; height:16px;"></i></button></td>
         `;
         itemsBody.appendChild(tr);
@@ -381,23 +445,21 @@
         if (!Array.isArray(itemsData) || itemsData.length === 0) return;
 
         const currentRows = itemsBody.querySelectorAll('.item-row');
-        // Jika hanya 1 baris dan jenis_perbaikan masih kosong, atau force = true
         let isBlank = currentRows.length === 1 && !currentRows[0].querySelector('input[name*="jenis_perbaikan"]').value.trim();
 
         if (isBlank || force) {
             itemsBody.innerHTML = '';
             rowIndex = 0;
-            const tgl = opt.dataset.tanggal || '{{ now()->format('Y-m-d') }}';
             itemsData.forEach(itemText => {
                 if (typeof itemText === 'string' && itemText.trim().length > 0) {
-                    renderRow(tgl, itemText.toUpperCase(), 1, 'PCS', 0);
+                    renderRow(toTitleCase(itemText), 1, 'Pcs', 0, '', 0);
                 }
             });
             recalcAll();
         }
     }
 
-    function updateSelection(shouldPopulateItems = false) {
+    function updateSelection(shouldPopulateItems = false, forcePopulate = false) {
         const opt = unitSelector.options[unitSelector.selectedIndex];
         if (!opt || !opt.value) {
             previewLambung.textContent = '-';
@@ -430,12 +492,12 @@
         previewKode.textContent = kode;
 
         if (shouldPopulateItems) {
-            populateItemsFromSelected(opt, false);
+            populateItemsFromSelected(opt, forcePopulate);
         }
     }
 
     addBtn.addEventListener('click', () => {
-        renderRow('{{ now()->format('Y-m-d') }}', '', 1, 'PCS', 0);
+        renderRow('', 1, 'Pcs', 0, '', 0);
         recalcAll();
     });
 
@@ -462,17 +524,24 @@
     });
 
     itemsBody.addEventListener('input', (e) => {
-        if (e.target.classList.contains('input-vol') || e.target.classList.contains('input-harga')) {
+        if (e.target.classList.contains('input-vol') || e.target.classList.contains('input-harga') || e.target.classList.contains('input-disc')) {
             recalcAll();
         }
     });
 
+    ['input-potongan', 'input-pajak', 'input-biaya-lain'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', recalcAll);
+    });
+
     unitSelector.addEventListener('change', () => {
-        updateSelection(true);
+        updateSelection(true, true);
     });
 
     // Inisialisasi awal
-    updateSelection(false);
+    const isEditMode = {{ $isEdit ? 'true' : 'false' }};
+    const hasOldItems = {{ old('items') ? 'true' : 'false' }};
+    updateSelection(!isEditMode && !hasOldItems);
     recalcAll();
 })();
 </script>

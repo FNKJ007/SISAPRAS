@@ -225,14 +225,23 @@
             if (reguSelect) reguSelect.addEventListener('change', updateOfficialsFromProfile);
             if (bidangSelect) bidangSelect.addEventListener('change', updateOfficialsFromProfile);
 
-            // Filter opsi Nomor Lambung berdasarkan Jenis Kendaraan yang dipilih
+            function normalizeKey(str) {
+                return (str || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+            }
+
+            // Filter opsi Nomor Lambung berdasarkan Pos & Jenis Kendaraan yang dipilih
             function filterNomorLambung(preserveSelected = true) {
                 if (!lambungSelect) return;
 
                 const currentKey = lambungSelect.value;
-                const selectedJenis = jenisSelect ? jenisSelect.value.trim().toUpperCase() : '';
+                const selectedJenis = jenisSelect && jenisSelect.value ? jenisSelect.value.trim().toUpperCase() : '';
+                
+                let selectedPosKey = '';
+                if (posSelect && posSelect.value && posSelect.selectedIndex >= 0) {
+                    const optText = posSelect.options[posSelect.selectedIndex].text;
+                    selectedPosKey = normalizeKey(optText || posSelect.value);
+                }
 
-                // Simpan daftar opsi lama untuk fallback
                 lambungSelect.innerHTML = '';
 
                 const placeholderOpt = document.createElement('option');
@@ -241,16 +250,22 @@
                 placeholderOpt.textContent = '';
                 lambungSelect.appendChild(placeholderOpt);
 
-                // Filter unit sesuai jenis_kendaraan
-                const matchingUnits = selectedJenis
-                    ? allUnits.filter(u => (u.jenis_kendaraan || '').trim().toUpperCase() === selectedJenis)
-                    : allUnits;
+                // Filter unit sesuai Pos DAN Jenis Kendaraan
+                const matchingUnits = allUnits.filter(u => {
+                    const uJenis = (u.jenis_kendaraan || '').trim().toUpperCase();
+                    const uPosKey = normalizeKey(u.pos || '');
+
+                    const matchJenis = !selectedJenis || uJenis === selectedJenis || uJenis.includes(selectedJenis);
+                    const matchPos = !selectedPosKey || uPosKey === selectedPosKey || uPosKey.includes(selectedPosKey) || selectedPosKey.includes(uPosKey);
+
+                    return matchJenis && matchPos;
+                });
 
                 let hasMatched = false;
                 matchingUnits.forEach(u => {
                     const opt = document.createElement('option');
                     opt.value = u.key;
-                    opt.textContent = u.label;
+                    opt.textContent = u.clean_label || u.label;
                     if (preserveSelected && u.key === currentKey) {
                         opt.selected = true;
                         hasMatched = true;
@@ -277,6 +292,7 @@
                     const targetJenis = data.jenis_kendaraan.trim().toUpperCase();
                     for (let i = 0; i < jenisSelect.options.length; i++) {
                         const opt = jenisSelect.options[i];
+                        if (!opt.value) continue;
                         if (opt.value.trim().toUpperCase() === targetJenis || opt.text.trim().toUpperCase() === targetJenis) {
                             jenisSelect.selectedIndex = i;
                             break;
@@ -286,12 +302,13 @@
 
                 // 2. Auto-select Pos
                 if (data.pos && posSelect) {
-                    const targetPos = data.pos.trim().toLowerCase().replace(/\s+/g, '');
+                    const targetPos = normalizeKey(data.pos);
                     for (let i = 0; i < posSelect.options.length; i++) {
                         const opt = posSelect.options[i];
-                        const optVal = opt.value.trim().toLowerCase().replace(/\s+/g, '');
-                        const optText = opt.text.trim().toLowerCase().replace(/\s+/g, '');
-                        if (optVal === targetPos || optText.includes(targetPos) || targetPos.includes(optVal)) {
+                        if (!opt.value) continue;
+                        const optVal = normalizeKey(opt.value);
+                        const optText = normalizeKey(opt.text);
+                        if (optVal === targetPos || optText === targetPos || (optText && optText.includes(targetPos)) || (optVal && targetPos.includes(optVal))) {
                             posSelect.selectedIndex = i;
                             break;
                         }
@@ -299,13 +316,16 @@
                 }
 
                 // 3. Auto-select Bidang
-                if (bidangSelect) {
-                    const targetBidang = (data.kategori || '').trim().toLowerCase();
-                    for (let i = 0; i < bidangSelect.options.length; i++) {
-                        const opt = bidangSelect.options[i];
-                        if (opt.value.toLowerCase() === targetBidang) {
-                            bidangSelect.selectedIndex = i;
-                            break;
+                if (bidangSelect && (data.kategori || data.bidang)) {
+                    const targetBidang = (data.kategori || data.bidang || '').trim().toLowerCase();
+                    if (targetBidang) {
+                        for (let i = 0; i < bidangSelect.options.length; i++) {
+                            const opt = bidangSelect.options[i];
+                            if (!opt.value) continue;
+                            if (opt.value.toLowerCase() === targetBidang || opt.text.toLowerCase() === targetBidang) {
+                                bidangSelect.selectedIndex = i;
+                                break;
+                            }
                         }
                     }
                 }
@@ -316,6 +336,16 @@
                 }
 
                 isSyncing = false;
+            }
+
+            // Event: Saat Pos diganti -> filter nomor lambung yang sesuai
+            if (posSelect) {
+                posSelect.addEventListener('change', function () {
+                    if (!isSyncing) {
+                        filterNomorLambung(false);
+                    }
+                    updateOfficialsFromProfile();
+                });
             }
 
             // Event: Saat Jenis Kendaraan diganti -> filter nomor lambung yang sesuai
@@ -335,9 +365,7 @@
             }
 
             // Inisialisasi awal saat load
-            if (jenisSelect && jenisSelect.value) {
-                filterNomorLambung(true);
-            }
+            filterNomorLambung(true);
         });
     </script>
 @endsection
