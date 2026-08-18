@@ -132,8 +132,8 @@
                 @endif
             </div>
         @else
-            <div style="overflow-x:auto;">
-                <table style="width:100%; border-collapse:collapse; font-size:12.5px; text-align:center;">
+            <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+                <table style="width:100%; min-width:1050px; border-collapse:collapse; font-size:12.5px; text-align:center;">
                     <thead>
                         {{-- Group Header --}}
                         <tr style="color:#FFFFFF; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; font-weight:800;">
