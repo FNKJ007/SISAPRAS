@@ -56,7 +56,7 @@
                             class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
                         <option value="" selected disabled>Pilih Pos Damkar</option>
                         @foreach($posList ?? [] as $p)
-                            <option value="{{ $p->nama }}" @selected(old('pos') == $p->nama)>{{ $p->nama }}</option>
+                            <option value="{{ $p->nama }}" @selected(old('pos', auth()->user()->pos ?? '') == $p->nama)>{{ $p->nama }}</option>
                         @endforeach
                     </select>
                     @error('pos') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
@@ -70,7 +70,7 @@
                 </div>
                 <div>
                     <label for="jabatan" class="block text-sm font-medium mb-1">Jabatan <span class="text-red-500">*</span></label>
-                    <input type="text" id="jabatan" name="jabatan" value="{{ old('jabatan', 'Petugas Regu') }}"
+                    <input type="text" id="jabatan" name="jabatan" value="{{ old('jabatan', auth()->user()->jabatan ?? 'Petugas Regu') }}"
                            placeholder="Masukkan jabatan" required
                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
                     @error('jabatan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
@@ -81,7 +81,9 @@
                             class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
                         <option value="" selected disabled>Pilih Unit / Kendaraan Rescue</option>
                         @foreach($unitList ?? [] as $unit)
-                            <option value="{{ $unit->id }}" @selected(old('unit_id') == $unit->id)>{{ $unit->nama }}</option>
+                            <option value="{{ $unit->id }}" @selected(old('unit_id') == $unit->id)>
+                                {{ $unit->nomor_lambung ? $unit->nomor_lambung . ' — ' . $unit->plat_nomor . ($unit->pos ? ' [' . $unit->pos . ']' : '') . ($unit->merk_tipe ? ' (' . $unit->merk_tipe . ')' : '') : $unit->nama }}
+                            </option>
                         @endforeach
                     </select>
                     @error('unit_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror

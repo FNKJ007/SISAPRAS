@@ -18,6 +18,8 @@ class Unit extends Model
         'merk_tipe',
         'tahun_pembuatan',
         'cc',
+        'jenis_kendaraan',
+        'peruntukan',
         'jenis_peruntukan',
         'pos',
         'pengemudi_1',
@@ -25,6 +27,30 @@ class Unit extends Model
         'status',
         'catatan',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($unit) {
+            if ($unit->kategori) {
+                $unit->kategori = ucwords(strtolower(str_replace('_', ' ', trim($unit->kategori))));
+            }
+            if ($unit->jenis_kendaraan) {
+                $jk = trim($unit->jenis_kendaraan);
+                $unit->jenis_kendaraan = in_array(strtoupper($jk), ['R2', 'R3', 'R4'])
+                    ? strtoupper($jk)
+                    : ucwords(strtolower($jk));
+            }
+            if ($unit->peruntukan) {
+                $unit->peruntukan = ucwords(strtolower(trim($unit->peruntukan)));
+            }
+            if ($unit->jenis_kendaraan || $unit->peruntukan) {
+                $parts = array_filter([$unit->jenis_kendaraan, $unit->peruntukan]);
+                $unit->jenis_peruntukan = implode('/', $parts);
+            }
+        });
+    }
 
     public static array $kategoriMap = [
         'pemadam' => 'Pemadam',
@@ -45,5 +71,25 @@ class Unit extends Model
     public function cekHarianAlats()
     {
         return $this->hasMany(CekHarianAlat::class, 'unit_id');
+    }
+
+    public function getNoPolAttribute()
+    {
+        return $this->plat_nomor;
+    }
+
+    public function getNoLambungAttribute()
+    {
+        return $this->nomor_lambung;
+    }
+
+    public function getJenisMobilAttribute()
+    {
+        return $this->jenis_kendaraan ?: ($this->merk_tipe ?: $this->jenis_peruntukan);
+    }
+
+    public function getLokasiAttribute()
+    {
+        return $this->pos;
     }
 }

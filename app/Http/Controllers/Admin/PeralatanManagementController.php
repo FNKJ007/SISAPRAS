@@ -19,8 +19,8 @@ class PeralatanManagementController extends Controller
 
         $query = Peralatan::orderBy('kategori', 'asc')->orderBy('nama', 'asc');
 
-        if ($kategoriFilter !== 'semua' && in_array($kategoriFilter, ['pemadam', 'rescue', 'command_center'])) {
-            $query->where('kategori', $kategoriFilter);
+        if ($kategoriFilter !== 'semua') {
+            $query->where('kategori', 'LIKE', str_replace('_', ' ', $kategoriFilter));
         }
 
         if ($statusFilter !== 'semua' && in_array($statusFilter, ['baik', 'perlu_perhatian', 'rusak'])) {
@@ -38,14 +38,35 @@ class PeralatanManagementController extends Controller
 
         $kpi = [
             'total'          => Peralatan::count(),
-            'pemadam'        => Peralatan::where('kategori', 'pemadam')->count(),
-            'rescue'         => Peralatan::where('kategori', 'rescue')->count(),
-            'command_center' => Peralatan::where('kategori', 'command_center')->count(),
+            'pemadam'        => Peralatan::where('kategori', 'LIKE', 'pemadam')->count(),
+            'rescue'         => Peralatan::where('kategori', 'LIKE', 'rescue')->count(),
+            'command_center' => Peralatan::where('kategori', 'LIKE', '%command%')->count(),
             'baik'           => Peralatan::where('status', 'baik')->count(),
             'rusak'          => Peralatan::where('status', 'rusak')->count(),
         ];
 
-        return view('admin.pemeliharaan.data-peralatan.index', compact('peralatanList', 'kpi', 'kategoriFilter', 'statusFilter', 'searchQuery'));
+        $existingKategoriList = Peralatan::whereNotNull('kategori')
+            ->where('kategori', '!=', '')
+            ->get()
+            ->pluck('kategori')
+            ->map(fn($v) => ucwords(strtolower(str_replace('_', ' ', trim($v)))))
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
+
+        if (empty($existingKategoriList)) {
+            $existingKategoriList = ['Pemadam', 'Rescue', 'Command Center'];
+        }
+
+        return view('admin.pemeliharaan.data-peralatan.index', compact(
+            'peralatanList',
+            'kpi',
+            'kategoriFilter',
+            'statusFilter',
+            'searchQuery',
+            'existingKategoriList'
+        ));
     }
 
     /**
@@ -53,13 +74,22 @@ class PeralatanManagementController extends Controller
      */
     public function store(Request $request)
     {
+        $messages = [
+            'nama.required'          => 'Nama peralatan wajib diisi.',
+            'kategori.required'      => 'Kategori peralatan wajib diisi.',
+            'jumlah_total.required'  => 'Jumlah total pcs peralatan wajib diisi.',
+            'jumlah_total.integer'   => 'Jumlah total pcs peralatan harus berupa angka bulat positif.',
+            'jumlah_total.min'       => 'Jumlah total pcs peralatan minimal 0.',
+            'status.required'        => 'Status kondisi peralatan wajib diisi.',
+        ];
+
         $validated = $request->validate([
             'nama'         => 'required|string|max:255',
-            'kategori'     => 'required|in:pemadam,rescue,command_center',
+            'kategori'     => 'required|string|max:100',
             'jumlah_total' => 'required|integer|min:0',
             'status'       => 'required|in:baik,perlu_perhatian,rusak',
             'catatan'      => 'nullable|string',
-        ]);
+        ], $messages);
 
         Peralatan::create($validated);
 
@@ -75,13 +105,22 @@ class PeralatanManagementController extends Controller
     {
         $peralatan = Peralatan::findOrFail($id);
 
+        $messages = [
+            'nama.required'          => 'Nama peralatan wajib diisi.',
+            'kategori.required'      => 'Kategori peralatan wajib diisi.',
+            'jumlah_total.required'  => 'Jumlah total pcs peralatan wajib diisi.',
+            'jumlah_total.integer'   => 'Jumlah total pcs peralatan harus berupa angka bulat positif.',
+            'jumlah_total.min'       => 'Jumlah total pcs peralatan minimal 0.',
+            'status.required'        => 'Status kondisi peralatan wajib diisi.',
+        ];
+
         $validated = $request->validate([
             'nama'         => 'required|string|max:255',
-            'kategori'     => 'required|in:pemadam,rescue,command_center',
+            'kategori'     => 'required|string|max:100',
             'jumlah_total' => 'required|integer|min:0',
             'status'       => 'required|in:baik,perlu_perhatian,rusak',
             'catatan'      => 'nullable|string',
-        ]);
+        ], $messages);
 
         $peralatan->update($validated);
 
@@ -102,5 +141,24 @@ class PeralatanManagementController extends Controller
         return redirect()
             ->route('admin.pemeliharaan.data-peralatan')
             ->with('success', "Data peralatan '{$nama}' berhasil dihapus.");
+    }
+
+    /**
+     * Hapus Opsi Riwayat (Typo/Kesalahan) dari Database Data Peralatan.
+     */
+    public function removeHistoryOption(Request $request)
+    {
+        $request->validate([
+            'type'  => 'required|string|in:kategori',
+            'value' => 'required|string',
+        ]);
+
+        $value = trim($request->input('value'));
+        Peralatan::where('kategori', 'LIKE', $value)->update(['kategori' => null]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Opsi riwayat '{$value}' berhasil dihapus dari data peralatan."
+        ]);
     }
 }

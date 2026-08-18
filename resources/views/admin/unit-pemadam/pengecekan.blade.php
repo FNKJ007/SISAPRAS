@@ -63,8 +63,8 @@
     <div class="w-full flex items-center mb-4">
         <div class="inline-flex items-center gap-1 p-1 bg-white border border-slate-300 rounded-lg shadow-2xs">
             <button type="button" @click="activeTab = 'unit'"
-                    :class="activeTab === 'unit' ? 'bg-[#1B2A6B] text-white shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-semibold hover:bg-slate-100'"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md transition-all duration-200 whitespace-nowrap cursor-pointer border-0">
+                    :class="activeTab === 'unit' ? 'bg-[#1B2A6B] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors duration-150 whitespace-nowrap cursor-pointer border-0">
                 <i data-lucide="truck" class="w-3.5 h-3.5"></i>
                 <span>Unit Kendaraan</span>
                 <span :class="activeTab === 'unit' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'"
@@ -74,8 +74,8 @@
             </button>
 
             <button type="button" @click="activeTab = 'alat'"
-                    :class="activeTab === 'alat' ? 'bg-[#1B2A6B] text-white shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-semibold hover:bg-slate-100'"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md transition-all duration-200 whitespace-nowrap cursor-pointer border-0">
+                    :class="activeTab === 'alat' ? 'bg-[#1B2A6B] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors duration-150 whitespace-nowrap cursor-pointer border-0">
                 <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
                 <span>Alat Pemadam</span>
                 <span :class="activeTab === 'alat' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'"

@@ -65,45 +65,54 @@
                                     Pengajuan
                                 </a>
                             </li>
-                            <li>
-                                <a href="{{ route('admin.pemeliharaan.pemeriksaan') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.pemeriksaan') ? 'active' : '' }}">
-                                    Pemeriksaan
-                                </a>
-                            </li>
+
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.pemeliharaan') }}"
                                    class="{{ request()->routeIs('admin.pemeliharaan.pemeliharaan') ? 'active' : '' }}">
-                                    Pemeliharaan
+                                    Surat Permohonan 
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{{ route('admin.pemeliharaan.monitoring-aktual') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.monitoring-aktual') ? 'active' : '' }}">
+                                    Monitoring Aktual
+                                </a>
+                            </li>
+                            
+                            <li>
+                                <a href="{{ route('admin.pemeliharaan.invoice.index') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.invoice.*') ? 'active' : '' }}">
+                                    Monitoring Invoice
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('admin.pemeliharaan.invoice') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.invoice') ? 'active' : '' }}">
-                                    Invoice
+                                <a href="{{ route('admin.pemeliharaan.kartu-kendali-pembayaran') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.kartu-kendali-pembayaran') ? 'active' : '' }}">
+                                    Kartu Kendali Pembayaran
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('admin.pemeliharaan.kartu-kendali') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.kartu-kendali') ? 'active' : '' }}">
-                                    Kartu Kendali
+                                <a href="{{ route('admin.pemeliharaan.kartu-kendali-aktual') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.kartu-kendali-aktual') ? 'active' : '' }}">
+                                    Kartu Kendali Aktual
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.data-unit') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.data-unit') ? 'active' : '' }}">
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-unit*') ? 'active' : '' }}">
                                     Data Unit
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.data-peralatan') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.data-peralatan') ? 'active' : '' }}">
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-peralatan*') ? 'active' : '' }}">
                                     Data Peralatan
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.data-pos') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.data-pos') ? 'active' : '' }}">
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-pos*') ? 'active' : '' }}">
                                     Data Pos
                                 </a>
                             </li>
@@ -127,12 +136,6 @@
                                     Pengecekan
                                 </a>
                             </li>
-                            <li>
-                                <a href="{{ route('admin.unit-pemadam.riwayat') }}"
-                                   class="{{ request()->routeIs('admin.unit-pemadam.riwayat') ? 'active' : '' }}">
-                                    Riwayat
-                                </a>
-                            </li>
                         </ul>
                     </div>
 
@@ -151,12 +154,6 @@
                                 <a href="{{ route('admin.unit-rescue.pengecekan') }}"
                                    class="{{ request()->routeIs('admin.unit-rescue.pengecekan') ? 'active' : '' }}">
                                     Pengecekan
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.unit-rescue.riwayat') }}"
-                                   class="{{ request()->routeIs('admin.unit-rescue.riwayat') ? 'active' : '' }}">
-                                    Riwayat
                                 </a>
                             </li>
                         </ul>
@@ -179,12 +176,6 @@
                                     Pengecekan
                                 </a>
                             </li>
-                            <li>
-                                <a href="{{ route('admin.command-center.riwayat') }}"
-                                   class="{{ request()->routeIs('admin.command-center.riwayat') ? 'active' : '' }}">
-                                    Riwayat
-                                </a>
-                            </li>
                         </ul>
                     </div>
 
@@ -198,24 +189,16 @@
                             </span>
                             <i data-lucide="chevron-down" class="chevron"></i>
                         </button>
-                        <ul class="submenu" id="menuApar">
-                            <li>
-                                <a href="{{ route('admin.apar.data-apar') }}"
-                                   class="{{ request()->routeIs('admin.apar.data-apar') ? 'active' : '' }}">
-                                    Data APAR
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.apar.laporan-kejadian') }}"
-                                   class="{{ request()->routeIs('admin.apar.laporan-kejadian') ? 'active' : '' }}">
-                                    Laporan Kejadian
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.apar.monitoring') }}"
-                                   class="{{ request()->routeIs('admin.apar.monitoring') ? 'active' : '' }}">
-                                    Monitoring Kejadian
-                                </a>
+                        <ul class="submenu" id="menuApar">  
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ route('admin.apar.monitoring-kejadian') }}"
+                                           class="nav-link {{ request()->routeIs('admin.apar.monitoring-kejadian') ? 'active' : '' }}">
+                                            <i class="far fa-circle nav-icon text-danger"></i>
+                                            <p>Monitoring Kejadian</p>
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
                         </ul>
                     </div>
@@ -234,33 +217,28 @@
                             <li>
                                 <a href="{{ route('admin.laporan.pemeliharaan') }}"
                                    class="{{ request()->routeIs('admin.laporan.pemeliharaan') ? 'active' : '' }}">
-                                    Pemeliharaan
+                                    SOP Bidang SPI
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.laporan.pemadam') }}"
                                    class="{{ request()->routeIs('admin.laporan.pemadam') ? 'active' : '' }}">
-                                    Pemadam
+                                   Laporan Bulanan Infokom
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.laporan.rescue') }}"
                                    class="{{ request()->routeIs('admin.laporan.rescue') ? 'active' : '' }}">
-                                    Rescue
+                                   Laporan Bulanan Sarpras
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.laporan.command-center') }}"
                                    class="{{ request()->routeIs('admin.laporan.command-center') ? 'active' : '' }}">
-                                    Command Center
+                                    Monev Bulanan
                                 </a>
                             </li>
-                            <li>
-                                <a href="{{ route('admin.laporan.bulanan') }}"
-                                   class="{{ request()->routeIs('admin.laporan.bulanan') ? 'active' : '' }}">
-                                    Laporan Bulanan
-                                </a>
-                            </li>
+                            
                         </ul>
                     </div>
 

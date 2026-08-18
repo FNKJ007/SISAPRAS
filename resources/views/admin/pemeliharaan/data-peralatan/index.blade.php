@@ -3,14 +3,7 @@
 @section('title', 'Data Peralatan — Admin')
 
 @section('content')
-<div x-data="{
-    createModalOpen: false,
-    editModalOpen: false,
-    deleteModalOpen: false,
-    activeAlat: {},
-    editUrl: '',
-    deleteUrl: ''
-}">
+<div x-data="dataPeralatanApp()">
 
     {{-- Flash Message --}}
     @if(session('success'))
@@ -44,11 +37,11 @@
             <div style="font-size:24px; font-weight:800; color:#0F172A; margin-top:6px;">{{ $kpi['total'] }}</div>
         </div>
         <div style="background:#FFFFFF; padding:18px; border-radius:14px; border:1px solid #E2E8F0; box-shadow:0 2px 8px rgba(15,23,42,0.04);">
-            <div style="color:#DC2626; font-size:11.5px; font-weight:700; text-transform:uppercase;">Alat Pemadam</div>
+            <div style="color:#DC2626; font-size:11.5px; font-weight:700; text-transform:uppercase;">Pemadam</div>
             <div style="font-size:24px; font-weight:800; color:#DC2626; margin-top:6px;">{{ $kpi['pemadam'] }}</div>
         </div>
         <div style="background:#FFFFFF; padding:18px; border-radius:14px; border:1px solid #E2E8F0; box-shadow:0 2px 8px rgba(15,23,42,0.04);">
-            <div style="color:#2563EB; font-size:11.5px; font-weight:700; text-transform:uppercase;">Alat Rescue</div>
+            <div style="color:#2563EB; font-size:11.5px; font-weight:700; text-transform:uppercase;">Rescue</div>
             <div style="font-size:24px; font-weight:800; color:#2563EB; margin-top:6px;">{{ $kpi['rescue'] }}</div>
         </div>
         <div style="background:#FFFFFF; padding:18px; border-radius:14px; border:1px solid #E2E8F0; box-shadow:0 2px 8px rgba(15,23,42,0.04);">
@@ -66,8 +59,8 @@
                     <span style="font-size:12px; font-weight:600; color:#64748B;">Kategori:</span>
                     <select name="kategori" onchange="this.form.submit()" style="padding:6px 12px; font-size:12px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#1E293B; font-weight:600;">
                         <option value="semua" @selected($kategoriFilter === 'semua')>Semua Kategori</option>
-                        <option value="pemadam" @selected($kategoriFilter === 'pemadam')>Alat Pemadam</option>
-                        <option value="rescue" @selected($kategoriFilter === 'rescue')>Alat Rescue</option>
+                        <option value="pemadam" @selected($kategoriFilter === 'pemadam')>Pemadam</option>
+                        <option value="rescue" @selected($kategoriFilter === 'rescue')>Rescue</option>
                         <option value="command_center" @selected($kategoriFilter === 'command_center')>Command Center</option>
                     </select>
                 </div>
@@ -126,10 +119,10 @@
                         <tr style="background:#F8FAFC; border-bottom:1.5px solid #E2E8F0; color:#475569; font-size:11.5px; text-transform:uppercase; letter-spacing:0.5px;">
                             <th style="padding:14px 12px; width:55px; text-align:center;">No</th>
                             <th style="padding:14px 16px; width:22%;">Nama Peralatan</th>
-                            <th style="padding:14px 16px; width:13%;">Kategori</th>
+                            <th style="padding:14px 16px; width:15%;">Kategori</th>
                             <th style="padding:14px 16px; width:12%; text-align:center;">Jumlah Total</th>
                             <th style="padding:14px 16px; width:14%; text-align:center;">Status Kondisi</th>
-                            <th style="padding:14px 16px; width:27%;">Catatan</th>
+                            <th style="padding:14px 16px; width:25%;">Catatan</th>
                             <th style="padding:14px 16px; width:120px; text-align:center;">Aksi</th>
                         </tr>
                     </thead>
@@ -141,12 +134,12 @@
                                     <div style="font-weight:700; color:#0F172A; word-break:break-word;">{{ $item->nama }}</div>
                                 </td>
                                 <td style="padding:12px 16px;">
-                                    @if($item->kategori === 'pemadam')
+                                    @if(strtolower($item->kategori) === 'pemadam')
                                         <span style="background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">Pemadam</span>
-                                    @elseif($item->kategori === 'rescue')
+                                    @elseif(strtolower($item->kategori) === 'rescue')
                                         <span style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">Rescue</span>
                                     @else
-                                        <span style="background:#F3E8FF; color:#6B21A8; border:1px solid #D8B4FE; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">Command Center</span>
+                                        <span style="background:#F3E8FF; color:#6B21A8; border:1px solid #D8B4FE; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">{{ $item->kategori ?: 'Command Center' }}</span>
                                     @endif
                                 </td>
                                 <td style="padding:12px 16px; text-align:center;">
@@ -206,39 +199,85 @@
             </div>
             <form action="{{ route('admin.pemeliharaan.data-peralatan.store') }}" method="POST" style="padding:20px;">
                 @csrf
+                @if(isset($errors) && $errors->any())
+                    <div style="background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; padding:12px 16px; border-radius:12px; margin-bottom:18px; font-size:12.5px;">
+                        <div style="display:flex; align-items:center; gap:6px; font-weight:800; color:#DC2626; margin-bottom:4px;">
+                            <i data-lucide="alert-triangle" style="width:16px; height:16px;"></i>
+                            <span>Gagal Menyimpan Data Peralatan:</span>
+                        </div>
+                        <ul style="margin:0; padding-left:20px; font-size:12px; font-weight:600;">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:16px;">
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nama Peralatan <span style="color:#DC2626;">*</span></label>
-                        <input type="text" name="nama" required placeholder="Contoh: Apar"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                        <input type="text" name="nama" required value="{{ old('nama') }}" placeholder="Contoh: Apar"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('nama') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
+                        @error('nama')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                        <div>
+                    <div style="display:grid; grid-template-columns:1.2fr 0.8fr; gap:12px;">
+                        {{-- Kategori Peralatan (Input Manual + Dropdown Riwayat + Hapus) --}}
+                        <div x-data="{ open: false, val: '{{ old('kategori', 'Pemadam') }}' }" style="position:relative;">
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Kategori Peralatan <span style="color:#DC2626;">*</span></label>
-                            <select name="kategori" required style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
-                                <option value="pemadam">Alat Pemadam</option>
-                                <option value="rescue" selected>Alat Rescue</option>
-                                <option value="command_center">Command Center</option>
-                            </select>
+                            <div style="position:relative; display:flex; align-items:center;">
+                                <input type="text" name="kategori" required x-model="val" placeholder="Ketik atau pilih kategori..."
+                                       style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('kategori') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;"
+                                       @focus="if(existingKategoriList.length > 0) open = true"
+                                       @click.outside="open = false">
+                                <button type="button" @click="open = !open" tabindex="-1"
+                                        style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
+                                    <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+                                </button>
+                            </div>
+                            @error('kategori')
+                                <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                            @enderror
+                            <div x-show="open && existingKategoriList.length > 0" x-cloak
+                                 style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
+                                <template x-for="item in existingKategoriList" :key="item">
+                                    <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                         @click="val = item; open = false;"
+                                         onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
+                                         onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
+                                         x-text="item">
+                                    </div>
+                                </template>
+                            </div>
                         </div>
+
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Jumlah Total <span style="color:#DC2626;">*</span></label>
-                            <input type="number" name="jumlah_total" value="1" min="0" required
-                                   style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                            <input type="number" name="jumlah_total" value="{{ old('jumlah_total', 1) }}" min="0" required
+                                   style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('jumlah_total') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
+                            @error('jumlah_total')
+                                <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                            @enderror
                         </div>
                     </div>
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Status Kondisi <span style="color:#DC2626;">*</span></label>
-                        <select name="status" required style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
-                            <option value="baik">Baik</option>
-                            <option value="perlu_perhatian">Perlu Perhatian</option>
-                            <option value="rusak">Rusak</option>
+                        <select name="status" required style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('status') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none; background:#FFFFFF;">
+                            <option value="baik" @selected(old('status', 'baik') == 'baik')>Baik</option>
+                            <option value="perlu_perhatian" @selected(old('status') == 'perlu_perhatian')>Perlu Perhatian</option>
+                            <option value="rusak" @selected(old('status') == 'rusak')>Rusak</option>
                         </select>
+                        @error('status')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Catatan Khusus</label>
                         <textarea name="catatan" rows="3" placeholder="Tuliskan catatan tambahan peralatan..."
-                                  style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; resize:none;"></textarea>
+                                  style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('catatan') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none; resize:none;">{{ old('catatan') }}</textarea>
+                        @error('catatan')
+                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
 
@@ -276,15 +315,33 @@
                         <input type="text" name="nama" required x-model="activeAlat.nama"
                                style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                        <div>
+                    <div style="display:grid; grid-template-columns:1.2fr 0.8fr; gap:12px;">
+                        {{-- Edit: Kategori Peralatan (Input Manual + Dropdown Riwayat + Hapus) --}}
+                        <div x-data="{ open: false }" style="position:relative;">
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Kategori Peralatan <span style="color:#DC2626;">*</span></label>
-                            <select name="kategori" required x-model="activeAlat.kategori" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
-                                <option value="pemadam">Alat Pemadam</option>
-                                <option value="rescue">Alat Rescue</option>
-                                <option value="command_center">Command Center</option>
-                            </select>
+                            <div style="position:relative; display:flex; align-items:center;">
+                                <input type="text" name="kategori" required x-model="activeAlat.kategori" placeholder="Ketik atau pilih kategori..."
+                                       style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
+                                       @focus="if(existingKategoriList.length > 0) open = true"
+                                       @click.outside="open = false">
+                                <button type="button" @click="open = !open" tabindex="-1"
+                                        style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
+                                    <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+                                </button>
+                            </div>
+                            <div x-show="open && existingKategoriList.length > 0" x-cloak
+                                 style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
+                                <template x-for="item in existingKategoriList" :key="item">
+                                    <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
+                                         @click="activeAlat.kategori = item; open = false;"
+                                         onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
+                                         onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
+                                         x-text="item">
+                                    </div>
+                                </template>
+                            </div>
                         </div>
+
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Jumlah Total <span style="color:#DC2626;">*</span></label>
                             <input type="number" name="jumlah_total" min="0" required x-model="activeAlat.jumlah_total"
@@ -348,4 +405,36 @@
     </div>
 
 </div>
+
+<script>
+function dataPeralatanApp() {
+    return {
+        createModalOpen: {{ isset($errors) && $errors->any() ? 'true' : 'false' }},
+        editModalOpen: false,
+        deleteModalOpen: false,
+        activeAlat: {},
+        editUrl: '',
+        deleteUrl: '',
+        existingKategoriList: @json($existingKategoriList ?? []),
+        removeOption(type, value) {
+            if (!confirm("Hapus '" + value + "' dari daftar pilihan riwayat?")) return;
+
+            if (type === 'kategori') {
+                this.existingKategoriList = this.existingKategoriList.filter(item => item !== value);
+            }
+
+            fetch("{{ route('admin.pemeliharaan.data-peralatan.remove-history-option') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ type: type, value: value })
+            }).then(res => res.json()).then(data => {
+                console.log(data.message);
+            }).catch(err => console.error(err));
+        }
+    };
+}
+</script>
 @endsection

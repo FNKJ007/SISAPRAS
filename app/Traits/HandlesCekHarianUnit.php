@@ -13,6 +13,19 @@ trait HandlesCekHarianUnit
      */
     protected function storeCekHarianUnit(Request $request, string $kategori, array $perlengkapanLabels): CekHarianUnit
     {
+        $messages = [
+            'nama_pemeriksa.required'          => 'Nama petugas pemeriksa wajib diisi.',
+            'jabatan.required'                 => 'Jabatan petugas pemeriksa wajib diisi.',
+            'unit_id.required'                 => 'Silakan pilih unit kendaraan yang diperiksa.',
+            'pos.required'                     => 'Silakan pilih pos tempat pemeriksaan.',
+            'bukti_pemanasan.image'            => 'Foto bukti pemanasan harus berupa file gambar (JPG/PNG/WebP).',
+            'bukti_pemanasan.max'              => 'Ukuran foto bukti pemanasan tidak boleh melebihi 10 MB.',
+            'bukti_bbm.image'                  => 'Foto bukti BBM harus berupa file gambar (JPG/PNG/WebP).',
+            'bukti_bbm.max'                    => 'Ukuran foto bukti BBM tidak boleh melebihi 10 MB.',
+            'dokumentasi_tangki_pompa.*.image' => 'Foto dokumentasi tangki/pompa harus berupa file gambar.',
+            'dokumentasi_tangki_pompa.*.max'   => 'Ukuran foto dokumentasi tangki/pompa maksimal 10 MB per file.',
+        ];
+
         $validated = $request->validate([
             'nama_pemeriksa'             => 'required|string|max:255',
             'jabatan'                    => 'required|string|max:255',
@@ -32,7 +45,7 @@ trait HandlesCekHarianUnit
             'dokumentasi_tangki_pompa.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'perlengkapan'               => 'nullable|array',
             'catatan'                    => 'nullable|string',
-        ]);
+        ], $messages);
 
         $unitObj  = Unit::find($validated['unit_id']);
         $unitNama = $unitObj ? "{$unitObj->nomor_lambung} ({$unitObj->plat_nomor})" : ("Unit #" . $validated['unit_id']);

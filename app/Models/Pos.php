@@ -41,7 +41,60 @@ class Pos extends Model
      */
     public function getTotalPersonilAttribute(): int
     {
-        return $this->personil_pemadam + $this->personil_rescue + $this->personil_cc;
+        return (int) $this->personil_pemadam + (int) $this->personil_rescue + (int) $this->personil_cc;
+    }
+
+    /**
+     * Hitungan Dinamis Unit Operasional dari Data Unit.
+     */
+    public function getUnitTruckPancarAttribute(): int
+    {
+        return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'Pancar')->count();
+    }
+
+    public function getUnitMotorRoda3Attribute(): int
+    {
+        return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'R3')->count();
+    }
+
+    public function getUnitMotorRoda2Attribute(): int
+    {
+        return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'R2')->count();
+    }
+
+    public function getUnitPompaAttribute(): int
+    {
+        return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'Pompa')->count();
+    }
+
+    public function getUnitRescueAttribute(): int
+    {
+        return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'Rescue')->count();
+    }
+
+    public function getUnitWaterSupplyAttribute(): int
+    {
+        return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'Supply')->count();
+    }
+
+    public function getUnitLainnyaAttribute(): int
+    {
+        return Unit::where('pos', 'LIKE', $this->nama)
+            ->where(function($q) {
+                $q->whereNotIn('jenis_kendaraan', ['Pancar', 'R3', 'R2', 'Pompa', 'Rescue', 'Supply'])
+                  ->orWhereNull('jenis_kendaraan');
+            })
+            ->count();
+    }
+
+    public function getUnitLainnyaListAttribute()
+    {
+        return Unit::where('pos', 'LIKE', $this->nama)
+            ->where(function($q) {
+                $q->whereNotIn('jenis_kendaraan', ['Pancar', 'R3', 'R2', 'Pompa', 'Rescue', 'Supply'])
+                  ->orWhereNull('jenis_kendaraan');
+            })
+            ->get(['id', 'nomor_lambung', 'plat_nomor', 'nama', 'jenis_kendaraan', 'merk_tipe']);
     }
 
     /**
@@ -49,12 +102,6 @@ class Pos extends Model
      */
     public function getTotalUnitAttribute(): int
     {
-        return $this->unit_truck_pancar
-            + $this->unit_motor_roda3
-            + $this->unit_motor_roda2
-            + $this->unit_pompa
-            + $this->unit_rescue
-            + $this->unit_water_supply
-            + $this->unit_lainnya;
+        return Unit::where('pos', 'LIKE', $this->nama)->count();
     }
 }

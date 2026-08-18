@@ -135,19 +135,22 @@
                                 </td>
                                 <td style="padding:14px 18px;">
                                     <div style="font-weight:700; color:#0F172A; text-transform:uppercase;">{{ $item->nomor_lambung }}</div>
-                                    <div style="font-size:11.5px; color:#64748B;">Pos {{ $item->pos }} &bull; {{ $item->regu }}</div>
+                                    <div style="font-size:11.5px; color:#64748B;">{{ str_starts_with(strtolower($item->pos), 'pos ') ? substr($item->pos, 4) : $item->pos }} &bull; {{ $item->regu }}</div>
                                 </td>
                                 <td style="padding:14px 18px; max-width:240px;">
                                     @if(!empty($item->item_verifikasis) && is_array($item->item_verifikasis))
                                         <div style="display:flex; flex-wrap:wrap; gap:4px;">
                                             @foreach($item->item_verifikasis as $itemName => $itemStatus)
+                                                @php
+                                                    $cleanItemName = ucwords(strtolower(trim($itemName)));
+                                                @endphp
                                                 @if($itemStatus === 'disetujui')
                                                     <span style="background:#D1FAE5; color:#065F46; border:1px solid #A7F3D0; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:3px;">
-                                                        ✓ {{ $itemName }}
+                                                        ✓ {{ $cleanItemName }}
                                                     </span>
                                                 @else
                                                     <span style="background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:3px;">
-                                                        ✕ {{ $itemName }}
+                                                        ✕ {{ $cleanItemName }}
                                                     </span>
                                                 @endif
                                             @endforeach
@@ -231,7 +234,7 @@
                     <div style="display:flex; flex-direction:column; gap:8px;">
                         <div>
                             <span style="color:#64748B; font-size:10.5px; display:block;">Unit &amp; Pos:</span>
-                            <strong style="color:#0F172A;" x-text="(activeItem.nomor_lambung || '-') + ' — Pos ' + (activeItem.pos || '-')"></strong>
+                            <strong style="color:#0F172A;" x-text="(activeItem.nomor_lambung || '-') + ' — ' + cleanPos(activeItem.pos)"></strong>
                         </div>
                         <div>
                             <span style="color:#64748B; font-size:10.5px; display:block;">Regu:</span>
@@ -292,21 +295,23 @@
                             <div class="custom-scrollbar" style="display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto; padding-right:2px;">
                                 <template x-for="(itemText, idx) in itemList" :key="idx">
                                     <div style="display:flex; align-items:center; justify-content:space-between; padding:7px 12px; border-radius:8px; background:#F8FAFC; border:1px solid #E2E8F0; transition:all 0.15s ease;">
-                                        <span style="font-weight:700; color:#0F172A; font-size:11.5px; text-transform:uppercase;" x-text="itemText"></span>
+                                        <span style="font-weight:700; color:#0F172A; font-size:11.5px;" x-text="itemText"></span>
                                         
                                         <div style="display:flex; align-items:center; gap:6px;">
                                             {{-- Option Setujui --}}
                                             <label class="verif-pill-btn"
-                                                   :class="itemVerifikasis[itemText] === 'disetujui' ? 'pill-disetujui-active' : 'pill-inactive'">
-                                                <input type="radio" :name="'item_verifikasis[' + itemText + ']'" value="disetujui" x-model="itemVerifikasis[itemText]" style="display:none !important;">
+                                                   :class="itemVerifikasis[itemText] === 'disetujui' ? 'pill-disetujui-active' : 'pill-inactive'"
+                                                   @click="toggleItemStatus(itemText, 'disetujui')">
+                                                <input type="radio" :name="'item_verifikasis[' + itemText + ']'" value="disetujui" :checked="itemVerifikasis[itemText] === 'disetujui'" style="display:none !important;">
                                                 <span x-show="itemVerifikasis[itemText] === 'disetujui'">✓</span>
                                                 <span>Setujui</span>
                                             </label>
 
                                             {{-- Option Tolak --}}
                                             <label class="verif-pill-btn"
-                                                   :class="itemVerifikasis[itemText] === 'ditolak' ? 'pill-ditolak-active' : 'pill-inactive'">
-                                                <input type="radio" :name="'item_verifikasis[' + itemText + ']'" value="ditolak" x-model="itemVerifikasis[itemText]" style="display:none !important;">
+                                                   :class="itemVerifikasis[itemText] === 'ditolak' ? 'pill-ditolak-active' : 'pill-inactive'"
+                                                   @click="toggleItemStatus(itemText, 'ditolak')">
+                                                <input type="radio" :name="'item_verifikasis[' + itemText + ']'" value="ditolak" :checked="itemVerifikasis[itemText] === 'ditolak'" style="display:none !important;">
                                                 <span x-show="itemVerifikasis[itemText] === 'ditolak'">✕</span>
                                                 <span>Tolak</span>
                                             </label>
@@ -322,15 +327,17 @@
                         <label style="display:block; font-size:11.5px; font-weight:700; color:#0F172A; margin-bottom:5px;">Status Pengajuan Keseluruhan</label>
                         <div style="display:flex; gap:6px;">
                             <label class="verif-pill-btn verif-status-pill" style="flex:1; padding:5px 8px !important; font-size:11px !important; white-space:nowrap;"
-                                   :class="selectedStatus === 'disetujui' ? 'pill-disetujui-active' : 'pill-inactive'">
-                                <input type="radio" name="status" value="disetujui" x-model="selectedStatus" required style="display:none !important;">
+                                   :class="selectedStatus === 'disetujui' ? 'pill-disetujui-active' : 'pill-inactive'"
+                                   @click="selectOverallStatus('disetujui')">
+                                <input type="radio" name="status" value="disetujui" :checked="selectedStatus === 'disetujui'" required style="display:none !important;">
                                 <span x-show="selectedStatus === 'disetujui'">✓</span>
                                 <span>Disetujui / Ke Bengkel</span>
                             </label>
 
                             <label class="verif-pill-btn verif-status-pill" style="flex:1; padding:5px 8px !important; font-size:11px !important; white-space:nowrap;"
-                                   :class="selectedStatus === 'ditolak' ? 'pill-ditolak-active' : 'pill-inactive'">
-                                <input type="radio" name="status" value="ditolak" x-model="selectedStatus" required style="display:none !important;">
+                                   :class="selectedStatus === 'ditolak' ? 'pill-ditolak-active' : 'pill-inactive'"
+                                   @click="selectOverallStatus('ditolak')">
+                                <input type="radio" name="status" value="ditolak" :checked="selectedStatus === 'ditolak'" required style="display:none !important;">
                                 <span x-show="selectedStatus === 'ditolak'">✕</span>
                                 <span>Ditolak Semua</span>
                             </label>
@@ -488,13 +495,28 @@ function pengajuanAdminModal() {
         openModal(item) {
             this.activeItem = item;
             this.selectedStatus = item.status === 'menunggu' ? 'disetujui' : item.status;
-            this.tanggalKeberangkatan = item.tanggal_keberangkatan ? item.tanggal_keberangkatan.substring(0, 10) : new Date().toISOString().substring(0, 10);
+            
+            if (item.tanggal_keberangkatan) {
+                let match = String(item.tanggal_keberangkatan).match(/^(\d{4}-\d{2}-\d{2})/);
+                this.tanggalKeberangkatan = match ? match[1] : item.tanggal_keberangkatan.substring(0, 10);
+            } else {
+                let today = new Date();
+                let year = today.getFullYear();
+                let month = String(today.getMonth() + 1).padStart(2, '0');
+                let day = String(today.getDate()).padStart(2, '0');
+                this.tanggalKeberangkatan = `${year}-${month}-${day}`;
+            }
+
             this.catatanAdmin = item.catatan_admin || '';
 
-            // Split item_perbaikan by comma / newline
+            // Split item_perbaikan by comma / newline and convert to Title Case
             let items = [];
             if (item.item_perbaikan) {
-                items = item.item_perbaikan.split(/[,;\n\r]+/).map(s => s.trim()).filter(Boolean);
+                items = item.item_perbaikan.split(/[,;\n\r]+/).map(s => {
+                    let trimmed = s.trim();
+                    if (!trimmed) return '';
+                    return trimmed.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+                }).filter(Boolean);
             }
             this.itemList = items;
 
@@ -510,6 +532,45 @@ function pengajuanAdminModal() {
             this.$nextTick(() => {
                 if (window.lucide) lucide.createIcons();
             });
+        },
+
+        cleanPos(pos) {
+            if (!pos) return '-';
+            let str = String(pos).trim();
+            if (str.toLowerCase().startsWith('pos ')) {
+                str = str.substring(4).trim();
+            }
+            return str;
+        },
+
+        setAllItems(status) {
+            let map = {};
+            this.itemList.forEach(it => {
+                map[it] = status;
+            });
+            this.itemVerifikasis = map;
+        },
+
+        selectOverallStatus(status) {
+            this.selectedStatus = status;
+            this.setAllItems(status);
+        },
+
+        toggleItemStatus(itemText, status) {
+            let map = Object.assign({}, this.itemVerifikasis);
+            map[itemText] = status;
+            this.itemVerifikasis = map;
+            this.checkOverallStatus();
+        },
+
+        checkOverallStatus() {
+            if (this.itemList.length === 0) return;
+            let allDitolak = this.itemList.every(it => this.itemVerifikasis[it] === 'ditolak');
+            if (allDitolak) {
+                this.selectedStatus = 'ditolak';
+            } else {
+                this.selectedStatus = 'disetujui';
+            }
         },
 
         closeModal() {

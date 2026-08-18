@@ -32,7 +32,7 @@
                         class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
                     <option value="" selected disabled>Pilih Regu</option>
                     @foreach($reguList ?? ['Regu 1', 'Regu 2', 'Regu 3', 'Regu 4'] as $regu)
-                        <option value="{{ $regu }}" @selected(old('pos') == $regu)>{{ $regu }}</option>
+                        <option value="{{ $regu }}" @selected(old('pos', auth()->user()->regu ?? '') == $regu)>{{ $regu }}</option>
                     @endforeach
                 </select>
                 @error('pos') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
@@ -48,7 +48,7 @@
             <div>
                 <label for="jabatan" class="block text-sm font-medium mb-1">Jabatan <span class="text-red-500">*</span></label>
                 <input type="text" id="jabatan" name="jabatan"
-                       value="{{ old('jabatan', 'Petugas Regu') }}" required
+                       value="{{ old('jabatan', auth()->user()->jabatan ?? 'Petugas Regu') }}" required
                        placeholder="Masukkan jabatan"
                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
                 @error('jabatan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror

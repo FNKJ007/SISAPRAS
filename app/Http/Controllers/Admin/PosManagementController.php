@@ -59,25 +59,39 @@ class PosManagementController extends Controller
      */
     public function store(Request $request)
     {
+        $messages = [
+            'nama.required'             => 'Nama pos Damkar wajib diisi.',
+            'personil_pemadam.required' => 'Jumlah personil pemadam wajib diisi.',
+            'personil_pemadam.integer'  => 'Jumlah personil pemadam harus berupa angka bulat positif.',
+            'personil_pemadam.min'      => 'Jumlah personil pemadam minimal 0.',
+            'personil_rescue.required'  => 'Jumlah personil rescue wajib diisi.',
+            'personil_rescue.integer'   => 'Jumlah personil rescue harus berupa angka bulat positif.',
+            'personil_rescue.min'       => 'Jumlah personil rescue minimal 0.',
+            'personil_cc.required'      => 'Jumlah personil command center wajib diisi.',
+            'personil_cc.integer'       => 'Jumlah personil command center harus berupa angka bulat positif.',
+            'personil_cc.min'          => 'Jumlah personil command center minimal 0.',
+            'status.required'           => 'Status pos wajib diisi.',
+        ];
+
         $validated = $request->validate([
             'nama'              => 'required|string|max:255',
             'kode_pos'          => 'nullable|string|max:100',
             'personil_pemadam'  => 'required|integer|min:0',
             'personil_rescue'   => 'required|integer|min:0',
             'personil_cc'       => 'required|integer|min:0',
-            'unit_truck_pancar' => 'required|integer|min:0',
-            'unit_motor_roda3'  => 'required|integer|min:0',
-            'unit_motor_roda2'  => 'required|integer|min:0',
-            'unit_pompa'        => 'required|integer|min:0',
-            'unit_rescue'       => 'required|integer|min:0',
-            'unit_water_supply' => 'required|integer|min:0',
-            'unit_lainnya'      => 'required|integer|min:0',
+            'unit_truck_pancar' => 'nullable|integer|min:0',
+            'unit_motor_roda3'  => 'nullable|integer|min:0',
+            'unit_motor_roda2'  => 'nullable|integer|min:0',
+            'unit_pompa'        => 'nullable|integer|min:0',
+            'unit_rescue'       => 'nullable|integer|min:0',
+            'unit_water_supply' => 'nullable|integer|min:0',
+            'unit_lainnya'      => 'nullable|integer|min:0',
             'alamat'            => 'nullable|string|max:500',
             'wilayah'           => 'nullable|string|max:255',
             'telepon'           => 'nullable|string|max:100',
             'status'            => 'required|in:aktif,nonaktif',
             'catatan'           => 'nullable|string',
-        ]);
+        ], $messages);
 
         Pos::create($validated);
 
@@ -93,25 +107,39 @@ class PosManagementController extends Controller
     {
         $pos = Pos::findOrFail($id);
 
+        $messages = [
+            'nama.required'             => 'Nama pos Damkar wajib diisi.',
+            'personil_pemadam.required' => 'Jumlah personil pemadam wajib diisi.',
+            'personil_pemadam.integer'  => 'Jumlah personil pemadam harus berupa angka bulat positif.',
+            'personil_pemadam.min'      => 'Jumlah personil pemadam minimal 0.',
+            'personil_rescue.required'  => 'Jumlah personil rescue wajib diisi.',
+            'personil_rescue.integer'   => 'Jumlah personil rescue harus berupa angka bulat positif.',
+            'personil_rescue.min'       => 'Jumlah personil rescue minimal 0.',
+            'personil_cc.required'      => 'Jumlah personil command center wajib diisi.',
+            'personil_cc.integer'       => 'Jumlah personil command center harus berupa angka bulat positif.',
+            'personil_cc.min'          => 'Jumlah personil command center minimal 0.',
+            'status.required'           => 'Status pos wajib diisi.',
+        ];
+
         $validated = $request->validate([
             'nama'              => 'required|string|max:255',
             'kode_pos'          => 'nullable|string|max:100',
             'personil_pemadam'  => 'required|integer|min:0',
             'personil_rescue'   => 'required|integer|min:0',
             'personil_cc'       => 'required|integer|min:0',
-            'unit_truck_pancar' => 'required|integer|min:0',
-            'unit_motor_roda3'  => 'required|integer|min:0',
-            'unit_motor_roda2'  => 'required|integer|min:0',
-            'unit_pompa'        => 'required|integer|min:0',
-            'unit_rescue'       => 'required|integer|min:0',
-            'unit_water_supply' => 'required|integer|min:0',
-            'unit_lainnya'      => 'required|integer|min:0',
+            'unit_truck_pancar' => 'nullable|integer|min:0',
+            'unit_motor_roda3'  => 'nullable|integer|min:0',
+            'unit_motor_roda2'  => 'nullable|integer|min:0',
+            'unit_pompa'        => 'nullable|integer|min:0',
+            'unit_rescue'       => 'nullable|integer|min:0',
+            'unit_water_supply' => 'nullable|integer|min:0',
+            'unit_lainnya'      => 'nullable|integer|min:0',
             'alamat'            => 'nullable|string|max:500',
             'wilayah'           => 'nullable|string|max:255',
             'telepon'           => 'nullable|string|max:100',
             'status'            => 'required|in:aktif,nonaktif',
             'catatan'           => 'nullable|string',
-        ]);
+        ], $messages);
 
         $pos->update($validated);
 
