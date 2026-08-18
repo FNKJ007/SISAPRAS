@@ -115,13 +115,13 @@
 
         {{-- Search & Filter Bar --}}
         <div class="admin-filter-bar" style="background:#FFFFFF; padding:16px; border-radius:14px; border:1px solid #E2E8F0; margin-bottom:24px;">
-            <form method="GET" action="{{ route('admin.pengaturan') }}" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px;">
-                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <form method="GET" action="{{ route('admin.pengaturan') }}" class="filter-form-responsive" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px;">
+                <div class="filter-items-grid" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                     
                     {{-- Filter Role --}}
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <span style="font-size:12px; font-weight:600; color:#64748B;">Role:</span>
-                        <select name="role" onchange="this.form.submit()" style="padding:6px 12px; font-size:12px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#1E293B; font-weight:600;">
+                    <div class="filter-item-cell" style="display:flex; align-items:center; gap:6px;">
+                        <span style="font-size:12px; font-weight:600; color:#64748B; white-space:nowrap;">Role:</span>
+                        <select name="role" onchange="this.form.submit()" style="padding:6px 12px; font-size:12px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#1E293B; font-weight:600; width:100%;">
                             <option value="semua" @selected($roleFilter === 'semua')>Semua Role</option>
                             <option value="user" @selected($roleFilter === 'user')>Petugas / User</option>
                             <option value="admin" @selected($roleFilter === 'admin')>Administrator</option>
@@ -129,9 +129,9 @@
                     </div>
 
                     {{-- Filter Bidang --}}
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <span style="font-size:12px; font-weight:600; color:#64748B;">Bidang:</span>
-                        <select name="bidang" onchange="this.form.submit()" style="padding:6px 12px; font-size:12px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#1E293B; font-weight:600;">
+                    <div class="filter-item-cell" style="display:flex; align-items:center; gap:6px;">
+                        <span style="font-size:12px; font-weight:600; color:#64748B; white-space:nowrap;">Bidang:</span>
+                        <select name="bidang" onchange="this.form.submit()" style="padding:6px 12px; font-size:12px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#1E293B; font-weight:600; width:100%;">
                             <option value="semua" @selected($bidangFilter === 'semua')>Semua Bidang</option>
                             @foreach($existingBidangList as $b)
                                 <option value="{{ $b }}" @selected($bidangFilter === $b)>{{ $b }}</option>
@@ -140,9 +140,9 @@
                     </div>
 
                     {{-- Filter Pos --}}
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <span style="font-size:12px; font-weight:600; color:#64748B;">Pos:</span>
-                        <select name="pos" onchange="this.form.submit()" style="padding:6px 12px; font-size:12px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#1E293B; font-weight:600;">
+                    <div class="filter-item-cell" style="display:flex; align-items:center; gap:6px;">
+                        <span style="font-size:12px; font-weight:600; color:#64748B; white-space:nowrap;">Pos:</span>
+                        <select name="pos" onchange="this.form.submit()" style="padding:6px 12px; font-size:12px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#1E293B; font-weight:600; width:100%;">
                             <option value="semua" @selected($posFilter === 'semua')>Semua Pos</option>
                             @foreach($posList as $p)
                                 <option value="{{ $p->nama }}" @selected($posFilter === $p->nama)>{{ $p->nama }}</option>
@@ -151,9 +151,9 @@
                     </div>
 
                     {{-- Filter Regu --}}
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <span style="font-size:12px; font-weight:600; color:#64748B;">Regu:</span>
-                        <select name="regu" onchange="this.form.submit()" style="padding:6px 12px; font-size:12px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#1E293B; font-weight:600;">
+                    <div class="filter-item-cell" style="display:flex; align-items:center; gap:6px;">
+                        <span style="font-size:12px; font-weight:600; color:#64748B; white-space:nowrap;">Regu:</span>
+                        <select name="regu" onchange="this.form.submit()" style="padding:6px 12px; font-size:12px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#1E293B; font-weight:600; width:100%;">
                             <option value="semua" @selected($reguFilter === 'semua')>Semua Regu</option>
                             @foreach($existingReguList as $r)
                                 <option value="{{ $r }}" @selected($reguFilter === $r)>{{ $r }}</option>
@@ -162,9 +162,9 @@
                     </div>
 
                     {{-- Filter Status --}}
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <span style="font-size:12px; font-weight:600; color:#64748B;">Status:</span>
-                        <select name="status" onchange="this.form.submit()" style="padding:6px 12px; font-size:12px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#1E293B; font-weight:600;">
+                    <div class="filter-item-cell" style="display:flex; align-items:center; gap:6px;">
+                        <span style="font-size:12px; font-weight:600; color:#64748B; white-space:nowrap;">Status:</span>
+                        <select name="status" onchange="this.form.submit()" style="padding:6px 12px; font-size:12px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#1E293B; font-weight:600; width:100%;">
                             <option value="semua" @selected($statusFilter === 'semua')>Semua Status</option>
                             <option value="aktif" @selected($statusFilter === 'aktif')>Aktif</option>
                             <option value="nonaktif" @selected($statusFilter === 'nonaktif')>Nonaktif</option>
@@ -174,15 +174,20 @@
                 </div>
 
                 {{-- Input Pencarian --}}
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <div style="position:relative;">
+                <div class="filter-search-wrap-box" style="display:flex; align-items:center; gap:8px;">
+                    <div style="position:relative; flex:1;">
                         <input type="text" name="search" value="{{ $searchQuery }}" placeholder="Cari nama, NIP, jabatan..."
-                               style="padding:7px 14px 7px 34px; font-size:12.5px; border-radius:8px; border:1px solid #CBD5E1; outline:none; width:220px; background:#F8FAFC;">
+                               style="padding:7px 14px 7px 34px; font-size:12.5px; border-radius:8px; border:1px solid #CBD5E1; outline:none; width:100%; min-width:180px; background:#F8FAFC; box-sizing:border-box;">
                         <i data-lucide="search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:14px; height:14px; color:#94A3B8;"></i>
                     </div>
-                    <button type="submit" style="padding:7px 14px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;">
+                    <button type="submit" style="padding:7px 14px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">
                         Cari
                     </button>
+                    @if($roleFilter !== 'semua' || $bidangFilter !== 'semua' || $posFilter !== 'semua' || $reguFilter !== 'semua' || $statusFilter !== 'semua' || !empty($searchQuery))
+                        <a href="{{ route('admin.pengaturan') }}" style="padding:7px 12px; background:#E2E8F0; color:#475569; border-radius:8px; font-size:12px; text-decoration:none; font-weight:600; white-space:nowrap;">
+                            Reset
+                        </a>
+                    @endif
                 </div>
             </form>
         </div>
@@ -204,8 +209,8 @@
                     </a>
                 </div>
             @else
-                <div style="overflow-x:auto;">
-                    <table style="width:100%; table-layout:fixed; border-collapse:collapse; font-size:13px; text-align:left;">
+                <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+                    <table style="width:100%; min-width:850px; border-collapse:collapse; font-size:13px; text-align:left;">
                         <thead>
                             <tr style="background:#F8FAFC; border-bottom:1.5px solid #E2E8F0; color:#475569; font-size:11.5px; text-transform:uppercase; letter-spacing:0.5px;">
                                 <th style="padding:14px 12px; width:50px; text-align:center;">No</th>
@@ -822,4 +827,35 @@ function pengaturanApp() {
     };
 }
 </script>
+
+@push('styles')
+<style>
+@media (max-width: 768px) {
+    .filter-form-responsive {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+    }
+    .filter-items-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+    .filter-item-cell {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 4px !important;
+        width: 100% !important;
+    }
+    .filter-item-cell select {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .filter-search-wrap-box {
+        width: 100% !important;
+    }
+}
+</style>
+@endpush
 @endsection

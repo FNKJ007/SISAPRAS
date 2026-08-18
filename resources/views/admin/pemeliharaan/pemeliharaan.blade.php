@@ -59,8 +59,8 @@
         </div>
 
         {{-- Table Data --}}
-        <div style="overflow-x:auto;">
-            <table style="width:100%; border-collapse:collapse; text-align:left;">
+        <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+            <table style="width:100%; min-width:850px; border-collapse:collapse; text-align:left;">
                 <thead>
                     <tr style="background:#1B2A6B; color:#FFFFFF;">
                         <th style="padding:14px 18px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #101B4B; width:170px;">

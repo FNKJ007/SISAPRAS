@@ -113,17 +113,17 @@
                 @endif
             </div>
         @else
-            <div style="overflow-x:auto;">
-                <table style="width:100%; table-layout:fixed; border-collapse:collapse; font-size:13px; text-align:left;">
+            <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+                <table style="width:100%; min-width:780px; border-collapse:collapse; font-size:13px; text-align:left;">
                     <thead>
                         <tr style="background:#F8FAFC; border-bottom:1.5px solid #E2E8F0; color:#475569; font-size:11.5px; text-transform:uppercase; letter-spacing:0.5px;">
-                            <th style="padding:14px 12px; width:55px; text-align:center;">No</th>
-                            <th style="padding:14px 16px; width:22%;">Nama Peralatan</th>
-                            <th style="padding:14px 16px; width:15%;">Kategori</th>
-                            <th style="padding:14px 16px; width:12%; text-align:center;">Jumlah Total</th>
-                            <th style="padding:14px 16px; width:14%; text-align:center;">Status Kondisi</th>
-                            <th style="padding:14px 16px; width:25%;">Catatan</th>
-                            <th style="padding:14px 16px; width:120px; text-align:center;">Aksi</th>
+                            <th style="padding:14px 12px; width:50px; text-align:center;">No</th>
+                            <th style="padding:14px 16px; width:200px;">Nama Peralatan</th>
+                            <th style="padding:14px 16px; width:130px;">Kategori</th>
+                            <th style="padding:14px 16px; width:110px; text-align:center;">Jumlah Total</th>
+                            <th style="padding:14px 16px; width:140px; text-align:center;">Status Kondisi</th>
+                            <th style="padding:14px 16px;">Catatan</th>
+                            <th style="padding:14px 16px; width:130px; text-align:center;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>

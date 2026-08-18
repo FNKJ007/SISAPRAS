@@ -1126,3 +1126,38 @@ body {
         width: 100% !important;
     }
 }
+
+/* =========================================================================
+   UNIVERSAL RESPONSIVE FILTER BAR UTILITIES
+   ========================================================================= */
+@media (max-width: 768px) {
+    .admin-filter-bar form {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+    }
+    .admin-filter-bar form > div {
+        width: 100% !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+    }
+    .admin-filter-bar form > div > div {
+        flex: 1 1 calc(50% - 10px) !important;
+        min-width: 130px !important;
+    }
+    .admin-filter-bar select {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .admin-filter-bar input[type="text"] {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-filter-bar form > div > div {
+        flex: 1 1 100% !important;
+        min-width: 100% !important;
+    }
+}

@@ -109,8 +109,8 @@
                     @endif
                 </div>
             @else
-                <div style="overflow-x:auto;">
-                    <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+                <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+                    <table style="width:100%; min-width:900px; border-collapse:collapse; font-size:13px; text-align:left;">
                         <thead>
                             <tr style="background:#F8FAFC; border-bottom:1.5px solid #E2E8F0; color:#475569; font-size:11.5px; text-transform:uppercase; letter-spacing:0.5px;">
                                 <th style="padding:14px 18px;">No</th>
@@ -199,8 +199,8 @@
                     @endif
                 </div>
             @else
-                <div style="overflow-x:auto;">
-                    <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+                <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+                    <table style="width:100%; min-width:900px; border-collapse:collapse; font-size:13px; text-align:left;">
                         <thead>
                             <tr style="background:#F8FAFC; border-bottom:1.5px solid #E2E8F0; color:#475569; font-size:11.5px; text-transform:uppercase; letter-spacing:0.5px;">
                                 <th style="padding:14px 18px;">No</th>
