@@ -28,6 +28,8 @@ class Invoice extends Model
         'biaya_lain',
         'total_biaya',
         'status',
+        'kategori_monitoring',
+        'pengajuan_id',
         'catatan',
         'created_by',
     ];
