@@ -55,6 +55,15 @@ class CekHarianAlatRescueController extends Controller
 
         return redirect()
             ->route('alat-rescue.cek-harian-alat')
-            ->with('success', "Pemeriksaan harian alat Rescue berhasil disimpan!");
+            ->with('success', "Pemeriksaan harian alat Rescue berhasil disimpan!")
+            ->with('cek_id', $record->id);
+    }
+
+    /**
+     * Mengunduh PDF hasil pemeriksaan alat rescue.
+     */
+    public function exportPdf($id)
+    {
+        return $this->exportCekHarianAlatPdf((int) $id, 'rescue');
     }
 }

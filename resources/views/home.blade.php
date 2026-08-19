@@ -5,194 +5,8 @@
 
 @section('content')
 <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-7 max-w-6xl mx-auto border border-gray-100" x-data="calendarModal()" @keydown.escape.window="closeModal()">
-
-    {{-- Header Banner --}}
-    <div class="flex items-start justify-between flex-wrap gap-4 mb-6 pb-5 border-b border-gray-100">
-        <div>
-            <div class="flex items-center gap-2 mb-1">
-                <span class="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>
-                <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Kalender Pemeliharaan Sarana Prasarana</h1>
-            </div>
-            <p class="text-gray-500 text-sm">
-                Jadwal &amp; status verifikasi pengajuan unit operasional secara real-time.
-                <span class="hidden sm:inline text-gray-400">— Klik tanggal bertanda untuk melihat detail.</span>
-            </p>
-        </div>
-
-        {{-- Ringkasan KPI Status Badges (Menunggu, Disetujui, Ditolak) --}}
-        <div class="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
-            <div class="flex items-center justify-between sm:justify-start gap-2 text-xs font-semibold bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-3 py-1.5 shadow-2xs">
-                <div class="flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                    <span>Menunggu:</span>
-                </div>
-                <span class="bg-amber-200/80 text-amber-950 px-2 py-0.5 rounded-md text-[11px] font-bold">{{ $ringkasan['menunggu'] }}</span>
-            </div>
-            <div class="flex items-center justify-between sm:justify-start gap-2 text-xs font-semibold bg-blue-50 border border-blue-200 text-blue-900 rounded-xl px-3 py-1.5 shadow-2xs">
-                <div class="flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-blue-600"></span>
-                    <span>Disetujui / Bengkel:</span>
-                </div>
-                <span class="bg-blue-200/80 text-blue-950 px-2 py-0.5 rounded-md text-[11px] font-bold">{{ $ringkasan['disetujui'] }}</span>
-            </div>
-            <div class="flex items-center justify-between sm:justify-start gap-2 text-xs font-semibold bg-red-50 border border-red-200 text-red-900 rounded-xl px-3 py-1.5 shadow-2xs">
-                <div class="flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-red-600"></span>
-                    <span>Ditolak:</span>
-                </div>
-                <span class="bg-red-200/80 text-red-950 px-2 py-0.5 rounded-md text-[11px] font-bold">{{ $ringkasan['ditolak'] }}</span>
-            </div>
-        </div>
-    </div>
-
-    {{-- Navigasi Bulan & Dropdown Pilih Bulan/Tahun (Mobile Single Row Layout) --}}
-    <div class="flex items-center justify-between gap-1.5 sm:gap-3 mb-6 bg-slate-50 border border-slate-200/80 rounded-2xl p-2 sm:p-3 shadow-2xs">
-
-        {{-- Tombol Bulan Sebelumnya --}}
-        <a href="{{ route('home', ['month' => $bulanSebelumnya->month, 'year' => $bulanSebelumnya->year]) }}"
-           class="inline-flex items-center justify-center gap-1 px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl text-slate-700 bg-white border border-slate-200 shadow-2xs hover:bg-slate-100 hover:text-slate-900 transition-all flex-shrink-0"
-           title="Bulan Sebelumnya">
-            <i data-lucide="chevron-left" class="w-4 h-4 text-slate-600"></i>
-            <span class="hidden sm:inline">Sebelumnya</span>
-        </a>
-
-        {{-- Dropdown Form Pilih Bulan & Tahun langsung --}}
-        <form action="{{ route('home') }}" method="GET" class="flex items-center gap-1.5 justify-center flex-1 min-w-0">
-            <div class="flex items-center gap-1 sm:gap-1.5 bg-white border border-slate-200 rounded-xl px-2 sm:px-3 py-1.5 shadow-2xs max-w-full overflow-hidden">
-                <i data-lucide="calendar" class="w-4 h-4 text-red-600 flex-shrink-0"></i>
-
-                {{-- Select Bulan --}}
-                <select name="month" onchange="this.form.submit()"
-                        class="bg-transparent text-xs sm:text-sm font-bold text-slate-800 focus:outline-none cursor-pointer py-0.5 font-sans truncate max-w-[90px] xs:max-w-[110px] sm:max-w-none">
-                    @foreach([
-                        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                        5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                        9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-                    ] as $mNum => $mName)
-                        <option value="{{ $mNum }}" @selected($bulanAktif->month == $mNum)>{{ $mName }}</option>
-                    @endforeach
-                </select>
-
-                {{-- Select Tahun Dinamis --}}
-                <select name="year" onchange="this.form.submit()"
-                        class="bg-transparent text-xs sm:text-sm font-bold text-slate-800 focus:outline-none cursor-pointer py-0.5 border-l border-slate-200 pl-1 sm:pl-2 font-sans">
-                    @foreach(($availableYears ?? range(2020, (int)date('Y') + 10)) as $y)
-                        <option value="{{ $y }}" @selected($bulanAktif->year == $y)>{{ $y }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            @unless($bulanAktif->isCurrentMonth())
-                <a href="{{ route('home') }}"
-                   class="text-[10px] sm:text-[11px] px-2 sm:px-2.5 py-1.5 rounded-xl bg-red-100/90 text-red-800 hover:bg-red-200 transition-colors font-bold shadow-2xs inline-flex items-center gap-1 flex-shrink-0"
-                   title="Kembali ke Bulan Saat Ini">
-                    <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
-                    <span class="hidden md:inline">Hari Ini</span>
-                </a>
-            @endunless
-        </form>
-
-        {{-- Tombol Bulan Berikutnya --}}
-        <a href="{{ route('home', ['month' => $bulanBerikutnya->month, 'year' => $bulanBerikutnya->year]) }}"
-           class="inline-flex items-center justify-center gap-1 px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl text-slate-700 bg-white border border-slate-200 shadow-2xs hover:bg-slate-100 hover:text-slate-900 transition-all flex-shrink-0"
-           title="Bulan Berikutnya">
-            <span class="hidden sm:inline">Berikutnya</span>
-            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600"></i>
-        </a>
-    </div>
-
-    @if($totalPengajuan === 0)
-        <div class="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
-            <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3 text-gray-400">
-                <i data-lucide="calendar-x" class="w-6 h-6"></i>
-            </div>
-            <p class="text-sm font-bold text-gray-700">Belum Ada Pengajuan Pemeliharaan</p>
-            <p class="text-xs text-gray-400 mt-1 max-w-sm">Data pengajuan perbaikan atau pemeriksaan unit pada bulan {{ $bulanAktif->translatedFormat('F Y') }} akan tampil di sini.</p>
-        </div>
-    @else
-        <div class="rounded-xl border border-gray-200 w-full overflow-hidden shadow-xs">
-            <table class="w-full border-collapse table-fixed">
-                <thead>
-                    <tr class="bg-slate-100/80 border-b border-gray-200">
-                        @foreach(['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'] as $hari)
-                            <th class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider py-2.5 text-center px-1">
-                                {{ $hari }}
-                            </th>
-                        @endforeach
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @foreach($calendarWeeks as $week)
-                        <tr>
-                            @foreach($week as $hari)
-                                @php
-                                    $tanggalKey = $hari->toDateString();
-                                    $eventsHariIni = $eventsByDate->get($tanggalKey, collect());
-                                    $isBulanIni = $hari->month === $bulanAktif->month;
-                                    $isHariIni = $hari->isToday();
-                                    $adaData = $eventsHariIni->count() > 0;
-                                    $adaDisetujui = $eventsHariIni->contains('status', 'disetujui');
-                                @endphp
-                                <td class="align-top border-r border-gray-100 last:border-r-0 p-1 sm:p-2 h-16 sm:h-20 w-[14.28%] relative transition-all duration-150
-                                           {{ $isBulanIni ? 'bg-white' : 'bg-slate-50/70 opacity-60' }}
-                                           {{ $adaData ? 'cursor-pointer hover:bg-red-50/70 hover:ring-2 hover:ring-inset hover:ring-red-400/50' : '' }}"
-                                    @if($adaData)
-                                        @click="openModal({{ Js::from($hari->translatedFormat('l, d F Y')) }}, {{ Js::from($eventsHariIni->values()) }})"
-                                        title="Klik untuk melihat detail status verifikasi"
-                                    @endif
-                                >
-                                    <div class="flex items-center justify-between mb-1">
-                                        <span class="text-xs sm:text-sm font-semibold
-                                            {{ $isBulanIni ? 'text-slate-800' : 'text-slate-400' }}
-                                            {{ $isHariIni ? 'inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-r from-red-600 to-red-800 text-white shadow-sm text-[10px] sm:text-xs font-bold' : '' }}">
-                                            {{ $hari->day }}
-                                        </span>
-
-                                        @if($adaDisetujui)
-                                            <span class="w-2 h-2 rounded-full bg-blue-600 animate-ping" title="Unit disetujui ke bengkel"></span>
-                                        @endif
-                                    </div>
-
-                                    {{-- Event Badges (Sangat Jelas dengan Status Menunggu, Disetujui, Ditolak) --}}
-                                    <div class="space-y-1">
-                                        @foreach($eventsHariIni->take(2) as $event)
-                                            @php
-                                                $badgeStyle = match($event->status) {
-                                                    'menunggu'  => 'bg-amber-100/90 text-amber-900 border-amber-300',
-                                                    'disetujui' => 'bg-blue-100/90 text-blue-900 border-blue-300',
-                                                    'ditolak'   => 'bg-red-100/90 text-red-900 border-red-300',
-                                                    default     => 'bg-slate-100 text-slate-800 border-slate-300',
-                                                };
-                                                $prefixLabel = match($event->status) {
-                                                    'menunggu'  => '⏳ ',
-                                                    'disetujui' => '✅ ',
-                                                    'ditolak'   => '❌ ',
-                                                    default     => '',
-                                                };
-                                            @endphp
-                                            <div class="text-[9px] sm:text-[11px] leading-tight px-1.5 py-0.5 rounded-md border {{ $badgeStyle }} truncate font-bold shadow-2xs"
-                                                 title="{{ $prefixLabel }}{{ $event->unit_nama }} ({{ ucfirst($event->status) }})">
-                                                {{ $prefixLabel }}{{ $event->unit_nama }}
-                                            </div>
-                                        @endforeach
-
-                                        @if($eventsHariIni->count() > 2)
-                                            <div class="text-[9px] sm:text-[10px] text-red-700 font-extrabold px-0.5">
-                                                +{{ $eventsHariIni->count() - 2 }} detail →
-                                            </div>
-                                        @endif
-                                    </div>
-                                </td>
-                            @endforeach
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    @endif
-
     {{-- ===================== SUMMARY STATUS ARMADA (READY VS DI BENGKEL) ===================== --}}
-    <div class="mt-8 pt-6 border-t border-gray-100">
+    <div class="border-gray-100">
         <div class="flex items-center justify-between flex-wrap gap-4 mb-4">
             <div>
                 <h3 class="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -403,6 +217,191 @@
         </div>
     </div>
 
+    {{-- Header Banner --}}
+    <div class="mt-6 pt-8 flex items-start justify-between flex-wrap gap-4 mb-6 pb-5 border-b border-gray-100">    
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Kalender Pemeliharaan Sarana Prasarana</h1>
+            </div>
+            <p class="text-gray-500 text-sm">
+                Jadwal &amp; status verifikasi pengajuan unit operasional secara real-time.
+                <span class="hidden sm:inline text-gray-400">— Klik tanggal bertanda untuk melihat detail.</span>
+            </p>
+        </div>
+
+        {{-- Ringkasan KPI Status Badges (Menunggu, Disetujui, Ditolak) --}}
+        <div class="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
+            <div class="flex items-center justify-between sm:justify-start gap-2 text-xs font-semibold bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-3 py-1.5 shadow-2xs">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                    <span>Menunggu:</span>
+                </div>
+                <span class="bg-amber-200/80 text-amber-950 px-2 py-0.5 rounded-md text-[11px] font-bold">{{ $ringkasan['menunggu'] }}</span>
+            </div>
+            <div class="flex items-center justify-between sm:justify-start gap-2 text-xs font-semibold bg-blue-50 border border-blue-200 text-blue-900 rounded-xl px-3 py-1.5 shadow-2xs">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                    <span>Disetujui / Bengkel:</span>
+                </div>
+                <span class="bg-blue-200/80 text-blue-950 px-2 py-0.5 rounded-md text-[11px] font-bold">{{ $ringkasan['disetujui'] }}</span>
+            </div>
+            <div class="flex items-center justify-between sm:justify-start gap-2 text-xs font-semibold bg-red-50 border border-red-200 text-red-900 rounded-xl px-3 py-1.5 shadow-2xs">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-red-600"></span>
+                    <span>Ditolak:</span>
+                </div>
+                <span class="bg-red-200/80 text-red-950 px-2 py-0.5 rounded-md text-[11px] font-bold">{{ $ringkasan['ditolak'] }}</span>
+            </div>
+        </div>
+    </div>
+
+    {{-- Navigasi Bulan & Dropdown Pilih Bulan/Tahun (Mobile Single Row Layout) --}}
+    <div class="flex items-center justify-between gap-1.5 sm:gap-3 mb-6 bg-slate-50 border border-slate-200/80 rounded-2xl p-2 sm:p-3 shadow-2xs">
+
+        {{-- Tombol Bulan Sebelumnya --}}
+        <a href="{{ route('home', ['month' => $bulanSebelumnya->month, 'year' => $bulanSebelumnya->year]) }}"
+           class="inline-flex items-center justify-center gap-1 px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl text-slate-700 bg-white border border-slate-200 shadow-2xs hover:bg-slate-100 hover:text-slate-900 transition-all flex-shrink-0"
+           title="Bulan Sebelumnya">
+            <i data-lucide="chevron-left" class="w-4 h-4 text-slate-600"></i>
+            <span class="hidden sm:inline">Sebelumnya</span>
+        </a>
+
+        {{-- Dropdown Form Pilih Bulan & Tahun langsung --}}
+        <form action="{{ route('home') }}" method="GET" class="flex items-center gap-1.5 justify-center flex-1 min-w-0">
+            <div class="flex items-center gap-1 sm:gap-1.5 bg-white border border-slate-200 rounded-xl px-2 sm:px-3 py-1.5 shadow-2xs max-w-full overflow-hidden">
+                <i data-lucide="calendar" class="w-4 h-4 text-red-600 flex-shrink-0"></i>
+
+                {{-- Select Bulan --}}
+                <select name="month" onchange="this.form.submit()"
+                        class="bg-transparent text-xs sm:text-sm font-bold text-slate-800 focus:outline-none cursor-pointer py-0.5 font-sans truncate max-w-[90px] xs:max-w-[110px] sm:max-w-none">
+                    @foreach([
+                        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                        5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                        9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                    ] as $mNum => $mName)
+                        <option value="{{ $mNum }}" @selected($bulanAktif->month == $mNum)>{{ $mName }}</option>
+                    @endforeach
+                </select>
+
+                {{-- Select Tahun Dinamis --}}
+                <select name="year" onchange="this.form.submit()"
+                        class="bg-transparent text-xs sm:text-sm font-bold text-slate-800 focus:outline-none cursor-pointer py-0.5 border-l border-slate-200 pl-1 sm:pl-2 font-sans">
+                    @foreach(($availableYears ?? range(2020, (int)date('Y') + 10)) as $y)
+                        <option value="{{ $y }}" @selected($bulanAktif->year == $y)>{{ $y }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            @unless($bulanAktif->isCurrentMonth())
+                <a href="{{ route('home') }}"
+                   class="text-[10px] sm:text-[11px] px-2 sm:px-2.5 py-1.5 rounded-xl bg-red-100/90 text-red-800 hover:bg-red-200 transition-colors font-bold shadow-2xs inline-flex items-center gap-1 flex-shrink-0"
+                   title="Kembali ke Bulan Saat Ini">
+                    <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                    <span class="hidden md:inline">Hari Ini</span>
+                </a>
+            @endunless
+        </form>
+
+        {{-- Tombol Bulan Berikutnya --}}
+        <a href="{{ route('home', ['month' => $bulanBerikutnya->month, 'year' => $bulanBerikutnya->year]) }}"
+           class="inline-flex items-center justify-center gap-1 px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl text-slate-700 bg-white border border-slate-200 shadow-2xs hover:bg-slate-100 hover:text-slate-900 transition-all flex-shrink-0"
+           title="Bulan Berikutnya">
+            <span class="hidden sm:inline">Berikutnya</span>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600"></i>
+        </a>
+    </div>
+
+    @if($totalPengajuan === 0)
+        <div class="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
+            <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3 text-gray-400">
+                <i data-lucide="calendar-x" class="w-6 h-6"></i>
+            </div>
+            <p class="text-sm font-bold text-gray-700">Belum Ada Pengajuan Pemeliharaan</p>
+            <p class="text-xs text-gray-400 mt-1 max-w-sm">Data pengajuan perbaikan atau pemeriksaan unit pada bulan {{ $bulanAktif->translatedFormat('F Y') }} akan tampil di sini.</p>
+        </div>
+    @else
+        <div class="rounded-xl border border-gray-200 w-full overflow-hidden shadow-xs">
+            <table class="w-full border-collapse table-fixed">
+                <thead>
+                    <tr class="bg-slate-100/80 border-b border-gray-200">
+                        @foreach(['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'] as $hari)
+                            <th class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider py-2.5 text-center px-1">
+                                {{ $hari }}
+                            </th>
+                        @endforeach
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @foreach($calendarWeeks as $week)
+                        <tr>
+                            @foreach($week as $hari)
+                                @php
+                                    $tanggalKey = $hari->toDateString();
+                                    $eventsHariIni = $eventsByDate->get($tanggalKey, collect());
+                                    $isBulanIni = $hari->month === $bulanAktif->month;
+                                    $isHariIni = $hari->isToday();
+                                    $adaData = $eventsHariIni->count() > 0;
+                                    $adaDisetujui = $eventsHariIni->contains('status', 'disetujui');
+                                @endphp
+                                <td class="align-top border-r border-gray-100 last:border-r-0 p-1 sm:p-2 h-16 sm:h-20 w-[14.28%] relative transition-all duration-150
+                                           {{ $isBulanIni ? 'bg-white' : 'bg-slate-50/70 opacity-60' }}
+                                           {{ $adaData ? 'cursor-pointer hover:bg-red-50/70 hover:ring-2 hover:ring-inset hover:ring-red-400/50' : '' }}"
+                                    @if($adaData)
+                                        @click="openModal({{ Js::from($hari->translatedFormat('l, d F Y')) }}, {{ Js::from($eventsHariIni->values()) }})"
+                                        title="Klik untuk melihat detail status verifikasi"
+                                    @endif
+                                >
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-xs sm:text-sm font-semibold
+                                            {{ $isBulanIni ? 'text-slate-800' : 'text-slate-400' }}
+                                            {{ $isHariIni ? 'inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-r from-red-600 to-red-800 text-white shadow-sm text-[10px] sm:text-xs font-bold' : '' }}">
+                                            {{ $hari->day }}
+                                        </span>
+
+                                        @if($adaDisetujui)
+                                            <span class="w-2 h-2 rounded-full bg-blue-600 animate-ping" title="Unit disetujui ke bengkel"></span>
+                                        @endif
+                                    </div>
+
+                                    {{-- Event Badges (Sangat Jelas dengan Status Menunggu, Disetujui, Ditolak) --}}
+                                    <div class="space-y-1">
+                                        @foreach($eventsHariIni->take(2) as $event)
+                                            @php
+                                                $badgeStyle = match($event->status) {
+                                                    'menunggu'  => 'bg-amber-100/90 text-amber-900 border-amber-300',
+                                                    'disetujui' => 'bg-blue-100/90 text-blue-900 border-blue-300',
+                                                    'ditolak'   => 'bg-red-100/90 text-red-900 border-red-300',
+                                                    default     => 'bg-slate-100 text-slate-800 border-slate-300',
+                                                };
+                                                $prefixLabel = match($event->status) {
+                                                    'menunggu'  => '⏳ ',
+                                                    'disetujui' => '✅ ',
+                                                    'ditolak'   => '❌ ',
+                                                    default     => '',
+                                                };
+                                            @endphp
+                                            <div class="text-[9px] sm:text-[11px] leading-tight px-1.5 py-0.5 rounded-md border {{ $badgeStyle }} truncate font-bold shadow-2xs"
+                                                 title="{{ $prefixLabel }}{{ $event->unit_nama }} ({{ ucfirst($event->status) }})">
+                                                {{ $prefixLabel }}{{ $event->unit_nama }}
+                                            </div>
+                                        @endforeach
+
+                                        @if($eventsHariIni->count() > 2)
+                                            <div class="text-[9px] sm:text-[10px] text-red-700 font-extrabold px-0.5">
+                                                +{{ $eventsHariIni->count() - 2 }} detail →
+                                            </div>
+                                        @endif
+                                    </div>
+                                </td>
+                            @endforeach
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endif
+    
 </div>
 
 @push('scripts')

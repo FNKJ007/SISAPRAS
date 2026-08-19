@@ -104,6 +104,15 @@ class CekHarianUnitPemadamController extends Controller
 
         return redirect()
             ->route('unit-pemadam.cek-harian-unit')
-            ->with('success', "Pemeriksaan harian unit Pemadam '{$record->unit_nama}' berhasil disimpan!");
+            ->with('success', "Pemeriksaan harian unit Pemadam '{$record->unit_nama}' berhasil disimpan!")
+            ->with('cek_id', $record->id);
+    }
+
+    /**
+     * Mengunduh PDF hasil pemeriksaan unit pemadam.
+     */
+    public function exportPdf($id)
+    {
+        return $this->exportCekHarianUnitPdf((int) $id, 'pemadam');
     }
 }

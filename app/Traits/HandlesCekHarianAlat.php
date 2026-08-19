@@ -6,9 +6,28 @@ use App\Models\CekHarianAlat;
 use App\Models\Peralatan;
 use App\Models\Unit;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 trait HandlesCekHarianAlat
 {
+    /**
+     * Generate & unduh PDF hasil Cek Harian Alat (Pemadam / Rescue).
+     */
+    protected function exportCekHarianAlatPdf(int $id, string $kategori)
+    {
+        $record = CekHarianAlat::where('kategori', $kategori)->findOrFail($id);
+
+        $pdf = Pdf::loadView('pdf.cek-harian-alat', [
+            'record' => $record,
+            'judul'  => $kategori === 'rescue'
+                ? 'Hasil Cek Harian Alat Rescue'
+                : 'Hasil Cek Harian Alat Pemadam',
+        ])->setPaper('a4', 'portrait');
+
+        $namaFile = 'cek-harian-alat-' . $kategori . '-' . $record->tanggal_pemeriksaan->format('Y-m-d') . '-' . $record->id . '.pdf';
+
+        return $pdf->download($namaFile);
+    }
     /**
      * Helper terpusat untuk memproses & menyimpan Cek Harian Alat (Pemadam / Rescue / Command Center).
      */
