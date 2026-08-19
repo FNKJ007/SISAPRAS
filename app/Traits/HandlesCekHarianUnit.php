@@ -5,9 +5,28 @@ namespace App\Traits;
 use App\Models\CekHarianUnit;
 use App\Models\Unit;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 trait HandlesCekHarianUnit
 {
+    /**
+     * Generate & unduh PDF hasil Cek Harian Unit (Pemadam / Rescue).
+     */
+    protected function exportCekHarianUnitPdf(int $id, string $kategori)
+    {
+        $record = CekHarianUnit::where('kategori', $kategori)->findOrFail($id);
+
+        $pdf = Pdf::loadView('pdf.cek-harian-unit', [
+            'record' => $record,
+            'judul'  => $kategori === 'rescue'
+                ? 'Hasil Cek Harian Unit Kendaraan Rescue'
+                : 'Hasil Cek Harian Unit Kendaraan Pemadam',
+        ])->setPaper('a4', 'portrait');
+
+        $namaFile = 'cek-harian-unit-' . $kategori . '-' . str_replace([' ', '/'], '-', $record->unit_nama) . '-' . $record->tanggal_pemeriksaan . '.pdf';
+
+        return $pdf->download($namaFile);
+    }
     /**
      * Helper terpusat untuk memproses & menyimpan Cek Harian Unit (Pemadam / Rescue).
      */

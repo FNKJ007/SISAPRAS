@@ -52,22 +52,30 @@ Route::middleware(['auth', 'user'])->group(function () {
         ->name('unit-pemadam.cek-harian-unit');
     Route::post('/unit-pemadam/cek-harian-unit', [CekHarianUnitPemadamController::class, 'store'])
         ->name('unit-pemadam.cek-harian-unit.store');
+    Route::get('/unit-pemadam/cek-harian-unit/{id}/export-pdf', [CekHarianUnitPemadamController::class, 'exportPdf'])
+        ->name('unit-pemadam.cek-harian-unit.export-pdf');
 
     Route::get('/alat-pemadam/cek-harian-alat', [CekHarianAlatController::class, 'index'])
         ->name('alat-pemadam.cek-harian-alat');
     Route::post('/alat-pemadam/cek-harian-alat', [CekHarianAlatController::class, 'store'])
         ->name('alat-pemadam.cek-harian-alat.store');
+    Route::get('/alat-pemadam/cek-harian-alat/{id}/export-pdf', [CekHarianAlatController::class, 'exportPdf'])
+        ->name('alat-pemadam.cek-harian-alat.export-pdf');
 
     // ===== Unit Rescue > Cek Harian Unit & Alat =====
     Route::get('/unit-rescue/cek-harian-unit', [CekHarianUnitRescueController::class, 'index'])
         ->name('unit-rescue.cek-harian-unit-rescue');
     Route::post('/unit-rescue/cek-harian-unit', [CekHarianUnitRescueController::class, 'store'])
         ->name('unit-rescue.cek-harian-unit-rescue.store');
+    Route::get('/unit-rescue/cek-harian-unit/{id}/export-pdf', [CekHarianUnitRescueController::class, 'exportPdf'])
+        ->name('unit-rescue.cek-harian-unit-rescue.export-pdf');
 
     Route::get('/alat-rescue/cek-harian-alat', [CekHarianAlatRescueController::class, 'index'])
         ->name('alat-rescue.cek-harian-alat');
     Route::post('/alat-rescue/cek-harian-alat', [CekHarianAlatRescueController::class, 'store'])
         ->name('alat-rescue.cek-harian-alat.store');
+    Route::get('/alat-rescue/cek-harian-alat/{id}/export-pdf', [CekHarianAlatRescueController::class, 'exportPdf'])
+        ->name('alat-rescue.cek-harian-alat.export-pdf');
 
     // ===== Command Center > Cek Alat CC =====
     Route::get('/alat-cc/cek-alat-cc', [CekAlatCcController::class, 'index'])

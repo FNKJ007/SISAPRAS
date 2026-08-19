@@ -104,6 +104,15 @@ class CekHarianUnitRescueController extends Controller
 
         return redirect()
             ->route('unit-rescue.cek-harian-unit-rescue')
-            ->with('success', "Pemeriksaan harian unit Rescue '{$record->unit_nama}' berhasil disimpan!");
+            ->with('success', "Pemeriksaan harian unit Rescue '{$record->unit_nama}' berhasil disimpan!")
+            ->with('cek_id', $record->id);
+    }
+
+    /**
+     * Mengunduh PDF hasil pemeriksaan unit rescue.
+     */
+    public function exportPdf($id)
+    {
+        return $this->exportCekHarianUnitPdf((int) $id, 'rescue');
     }
 }
