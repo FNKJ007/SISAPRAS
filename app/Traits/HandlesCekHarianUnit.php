@@ -6,9 +6,12 @@ use App\Models\CekHarianUnit;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Traits\OptimizesPdfImages;
 
 trait HandlesCekHarianUnit
 {
+    use OptimizesPdfImages;
+
     /**
      * Generate & unduh PDF hasil Cek Harian Unit (Pemadam / Rescue).
      */
@@ -17,49 +20,40 @@ trait HandlesCekHarianUnit
         try {
             $record = CekHarianUnit::where('kategori', $kategori)->findOrFail($id);
 
-            // increase limits for PDF generation
-            if (function_exists('set_time_limit')) set_time_limit(120);
+            // increase limits for PDF generation (ini_set jadi fallback kalau
+            // set_time_limit di-disable di php.ini, sering terjadi di Herd/hosting)
+            if (function_exists('set_time_limit')) {
+                @set_time_limit(300);
+            }
+            @ini_set('max_execution_time', 300);
             @ini_set('memory_limit', '512M');
 
-            // Enable remote if needed and prepare embedded images as data-URIs
-            Pdf::setOptions(["isRemoteEnabled" => true, "isHtml5ParserEnabled" => true]);
+            // Semua gambar sudah di-embed sebagai data-URI lokal, jadi dompdf
+            // tidak perlu fetch remote sama sekali -> matikan supaya tidak ada
+            // request jaringan yang bikin lama/timeout.
+            Pdf::setOptions(["isRemoteEnabled" => false, "isHtml5ParserEnabled" => true]);
 
-        $toDataUri = function (?string $path) {
-            if (!$path) {
-                return null;
+            $buktiPemanasanData = $this->imageToDataUri($record->bukti_pemanasan);
+            $buktiBbmData      = $this->imageToDataUri($record->bukti_bbm);
+            $buktiPencucianData = $this->imageToDataUri($record->bukti_pencucian ?? null);
+
+            $dokTangkiData = [];
+            foreach ($record->dokumentasi_tangki_pompa ?? [] as $p) {
+                $d = $this->imageToDataUri($p);
+                if ($d) {
+                    $dokTangkiData[] = $d;
+                }
             }
-
-            $full = storage_path('app/public/' . $path);
-            if (!file_exists($full)) {
-                return null;
-            }
-
-            $type = mime_content_type($full) ?: 'image/jpeg';
-            $data = base64_encode(file_get_contents($full));
-            return 'data:' . $type . ';base64,' . $data;
-        };
-
-        $buktiPemanasanData = $toDataUri($record->bukti_pemanasan);
-        $buktiBbmData      = $toDataUri($record->bukti_bbm);
-        $buktiPencucianData = $toDataUri($record->bukti_pencucian ?? null);
-
-        $dokTangkiData = [];
-        foreach ($record->dokumentasi_tangki_pompa ?? [] as $p) {
-            $d = $toDataUri($p);
-            if ($d) {
-                $dokTangkiData[] = $d;
-            }
-        }
 
             $pdf = Pdf::loadView('pdf.cek-harian-unit', [
-            'record'               => $record,
-            'judul'                => $kategori === 'rescue'
-                ? 'Hasil Cek Harian Unit Kendaraan Rescue'
-                : 'Hasil Cek Harian Unit Kendaraan Pemadam',
-            'bukti_pemanasan_data' => $buktiPemanasanData,
-            'bukti_bbm_data'       => $buktiBbmData,
-            'bukti_pencucian_data' => $buktiPencucianData,
-            'dok_tangki_data'      => $dokTangkiData,
+                'record'               => $record,
+                'judul'                => $kategori === 'rescue'
+                    ? 'Hasil Cek Harian Unit Kendaraan Rescue'
+                    : 'Hasil Cek Harian Unit Kendaraan Pemadam',
+                'bukti_pemanasan_data' => $buktiPemanasanData,
+                'bukti_bbm_data'       => $buktiBbmData,
+                'bukti_pencucian_data' => $buktiPencucianData,
+                'dok_tangki_data'      => $dokTangkiData,
             ])->setPaper('a4', 'portrait');
 
             $namaFile = 'cek-harian-unit-' . $kategori . '-' . str_replace([' ', '/'], '-', $record->unit_nama) . '-' . $record->tanggal_pemeriksaan . '.pdf';
