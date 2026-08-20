@@ -15,18 +15,46 @@ trait HandlesCekHarianAlat
      */
     protected function exportCekHarianAlatPdf(int $id, string $kategori)
     {
-        $record = CekHarianAlat::where('kategori', $kategori)->findOrFail($id);
+        try {
+            $record = CekHarianAlat::where('kategori', $kategori)->findOrFail($id);
 
-        $pdf = Pdf::loadView('pdf.cek-harian-alat', [
-            'record' => $record,
-            'judul'  => $kategori === 'rescue'
-                ? 'Hasil Cek Harian Alat Rescue'
-                : 'Hasil Cek Harian Alat Pemadam',
-        ])->setPaper('a4', 'portrait');
+            if (function_exists('set_time_limit')) set_time_limit(120);
+            @ini_set('memory_limit', '512M');
 
-        $namaFile = 'cek-harian-alat-' . $kategori . '-' . $record->tanggal_pemeriksaan->format('Y-m-d') . '-' . $record->id . '.pdf';
+            Pdf::setOptions(["isRemoteEnabled" => true, "isHtml5ParserEnabled" => true]);
 
-        return $pdf->download($namaFile);
+            $toDataUri = function (?string $path) {
+                if (!$path) {
+                    return null;
+                }
+
+                $full = storage_path('app/public/' . $path);
+                if (!file_exists($full)) {
+                    return null;
+                }
+
+                $type = mime_content_type($full) ?: 'image/jpeg';
+                $data = base64_encode(file_get_contents($full));
+                return 'data:' . $type . ';base64,' . $data;
+            };
+
+            $fotoUmumData = $toDataUri($record->foto_umum);
+
+            $pdf = Pdf::loadView('pdf.cek-harian-alat', [
+                'record'        => $record,
+                'judul'         => $kategori === 'rescue'
+                    ? 'Hasil Cek Harian Alat Rescue'
+                    : 'Hasil Cek Harian Alat Pemadam',
+                'foto_umum_data' => $fotoUmumData,
+            ])->setPaper('a4', 'portrait');
+
+            $namaFile = 'cek-harian-alat-' . $kategori . '-' . $record->tanggal_pemeriksaan->format('Y-m-d') . '-' . $record->id . '.pdf';
+
+            return $pdf->download($namaFile);
+        } catch (\Throwable $e) {
+            \Log::error('Export CekHarianAlat PDF failed: ' . $e->getMessage(), ['id' => $id, 'kategori' => $kategori]);
+            return redirect()->back()->with('error', 'Gagal membuat PDF: ' . $e->getMessage());
+        }
     }
     /**
      * Helper terpusat untuk memproses & menyimpan Cek Harian Alat (Pemadam / Rescue / Command Center).
