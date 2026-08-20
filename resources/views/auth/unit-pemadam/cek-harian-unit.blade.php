@@ -142,6 +142,19 @@
                     @error('bukti_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
             </div>
+
+            <div class="mt-4">
+                <p class="font-medium text-sm mb-1">Bukti Pencucian Kendaraan</p>
+                <p class="text-xs text-gray-500 mb-2">(Lampirkan foto sebagai bukti pencucian kendaraan)</p>
+                <label for="bukti_pencucian"
+                       class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
+                    <span id="buktiPencucianLabel">Lampirkan Bukti Pencucian</span>
+                    <span>📎</span>
+                </label>
+                <input id="bukti_pencucian" type="file" name="bukti_pencucian" accept="image/*" class="hidden">
+                <div id="buktiPencucianPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
+                @error('bukti_pencucian') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
         </div>
 
         {{-- ===================== STEP 3 - TANGKI & POMPA ===================== --}}
@@ -477,6 +490,7 @@
 
     bindFilePreview('bukti_pemanasan', 'buktiPemanasanLabel', 'buktiPemanasanPreview', 'Lampirkan Bukti Pemanasan');
     bindFilePreview('bukti_bbm', 'buktiBbmLabel', 'buktiBbmPreview', 'Lampirkan Bukti Level BBM');
+    bindFilePreview('bukti_pencucian', 'buktiPencucianLabel', 'buktiPencucianPreview', 'Lampirkan Bukti Pencucian');
     bindFilePreview('dokumentasi_tangki_pompa', 'dokumentasiTangkiLabel', 'dokumentasiTangkiPreview', 'Lampirkan Foto (Maks. 3 file)');
 
     @if($errors->any())

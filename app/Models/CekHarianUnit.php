@@ -20,6 +20,7 @@ class CekHarianUnit extends Model
         'shift',
 
         'bukti_pemanasan',
+        'bukti_pencucian',
         'jenis_bbm',
         'level_bbm',
         'jumlah_bbm_liter',

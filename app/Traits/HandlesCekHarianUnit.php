@@ -14,18 +14,61 @@ trait HandlesCekHarianUnit
      */
     protected function exportCekHarianUnitPdf(int $id, string $kategori)
     {
-        $record = CekHarianUnit::where('kategori', $kategori)->findOrFail($id);
+        try {
+            $record = CekHarianUnit::where('kategori', $kategori)->findOrFail($id);
 
-        $pdf = Pdf::loadView('pdf.cek-harian-unit', [
-            'record' => $record,
-            'judul'  => $kategori === 'rescue'
+            // increase limits for PDF generation
+            if (function_exists('set_time_limit')) set_time_limit(120);
+            @ini_set('memory_limit', '512M');
+
+            // Enable remote if needed and prepare embedded images as data-URIs
+            Pdf::setOptions(["isRemoteEnabled" => true, "isHtml5ParserEnabled" => true]);
+
+        $toDataUri = function (?string $path) {
+            if (!$path) {
+                return null;
+            }
+
+            $full = storage_path('app/public/' . $path);
+            if (!file_exists($full)) {
+                return null;
+            }
+
+            $type = mime_content_type($full) ?: 'image/jpeg';
+            $data = base64_encode(file_get_contents($full));
+            return 'data:' . $type . ';base64,' . $data;
+        };
+
+        $buktiPemanasanData = $toDataUri($record->bukti_pemanasan);
+        $buktiBbmData      = $toDataUri($record->bukti_bbm);
+        $buktiPencucianData = $toDataUri($record->bukti_pencucian ?? null);
+
+        $dokTangkiData = [];
+        foreach ($record->dokumentasi_tangki_pompa ?? [] as $p) {
+            $d = $toDataUri($p);
+            if ($d) {
+                $dokTangkiData[] = $d;
+            }
+        }
+
+            $pdf = Pdf::loadView('pdf.cek-harian-unit', [
+            'record'               => $record,
+            'judul'                => $kategori === 'rescue'
                 ? 'Hasil Cek Harian Unit Kendaraan Rescue'
                 : 'Hasil Cek Harian Unit Kendaraan Pemadam',
-        ])->setPaper('a4', 'portrait');
+            'bukti_pemanasan_data' => $buktiPemanasanData,
+            'bukti_bbm_data'       => $buktiBbmData,
+            'bukti_pencucian_data' => $buktiPencucianData,
+            'dok_tangki_data'      => $dokTangkiData,
+            ])->setPaper('a4', 'portrait');
 
-        $namaFile = 'cek-harian-unit-' . $kategori . '-' . str_replace([' ', '/'], '-', $record->unit_nama) . '-' . $record->tanggal_pemeriksaan . '.pdf';
+            $namaFile = 'cek-harian-unit-' . $kategori . '-' . str_replace([' ', '/'], '-', $record->unit_nama) . '-' . $record->tanggal_pemeriksaan . '.pdf';
 
-        return $pdf->download($namaFile);
+            return $pdf->download($namaFile);
+        } catch (\Throwable $e) {
+            \Log::error('Export CekHarianUnit PDF failed: ' . $e->getMessage(), ['id' => $id, 'kategori' => $kategori]);
+            return redirect()->back()->with('error', 'Gagal membuat PDF: ' . $e->getMessage());
+        }
     }
     /**
      * Helper terpusat untuk memproses & menyimpan Cek Harian Unit (Pemadam / Rescue).
@@ -39,6 +82,8 @@ trait HandlesCekHarianUnit
             'pos.required'                     => 'Silakan pilih pos tempat pemeriksaan.',
             'bukti_pemanasan.image'            => 'Foto bukti pemanasan harus berupa file gambar (JPG/PNG/WebP).',
             'bukti_pemanasan.max'              => 'Ukuran foto bukti pemanasan tidak boleh melebihi 10 MB.',
+            'bukti_pencucian.image'            => 'Foto bukti pencucian harus berupa file gambar (JPG/PNG/WebP).',
+            'bukti_pencucian.max'              => 'Ukuran foto bukti pencucian tidak boleh melebihi 10 MB.',
             'bukti_bbm.image'                  => 'Foto bukti BBM harus berupa file gambar (JPG/PNG/WebP).',
             'bukti_bbm.max'                    => 'Ukuran foto bukti BBM tidak boleh melebihi 10 MB.',
             'dokumentasi_tangki_pompa.*.image' => 'Foto dokumentasi tangki/pompa harus berupa file gambar.',
@@ -53,6 +98,7 @@ trait HandlesCekHarianUnit
             'tanggal'                    => 'nullable|date',
             'jenis_bbm'                  => 'nullable|string|max:50',
             'bukti_pemanasan'            => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
+            'bukti_pencucian'            => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'bukti_bbm'                  => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'level_air'                  => 'nullable|string|max:100',
             'kondisi_tangki_air'         => 'nullable|string|max:100',
@@ -73,6 +119,11 @@ trait HandlesCekHarianUnit
         $buktiPemanasanPath = null;
         if ($request->hasFile('bukti_pemanasan')) {
             $buktiPemanasanPath = $request->file('bukti_pemanasan')->store('cek-unit/pemanasan', 'public');
+        }
+
+        $buktiPencucianPath = null;
+        if ($request->hasFile('bukti_pencucian')) {
+            $buktiPencucianPath = $request->file('bukti_pencucian')->store('cek-unit/pencucian', 'public');
         }
 
         $buktiBbmPath = null;
@@ -117,6 +168,7 @@ trait HandlesCekHarianUnit
             'pos'                      => $validated['pos'] ?? ($unitObj ? $unitObj->pos : null),
             'tanggal_pemeriksaan'      => $validated['tanggal'] ?? date('Y-m-d'),
             'bukti_pemanasan'          => $buktiPemanasanPath,
+            'bukti_pencucian'          => $buktiPencucianPath,
             'jenis_bbm'                => $validated['jenis_bbm'] ?? 'solar',
             'bukti_bbm'                => $buktiBbmPath,
             'level_air'                => $validated['level_air'] ?? null,

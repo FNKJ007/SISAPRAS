@@ -101,6 +101,11 @@
     <p style="font-size: 10.5px;">{{ $record->catatan_umum }}</p>
     @endif
 
+    @if(!empty($foto_umum_data))
+    <h2 class="section">Foto Dokumentasi</h2>
+    <div style="margin-bottom:10px;"><img src="{{ $foto_umum_data }}" style="max-width:60%; height:auto; border:1px solid #ddd; padding:4px;"></div>
+    @endif
+
     <div class="summary-box {{ ($record->total_rusak ?? 0) > 0 ? '' : 'ok' }}">
         @if(($record->total_rusak ?? 0) > 0)
             Ditemukan <strong>{{ $record->total_rusak }} unit alat</strong> dalam kondisi RUSAK dan perlu tindak lanjut perbaikan.
