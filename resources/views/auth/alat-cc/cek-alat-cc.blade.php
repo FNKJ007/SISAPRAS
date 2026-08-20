@@ -37,14 +37,40 @@
                 </select>
                 @error('pos') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
-            <div>
-                <label for="nama_pemeriksa" class="block text-sm font-medium mb-1">Nama Pemeriksa <span class="text-red-500">*</span></label>
-                <input type="text" id="nama_pemeriksa" name="nama_pemeriksa"
-                       value="{{ old('nama_pemeriksa', auth()->user()->name ?? '') }}" required
-                       placeholder="Masukkan nama pemeriksa"
-                       class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
-                @error('nama_pemeriksa') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-            </div>
+                            <div class="relative" x-data="pegawaiAutocomplete()" @click.away="open = false">
+                    <div class="flex items-center justify-between mb-1">
+                        <label for="nama_pemeriksa" class="block text-sm font-medium">Nama Pemeriksa <span class="text-red-500">*</span></label>
+                        <button type="button" class="text-[11px] text-blue-600 font-semibold hover:underline bg-transparent border-0 p-0 cursor-pointer" @click="toggleDropdown()">Pilih Pejabat / Anggota ▾</button>
+                    </div>
+                    <div class="relative">
+                        <input type="text" id="nama_pemeriksa" name="nama_pemeriksa"
+                               x-model="search"
+                               @focus="onFocus()"
+                               @input.debounce.200ms="fetchPegawai()"
+                               placeholder="Ketik nama atau NIP pemeriksa..." required
+                               autocomplete="off"
+                               class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                        <div x-show="loading" class="absolute right-3 top-3 text-gray-400">
+                            <svg class="animate-spin h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                        </div>
+                    </div>
+                    {{-- Dropdown Suggestions --}}
+                    <div x-show="open && results.length > 0"
+                         class="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-56 overflow-y-auto divide-y divide-gray-100"
+                         style="display: none;">
+                        <template x-for="item in results" :key="item.id">
+                            <div @click="selectPegawai(item)"
+                                 class="p-2.5 hover:bg-blue-50/80 cursor-pointer transition flex items-center justify-between text-xs">
+                                <div>
+                                    <strong class="text-gray-900 font-bold block" x-text="item.name"></strong>
+                                    <span class="text-gray-500" x-text="'NIP: ' + (item.nip || '—') + ' • ' + (item.jabatan || 'Petugas')"></span>
+                                </div>
+                                <span class="text-[10.5px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded" x-text="item.pos || 'Disdamkar'"></span>
+                            </div>
+                        </template>
+                    </div>
+                    @error('nama_pemeriksa') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                </div>
             <div>
                 <label for="jabatan" class="block text-sm font-medium mb-1">Jabatan <span class="text-red-500">*</span></label>
                 <input type="text" id="jabatan" name="jabatan"
@@ -201,6 +227,56 @@
         }
     });
 })();
+
+function pegawaiAutocomplete() {
+    return {
+        search: "{{ old('nama_pemeriksa', auth()->user()->name ?? '') }}",
+        open: false,
+        loading: false,
+        results: [],
+        init() {
+            this.fetchPegawai();
+        },
+        onFocus() {
+            this.open = true;
+            if (this.results.length === 0) this.fetchPegawai();
+        },
+        toggleDropdown() {
+            this.open = !this.open;
+            if (this.open && this.results.length === 0) this.fetchPegawai();
+        },
+        async fetchPegawai() {
+            this.loading = true;
+            try {
+                const res = await fetch(`{{ route('api.pegawai.search') }}?q=${encodeURIComponent(this.search)}`);
+                if (res.ok) {
+                    this.results = await res.json();
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                this.loading = false;
+            }
+        },
+        selectPegawai(item) {
+            this.search = item.name;
+            this.open = false;
+            const jabatanInput = document.getElementById('jabatan');
+            if (jabatanInput && item.jabatan) {
+                jabatanInput.value = item.jabatan;
+            }
+            const posSelect = document.getElementById('pos');
+            if (posSelect && item.pos) {
+                for (let opt of posSelect.options) {
+                    if (opt.value.toLowerCase().includes(item.pos.toLowerCase()) || item.pos.toLowerCase().includes(opt.value.toLowerCase())) {
+                        posSelect.value = opt.value;
+                        break;
+                    }
+                }
+            }
+        }
+    };
+}
 </script>
 @endpush
 @endsection

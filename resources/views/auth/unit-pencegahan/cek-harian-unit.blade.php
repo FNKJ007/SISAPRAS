@@ -14,7 +14,7 @@
                 </div>
             </div>
             @if(session('cek_id'))
-                <a href="{{ route('unit-pemadam.cek-harian-unit.export-pdf', session('cek_id')) }}"
+                <a href="{{ route('unit-pencegahan.cek-harian-unit.export-pdf', session('cek_id')) }}"
                    class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v8.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V4a1 1 0 011-1zM4 15a1 1 0 011 1v1h10v-1a1 1 0 112 0v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1a1 1 0 011-1z" clip-rule="evenodd" />
@@ -36,7 +36,7 @@
         </div>
     @endif
 
-    <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Cek Harian Unit Kendaraan Pemadam</h1>
+    <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Cek Harian Unit Kendaraan Pencegahan</h1>
 
     {{-- ===================== STEPPER ===================== --}}
     <div class="flex items-start justify-between mt-6 mb-8 select-none overflow-x-auto">
@@ -44,9 +44,8 @@
             $steps = [
                 1 => 'Identitas',
                 2 => 'Pemanasan & BBM',
-                3 => 'Tangki & Pompa',
-                4 => 'Kendaraan',
-                5 => 'Konfirmasi',
+                3 => 'Perlengkapan',
+                4 => 'Konfirmasi',
             ];
         @endphp
         @foreach($steps as $num => $label)
@@ -65,7 +64,7 @@
         @endforeach
     </div>
 
-    <form action="{{ route('unit-pemadam.cek-harian-unit.store') }}" method="POST" enctype="multipart/form-data" id="formCekHarianUnit" class="space-y-6">
+    <form action="{{ route('unit-pencegahan.cek-harian-unit.store') }}" method="POST" enctype="multipart/form-data" id="formCekHarianUnit" class="space-y-6">
         @csrf
 
         {{-- ===================== STEP 1 - IDENTITAS ===================== --}}
@@ -82,7 +81,7 @@
                     </select>
                     @error('pos') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
-                <div class="relative" x-data="pegawaiAutocomplete()" @click.away="open = false">
+                                <div class="relative" x-data="pegawaiAutocomplete()" @click.away="open = false">
                     <div class="flex items-center justify-between mb-1">
                         <label for="nama_pemeriksa" class="block text-sm font-medium">Nama Pemeriksa <span class="text-red-500">*</span></label>
                         <button type="button" class="text-[11px] text-blue-600 font-semibold hover:underline bg-transparent border-0 p-0 cursor-pointer" @click="toggleDropdown()">Pilih Pejabat / Anggota ▾</button>
@@ -124,15 +123,16 @@
                     @error('jabatan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label for="unit_id" class="block text-sm font-medium mb-1">Unit Kendaraan <span class="text-red-500">*</span></label>
+                    <label for="unit_id" class="block text-sm font-medium mb-1">Unit Kendaraan Rescue <span class="text-red-500">*</span></label>
                     <select id="unit_id" name="unit_id" required
                             class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Unit / Kendaraan Pemadam</option>
+                        <option value="" selected disabled>Pilih Unit / Kendaraan Pencegahan</option>
                         @foreach($unitList ?? [] as $unit)
                             <option value="{{ $unit->id }}" @selected(old('unit_id') == $unit->id)>
                                 {{ $unit->nomor_lambung ? $unit->nomor_lambung . ' — ' . $unit->plat_nomor . ($unit->pos ? ' [' . $unit->pos . ']' : '') . ($unit->merk_tipe ? ' (' . $unit->merk_tipe . ')' : '') : $unit->nama }}
                             </option>
                         @endforeach
+                    </select>
                     @error('unit_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
             </div>
@@ -149,7 +149,7 @@
                     </h3>
                     <span class="text-xs font-semibold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">Wajib Pasukan</span>
                 </div>
-                <p class="text-xs text-gray-600 mb-3">Pemeriksaan kondisi kebersihan unit kendaraan dan dokumentasi kegiatan pembersihan/pencucian oleh pasukan.</p>
+                <p class="text-xs text-gray-600 mb-3">Pemeriksaan kondisi kebersihan unit kendaraan pencegahan dan dokumentasi kegiatan pembersihan/pencucian oleh pasukan.</p>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                     <div>
@@ -230,146 +230,68 @@
                     </div>
                 </div>
             </div>
-        </div>       </div>
-
-        {{-- ===================== STEP 3 - TANGKI & POMPA ===================== --}}
-        <div data-step-panel="3" class="hidden">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label for="level_air" class="block text-sm font-medium mb-1">Level Air <span class="text-red-500">*</span></label>
-                    <select id="level_air" name="level_air" required
-                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Level Air</option>
-                        <option value="penuh" @selected(old('level_air', 'penuh') === 'penuh')>Penuh</option>
-                        <option value="3_4" @selected(old('level_air') === '3_4')>3/4</option>
-                        <option value="1_2" @selected(old('level_air') === '1_2')>1/2</option>
-                        <option value="kosong" @selected(old('level_air') === 'kosong')>Kosong</option>
-                    </select>
-                    @error('level_air') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                </div>
-                <div>
-                    <label for="kondisi_tangki_air" class="block text-sm font-medium mb-1">Kondisi Tangki Air <span class="text-red-500">*</span></label>
-                    <select id="kondisi_tangki_air" name="kondisi_tangki_air" required
-                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Kondisi</option>
-                        <option value="baik" @selected(old('kondisi_tangki_air', 'baik') === 'baik')>Baik</option>
-                        <option value="perlu_perhatian" @selected(old('kondisi_tangki_air') === 'perlu_perhatian')>Perlu Perhatian</option>
-                        <option value="rusak" @selected(old('kondisi_tangki_air') === 'rusak')>Rusak</option>
-                    </select>
-                    @error('kondisi_tangki_air') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                </div>
-                <div>
-                    <label for="kebocoran_tangki_air" class="block text-sm font-medium mb-1">Kebocoran Tangki Air <span class="text-red-500">*</span></label>
-                    <select id="kebocoran_tangki_air" name="kebocoran_tangki_air" required
-                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Kondisi</option>
-                        <option value="tidak_ada" @selected(old('kebocoran_tangki_air', 'tidak_ada') === 'tidak_ada')>Tidak Ada</option>
-                        <option value="ada" @selected(old('kebocoran_tangki_air') === 'ada')>Ada</option>
-                    </select>
-                    @error('kebocoran_tangki_air') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                </div>
-                <div>
-                    <label for="tekanan_pompa" class="block text-sm font-medium mb-1">Tekanan Pompa <span class="text-red-500">*</span></label>
-                    <select id="tekanan_pompa" name="tekanan_pompa" required
-                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Tekanan</option>
-                        <option value="baik" @selected(old('tekanan_pompa', 'baik') === 'baik')>Baik</option>
-                        <option value="kurang" @selected(old('tekanan_pompa') === 'kurang')>Kurang</option>
-                        <option value="tidak_ada" @selected(old('tekanan_pompa') === 'tidak_ada')>Tidak Ada</option>
-                    </select>
-                    @error('tekanan_pompa') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                </div>
-                <div>
-                    <label for="selang_induk" class="block text-sm font-medium mb-1">Selang Induk <span class="text-red-500">*</span></label>
-                    <select id="selang_induk" name="selang_induk" required
-                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Kondisi</option>
-                        <option value="baik" @selected(old('selang_induk', 'baik') === 'baik')>Baik</option>
-                        <option value="rusak" @selected(old('selang_induk') === 'rusak')>Rusak</option>
-                    </select>
-                    @error('selang_induk') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                </div>
-            </div>
-
-            <div class="mt-4">
-                <label for="catatan_tangki_pompa" class="block text-sm font-medium mb-1">Catatan Khusus Terkait Pemeriksaan Tangki dan Pompa</label>
-                <textarea id="catatan_tangki_pompa" name="catatan_tangki_pompa" rows="3"
-                          placeholder="Tuliskan catatan khusus (jika ada)"
-                          class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-600">{{ old('catatan_tangki_pompa') }}</textarea>
-            </div>
-
-            <div class="mt-4">
-                <label for="dokumentasi_tangki_pompa" class="block text-sm font-medium mb-1">Dokumentasi Pengecekan Tangki dan Pompa (maksimal 3 foto)</label>
-                <label for="dokumentasi_tangki_pompa"
-                       class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500">
-                    <span id="dokumentasiTangkiLabel">Lampirkan Foto (Maks. 3 file)</span>
-                    <span>📎</span>
-                </label>
-                <input id="dokumentasi_tangki_pompa" type="file" name="dokumentasi_tangki_pompa[]" accept="image/*" multiple class="hidden">
-                <div id="dokumentasiTangkiPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
-                @error('dokumentasi_tangki_pompa') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-            </div>
         </div>
 
+
         {{-- ===================== STEP 4 - PERLENGKAPAN ===================== --}}
-        <div data-step-panel="4" class="hidden">
+        <div data-step-panel="3" class="hidden">
             <p class="font-medium text-sm mb-3">Pemeriksaan Perlengkapan Kendaraan</p>
 
             <div class="space-y-3">
                 @php
                     $perlengkapan = [
-                        'engine_starter'             => 'Engine Starter',
-                        'rem_tangan'                 => 'Rem Tangan',
-                        'rem_kaki'                   => 'Rem Kaki',
-                        'kelistrikan'                => 'Kelistrikan',
-                        'klakson'                    => 'Klakson',
-                        'sirine_tunggal'             => 'Sirine Tunggal',
-                        'sirine'                     => 'Sirine',
-                        'speedometer'                => 'Speedometer',
-                        'dashboard_camera'           => 'Dashboard Camera',
-                        'gps_tracker'                => 'GPS Tracker',
-                        'flasher_sein_kanan_kiri'    => 'Flasher Sein Kanan-Kiri',
-                        'spion_dalam'                => 'Spion Dalam',
-                        'rig'                        => 'RIG',
-                        'speaker'                    => 'Speaker',
-                        'megaphone_toa'              => 'Megaphone (TOA)',
-                        'oli_power_steering'         => 'Oli Power Steering',
-                        'air_radiator'               => 'Air Radiator',
-                        'minyak_rem'                 => 'Minyak Rem',
-                        'oli_mesin'                  => 'Oli Mesin',
-                        'air_wiper'                  => 'Air Wiper',
-                        'ac'                         => 'AC',
-                        'kebersihan_bagian_dalam'    => 'Kebersihan Bagian Dalam',
-                        'lampu_depan_dim_kanan'      => 'Lampu Depan (Dim) Kanan',
-                        'lampu_depan_dim_kiri'       => 'Lampu Depan (Dim) Kiri',
-                        'lampu_belakang_kanan'       => 'Lampu Belakang Kanan',
-                        'lampu_belakang_kiri'        => 'Lampu Belakang Kiri',
-                        'lampu_belakang_hazard'      => 'Lampu Belakang Hazard',
-                        'lampu_sein_depan_kanan'     => 'Lampu Sein Depan Kanan',
-                        'lampu_sein_depan_kiri'      => 'Lampu Sein Depan Kiri',
-                        'lampu_sein_belakang_kanan'  => 'Lampu Sein Belakang Kanan',
-                        'lampu_sein_belakang_kiri'   => 'Lampu Sein Belakang Kiri',
-                        'spion_kanan'                => 'Spion Kanan',
-                        'spion_kiri'                 => 'Spion Kiri',
-                        'wiper'                      => 'Wiper',
-                        'winch'                      => 'Winch',
-                        'ban_depan_kanan'            => 'Ban Depan Kanan',
-                        'ban_depan_kiri'             => 'Ban Depan Kiri',
-                        'ban_belakang_kanan'         => 'Ban Belakang Kanan',
-                        'ban_belakang_kiri'          => 'Ban Belakang Kiri',
-                        'ban_cadangan'               => 'Ban Cadangan',
-                        'lampu_rotary'               => 'Lampu Rotary',
-                        'lampu_rem_kanan'            => 'Lampu Rem Kanan',
-                        'lampu_rem_kiri'             => 'Lampu Rem Kiri',
-                        'pintu_kompartemen_kanan'    => 'Pintu Kompartemen Kanan',
-                        'pintu_kompartemen_kiri'     => 'Pintu Kompartemen Kiri',
-                        'pintu_kompartemen_belakang' => 'Pintu Kompartemen Belakang',
-                        'ganjal_ban'                 => 'Ganjal Ban',
-                        'dongkrak'                   => 'Dongkrak',
-                        'kabin'                      => 'Kabin',
-                        'body_unit'                  => 'Body Unit',
-                        'kunci_kunci'                => 'Kunci-Kunci',
-                        'kebersihan_bagian_luar'     => 'Kebersihan Bagian Luar',
+                        'ban_cadangan'                => 'Ban Cadangan',
+    'ban_belakang_kanan'          => 'Ban Mobil Belakang Kanan',
+    'ban_belakang_kiri'           => 'Ban Mobil Belakang Kiri',
+    'ban_depan_kanan'             => 'Ban Mobil Depan Kanan',
+    'ban_depan_kiri'              => 'Ban Mobil Depan Kiri',
+    'dop_pelek'                   => 'Dop Pelek',
+    'electric_winch'              => 'Electric Winch',
+    'handel_kanan_belakang'       => 'Handel Kanan Belakang',
+    'handel_kanan_depan'          => 'Handel Kanan Depan',
+    'handel_kiri_belakang'        => 'Handel Kiri Belakang',
+    'handel_kiri_depan'           => 'Handel Kiri Depan',
+    'kaca_spion_kanan'            => 'Kaca Spion Kanan',
+    'kaca_spion_kiri'             => 'Kaca Spion Kiri',
+    'lampu_kabut_kanan'           => 'Lampu Kabut Kanan',
+    'lampu_kabut_kiri'            => 'Lampu Kabut Kiri',
+    'lampu_parkir_kanan'          => 'Lampu Parkir Kanan',
+    'lampu_parkir_kiri'           => 'Lampu Parkir Kiri',
+    'lampu_penerangan'            => 'Lampu Penerangan',
+    'lampu_peringatan_belakang_kanan' => 'Lampu Peringatan Belakang Kanan',
+    'lampu_peringatan_belakang_kiri'  => 'Lampu Peringatan Belakang Kiri',
+    'lampu_peringatan_depan_kanan'    => 'Lampu Peringatan Depan Kanan',
+    'lampu_peringatan_depan_kiri'     => 'Lampu Peringatan Depan Kiri',
+    'lampu_rem_kanan'             => 'Lampu Rem Kanan',
+    'lampu_rem_kiri'              => 'Lampu Rem Kiri',
+    'lampu_rotari_atas_belakang'  => 'Lampu Rotari Atas Belakang',
+    'lampu_rotari_atas_depan'     => 'Lampu Rotari Atas Depan',
+    'lampu_rotator_atas_belakang' => 'Lampu Rotator Atas Belakang',
+    'lampu_rotator_atas_depan'    => 'Lampu Rotator Atas Depan',
+    'lampu_sein_belakang_kanan'   => 'Lampu Sein Belakang Kanan',
+    'lampu_sein_belakang_kiri'    => 'Lampu Sein Belakang Kiri',
+    'lampu_sein_depan_kanan'      => 'Lampu Sein Depan Kanan',
+    'lampu_sein_depan_kiri'       => 'Lampu Sein Depan Kiri',
+    'lampu_sorot_belakang'        => 'Lampu Sorot Belakang',
+    'lampu_sorot_kanan_atas'      => 'Lampu Sorot Kanan Atas',
+    'lampu_sorot_kanan_samping'   => 'Lampu Sorot Kanan Samping',
+    'lampu_sorot_kiri_atas'       => 'Lampu Sorot Kiri Atas',
+    'lampu_sorot_kiri_samping'    => 'Lampu Sorot Kiri Samping',
+    'lampu_utama_depan_kanan'     => 'Lampu Utama Depan Kanan',
+    'lampu_utama_depan_kiri'      => 'Lampu Utama Depan Kiri',
+    'lighting_remote'             => 'Lighting + Remote',
+    'modulator_sirine'            => 'Modulator Sirine',
+    'plat_nomor_belakang'         => 'Plat Nomor Kendaraan Belakang',
+    'plat_nomor_depan'            => 'Plat Nomor Kendaraan Depan',
+    'radio_pesawat_rig'           => 'Radio Pesawat (RIG)',
+    'radio_tape'                  => 'Radio Tape',
+    'rolling_belakang'            => 'Rolling Belakang',
+    'rolling_kanan'               => 'Rolling Kanan',
+    'rolling_kiri'                => 'Rolling Kiri',
+    'sirine_tunggal'              => 'Sirine Tunggal',
+    'toa_sirine'                  => 'TOA Sirine',
+    'wiper_kanan'                 => 'Wiper Kanan',
+    'wiper_kiri'                  => 'Wiper Kiri',
                     ];
                 @endphp
                 @foreach($perlengkapan as $key => $label)
@@ -388,11 +310,11 @@
             </div>
         </div>
 
-        {{-- ===================== STEP 5 - KONFIRMASI ===================== --}}
-        <div data-step-panel="5" class="hidden">
+        {{-- ===================== STEP 4 - KONFIRMASI ===================== --}}
+        <div data-step-panel="4" class="hidden">
             <p class="font-medium text-base mb-3">Ringkasan Pemeriksaan</p>
             <div class="border border-gray-200 rounded-xl divide-y divide-gray-200">
-                @foreach(['Identitas Pemeriksaan', 'Pemanasan & BBM', 'Tangki & Pompa', 'Perlengkapan Kendaraan'] as $ringkasan)
+                @foreach(['Identitas Pemeriksaan', 'Pemanasan & BBM', 'Perlengkapan Kendaraan'] as $ringkasan)
                     <div class="flex items-center justify-between px-4 py-3 text-sm">
                         <span>{{ $ringkasan }}</span>
                         <span class="text-emerald-600 font-bold flex items-center gap-1">Lengkap <span>✓</span></span>
@@ -429,7 +351,7 @@
 <script>
 (function () {
     var wizard = document.getElementById('wizardCekHarianUnit');
-    var totalSteps = 5;
+    var totalSteps = 4;
     var currentStep = 1;
 
     var panels     = wizard.querySelectorAll('[data-step-panel]');
@@ -566,7 +488,6 @@
     bindFilePreview('bukti_pemanasan', 'buktiPemanasanLabel', 'buktiPemanasanPreview', 'Lampirkan Bukti Pemanasan');
     bindFilePreview('bukti_bbm', 'buktiBbmLabel', 'buktiBbmPreview', 'Lampirkan Bukti Level BBM');
     bindFilePreview('bukti_pencucian', 'buktiPencucianLabel', 'buktiPencucianPreview', 'Lampirkan Bukti Pencucian');
-    bindFilePreview('dokumentasi_tangki_pompa', 'dokumentasiTangkiLabel', 'dokumentasiTangkiPreview', 'Lampirkan Foto (Maks. 3 file)');
 
     @if($errors->any())
         var firstError = wizard.querySelector('.text-red-600');

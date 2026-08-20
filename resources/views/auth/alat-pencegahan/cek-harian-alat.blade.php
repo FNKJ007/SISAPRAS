@@ -9,12 +9,12 @@
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">✓</div>
                 <div>
-                    <h4 class="font-bold text-sm">Pemeriksaan Alat Rescue Berhasil Disimpan!</h4>
+                    <h4 class="font-bold text-sm">Pemeriksaan Alat Pencegahan Berhasil Disimpan!</h4>
                     <p class="text-xs text-emerald-700 mt-0.5">{{ session('success') }}</p>
                 </div>
             </div>
             @if(session('cek_id'))
-                <a href="{{ route('alat-rescue.cek-harian-alat.export-pdf', session('cek_id')) }}"
+                <a href="{{ route('alat-pencegahan.cek-harian-alat.export-pdf', session('cek_id')) }}"
                    class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v8.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V4a1 1 0 011-1zM4 15a1 1 0 011 1v1h10v-1a1 1 0 112 0v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1a1 1 0 011-1z" clip-rule="evenodd" />
@@ -36,12 +36,12 @@
         </div>
     @endif
 
-    <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Cek Harian Alat Rescue</h1>
+    <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Cek Harian Alat Pencegahan</h1>
     <p class="text-gray-500 text-sm mt-1 mb-6">
-        Pemeriksaan kondisi dan kelengkapan alat rescue.
+        Pemeriksaan kondisi dan kelengkapan alat pencegahan.
     </p>
 
-    <form action="{{ route('alat-rescue.cek-harian-alat.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+    <form action="{{ route('alat-pencegahan.cek-harian-alat.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
 
         {{-- Identitas Pemeriksaan: Pos Damkar, Nama Pemeriksa, Jabatan, Tanggal --}}
@@ -198,7 +198,7 @@
         {{-- Tombol Kirim --}}
         <div class="flex justify-end pt-4 border-t border-gray-200">
             <button type="submit" class="btn btn-primary">
-                <i data-lucide="send" class="w-4 h-4"></i> Simpan Pemeriksaan Alat Rescue
+                <i data-lucide="send" class="w-4 h-4"></i> Simpan Pemeriksaan Alat Pencegahan
             </button>
         </div>
 

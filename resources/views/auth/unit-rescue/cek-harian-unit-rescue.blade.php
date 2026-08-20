@@ -81,11 +81,38 @@
                     </select>
                     @error('pos') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
-                <div>
-                    <label for="nama_pemeriksa" class="block text-sm font-medium mb-1">Nama Pemeriksa <span class="text-red-500">*</span></label>
-                    <input type="text" id="nama_pemeriksa" name="nama_pemeriksa" value="{{ old('nama_pemeriksa', auth()->user()->name ?? '') }}"
-                           placeholder="Masukkan nama pemeriksa" required
-                           class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
+                                <div class="relative" x-data="pegawaiAutocomplete()" @click.away="open = false">
+                    <div class="flex items-center justify-between mb-1">
+                        <label for="nama_pemeriksa" class="block text-sm font-medium">Nama Pemeriksa <span class="text-red-500">*</span></label>
+                        <button type="button" class="text-[11px] text-blue-600 font-semibold hover:underline bg-transparent border-0 p-0 cursor-pointer" @click="toggleDropdown()">Pilih Pejabat / Anggota ▾</button>
+                    </div>
+                    <div class="relative">
+                        <input type="text" id="nama_pemeriksa" name="nama_pemeriksa"
+                               x-model="search"
+                               @focus="onFocus()"
+                               @input.debounce.200ms="fetchPegawai()"
+                               placeholder="Ketik nama atau NIP pemeriksa..." required
+                               autocomplete="off"
+                               class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                        <div x-show="loading" class="absolute right-3 top-3 text-gray-400">
+                            <svg class="animate-spin h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                        </div>
+                    </div>
+                    {{-- Dropdown Suggestions --}}
+                    <div x-show="open && results.length > 0"
+                         class="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-56 overflow-y-auto divide-y divide-gray-100"
+                         style="display: none;">
+                        <template x-for="item in results" :key="item.id">
+                            <div @click="selectPegawai(item)"
+                                 class="p-2.5 hover:bg-blue-50/80 cursor-pointer transition flex items-center justify-between text-xs">
+                                <div>
+                                    <strong class="text-gray-900 font-bold block" x-text="item.name"></strong>
+                                    <span class="text-gray-500" x-text="'NIP: ' + (item.nip || '—') + ' • ' + (item.jabatan || 'Petugas')"></span>
+                                </div>
+                                <span class="text-[10.5px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded" x-text="item.pos || 'Disdamkar'"></span>
+                            </div>
+                        </template>
+                    </div>
                     @error('nama_pemeriksa') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
@@ -111,13 +138,58 @@
             </div>
         </div>
 
-        {{-- ===================== STEP 2 - PEMANASAN & BBM ===================== --}}
-        <div data-step-panel="2" class="hidden">
-            <div class="mb-5">
-                <p class="font-medium text-sm mb-1">Pemanasan Kendaraan</p>
-                <p class="text-xs text-gray-500 mb-2">(Unit harus dioperasikan dan dikendarai minimal sejauh 1 KM. Silakan lampirkan dokumentasi sebagai bukti)</p>
+        {{-- ===================== STEP 2 - KEBERSIHAN, PEMANASAN & BBM ===================== --}}
+        <div data-step-panel="2" class="hidden space-y-6">
+            {{-- 1. Kebersihan Unit --}}
+            <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/40">
+                <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+                    <h3 class="font-bold text-sm text-emerald-950 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">1</span>
+                        <span>Pemeriksaan Kebersihan Unit</span>
+                    </h3>
+                    <span class="text-xs font-semibold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">Wajib Pasukan</span>
+                </div>
+                <p class="text-xs text-gray-600 mb-3">Pemeriksaan kondisi kebersihan unit kendaraan rescue dan dokumentasi kegiatan pembersihan/pencucian oleh pasukan.</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Kondisi Kebersihan Unit <span class="text-red-500">*</span></label>
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <label class="flex items-center gap-2 border border-emerald-300 bg-white rounded-lg p-2.5 cursor-pointer hover:bg-emerald-50 transition">
+                                <input type="radio" name="kebersihan_unit" value="bersih" @checked(old('kebersihan_unit', 'bersih') === 'bersih') class="text-emerald-600 focus:ring-emerald-500">
+                                <span class="text-xs font-bold text-emerald-900">✨ Bersih</span>
+                            </label>
+                            <label class="flex items-center gap-2 border border-gray-300 bg-white rounded-lg p-2.5 cursor-pointer hover:bg-red-50 transition">
+                                <input type="radio" name="kebersihan_unit" value="tidak_bersih" @checked(old('kebersihan_unit') === 'tidak_bersih') class="text-red-600 focus:ring-red-500">
+                                <span class="text-xs font-bold text-gray-700">⚠️ Tidak Bersih</span>
+                            </label>
+                        </div>
+                        @error('kebersihan_unit') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Foto Kegiatan Pasukan Membersihkan Unit</label>
+                        <label for="bukti_pencucian"
+                               class="flex items-center justify-between border border-gray-300 bg-white rounded-lg px-3 py-2 text-xs text-gray-600 cursor-pointer hover:border-emerald-500 transition">
+                            <span id="buktiPencucianLabel">Lampirkan Foto Pembersihan</span>
+                            <span>📎</span>
+                        </label>
+                        <input id="bukti_pencucian" type="file" name="bukti_pencucian" accept="image/*" class="hidden">
+                        <div id="buktiPencucianPreview" class="mt-2 flex flex-wrap gap-2 hidden"></div>
+                        @error('bukti_pencucian') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+
+            {{-- 2. Pemanasan Kendaraan --}}
+            <div class="p-4 rounded-xl border border-blue-200 bg-blue-50/30">
+                <h3 class="font-bold text-sm text-blue-950 flex items-center gap-2 mb-1">
+                    <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">2</span>
+                    <span>Pemanasan Kendaraan</span>
+                </h3>
+                <p class="text-xs text-gray-600 mb-3">(Unit harus dioperasikan dan dikendarai minimal sejauh 1 KM. Silakan lampirkan dokumentasi sebagai bukti)</p>
                 <label for="bukti_pemanasan"
-                       class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
+                       class="flex items-center justify-between border border-gray-300 bg-white rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
                     <span id="buktiPemanasanLabel">Lampirkan Bukti Pemanasan</span>
                     <span>📎</span>
                 </label>
@@ -126,44 +198,37 @@
                 @error('bukti_pemanasan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
-            <p class="font-medium text-sm mb-2">BBM</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
-                <div>
-                    <label for="jenis_bbm" class="block text-sm font-medium mb-1">Jenis BBM <span class="text-red-500">*</span></label>
-                    <p class="text-xs text-gray-500 mb-2">(Pilih jenis bahan bakar kendaraan)</p>
-                    <select id="jenis_bbm" name="jenis_bbm" required
-                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Jenis BBM</option>
-                        <option value="solar" @selected(old('jenis_bbm', 'solar') === 'solar')>Solar</option>
-                        <option value="bensin" @selected(old('jenis_bbm') === 'bensin')>Bensin</option>
-                    </select>
-                    @error('jenis_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            {{-- 3. Bahan Bakar Minyak (BBM) --}}
+            <div class="p-4 rounded-xl border border-amber-200 bg-amber-50/30">
+                <h3 class="font-bold text-sm text-amber-950 flex items-center gap-2 mb-3">
+                    <span class="w-6 h-6 rounded-full bg-amber-600 text-white flex items-center justify-center text-xs">3</span>
+                    <span>Bahan Bakar Minyak (BBM)</span>
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                    <div>
+                        <label for="jenis_bbm" class="block text-sm font-medium mb-1">Jenis BBM <span class="text-red-500">*</span></label>
+                        <p class="text-xs text-gray-500 mb-2">(Pilih jenis bahan bakar kendaraan)</p>
+                        <select id="jenis_bbm" name="jenis_bbm" required
+                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <option value="" selected disabled>Pilih Jenis BBM</option>
+                            <option value="solar" @selected(old('jenis_bbm', 'solar') === 'solar')>Solar</option>
+                            <option value="bensin" @selected(old('jenis_bbm') === 'bensin')>Bensin</option>
+                        </select>
+                        @error('jenis_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <p class="font-medium text-sm mb-1">Bukti Foto Level BBM</p>
+                        <p class="text-xs text-gray-500 mb-2">(Fotokan Speedometer untuk bukti level BBM)</p>
+                        <label for="bukti_bbm"
+                               class="flex items-center justify-between border border-gray-300 bg-white rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
+                            <span id="buktiBbmLabel">Lampirkan Bukti Level BBM</span>
+                            <span>📎</span>
+                        </label>
+                        <input id="bukti_bbm" type="file" name="bukti_bbm" accept="image/*" class="hidden">
+                        <div id="buktiBbmPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
+                        @error('bukti_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
                 </div>
-                <div>
-                    <p class="font-medium text-sm mb-1">Bukti Foto Level BBM</p>
-                    <p class="text-xs text-gray-500 mb-2">(Fotokan Speedometer untuk bukti level BBM)</p>
-                    <label for="bukti_bbm"
-                           class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
-                        <span id="buktiBbmLabel">Lampirkan Bukti Level BBM</span>
-                        <span>📎</span>
-                    </label>
-                    <input id="bukti_bbm" type="file" name="bukti_bbm" accept="image/*" class="hidden">
-                    <div id="buktiBbmPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
-                    @error('bukti_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                </div>
-            </div>
-
-            <div class="mt-4">
-                <p class="font-medium text-sm mb-1">Bukti Pencucian Kendaraan</p>
-                <p class="text-xs text-gray-500 mb-2">(Lampirkan foto sebagai bukti pencucian kendaraan)</p>
-                <label for="bukti_pencucian"
-                       class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
-                    <span id="buktiPencucianLabel">Lampirkan Bukti Pencucian</span>
-                    <span>📎</span>
-                </label>
-                <input id="bukti_pencucian" type="file" name="bukti_pencucian" accept="image/*" class="hidden">
-                <div id="buktiPencucianPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
-                @error('bukti_pencucian') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
         </div>
 
@@ -436,6 +501,56 @@
 
     showStep(currentStep);
 })();
+
+function pegawaiAutocomplete() {
+    return {
+        search: "{{ old('nama_pemeriksa', auth()->user()->name ?? '') }}",
+        open: false,
+        loading: false,
+        results: [],
+        init() {
+            this.fetchPegawai();
+        },
+        onFocus() {
+            this.open = true;
+            if (this.results.length === 0) this.fetchPegawai();
+        },
+        toggleDropdown() {
+            this.open = !this.open;
+            if (this.open && this.results.length === 0) this.fetchPegawai();
+        },
+        async fetchPegawai() {
+            this.loading = true;
+            try {
+                const res = await fetch(`{{ route('api.pegawai.search') }}?q=${encodeURIComponent(this.search)}`);
+                if (res.ok) {
+                    this.results = await res.json();
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                this.loading = false;
+            }
+        },
+        selectPegawai(item) {
+            this.search = item.name;
+            this.open = false;
+            const jabatanInput = document.getElementById('jabatan');
+            if (jabatanInput && item.jabatan) {
+                jabatanInput.value = item.jabatan;
+            }
+            const posSelect = document.getElementById('pos');
+            if (posSelect && item.pos) {
+                for (let opt of posSelect.options) {
+                    if (opt.value.toLowerCase().includes(item.pos.toLowerCase()) || item.pos.toLowerCase().includes(opt.value.toLowerCase())) {
+                        posSelect.value = opt.value;
+                        break;
+                    }
+                }
+            }
+        }
+    };
+}
 </script>
 @endpush
 @endsection
