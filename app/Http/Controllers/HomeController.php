@@ -178,6 +178,36 @@ class HomeController extends Controller
             'list_bengkel'  => $listBengkel,
         ];
 
+        // 5b. Status Pemeriksaan Unit Hari Ini untuk Pos Pengguna
+        $userPos = auth()->user() ? auth()->user()->pos : null;
+        $today = Carbon::today();
+        
+        $todayChecks = \App\Models\CekHarianUnit::whereDate('created_at', $today)
+            ->orWhereDate('tanggal_pemeriksaan', $today)
+            ->pluck('unit_id')
+            ->toArray();
+
+        $queryPosUnits = \App\Models\Unit::query();
+        if ($userPos) {
+            $queryPosUnits->where('pos', 'LIKE', $userPos);
+        }
+        $posUnits = $queryPosUnits->orderBy('nomor_lambung', 'asc')->get();
+        if ($posUnits->isEmpty()) {
+            $posUnits = \App\Models\Unit::orderBy('nomor_lambung', 'asc')->take(6)->get();
+        }
+
+        $userUnitStatus = $posUnits->map(function ($u) use ($todayChecks) {
+            return (object) [
+                'id'            => $u->id,
+                'nomor_lambung' => $u->nomor_lambung ?? $u->nama,
+                'plat_nomor'    => $u->plat_nomor,
+                'merk_tipe'     => $u->merk_tipe,
+                'pos'           => $u->pos,
+                'status_armada' => $u->status === 'perbaikan' ? 'Dalam Perbaikan' : 'Siap Tempur / Operasi',
+                'sudah_dicek'   => in_array($u->id, $todayChecks),
+            ];
+        });
+
         // 6. Range Tahun Dinamis (Otomatis mencakup record tertua di DB s.d. 10 tahun ke depan)
         $minDbYear = Pengajuan::min('created_at') ? Carbon::parse(Pengajuan::min('created_at'))->year : date('Y') - 5;
         $startYear = min(2020, $minDbYear);
@@ -198,6 +228,7 @@ class HomeController extends Controller
             'ringkasan',
             'totalPengajuan',
             'summaryArmada',
+            'userUnitStatus',
             'availableYears'
         ));
     }

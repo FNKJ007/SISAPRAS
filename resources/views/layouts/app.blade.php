@@ -116,6 +116,31 @@
                         </ul>
                     </div>
 
+                    {{-- === Bidang Pencegahan === --}}
+                    <div class="menu-group">
+                        <button class="menu-title" type="button" data-target="menuPencegahan">
+                            <span class="menu-title-left">
+                                <i data-lucide="shield" class="menu-icon"></i>
+                                <span>Pencegahan</span>
+                            </span>
+                            <i data-lucide="chevron-down" class="chevron"></i>
+                        </button>
+                        <ul class="submenu" id="menuPencegahan">
+                            <li>
+                                <a href="{{ route('unit-pencegahan.cek-harian-unit') }}"
+                                   class="{{ request()->routeIs('unit-pencegahan.cek-harian-unit') ? 'active' : '' }}">
+                                    Cek Harian Unit
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('alat-pencegahan.cek-harian-alat') }}"
+                                   class="{{ request()->routeIs('alat-pencegahan.cek-harian-alat') ? 'active' : '' }}">
+                                    Cek Harian Alat
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
                     {{-- === Command Center === --}}
                     <div class="menu-group">
                         <button class="menu-title" type="button" data-target="menuCommand">

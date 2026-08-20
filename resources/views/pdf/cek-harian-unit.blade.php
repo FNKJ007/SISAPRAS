@@ -60,15 +60,28 @@
         <tr>
             <td class="label">Pos</td>
             <td class="value">: {{ $record->pos ?? '-' }}</td>
+            <td class="label">Kebersihan Unit</td>
+            <td class="value">: <span style="{{ ($record->kebersihan_unit ?? 'bersih') === 'tidak_bersih' ? 'color:#dc2626;' : 'color:#059669;' }}">{{ ($record->kebersihan_unit ?? 'bersih') === 'tidak_bersih' ? 'Tidak Bersih' : 'Bersih' }}</span></td>
+        </tr>
+        <tr>
             <td class="label">Jenis BBM</td>
             <td class="value">: {{ ucfirst($record->jenis_bbm ?? '-') }}</td>
+            <td class="label"></td>
+            <td class="value"></td>
         </tr>
     </table>
 
-    @if(!empty($bukti_pemanasan_data) || !empty($bukti_bbm_data) || (!empty($dok_tangki_data) && count($dok_tangki_data) > 0))
+    @if(!empty($bukti_pemanasan_data) || !empty($bukti_bbm_data) || !empty($bukti_pencucian_data) || (!empty($dok_tangki_data) && count($dok_tangki_data) > 0))
     <h2 class="section">Dokumentasi Foto</h2>
 
     <div style="display:flex; gap:8px; margin-bottom:10px;">
+        @if(!empty($bukti_pencucian_data))
+        <div style="width:33%;">
+            <strong>Bukti Kebersihan Unit</strong>
+            <div style="margin-top:6px;"><img src="{{ $bukti_pencucian_data }}" style="max-width:100%; height:auto; border:1px solid #ddd; padding:4px;"></div>
+        </div>
+        @endif
+
         @if(!empty($bukti_pemanasan_data))
         <div style="width:33%;">
             <strong>Bukti Pemanasan</strong>
@@ -78,15 +91,8 @@
 
         @if(!empty($bukti_bbm_data))
         <div style="width:33%;">
-            <strong>Bukti BBM</strong>
+            <strong>Bukti Level BBM</strong>
             <div style="margin-top:6px;"><img src="{{ $bukti_bbm_data }}" style="max-width:100%; height:auto; border:1px solid #ddd; padding:4px;"></div>
-        </div>
-        @endif
-
-        @if(!empty($bukti_pencucian_data))
-        <div style="width:33%;">
-            <strong>Bukti Pencucian</strong>
-            <div style="margin-top:6px;"><img src="{{ $bukti_pencucian_data }}" style="max-width:100%; height:auto; border:1px solid #ddd; padding:4px;"></div>
         </div>
         @endif
     </div>

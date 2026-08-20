@@ -17,6 +17,7 @@ class CekHarianUnit extends Model
         'pos',
         'unit_id',
         'unit_nama',
+        'kebersihan_unit',
         'shift',
 
         'bukti_pemanasan',

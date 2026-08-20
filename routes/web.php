@@ -11,9 +11,12 @@ use App\Http\Controllers\CekHarianAlatController;
 use App\Http\Controllers\CekHarianAlatRescueController;
 use App\Http\Controllers\CekHarianUnitPemadamController;
 use App\Http\Controllers\CekHarianUnitRescueController;
+use App\Http\Controllers\CekHarianUnitPencegahanController;
+use App\Http\Controllers\CekHarianAlatPencegahanController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\Admin\InvoiceController;
+use App\Http\Controllers\Admin\AlokasiKebersihanController;
 use App\Http\Controllers\Admin\MonitoringKejadianController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +35,25 @@ Route::get('/', function () {
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// ===== API Autocomplete Pegawai / Petugas =====
+Route::middleware(['auth'])->group(function () {
+    Route::get('/api/pegawai/search', function (\Illuminate\Http\Request $request) {
+        $q = $request->query('q', '');
+        $users = \App\Models\User::where(function ($query) use ($q) {
+                if (!empty($q)) {
+                    $query->where('name', 'LIKE', "%{$q}%")
+                          ->orWhere('nip', 'LIKE', "%{$q}%")
+                          ->orWhere('jabatan', 'LIKE', "%{$q}%");
+                }
+            })
+            ->select('id', 'name', 'nip', 'jabatan', 'bidang', 'pos')
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return response()->json($users);
+    })->name('api.pegawai.search');
+});
 
 // =====================================================================
 //  USER ROUTES — Wajib Login (middleware: auth)
@@ -76,6 +98,21 @@ Route::middleware(['auth', 'user'])->group(function () {
         ->name('alat-rescue.cek-harian-alat.store');
     Route::get('/alat-rescue/cek-harian-alat/{id}/export-pdf', [CekHarianAlatRescueController::class, 'exportPdf'])
         ->name('alat-rescue.cek-harian-alat.export-pdf');
+
+    // ===== Unit Pencegahan > Cek Harian Unit & Alat =====
+    Route::get('/unit-pencegahan/cek-harian-unit', [CekHarianUnitPencegahanController::class, 'index'])
+        ->name('unit-pencegahan.cek-harian-unit');
+    Route::post('/unit-pencegahan/cek-harian-unit', [CekHarianUnitPencegahanController::class, 'store'])
+        ->name('unit-pencegahan.cek-harian-unit.store');
+    Route::get('/unit-pencegahan/cek-harian-unit/{id}/export-pdf', [CekHarianUnitPencegahanController::class, 'exportPdf'])
+        ->name('unit-pencegahan.cek-harian-unit.export-pdf');
+
+    Route::get('/alat-pencegahan/cek-harian-alat', [CekHarianAlatPencegahanController::class, 'index'])
+        ->name('alat-pencegahan.cek-harian-alat');
+    Route::post('/alat-pencegahan/cek-harian-alat', [CekHarianAlatPencegahanController::class, 'store'])
+        ->name('alat-pencegahan.cek-harian-alat.store');
+    Route::get('/alat-pencegahan/cek-harian-alat/{id}/export-pdf', [CekHarianAlatPencegahanController::class, 'exportPdf'])
+        ->name('alat-pencegahan.cek-harian-alat.export-pdf');
 
     // ===== Command Center > Cek Alat CC =====
     Route::get('/alat-cc/cek-alat-cc', [CekAlatCcController::class, 'index'])
@@ -126,6 +163,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ]);
         Route::get('/kartu-kendali-aktual',                [AdminController::class, 'pemeliharaanKartuKendaliAktual'])->name('kartu-kendali-aktual');
         Route::get('/kartu-kendali-pembayaran',                [AdminController::class, 'pemeliharaanKartuKendaliPembayaran'])->name('kartu-kendali-pembayaran');
+        
+        // Alokasi Peralatan Kebersihan Kendaraan SPI
+        Route::get('/alokasi-kebersihan', [AlokasiKebersihanController::class, 'index'])->name('alokasi-kebersihan.index');
+        Route::put('/alokasi-kebersihan/{id}', [AlokasiKebersihanController::class, 'update'])->name('alokasi-kebersihan.update');
 
         // Data Unit CRUD Routes
         Route::get('/data-unit',                    [UnitManagementController::class, 'index'])->name('data-unit');

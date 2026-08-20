@@ -108,6 +108,39 @@ class AdminController extends Controller
             ->take(6)
             ->values();
 
+        // 5. Absen Pengecekan Harian Unit (Status Cek Hari Ini per Unit Armada)
+        $today = \Carbon\Carbon::today();
+        $todayCekUnits = \App\Models\CekHarianUnit::whereDate('created_at', $today)
+            ->orWhereDate('tanggal_pemeriksaan', $today)
+            ->latest()
+            ->get()
+            ->keyBy('unit_id');
+
+        $allUnits = \App\Models\Unit::orderBy('nomor_lambung', 'asc')->get();
+        $absenUnitList = $allUnits->map(function ($unit) use ($todayCekUnits) {
+            $cek = $todayCekUnits->get($unit->id);
+            return (object) [
+                'unit_id'        => $unit->id,
+                'nomor_lambung'  => $unit->nomor_lambung,
+                'plat_nomor'     => $unit->plat_nomor,
+                'merk_tipe'      => $unit->merk_tipe,
+                'kategori'       => $unit->kategori,
+                'pos'            => $unit->pos ?? '—',
+                'status_unit'    => $unit->status, // 'aktif' vs 'perbaikan'
+                'sudah_dicek'    => $cek !== null,
+                'nama_pemeriksa' => $cek ? $cek->nama_pemeriksa : null,
+                'jabatan'        => $cek ? $cek->jabatan : null,
+                'kebersihan'     => $cek ? ($cek->kebersihan_unit ?? 'bersih') : null,
+                'waktu_cek'      => $cek ? $cek->created_at->format('H:i') : null,
+            ];
+        });
+
+        $absenSummary = [
+            'total_unit'  => $allUnits->count(),
+            'sudah_dicek' => $absenUnitList->where('sudah_dicek', true)->count(),
+            'belum_dicek' => $absenUnitList->where('sudah_dicek', false)->count(),
+        ];
+
         return view('admin.dashboard', compact(
             'totalUnit',
             'unitPemadam',
@@ -127,7 +160,9 @@ class AdminController extends Controller
             'chartPemeliharaan',
             'chartBiaya',
             'posDistribution',
-            'activities'
+            'activities',
+            'absenUnitList',
+            'absenSummary'
         ));
     }
 

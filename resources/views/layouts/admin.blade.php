@@ -98,6 +98,12 @@
                                 </a>
                             </li>
                             <li>
+                                <a href="{{ route('admin.pemeliharaan.alokasi-kebersihan.index') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.alokasi-kebersihan.*') ? 'active' : '' }}">
+                                    Alokasi Kebersihan Unit
+                                </a>
+                            </li>
+                            <li>
                                 <a href="{{ route('admin.pemeliharaan.data-unit') }}"
                                    class="{{ request()->routeIs('admin.pemeliharaan.data-unit*') ? 'active' : '' }}">
                                     Data Unit

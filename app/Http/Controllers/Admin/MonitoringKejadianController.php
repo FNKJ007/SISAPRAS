@@ -56,8 +56,8 @@ class MonitoringKejadianController extends Controller
             $tahunGrafik = $tahunTersedia[0];
         }
 
-        // Tren jumlah kejadian per bulan (dipecah per jenis) untuk tahun terpilih
-        $jenisList = ['Kebakaran', 'Rescue', 'Penyelamatan', 'Non-Kebakaran'];
+        // Tren jumlah kejadian per bulan (dipecah per jenis) untuk tahun terpilih: Rescue & Penyelamatan digabung 1 grafik
+        $jenisList = ['Kebakaran', 'Rescue / Penyelamatan', 'Non-Kebakaran'];
         $chartBulanan = [];
         foreach ($jenisList as $jenis) {
             $chartBulanan[$jenis] = array_fill(0, 12, 0);
@@ -68,8 +68,12 @@ class MonitoringKejadianController extends Controller
 
         foreach ($kejadianTahunIni as $item) {
             $bulanIndex = \Illuminate\Support\Carbon::parse($item->waktu_kejadian)->month - 1;
-            if (isset($chartBulanan[$item->jenis_kejadian])) {
-                $chartBulanan[$item->jenis_kejadian][$bulanIndex]++;
+            $jenisKey = in_array($item->jenis_kejadian, ['Rescue', 'Penyelamatan', 'Rescue / Penyelamatan'])
+                ? 'Rescue / Penyelamatan'
+                : $item->jenis_kejadian;
+
+            if (isset($chartBulanan[$jenisKey])) {
+                $chartBulanan[$jenisKey][$bulanIndex]++;
             }
         }
 

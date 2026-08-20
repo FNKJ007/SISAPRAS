@@ -54,8 +54,8 @@
                             🚛
                         </div>
                         <div>
-                            <h4 class="text-sm font-bold text-amber-950">Total Unit di Bengkel</h4>
-                            <p class="text-[11px] text-amber-700">Dalam pemeliharaan / perbaikan</p>
+                            <h4 class="text-sm font-bold text-amber-950">Unit Dalam Perbaikan</h4>
+                            <p class="text-[11px] text-amber-700">Dalam pemeliharaan / perbaikan bengkel</p>
                         </div>
                     </div>
                     <span class="text-3xl font-black text-amber-700">{{ $summaryArmada['total_bengkel'] }}</span>
@@ -73,6 +73,49 @@
                 </div>
             </div>
         </div>
+
+        {{-- Status Pemeriksaan Unit Hari Ini (Kesiapan Operasi & Cek Harian) --}}
+        @if(!empty($userUnitStatus) && count($userUnitStatus) > 0)
+            <div class="mt-4 bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5">
+                <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+                    <h5 class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="clipboard-check" class="w-4 h-4 text-blue-700"></i>
+                        <span>Status Pengecekan Unit Hari Ini {{ auth()->user()->pos ? '— Pos ' . ucfirst(auth()->user()->pos) : '' }}:</span>
+                    </h5>
+                    <span class="text-[11px] text-slate-500 font-medium">Pastikan cek harian telah diisi sebelum operasi</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    @foreach($userUnitStatus as $unitSt)
+                        <div class="bg-white border rounded-xl p-3 flex flex-col justify-between gap-2 shadow-2xs {{ $unitSt->sudah_dicek ? 'border-emerald-200 bg-emerald-50/20' : 'border-red-200 bg-red-50/20' }}">
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <strong class="text-xs font-bold text-slate-900 block">{{ strtoupper($unitSt->nomor_lambung) }}</strong>
+                                    <span class="text-[11px] text-slate-500">{{ $unitSt->plat_nomor ? $unitSt->plat_nomor . ' • ' : '' }}{{ $unitSt->merk_tipe ?? '' }}</span>
+                                </div>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-md {{ $unitSt->status_armada === 'Dalam Perbaikan' ? 'bg-amber-100 text-amber-900' : 'bg-blue-100 text-blue-900' }}">
+                                    {{ $unitSt->status_armada }}
+                                </span>
+                            </div>
+                            <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                                <span class="text-slate-500 font-medium">Cek Harian Hari Ini:</span>
+                                @if($unitSt->sudah_dicek)
+                                    <span class="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full text-[10.5px]">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                        Sudah Dicek
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-full text-[10.5px]">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-600"></span>
+                                        Belum Dicek
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
 
         {{-- Detail List Unit di Bengkel (jika ada) --}}
         @if(!empty($summaryArmada['list_bengkel']) && count($summaryArmada['list_bengkel']) > 0)
