@@ -65,6 +65,41 @@
         </tr>
     </table>
 
+    @if(!empty($bukti_pemanasan_data) || !empty($bukti_bbm_data) || (!empty($dok_tangki_data) && count($dok_tangki_data) > 0))
+    <h2 class="section">Dokumentasi Foto</h2>
+
+    <div style="display:flex; gap:8px; margin-bottom:10px;">
+        @if(!empty($bukti_pemanasan_data))
+        <div style="width:33%;">
+            <strong>Bukti Pemanasan</strong>
+            <div style="margin-top:6px;"><img src="{{ $bukti_pemanasan_data }}" style="max-width:100%; height:auto; border:1px solid #ddd; padding:4px;"></div>
+        </div>
+        @endif
+
+        @if(!empty($bukti_bbm_data))
+        <div style="width:33%;">
+            <strong>Bukti BBM</strong>
+            <div style="margin-top:6px;"><img src="{{ $bukti_bbm_data }}" style="max-width:100%; height:auto; border:1px solid #ddd; padding:4px;"></div>
+        </div>
+        @endif
+
+        @if(!empty($bukti_pencucian_data))
+        <div style="width:33%;">
+            <strong>Bukti Pencucian</strong>
+            <div style="margin-top:6px;"><img src="{{ $bukti_pencucian_data }}" style="max-width:100%; height:auto; border:1px solid #ddd; padding:4px;"></div>
+        </div>
+        @endif
+    </div>
+
+    @if(!empty($dok_tangki_data) && count($dok_tangki_data) > 0)
+    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+        @foreach($dok_tangki_data as $img)
+        <div style="width:32%;"><img src="{{ $img }}" style="max-width:100%; height:auto; border:1px solid #ddd; padding:4px;"></div>
+        @endforeach
+    </div>
+    @endif
+    @endif
+
     <h2 class="section">Tangki &amp; Pompa</h2>
     <table class="info">
         <tr>
