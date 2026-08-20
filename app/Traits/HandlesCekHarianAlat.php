@@ -7,9 +7,12 @@ use App\Models\Peralatan;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Traits\OptimizesPdfImages;
 
 trait HandlesCekHarianAlat
 {
+    use OptimizesPdfImages;
+
     /**
      * Generate & unduh PDF hasil Cek Harian Alat (Pemadam / Rescue).
      */
@@ -18,27 +21,15 @@ trait HandlesCekHarianAlat
         try {
             $record = CekHarianAlat::where('kategori', $kategori)->findOrFail($id);
 
-            if (function_exists('set_time_limit')) set_time_limit(120);
+            if (function_exists('set_time_limit')) {
+                @set_time_limit(300);
+            }
+            @ini_set('max_execution_time', 300);
             @ini_set('memory_limit', '512M');
 
-            Pdf::setOptions(["isRemoteEnabled" => true, "isHtml5ParserEnabled" => true]);
+            Pdf::setOptions(["isRemoteEnabled" => false, "isHtml5ParserEnabled" => true]);
 
-            $toDataUri = function (?string $path) {
-                if (!$path) {
-                    return null;
-                }
-
-                $full = storage_path('app/public/' . $path);
-                if (!file_exists($full)) {
-                    return null;
-                }
-
-                $type = mime_content_type($full) ?: 'image/jpeg';
-                $data = base64_encode(file_get_contents($full));
-                return 'data:' . $type . ';base64,' . $data;
-            };
-
-            $fotoUmumData = $toDataUri($record->foto_umum);
+            $fotoUmumData = $this->imageToDataUri($record->foto_umum);
 
             $pdf = Pdf::loadView('pdf.cek-harian-alat', [
                 'record'        => $record,

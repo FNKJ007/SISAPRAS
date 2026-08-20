@@ -25,6 +25,17 @@
         </div>
     @endif
 
+    {{-- Flash Message Error --}}
+    @if(session('error'))
+        <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 flex items-center gap-3 shadow-xs">
+            <div class="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-sm shrink-0">!</div>
+            <div>
+                <h4 class="font-bold text-sm">Gagal Membuat PDF</h4>
+                <p class="text-xs text-red-700 mt-0.5">{{ session('error') }}</p>
+            </div>
+        </div>
+    @endif
+
     <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Cek Harian Alat Pemadam</h1>
     <p class="text-gray-500 text-sm mt-1 mb-6">
         Pemeriksaan kondisi dan kelengkapan alat pemadam kebakaran.

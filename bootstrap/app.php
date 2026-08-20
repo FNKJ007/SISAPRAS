@@ -16,6 +16,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'user'  => \App\Http\Middleware\UserMiddleware::class,
         ]);
+
+        // Percaya header X-Forwarded-* dari proxy lokal (Herd/Valet/ngrok)
+        // maupun reverse proxy produksi (Nginx dsb). Tanpa ini, Laravel salah
+        // deteksi skema request sebagai http padahal browser akses via https,
+        // sehingga route()/url() bikin link http:// -> Chrome anggap mixed
+        // content dan munculkan "Insecure download blocked" saat unduh PDF.
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
