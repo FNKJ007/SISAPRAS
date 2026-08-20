@@ -125,7 +125,7 @@
                 <span style="color:#C0201F; background:#FEE2E2; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700;">
                     💳 {{ $totalInvoiceCount }} Invoice Verified
                 </span>
-                <a href="{{ route('admin.pemeliharaan.invoice.index') }}" style="color:#C0201F; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
+                <a href="{{ route('admin.pemeliharaan.monitoring-aktual.index') }}" style="color:#C0201F; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
                     Detail <i data-lucide="arrow-right" style="width:13px; height:13px;"></i>
                 </a>
             </div>

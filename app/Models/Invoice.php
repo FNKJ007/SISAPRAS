@@ -14,6 +14,7 @@ class Invoice extends Model
     protected $fillable = [
         'nomor_invoice',
         'tanggal_invoice',
+        'nama_bengkel',
         'unit_id',
         'no_pol',
         'no_lambung',
@@ -22,16 +23,24 @@ class Invoice extends Model
         'kode_rekening',
         'tahun_anggaran',
         'subtotal',
+        'potongan',
+        'pajak',
+        'biaya_lain',
         'total_biaya',
         'status',
+        'kategori_monitoring',
+        'pengajuan_id',
         'catatan',
         'created_by',
     ];
 
     protected $casts = [
         'tanggal_invoice' => 'date',
-        'subtotal' => 'decimal:2',
-        'total_biaya' => 'decimal:2',
+        'subtotal'        => 'decimal:2',
+        'potongan'        => 'decimal:2',
+        'pajak'           => 'decimal:2',
+        'biaya_lain'      => 'decimal:2',
+        'total_biaya'     => 'decimal:2',
     ];
 
     public function unit(): BelongsTo
@@ -54,10 +63,13 @@ class Invoice extends Model
      */
     public function recalculateTotals(): void
     {
-        $subtotal = $this->items()->sum('total_biaya');
+        $subtotal  = (float) $this->items()->sum('total_biaya');
+        $potongan  = (float) ($this->potongan ?? 0);
+        $pajak     = (float) ($this->pajak ?? 0);
+        $biayaLain = (float) ($this->biaya_lain ?? 0);
 
         $this->subtotal = $subtotal;
-        $this->total_biaya = $subtotal; // tambahkan pajak/potongan di sini jika diperlukan
+        $this->total_biaya = max(0, $subtotal - $potongan + $pajak + $biayaLain);
         $this->save();
     }
 

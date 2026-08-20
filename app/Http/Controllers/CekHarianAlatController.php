@@ -55,6 +55,15 @@ class CekHarianAlatController extends Controller
 
         return redirect()
             ->route('alat-pemadam.cek-harian-alat')
-            ->with('success', "Pemeriksaan harian alat Pemadam berhasil disimpan!");
+            ->with('success', "Pemeriksaan harian alat Pemadam berhasil disimpan!")
+            ->with('cek_id', $record->id);
+    }
+
+    /**
+     * Mengunduh PDF hasil pemeriksaan alat pemadam.
+     */
+    public function exportPdf($id)
+    {
+        return $this->exportCekHarianAlatPdf((int) $id, 'pemadam');
     }
 }

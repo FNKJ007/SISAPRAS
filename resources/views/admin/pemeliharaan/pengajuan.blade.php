@@ -106,14 +106,16 @@
     {{-- Tabel Pengajuan --}}
     <div style="background:#FFFFFF; border-radius:16px; border:1px solid #E2E8F0; box-shadow:0px 18px 40px rgba(112,144,176,0.08); overflow:hidden;">
         @if($pengajuanList->isEmpty())
-            <div style="padding:48px 20px; text-align:center; color:#64748B;">
-                <i data-lucide="inbox" style="width:44px; height:44px; color:#CBD5E1; margin-bottom:12px;"></i>
-                <div style="font-size:15px; font-weight:700; color:#334155;">Belum Ada Pengajuan</div>
-                <div style="font-size:12.5px; color:#94A3B8; margin-top:4px;">Tidak ada data pengajuan pemeliharaan sesuai kriteria filter saat ini.</div>
+            <div style="padding:56px 20px; text-align:center; background:#FFFFFF; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <div style="width:64px; height:64px; background:#F8FAFC; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin:0 auto 16px auto; border:1px solid #E2E8F0;">
+                    <i data-lucide="inbox" style="width:30px; height:30px; color:#64748B;"></i>
+                </div>
+                <div style="font-size:16px; font-weight:800; color:#0F172A; margin-bottom:6px;">Belum Ada Pengajuan</div>
+                <div style="font-size:13px; color:#64748B; max-width:400px; margin:0 auto;">Tidak ada data pengajuan pemeliharaan sesuai kriteria filter saat ini.</div>
             </div>
         @else
-            <div style="overflow-x:auto;">
-                <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+            <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+                <table style="width:100%; min-width:880px; border-collapse:collapse; font-size:13px; text-align:left;">
                     <thead>
                         <tr style="background:#F8FAFC; border-bottom:1.5px solid #E2E8F0; color:#475569; font-size:11.5px; text-transform:uppercase; letter-spacing:0.5px;">
                             <th style="padding:14px 18px;">No</th>

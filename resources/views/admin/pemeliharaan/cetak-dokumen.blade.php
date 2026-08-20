@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title }} — {{ $pengajuan->kode_verifikasi ?? 'HAR-0000' }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * {
@@ -13,420 +12,987 @@
             padding: 0;
         }
         body {
-            font-family: 'Inter', Arial, sans-serif;
-            background-color: #F1F5F9;
-            color: #1E293B;
-            padding: 20px;
+            font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+            background-color: #525659;
+            color: #000000;
+            padding: 20px 0;
             font-size: 12.5px;
-            line-height: 1.5;
+            line-height: 1.45;
+            -webkit-font-smoothing: antialiased;
         }
 
         @page {
             size: A4 portrait;
-            margin: 8mm 10mm;
+            margin: 0;
         }
 
-        /* Formal Paper Container (Standard 1:1 A4 Kertas Print: 794px) */
-        .paper {
-            max-width: 794px;
-            width: 100%;
-            margin: 0 auto;
-            background: #FFFFFF;
-            padding: 30px 36px;
-            border-radius: 4px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-            position: relative;
-            box-sizing: border-box;
-        }
-
-        /* Kop Surat Resmi Dinas */
-        .kop-surat {
+        /* Top Action Bar */
+        .no-print-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 54px;
+            background: #1E293B;
+            color: #FFFFFF;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 3px double #0F172A;
-            padding-bottom: 14px;
-            margin-bottom: 24px;
-            text-align: center;
+            padding: 0 24px;
+            z-index: 9999;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .no-print-bar h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #F8FAFC;
+        }
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-print {
+            background: #2563EB;
+            color: #FFFFFF;
+        }
+        .btn-print:hover { background: #1D4ED8; }
+        .btn-download {
+            background: #16A34A;
+            color: #FFFFFF;
+        }
+        .btn-download:hover { background: #15803D; }
+
+        .document-wrapper {
+            margin-top: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Standard A4 Paper (210mm x 297mm) */
+        .paper-page {
+            width: 210mm;
+            min-height: 297mm;
+            height: 297mm;
+            background: #FFFFFF;
+            padding: 15mm 20mm 15mm 20mm;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Kop Surat Resmi Dinas */
+        .kop-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2px;
         }
         .kop-logo {
             width: 72px;
             height: auto;
         }
-        .kop-text {
+        .kop-center {
             flex: 1;
-            padding: 0 15px;
-        }
-        .kop-text h4 {
-            font-size: 14px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            color: #0F172A;
-            text-transform: uppercase;
-        }
-        .kop-text h2 {
-            font-size: 17.5px;
-            font-weight: 800;
-            color: #C0201F;
-            text-transform: uppercase;
-            margin: 3px 0;
-        }
-        .kop-text p {
-            font-size: 11px;
-            color: #475569;
-        }
-
-        /* Header Judul Dokumen */
-        .doc-header {
             text-align: center;
-            margin-bottom: 22px;
+            padding: 0 10px;
         }
-        .doc-title {
-            font-size: 15px;
-            font-weight: 800;
+        .kop-center .h1-line {
+            font-size: 16px;
+            font-weight: 700;
             text-transform: uppercase;
-            color: #1B2A6B;
-            text-decoration: underline;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
+            color: #000000;
+            margin-bottom: 2px;
         }
-        .doc-nomor {
-            font-size: 12px;
-            font-weight: 600;
-            color: #475569;
-            margin-top: 4px;
+        .kop-center .h2-line {
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #000000;
+            margin-bottom: 3px;
+        }
+        .kop-center .address-line {
+            font-size: 11px;
+            font-weight: 400;
+            color: #000000;
+            margin-bottom: 1px;
+        }
+        .kop-center .contact-line {
+            font-size: 11px;
+            font-weight: 400;
+            color: #000000;
+        }
+        .kop-center a {
+            color: #000000;
+            text-decoration: underline;
         }
 
-        /* Target Address / Kepada Yth */
-        .kepada-box {
+        /* Divider Line Under Kop Surat */
+        .kop-divider {
+            border: none;
+            border-top: 2.5px solid #000000;
+            margin-top: 6px;
+            margin-bottom: 18px;
+        }
+
+        /* Top Meta & Destination Grid */
+        .meta-dest-grid {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
             margin-bottom: 20px;
             font-size: 12.5px;
-            line-height: 1.6;
+            font-weight: 400;
         }
-
-        /* Verification Badge Box */
-        .verif-badge-box {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #F8FAFC;
-            border: 1px solid #E2E8F0;
-            padding: 12px 18px;
-            border-radius: 8px;
-            margin-bottom: 22px;
+        .meta-left {
+            width: 63%;
         }
-        .verif-code {
-            font-family: monospace;
-            font-size: 14px;
-            font-weight: 800;
-            color: #C0201F;
-            background: #FEF2F2;
-            padding: 5px 12px;
-            border-radius: 6px;
-            border: 1px solid #FCA5A5;
-        }
-
-        /* Table Information */
-        .info-table {
-            width: 100%;
+        .meta-left table, .dest-right table {
             border-collapse: collapse;
-            margin-bottom: 20px;
         }
-        .info-table th, .info-table td {
-            padding: 7px 10px;
+        .meta-left td, .dest-right td {
+            padding: 1.5px 0;
             vertical-align: top;
-            font-size: 12.5px;
+            font-weight: 400;
         }
-        .info-table th {
-            width: 190px;
-            color: #475569;
-            font-weight: 600;
+        .dest-right {
             text-align: left;
-            background: #F8FAFC;
-            border-bottom: 1px solid #E2E8F0;
-        }
-        .info-table td {
-            color: #0F172A;
-            border-bottom: 1px solid #F1F5F9;
+            width: 35%;
+            font-weight: 400;
         }
 
-        /* Item Table */
-        .items-table {
+        /* Body Paragraphs */
+        .salutation {
+            margin-left: 45px;
+            margin-bottom: 8px;
+            font-weight: 400;
+        }
+        .body-p {
+            text-align: justify;
+            text-indent: 45px;
+            line-height: 1.45;
+            margin-bottom: 12px;
+            font-weight: 400;
+        }
+
+        /* Details Grid */
+        .details-table {
+            margin: 8px 0 14px 30px;
+            border-collapse: collapse;
+            font-size: 12.5px;
+            font-weight: 400;
+        }
+        .details-table td {
+            padding: 2.5px 0;
+            vertical-align: top;
+            font-weight: 400;
+        }
+        .details-table td.label-col {
+            width: 210px;
+            font-weight: 400;
+        }
+        .details-table td.colon-col {
+            width: 15px;
+            font-weight: 400;
+        }
+
+        /* TTD Block Page 1 */
+        .ttd-container-p1 {
+            margin-top: auto;
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+        .ttd-box {
+            text-align: center;
+            width: 320px;
+            font-size: 12.5px;
+            line-height: 1.3;
+        }
+        .ttd-space {
+            height: 75px;
+        }
+
+        /* QR Code Bottom Left Page 1 */
+        .qr-footer-p1 {
+            position: absolute;
+            bottom: 15mm;
+            left: 20mm;
+        }
+        .qr-img {
+            width: 75px;
+            height: 75px;
+        }
+
+        /* PAGE 2 STYLING (LAMPIRAN) */
+        .lampiran-banner {
+            border: 2px solid #000000;
+            padding: 7px 12px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 12.5px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            letter-spacing: 0.3px;
+        }
+
+        .lampiran-meta-box {
+            border: 1px solid #000000;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+        }
+        .lampiran-meta-left table {
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .lampiran-meta-left td {
+            padding: 2px 0;
+            vertical-align: top;
+            font-weight: 400;
+        }
+
+        .lampiran-qr-box {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+        }
+        .lampiran-qr-box img {
+            width: 60px;
+            height: 60px;
+        }
+
+        /* Table Pemeriksaan */
+        .table-pemeriksaan {
             width: 100%;
             border-collapse: collapse;
-            margin: 15px 0 24px 0;
+            margin-bottom: 20px;
+            font-size: 12px;
         }
-        .items-table th {
-            background: #1B2A6B;
-            color: #FFFFFF;
+        .table-pemeriksaan th {
+            border: 1px solid #000000;
+            padding: 6px 6px;
             font-weight: 700;
-            font-size: 11.5px;
             text-transform: uppercase;
-            padding: 9px 12px;
-            text-align: left;
-        }
-        .items-table td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #E2E8F0;
-            font-size: 12px;
-        }
-
-        /* Note Box */
-        .note-box {
-            background: #FFFBEB;
-            border: 1px solid #FCD34D;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 11.5px;
-            color: #92400E;
-            margin-bottom: 24px;
-            line-height: 1.6;
-        }
-
-        /* Signature Grid */
-        .signature-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-top: 40px;
             text-align: center;
+            background: #FFFFFF;
         }
-        .sig-box {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 145px;
-        }
-        .sig-title {
-            font-size: 11.5px;
-            font-weight: 600;
-            color: #475569;
-        }
-        .sig-name {
-            font-size: 12px;
-            font-weight: 700;
-            color: #0F172A;
-            text-decoration: underline;
-        }
-        .sig-nip {
-            font-size: 11px;
-            color: #64748B;
+        .table-pemeriksaan td {
+            border: 1px solid #000000;
+            padding: 5px 8px;
+            height: 22px;
+            font-weight: 400;
         }
 
-        /* Print CSS Reset */
+        /* TTD Footer Page 2 */
+        .lampiran-footer-ttd {
+            margin-top: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 25px;
+        }
+
+        /* PRINT CSS RESET */
         @media print {
             body {
-                background: #FFFFFF;
-                padding: 0;
+                background: #FFFFFF !important;
+                padding: 0 !important;
             }
             .no-print-bar {
                 display: none !important;
             }
-            .paper {
-                box-shadow: none;
-                padding: 15px;
-                max-width: 100%;
+            .document-wrapper {
+                margin-top: 0 !important;
+                gap: 0 !important;
+            }
+            .paper-page {
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                page-break-after: always !important;
+                page-break-inside: avoid !important;
+            }
+            .paper-page:last-child {
+                page-break-after: auto !important;
             }
         }
     </style>
 </head>
 <body>
 
-
-    <!-- Paper Content -->
-    <div class="paper">
-
-        <!-- Kop Surat -->
-        <div class="kop-surat">
-            <img src="{{ asset('images/logo-kabupaten.png') }}" class="kop-logo" alt="Logo Pemkab">
-            <div class="kop-text">
-                <h4>Pemerintah Kabupaten Bandung</h4>
-                <h2>Dinas Pemadam Kebakaran dan Penyelamatan</h2>
-                <p>Jl. Raya Soreang - Banjaran KM. 2, Soreang, Kabupaten Bandung | Telp/Fax: (022) 5891113</p>
-            </div>
-            <img src="{{ asset('images/logo-damkar.png') }}" class="kop-logo" alt="Logo Damkar">
+    <!-- Top Action Bar -->
+    <div class="no-print-bar">
+        <h3>Preview Cetak: {{ $title }}</h3>
+        <div style="display:flex; gap:10px;">
+            <button onclick="window.print()" class="btn-action btn-print">
+                <svg style="width:16px; height:16px; fill:currentColor;" viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                <span>Cetak / Print PDF</span>
+            </button>
+            <button onclick="downloadPDFDirect()" class="btn-action btn-download">
+                <svg style="width:16px; height:16px; fill:currentColor;" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                <span>Unduh File PDF</span>
+            </button>
         </div>
+    </div>
 
-        @if($type == 'permohonanbidang')
-            <!-- ================= PERMOHONAN BIDANG ================= -->
-            <div class="doc-header">
-                <div class="doc-title">SURAT PERMOHONAN PEMELIHARAAN UNIT OPERASIONAL</div>
-                <div class="doc-nomor">Nomor: 028 / {{ $pengajuan->kode_verifikasi }} / DISDAMKAR</div>
-            </div>
+    @php
+        $kodeVerif = is_object($pengajuan) && isset($pengajuan->kode_verifikasi) ? $pengajuan->kode_verifikasi : ('HAR-' . date('Ymd') . '-0059');
+        $nomorSuratFormat = '000.1.7.2/' . $kodeVerif . '/PEM';
+        
+        if (is_object($pengajuan) && isset($pengajuan->created_at) && $pengajuan->created_at instanceof \Carbon\Carbon) {
+            $tglSuratFormat = $pengajuan->created_at->locale('id')->isoFormat('D MMMM Y');
+        } else {
+            $tglSuratFormat = '31 Juli 2026';
+        }
 
-            <div class="kepada-box">
-                <table>
-                    <tr><td style="padding:0; width:90px;"><strong>Kepada Yth.</strong></td><td style="padding:0;">: Kepala Bidang Pemeliharaan Sarana & Prasarana</td></tr>
-                    <tr><td style="padding:0;"><strong>Dari</strong></td><td style="padding:0;">: {{ is_object($pengajuan) && method_exists($pengajuan, 'getPosAttribute') ? $pengajuan->pos : ($pengajuan->pos ?? '-') }} ({{ is_object($pengajuan) && method_exists($pengajuan, 'getReguAttribute') ? $pengajuan->regu : ($pengajuan->regu ?? '-') }})</td></tr>
-                    <tr><td style="padding:0;"><strong>Perihal</strong></td><td style="padding:0;">: Permohonan Perbaikan / Pemeliharaan Unit Kendaraan Operasional</td></tr>
+        $nomorLambungPolisi = is_object($pengajuan) && !empty($pengajuan->nomor_lambung) ? $pengajuan->nomor_lambung : 'P-04 / D 9429 V';
+        $jenisKendaraanLabel = is_object($pengajuan) && !empty($pengajuan->jenis_kendaraan) ? ucwords(strtolower(trim($pengajuan->jenis_kendaraan))) : 'Pancar';
+        $pengemudiNama = is_object($pengajuan) && !empty($pengajuan->nama_pemegang) ? $pengajuan->nama_pemegang : 'Riki Rohimat';
+        $penempatanPos = is_object($pengajuan) && !empty($pengajuan->pos) ? $pengajuan->pos : 'MARGAASIH (TKI)';
+        $kabidNama = is_object($pengajuan) && !empty($pengajuan->nama_kepala_bidang) ? $pengajuan->nama_kepala_bidang : 'ERPI SUWANDI, S.T., M.M.';
+        $kabidNip = is_object($pengajuan) && !empty($pengajuan->nip_kepala_bidang) ? $pengajuan->nip_kepala_bidang : '19790820 200604 1010';
+
+        $pksNomor = '000.4.7.2/001/PKS-Pem/Bid.SPI/2026';
+        $spkNomor = 'SPK-004/I/2026/PRA';
+        $pksTanggal = '9 Januari 2026';
+        $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' . urlencode($nomorSuratFormat);
+    @endphp
+
+    <div class="document-wrapper" id="pdf-content">
+
+        @if($type == 'permohonanbengkel')
+            {{-- ========================================================================= --}}
+            {{-- PAGE 1: SURAT PERMOHONAN PEMERIKSAAN KENDARAAN (BENGKEL) --}}
+            {{-- ========================================================================= --}}
+            <div class="paper-page">
+                
+                {{-- Kop Surat Resmi --}}
+                <div class="kop-container">
+                    <img src="{{ asset('images/logo-kabupaten.png') }}" class="kop-logo" alt="Logo Pemkab Bandung">
+                    <div class="kop-center">
+                        <div class="h1-line">Pemerintah Kabupaten Bandung</div>
+                        <div class="h2-line">Dinas Pemadam Kebakaran dan Penyelamatan</div>
+                        <div class="address-line">Jl. Raya Soreang Km.17 Bandung Telp. (022) 5891113 Soreang 40911</div>
+                        <div class="contact-line">Email: <a href="mailto:disdamkar@bandungkab.go.id">disdamkar@bandungkab.go.id</a> Website: <a href="https://disdamkar.bandungkab.go.id" target="_blank">disdamkar.bandungkab.go.id</a></div>
+                    </div>
+                </div>
+                <div class="kop-divider"></div>
+
+                {{-- Metadata Left & Right Destination --}}
+                <div class="meta-dest-grid">
+                    <div class="meta-left">
+                        <table>
+                            <tr>
+                                <td style="width:75px;">Nomor</td>
+                                <td style="width:12px;">:</td>
+                                <td>{{ $nomorSuratFormat }}</td>
+                            </tr>
+                            <tr>
+                                <td>Sifat</td>
+                                <td>:</td>
+                                <td>Penting</td>
+                            </tr>
+                            <tr>
+                                <td>Lampiran</td>
+                                <td>:</td>
+                                <td>1 (satu) lembar</td>
+                            </tr>
+                            <tr>
+                                <td>Perihal</td>
+                                <td>:</td>
+                                <td>Permohonan Pemeriksaan Kendaraan</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="dest-right">
+                        <div style="margin-bottom: 2px;">Soreang, &nbsp; {{ $tglSuratFormat }}</div>
+                        <div>Kepada Yth.</div>
+                        <div>Pimpinan CV. Pratama Motor</div>
+                        <div>di</div>
+                        <div>Jl. Soekarno Hatta No. 463, Kota Bandung</div>
+                    </div>
+                </div>
+
+                {{-- Body Paragraph --}}
+                <div class="salutation">Dengan Hormat,</div>
+                <div class="body-p">
+                    Berdasarkan Perjanjian Kerja Sama (PKS) Nomor: {{ $pksNomor }} dan {{ $spkNomor }} tanggal {{ $pksTanggal }}, dan Surat permohonan pemeliharaan/perbaikan kendaraan Nomor: {{ $nomorSuratFormat }}, {{ $tglSuratFormat }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;, melalui surat ini kami meminta Saudara untuk melaksanakan pengecekan, analisis, dan perincian jumlah biaya atas kendaraan dengan detail sebagai berikut:
+                </div>
+
+                {{-- Vehicle Details Grid --}}
+                <table class="details-table" style="margin: 8px 0 14px 45px;">
+                    <tr>
+                        <td class="label-col">Nomor Lambung / Nomor Polisi</td>
+                        <td class="colon-col">:</td>
+                        <td>{{ $nomorLambungPolisi }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Jenis Kendaraan</td>
+                        <td class="colon-col">:</td>
+                        <td>{{ $jenisKendaraanLabel }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Pengemudi</td>
+                        <td class="colon-col">:</td>
+                        <td>{{ $pengemudiNama }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Penempatan</td>
+                        <td class="colon-col">:</td>
+                        <td>{{ $penempatanPos }}</td>
+                    </tr>
                 </table>
+
+                <div class="body-p" style="margin-top: 10px;">
+                    Demikian permohonan ini kami buat. Atas kerja samanya, kami sampaikan terima kasih.
+                </div>
+
+                {{-- TTD Block Page 1 --}}
+                <div class="ttd-container-p1">
+                    <div class="ttd-box">
+                        <div style="font-weight:700;">KEPALA BIDANG SARANA, PRASARANA</div>
+                        <div style="font-weight:700;">DAN INFORMASI selaku</div>
+                        <div style="font-weight:700;">KUASA PENGGUNA ANGGARAN</div>
+                        <div class="ttd-space"></div>
+                        <div style="font-weight:700; text-decoration:underline;">{{ $kabidNama }}</div>
+                        <div style="font-weight:400;">Pembina</div>
+                        <div style="font-weight:400;">NIP. {{ $kabidNip }}</div>
+                    </div>
+                </div>
+
+                {{-- QR Code Bottom Left Page 1 --}}
+                <div class="qr-footer-p1">
+                    <img src="{{ $qrCodeUrl }}" class="qr-img" alt="QR Code Validation">
+                </div>
+
             </div>
 
-            <p style="margin-bottom:14px;">Dengan hormat,<br>Sehubungan dengan pemeriksaan kondisi teknis unit kendaraan operasional dinas, bersama ini kami mengajukan permohonan pemeliharaan/perbaikan unit dengan data sebagai berikut:</p>
+            {{-- ========================================================================= --}}
+            {{-- PAGE 2: LAMPIRAN PEMERIKSAAN KENDARAAN OPERASIONAL OLEH BENGKEL --}}
+            {{-- ========================================================================= --}}
+            <div class="paper-page">
+                
+                {{-- Integrated Outer Border Box --}}
+                <div style="border: 2px solid #000000; margin-bottom: 25px;">
+                    
+                    {{-- Banner Title Box --}}
+                    <div style="border-bottom: 2px solid #000000; padding: 7px 12px; text-align: center; font-weight: 700; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.3px;">
+                        LAMPIRAN PEMERIKSAAN KENDARAAN OPERASIONAL OLEH BENGKEL
+                    </div>
 
-        @elseif($type == 'permohonanbengkel')
-            <!-- ================= PERMOHONAN BENGKEL ================= -->
-            <div class="doc-header">
-                <div class="doc-title">SURAT PENGANTAR REPARASI / PERBAIKAN KENDARAAN BENGKEL</div>
-                <div class="doc-nomor">Nomor: 028 / SPB - {{ $pengajuan->kode_verifikasi }} / DISDAMKAR</div>
+                    {{-- Metadata Box --}}
+                    <div style="border-bottom: 2px solid #000000; padding: 8px 14px; position: relative;">
+                        <div class="lampiran-meta-left">
+                            <table style="border-collapse: collapse; font-size: 12px;">
+                                <tr>
+                                    <td style="width:190px; padding: 1.5px 0;">Nomor Surat</td>
+                                    <td style="width:15px; padding: 1.5px 0;">:</td>
+                                    <td style="padding: 1.5px 0;">{{ $nomorSuratFormat }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 1.5px 0;">Tanggal</td>
+                                    <td style="padding: 1.5px 0;">:</td>
+                                    <td style="padding: 1.5px 0;"></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 1.5px 0;">Nomor Lambung / Nomor Polisi</td>
+                                    <td style="padding: 1.5px 0;">:</td>
+                                    <td style="padding: 1.5px 0;">{{ $nomorLambungPolisi }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="position: absolute; top: 6px; right: 12px;">
+                            <img src="{{ $qrCodeUrl }}" style="width: 55px; height: 55px;" alt="QR Code">
+                        </div>
+                    </div>
+
+                    {{-- Main Inspection Table --}}
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid #000000;">
+                                <th style="width: 45%; border-right: 1px solid #000000; padding: 6px; font-weight: 700; text-transform: uppercase; text-align: center;">JENIS PERBAIKAN</th>
+                                <th style="width: 15%; border-right: 1px solid #000000; padding: 6px; font-weight: 700; text-transform: uppercase; text-align: center;">JUMLAH</th>
+                                <th style="width: 15%; border-right: 1px solid #000000; padding: 6px; font-weight: 700; text-transform: uppercase; text-align: center;">SATUAN</th>
+                                <th style="width: 25%; padding: 6px; font-weight: 700; text-transform: uppercase; text-align: center;">KETERANGAN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for ($r = 0; $r < 25; $r++)
+                                <tr style="{{ $r < 24 ? 'border-bottom: 1px solid #000000;' : '' }}">
+                                    <td style="border-right: 1px solid #000000; height: 22px; padding: 4px 8px;"></td>
+                                    <td style="border-right: 1px solid #000000; height: 22px; padding: 4px 8px;"></td>
+                                    <td style="border-right: 1px solid #000000; height: 22px; padding: 4px 8px;"></td>
+                                    <td style="height: 22px; padding: 4px 8px;"></td>
+                                </tr>
+                            @endfor
+                        </tbody>
+                    </table>
+                </div>
+
+                {{-- TTD Footer Page 2 --}}
+                <div class="lampiran-footer-ttd">
+                    <div style="text-align: center; width: 320px; font-size: 12.5px;">
+                        <div style="margin-bottom: 6px;">Bandung, &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2026</div>
+                        <div style="margin-bottom: 45px;">Pemeriksa,</div>
+                        <div style="display: flex; align-items: center; justify-content: center; width: 220px; margin: 0 auto 4px auto; font-weight: 700;">
+                            (<span style="display: inline-block; width: 190px; border-bottom: 1.5px solid #000000; margin: 0 4px;"></span>)
+                        </div>
+                        <div style="font-weight: 700;">CV. Pratama</div>
+                    </div>
+                </div>
+
             </div>
 
-            <div class="kepada-box">
-                <table>
-                    <tr><td style="padding:0; width:90px;"><strong>Kepada Yth.</strong></td><td style="padding:0;">: Pimpinan / Pengelola Bengkel Rekanan Operasional</td></tr>
-                    <tr><td style="padding:0;"><strong>Dari</strong></td><td style="padding:0;">: Dinas Pemadam Kebakaran dan Penyelamatan Kabupaten Bandung</td></tr>
-                    <tr><td style="padding:0;"><strong>Perihal</strong></td><td style="padding:0;">: Pengantar Perbaikan / Reparasi Unit Kendaraan Operasional</td></tr>
+        @elseif($type == 'permohonanbidang')
+            @php
+                $nomorSuratBidang = '000.1.7.2/' . $kodeVerif;
+                $bidangName = is_object($pengajuan) && !empty($pengajuan->bidang) ? strtoupper($pengajuan->bidang) : 'PEMADAMAN';
+                $menyetujuiNama = is_object($pengajuan) && !empty($pengajuan->nama_komandan_regu) ? $pengajuan->nama_komandan_regu : (is_object($pengajuan) && !empty($pengajuan->nama_kabid) ? $pengajuan->nama_kabid : 'Lukman');
+                $menyetujuiNip = is_object($pengajuan) && !empty($pengajuan->nip_komandan_regu) ? $pengajuan->nip_komandan_regu : '197606272007011002';
+                $pemohonNama = is_object($pengajuan) && !empty($pengajuan->nama_pemegang) ? $pengajuan->nama_pemegang : 'Riki Rohimat';
+                $pemohonNip = is_object($pengajuan) && !empty($pengajuan->nip_pemegang) ? $pengajuan->nip_pemegang : '198603032014121002';
+                $kabidBidangNama = is_object($pengajuan) && !empty($pengajuan->nama_kepala_bidang) ? $pengajuan->nama_kepala_bidang : 'RD. ASEP BINTANG JOHAR SLAMET S.IP.MSI';
+                $kabidBidangNip = is_object($pengajuan) && !empty($pengajuan->nip_kepala_bidang) ? $pengajuan->nip_kepala_bidang : '197006062007011014';
+            @endphp
+
+            {{-- ========================================================================= --}}
+            {{-- PAGE 1: SURAT PERMOHONAN BIDANG (PERMOHONAN PEMELIHARAAN/PERBAIKAN) --}}
+            {{-- ========================================================================= --}}
+            <div class="paper-page">
+                
+                {{-- Header Title --}}
+                <div style="text-align: center; font-weight: 700; font-size: 13.5px; text-transform: uppercase; letter-spacing: 0.3px; margin-top: 10px;">
+                    PERMOHONAN PEMELIHARAAN/PERBAIKAN KENDARAAN OPERASIONAL
+                </div>
+                <div style="border-top: 2.5px solid #000000; margin-top: 8px; margin-bottom: 22px;"></div>
+
+                {{-- Metadata & Destination --}}
+                <div class="meta-dest-grid">
+                    <div class="meta-left">
+                        <table>
+                            <tr>
+                                <td style="width:75px;">Nomor</td>
+                                <td style="width:12px;">:</td>
+                                <td>{{ $nomorSuratBidang }}</td>
+                            </tr>
+                            <tr>
+                                <td>Sifat</td>
+                                <td>:</td>
+                                <td>Penting</td>
+                            </tr>
+                            <tr>
+                                <td>Lampiran</td>
+                                <td>:</td>
+                                <td>1 (satu) lembar</td>
+                            </tr>
+                            <tr>
+                                <td>Perihal</td>
+                                <td>:</td>
+                                <td>Pemeliharaan/Perbaikan Kendaraan</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="dest-right">
+                        <div style="margin-bottom: 2px;">Soreang, &nbsp; {{ $tglSuratFormat }}</div>
+                        <div>Kepada Yth.</div>
+                        <div>Kepala Bidang Sarana, Prasarana dan Informasi</div>
+                        <div>di</div>
+                        <div style="text-indent: 15px;">Tempat</div>
+                    </div>
+                </div>
+
+                {{-- Body Paragraph --}}
+                <div class="salutation">Dengan Hormat,</div>
+                <div class="body-p">
+                    Melalui surat ini, kami sampaikan permohonan pemeliharaan/perbaikan kendaraan operasional agar menunjang sarana pasukan pada Bidang <span style="text-decoration: underline;">{{ $bidangName }}</span> dengan identitas sebagai berikut:
+                </div>
+
+                {{-- Vehicle Details Grid --}}
+                <table class="details-table" style="margin: 8px 0 14px 45px;">
+                    <tr>
+                        <td class="label-col">Nomor Lambung / Nomor Polisi</td>
+                        <td class="colon-col">:</td>
+                        <td>{{ $nomorLambungPolisi }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Jenis Kendaraan</td>
+                        <td class="colon-col">:</td>
+                        <td>{{ $jenisKendaraanLabel }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Pengemudi</td>
+                        <td class="colon-col">:</td>
+                        <td>{{ $pengemudiNama }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Penempatan</td>
+                        <td class="colon-col">:</td>
+                        <td>{{ $penempatanPos }}</td>
+                    </tr>
                 </table>
+
+                <div class="body-p" style="margin-top: 10px;">
+                    Demikian permohonan ini kami buat. Atas perhatian dan kerja samanya, kami sampaikan terima kasih.
+                </div>
+
+                {{-- Signatures Block Page 1 --}}
+                <div style="margin-top: 35px;">
+                    {{-- Row 1: Menyetujui & Pemohon --}}
+                    <div style="display: flex; justify-content: space-between; padding: 0 30px; margin-bottom: 20px;">
+                        <div style="text-align: center; width: 220px; font-size: 12.5px;">
+                            <div>Menyetujui,</div>
+                            <div style="height: 60px;"></div>
+                            <div style="font-weight: 700; text-decoration: underline;">{{ $menyetujuiNama }}</div>
+                            <div style="font-size: 11.5px;">NIP. {{ $menyetujuiNip }}</div>
+                        </div>
+
+                        <div style="text-align: center; width: 220px; font-size: 12.5px;">
+                            <div>Pemohon,</div>
+                            <div style="height: 60px;"></div>
+                            <div style="font-weight: 700; text-decoration: underline;">{{ $pemohonNama }}</div>
+                            <div style="font-size: 11.5px;">NIP. {{ $pemohonNip }}</div>
+                        </div>
+                    </div>
+
+                    {{-- Row 2: Mengetahui KEPALA BIDANG PEMADAMAN --}}
+                    <div style="text-align: center; margin: 0 auto; width: 360px; font-size: 12.5px;">
+                        <div>Mengetahui,</div>
+                        <div style="font-weight: 700; text-transform: uppercase;">KEPALA BIDANG {{ $bidangName }}</div>
+                        <div style="height: 55px;"></div>
+                        <div style="font-weight: 700; text-decoration: underline; text-transform: uppercase;">{{ $kabidBidangNama }}</div>
+                        <div style="font-size: 11.5px;">NIP. {{ $kabidBidangNip }}</div>
+                    </div>
+                </div>
+
+                {{-- QR Code Bottom Left Page 1 --}}
+                <div class="qr-footer-p1">
+                    <img src="{{ $qrCodeUrl }}" class="qr-img" alt="QR Code Validation">
+                </div>
+
             </div>
 
-            <p style="margin-bottom:14px;">Dengan hormat,<br>Bersama surat pengantar ini, kami menyerahkan unit kendaraan operasional milik Dinas Pemadam Kebakaran dan Penyelamatan Kabupaten Bandung untuk dilakukan pekerjaan perbaikan/perawatan di bengkel Saudara:</p>
+            {{-- ========================================================================= --}}
+            {{-- PAGE 2: LAMPIRAN PERMOHONAN PEMELIHARAAN/PERBAIKAN KENDARAAN OPERASIONAL --}}
+            {{-- ========================================================================= --}}
+            <div class="paper-page">
+                
+                {{-- Integrated Outer Border Box --}}
+                <div style="border: 1.5px solid #000000; margin-bottom: 25px;">
+                    
+                    {{-- Header Title Box --}}
+                    <div style="border-bottom: 1.5px solid #000000; padding: 7px 12px; text-align: center; font-weight: 700; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.3px;">
+                        LAMPIRAN PERMOHONAN PEMELIHARAAN/PERBAIKAN KENDARAAN OPERASIONAL
+                    </div>
+
+                    {{-- Metadata Box --}}
+                    <div style="border-bottom: 1.5px solid #000000; padding: 8px 14px; position: relative;">
+                        <div class="lampiran-meta-left">
+                            <table style="border-collapse: collapse; font-size: 12px;">
+                                <tr>
+                                    <td style="width:190px; padding: 1.5px 0;">Nomor Surat</td>
+                                    <td style="width:15px; padding: 1.5px 0;">:</td>
+                                    <td style="padding: 1.5px 0;">{{ $nomorSuratBidang }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 1.5px 0;">Tanggal</td>
+                                    <td style="padding: 1.5px 0;">:</td>
+                                    <td style="padding: 1.5px 0;">{{ $tglSuratFormat }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 1.5px 0;">Nomor Lambung / Nomor Polisi</td>
+                                    <td style="padding: 1.5px 0;">:</td>
+                                    <td style="padding: 1.5px 0;">{{ $nomorLambungPolisi }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="position: absolute; top: 6px; right: 12px;">
+                            <img src="{{ $qrCodeUrl }}" style="width: 55px; height: 55px;" alt="QR Code">
+                        </div>
+                    </div>
+
+                    {{-- Main Table --}}
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                        <thead>
+                            <tr style="border-bottom: 1.5px solid #000000;">
+                                <th style="width: 45%; border-right: 1px solid #000000; padding: 6px; font-weight: 700; text-transform: uppercase; text-align: center;">ITEM PERBAIKAN</th>
+                                <th style="width: 15%; border-right: 1px solid #000000; padding: 6px; font-weight: 700; text-transform: uppercase; text-align: center;">JUMLAH</th>
+                                <th style="width: 15%; border-right: 1px solid #000000; padding: 6px; font-weight: 700; text-transform: uppercase; text-align: center;">SATUAN</th>
+                                <th style="width: 25%; padding: 6px; font-weight: 700; text-transform: uppercase; text-align: center;">KETERANGAN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $itemsList = is_array($pengajuan->item_list ?? null) ? $pengajuan->item_list : (explode("\n", $pengajuan->item_perbaikan ?? ''));
+                                $cleanItems = array_values(array_filter(array_map('trim', $itemsList)));
+                                if (empty($cleanItems)) {
+                                    $cleanItems = ['Selang hisap portable'];
+                                }
+                                $totalRows = max(25, count($cleanItems) + 15);
+                            @endphp
+                            @for ($r = 0; $r < $totalRows; $r++)
+                                @php
+                                    $itemText = $cleanItems[$r] ?? '';
+                                @endphp
+                                <tr style="{{ $r < ($totalRows - 1) ? 'border-bottom: 1px solid #000000;' : '' }}">
+                                    <td style="border-right: 1px solid #000000; height: 22px; padding: 4px 8px; font-weight: 400; color: #000000;">{{ $itemText }}</td>
+                                    <td style="border-right: 1px solid #000000; height: 22px; padding: 4px 8px;"></td>
+                                    <td style="border-right: 1px solid #000000; height: 22px; padding: 4px 8px;"></td>
+                                    <td style="height: 22px; padding: 4px 8px;"></td>
+                                </tr>
+                            @endfor
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
 
         @else
-            <!-- ================= SURAT PESANAN ================= -->
-            <div class="doc-header">
-                <div class="doc-title">SURAT PESANAN (SP) PEKERJAAN PEMELIHARAAN / SPAREPART</div>
-                <div class="doc-nomor">Nomor SP: 028 / SP - {{ $pengajuan->kode_verifikasi }} / DISDAMKAR / {{ date('Y') }}</div>
-            </div>
+            @php
+                $nomorSuratSP = '000.1.7.2/' . $kodeVerif . '/SP';
+                $nomorSuratPEM = '000.1.7.2/' . $kodeVerif . '/PEM';
+                $kasiNama = is_object($pengajuan) && !empty($pengajuan->nama_kasi) ? $pengajuan->nama_kasi : 'AHMAD KUSWARA, S.M., M.M';
+                $kasiNip  = is_object($pengajuan) && !empty($pengajuan->nip_kasi) ? $pengajuan->nip_kasi : '19720921 200801 1001';
+            @endphp
 
-            <div class="kepada-box">
-                <table>
-                    <tr><td style="padding:0; width:130px;"><strong>Pemberi Tugas</strong></td><td style="padding:0;">: Dinas Pemadam Kebakaran dan Penyelamatan Kabupaten Bandung</td></tr>
-                    <tr><td style="padding:0;"><strong>Penyedia / Bengkel</strong></td><td style="padding:0;">: Bengkel Rekanan Pemeliharaan Sarpras Operasional</td></tr>
-                    <tr><td style="padding:0;"><strong>Perihal Pesanan</strong></td><td style="padding:0;">: Pelaksanaan Pekerjaan Perbaikan Kendaraan & Pengadaan Suku Cadang</td></tr>
-                </table>
-            </div>
+            {{-- ========================================================================= --}}
+            {{-- PAGE 1: SURAT PESANAN BARANG DAN PEMELIHARAAN/PERBAIKAN --}}
+            {{-- ========================================================================= --}}
+            <div class="paper-page">
+                
+                {{-- Kop Surat Resmi --}}
+                <div class="kop-container">
+                    <img src="{{ asset('images/logo-kabupaten.png') }}" class="kop-logo" alt="Logo Pemkab Bandung">
+                    <div class="kop-center">
+                        <div class="h1-line">Pemerintah Kabupaten Bandung</div>
+                        <div class="h2-line">Dinas Pemadam Kebakaran dan Penyelamatan</div>
+                        <div class="address-line">Jl. Raya Soreang Km.17 Bandung Telp. (022) 5891113 Soreang 40911</div>
+                        <div class="contact-line">Email: <a href="mailto:disdamkar@bandungkab.go.id">disdamkar@bandungkab.go.id</a> Website: <a href="https://disdamkar.bandungkab.go.id" target="_blank">disdamkar.bandungkab.go.id</a></div>
+                    </div>
+                </div>
+                <div class="kop-divider"></div>
 
-            <p style="margin-bottom:14px;">Dengan ini memerintahkan kepada Penyedia/Bengkel Rekanan untuk melaksanakan pekerjaan perbaikan dan penyediaan suku cadang unit kendaraan operasional berikut:</p>
-        @endif
+                {{-- Metadata Left & Right Destination --}}
+                <div class="meta-dest-grid">
+                    <div class="meta-left">
+                        <table>
+                            <tr>
+                                <td style="width:75px;">Nomor</td>
+                                <td style="width:12px;">:</td>
+                                <td>{{ $nomorSuratSP }}</td>
+                            </tr>
+                            <tr>
+                                <td>Sifat</td>
+                                <td>:</td>
+                                <td>Penting</td>
+                            </tr>
+                            <tr>
+                                <td>Lampiran</td>
+                                <td>:</td>
+                                <td>1 (satu) lembar</td>
+                            </tr>
+                            <tr>
+                                <td>Perihal</td>
+                                <td>:</td>
+                                <td>Pesanan Barang dan Pemeliharaan/Perbaikan</td>
+                            </tr>
+                        </table>
+                    </div>
 
-        <!-- Metadata Verifikasi Badge -->
-        <div class="verif-badge-box">
-            <div>
-                <span style="font-size:11px; color:#64748B; text-transform:uppercase; font-weight:700; display:block;">Waktu Pengajuan</span>
-                <strong style="font-size:13px;">{{ is_string($pengajuan->created_at) ? $pengajuan->created_at : $pengajuan->created_at->format('d F Y, H:i') }} WIB</strong>
-            </div>
-            <div style="text-align:right;">
-                <span style="font-size:11px; color:#64748B; text-transform:uppercase; font-weight:700; display:block;">Kode Verifikasi System</span>
-                <span class="verif-code">{{ $pengajuan->kode_verifikasi }}</span>
-            </div>
-        </div>
+                    <div class="dest-right">
+                        <div>Kepada Yth.</div>
+                        <div>Pimpinan CV. Pratama Motor</div>
+                        <div>di</div>
+                        <div>Jl. Soekarno Hatta No. 463, Kota Bandung</div>
+                    </div>
+                </div>
 
-        <!-- Detail Kendaraan -->
-        <table class="info-table">
-            <tr>
-                <th>Bidang Operasional</th>
-                <td>: {{ is_object($pengajuan) && method_exists($pengajuan, 'getBidangAttribute') ? $pengajuan->bidang : ($pengajuan->bidang ?? '-') }}</td>
-            </tr>
-            <tr>
-                <th>Pos / Mako Jaga</th>
-                <td>: {{ is_object($pengajuan) && method_exists($pengajuan, 'getPosAttribute') ? $pengajuan->pos : ($pengajuan->pos ?? '-') }}</td>
-            </tr>
-            <tr>
-                <th>Regu Petugas</th>
-                <td>: {{ is_object($pengajuan) && method_exists($pengajuan, 'getReguAttribute') ? $pengajuan->regu : ($pengajuan->regu ?? '-') }}</td>
-            </tr>
-            <tr>
-                <th>Jenis Kendaraan</th>
-                <td>: {{ is_object($pengajuan) && method_exists($pengajuan, 'getJenisKendaraanAttribute') ? $pengajuan->jenis_kendaraan : ($pengajuan->jenis_kendaraan ?? '-') }}</td>
-            </tr>
-            <tr>
-                <th>Nomor Lambung / Plat</th>
-                <td>: <strong>{{ is_object($pengajuan) && method_exists($pengajuan, 'getNomorLambungAttribute') ? $pengajuan->nomor_lambung : ($pengajuan->nomor_lambung ?? '-') }}</strong></td>
-            </tr>
-        </table>
+                {{-- Body Paragraph --}}
+                <div class="salutation">Dengan Hormat,</div>
+                <div class="body-p">
+                    Berdasarkan hasil pemeriksaan pihak CV. Pratama pada lampiran Surat Permohonan Pemeriksaan Kendaraan Nomor : {{ $nomorSuratPEM }} tanggal {{ $tglSuratFormat }} untuk kendaraan dengan detail sebagai berikut:
+                </div>
 
-        <!-- Table Items -->
-        <div style="font-weight:700; font-size:13px; color:#1B2A6B; margin-bottom:6px;">Rincian Item Perbaikan / Pemeliharaan yang Diverifikasi:</div>
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th style="width:40px; text-align:center;">No</th>
-                    <th>Uraian Kerusakan / Item Pemeliharaan</th>
-                    <th style="width:130px; text-align:center;">Status Verifikasi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php
-                    $items = is_array($pengajuan->item_list ?? null) ? $pengajuan->item_list : (explode("\n", $pengajuan->item_perbaikan ?? ''));
-                @endphp
-                @foreach($items as $idx => $item)
-                    @if(trim($item) != '')
+                {{-- Vehicle Details Grid --}}
+                <table class="details-table" style="margin: 8px 0 14px 45px;">
                     <tr>
-                        <td style="text-align:center; font-weight:600;">{{ $idx + 1 }}</td>
-                        <td>{{ ucwords(strtolower(trim($item))) }}</td>
-                        <td style="text-align:center; color:#16A34A; font-weight:700;">Disetujui</td>
+                        <td class="label-col">Nomor Lambung / Nomor Polisi</td>
+                        <td class="colon-col">:</td>
+                        <td>{{ $nomorLambungPolisi }}</td>
                     </tr>
-                    @endif
-                @endforeach
-            </tbody>
-        </table>
+                    <tr>
+                        <td class="label-col">Jenis Kendaraan</td>
+                        <td class="colon-col">:</td>
+                        <td>{{ $jenisKendaraanLabel }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Pengemudi</td>
+                        <td class="colon-col">:</td>
+                        <td>{{ $pengemudiNama }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Penempatan</td>
+                        <td class="colon-col">:</td>
+                        <td>{{ $penempatanPos }}</td>
+                    </tr>
+                </table>
 
-        @if($type == 'permohonanbengkel' || $type == 'Suratpesanan')
-        <div class="note-box">
-            <strong>Petunjuk Pelaksanaan Pekerjaan Bengkel:</strong><br>
-            1. Pekerjaan perbaikan dan penggantian suku cadang agar dilaksanakan sesuai rincian item di atas.<br>
-            2. Setelah perbaikan selesai, bengkel wajib menerbitkan Invoice resmi dan suku cadang bekas harus dikembalikan.<br>
-            3. Berita Acara Serah Terima (BAST) fisik kendaraan wajib ditandatangani setelah uji fungsi unit.
-        </div>
+                <div class="body-p" style="margin-top: 10px;">
+                    Maka kami mohon Saudara untuk menyediakan suku cadang dan melaksanakan pemeliharaan/perbaikan atas kendaraan tersebut. Adapun detail suku cadang dan pemeliharaan/perbaikan yang diperlukan sebagaimana yang tertera pada lampiran.
+                </div>
+                <div class="body-p" style="margin-top: 10px;">
+                    Demikian surat pesanan ini kami buat sebagai dasar tindak lanjut pemeliharaan/perbaikan sesuai Perjanjian Kerja Sama (PKS) Nomor: {{ $pksNomor }} dan SPK-004/2026/PRA tanggal {{ $pksTanggal }}. Atas perhatian dan kerja samanya, kami sampaikan terima kasih.
+                </div>
+
+                {{-- Signatures Block Page 1 (2 Signatures Side by Side) --}}
+                <div style="margin-top: 25px; width: 100%;">
+                    {{-- Date Row Aligned Above Right TTD --}}
+                    <div style="display: flex; justify-content: flex-end; padding-right: 10px; margin-bottom: 4px; font-size: 12.5px;">
+                        <div style="width: 310px; text-align: center;">Soreang, &nbsp; {{ $tglSuratFormat }}</div>
+                    </div>
+
+                    {{-- 2 Signatures Columns --}}
+                    <div style="display: flex; justify-content: space-between; padding: 0 10px; align-items: flex-start;">
+                        {{-- Left TTD: Kabid SPI --}}
+                        <div style="text-align: center; width: 310px; font-size: 12px; line-height: 1.3;">
+                            <div style="font-weight:700;">KEPALA BIDANG SARANA, PRASARANA</div>
+                            <div style="font-weight:700;">DAN INFORMASI selaku</div>
+                            <div style="font-weight:700;">KUASA PENGGUNA ANGGARAN</div>
+                            <div style="height: 60px;"></div>
+                            <div style="font-weight:700; text-decoration:underline;">{{ $kabidNama }}</div>
+                            <div style="font-weight:400;">Pembina</div>
+                            <div style="font-weight:400;">NIP. {{ $kabidNip }}</div>
+                        </div>
+
+                        {{-- Right TTD: Kasi Pemeliharaan --}}
+                        <div style="text-align: center; width: 310px; font-size: 12px; line-height: 1.3;">
+                            <div style="font-weight:700;">KEPALA SEKSI PEMELIHARAAN SARANA</div>
+                            <div style="font-weight:700;">DAN PRASARANA selaku</div>
+                            <div style="font-weight:700;">PEJABAT PELAKSANA TEKNIS KEGIATAN</div>
+                            <div style="height: 60px;"></div>
+                            <div style="font-weight:700; text-decoration:underline;">{{ $kasiNama }}</div>
+                            <div style="font-weight:400;">Penata</div>
+                            <div style="font-weight:400;">NIP. {{ $kasiNip }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- QR Code Bottom Left Page 1 --}}
+                <div class="qr-footer-p1">
+                    <img src="{{ $qrCodeUrl }}" class="qr-img" alt="QR Code Validation">
+                </div>
+
+            </div>
+
+            {{-- ========================================================================= --}}
+            {{-- PAGE 2: LAMPIRAN PESANAN SUKU CADANG PEMELIHARAAN/PERBAIKAN --}}
+            {{-- ========================================================================= --}}
+            <div class="paper-page">
+                
+                {{-- Integrated Outer Border Box --}}
+                <div style="border: 1.5px solid #000000; margin-bottom: 25px;">
+                    
+                    {{-- Header Title Box --}}
+                    <div style="border-bottom: 1.5px solid #000000; padding: 7px 12px; text-align: center; font-weight: 700; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.3px;">
+                        LAMPIRAN PESANAN SUKU CADANG PEMELIHARAAN/PERBAIKAN KENDARAAN OPERASIONAL
+                    </div>
+
+                    {{-- Metadata Box --}}
+                    <div style="border-bottom: 1.5px solid #000000; padding: 8px 14px; position: relative;">
+                        <div class="lampiran-meta-left">
+                            <table style="border-collapse: collapse; font-size: 12px;">
+                                <tr>
+                                    <td style="width:190px; padding: 1.5px 0;">Nomor Surat</td>
+                                    <td style="width:15px; padding: 1.5px 0;">:</td>
+                                    <td style="padding: 1.5px 0;">{{ $nomorSuratSP }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 1.5px 0;">Tanggal</td>
+                                    <td style="padding: 1.5px 0;">:</td>
+                                    <td style="padding: 1.5px 0;"></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 1.5px 0;">Nomor Lambung / Nomor Polisi</td>
+                                    <td style="padding: 1.5px 0;">:</td>
+                                    <td style="padding: 1.5px 0;">{{ $nomorLambungPolisi }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="position: absolute; top: 6px; right: 12px;">
+                            <img src="{{ $qrCodeUrl }}" style="width: 55px; height: 55px;" alt="QR Code">
+                        </div>
+                    </div>
+
+                    {{-- Main Table (No TTD below table) --}}
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                        <thead>
+                            <tr style="border-bottom: 1.5px solid #000000;">
+                                <th style="width: 45%; border-right: 1px solid #000000; padding: 6px; font-weight: 700; text-transform: uppercase; text-align: center;">JENIS PERBAIKAN</th>
+                                <th style="width: 15%; border-right: 1px solid #000000; padding: 6px; font-weight: 700; text-transform: uppercase; text-align: center;">JUMLAH</th>
+                                <th style="width: 15%; border-right: 1px solid #000000; padding: 6px; font-weight: 700; text-transform: uppercase; text-align: center;">SATUAN</th>
+                                <th style="width: 25%; padding: 6px; font-weight: 700; text-transform: uppercase; text-align: center;">KETERANGAN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $itemsList = is_array($pengajuan->item_list ?? null) ? $pengajuan->item_list : (explode("\n", $pengajuan->item_perbaikan ?? ''));
+                                $cleanItems = array_values(array_filter(array_map('trim', $itemsList)));
+                                $totalRows = max(26, count($cleanItems) + 15);
+                            @endphp
+                            @for ($r = 0; $r < $totalRows; $r++)
+                                @php
+                                    $itemText = $cleanItems[$r] ?? '';
+                                @endphp
+                                <tr style="{{ $r < ($totalRows - 1) ? 'border-bottom: 1px solid #000000;' : '' }}">
+                                    <td style="border-right: 1px solid #000000; height: 22px; padding: 4px 8px; font-weight: 400; color: #000000;">{{ $itemText }}</td>
+                                    <td style="border-right: 1px solid #000000; height: 22px; padding: 4px 8px;"></td>
+                                    <td style="border-right: 1px solid #000000; height: 22px; padding: 4px 8px;"></td>
+                                    <td style="height: 22px; padding: 4px 8px;"></td>
+                                </tr>
+                            @endfor
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
         @endif
-
-        <!-- Signatures Grid -->
-        <div class="signature-grid">
-            <div class="sig-box">
-                <div class="sig-title">
-                    @if($type == 'Suratpesanan')
-                        Penerima Pesanan (Bengkel)
-                    @else
-                        Pemegang Unit / Pengemudi
-                    @endif
-                </div>
-                <div>
-                    <div class="sig-name">{{ $pengajuan->nama_pemegang ?? '-' }}</div>
-                    <div class="sig-nip">NIP. {{ $pengajuan->nip_pemegang ?? '-' }}</div>
-                </div>
-            </div>
-
-            <div class="sig-box">
-                <div class="sig-title">
-                    Mengetahui,<br>Komandan Regu Jaga
-                </div>
-                <div>
-                    <div class="sig-name">{{ $pengajuan->nama_komandan_regu ?? '-' }}</div>
-                    <div class="sig-nip">NIP. {{ $pengajuan->nip_komandan_regu ?? '-' }}</div>
-                </div>
-            </div>
-
-            <div class="sig-box">
-                <div class="sig-title">
-                    Menyetujui,<br>Kepala Bidang Pemeliharaan
-                </div>
-                <div>
-                    <div class="sig-name">{{ $pengajuan->nama_kepala_bidang ?? 'Drs. H. Mulyadi, M.Si' }}</div>
-                    <div class="sig-nip">NIP. {{ $pengajuan->nip_kepala_bidang ?? '19681120 199303 1 005' }}</div>
-                </div>
-            </div>
-        </div>
 
     </div>
 
     <script>
         function downloadPDFDirect() {
-            const element = document.querySelector('.paper');
+            const element = document.getElementById('pdf-content');
             const opt = {
-                margin:       [8, 8, 8, 8],
-                filename:     '{{ $title }}_{{ $pengajuan->kode_verifikasi }}.pdf',
+                margin:       0,
+                filename:     '{{ $title }}_{{ $kodeVerif }}.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true, logging: false },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().set(opt).from(element).save();
         }
-
-        // Otomatis mengunduh PDF secara langsung saat halaman dibuka
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                downloadPDFDirect();
-            }, 300);
-        });
     </script>
 </body>
-</html>
+</html>l>

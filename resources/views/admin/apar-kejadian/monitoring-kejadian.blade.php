@@ -222,8 +222,8 @@
         </div>
 
         @if($dataKejadian->isEmpty())
-            <div style="padding:56px 20px; text-align:center;">
-                <div style="width:64px; height:64px; background:#F8FAFC; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:16px; border:1px solid #E2E8F0;">
+            <div style="padding:56px 20px; text-align:center; background:#FFFFFF; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <div style="width:64px; height:64px; background:#F8FAFC; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin:0 auto 16px auto; border:1px solid #E2E8F0;">
                     <i data-lucide="folder-open" style="width:30px; height:30px; color:#64748B;"></i>
                 </div>
                 @if(request('jenis') || request('search'))
@@ -239,8 +239,8 @@
                 @endif
             </div>
         @else
-            <div style="overflow-x:auto;">
-                <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+            <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+                <table style="width:100%; min-width:850px; border-collapse:collapse; font-size:13px; text-align:left;">
                     <thead>
                         <tr style="background:#F8FAFC; border-bottom:1.5px solid #E2E8F0; color:#475569; font-size:11.5px; text-transform:uppercase; letter-spacing:0.5px;">
                             <th style="padding:14px 18px;">No</th>

@@ -52,22 +52,30 @@ Route::middleware(['auth', 'user'])->group(function () {
         ->name('unit-pemadam.cek-harian-unit');
     Route::post('/unit-pemadam/cek-harian-unit', [CekHarianUnitPemadamController::class, 'store'])
         ->name('unit-pemadam.cek-harian-unit.store');
+    Route::get('/unit-pemadam/cek-harian-unit/{id}/export-pdf', [CekHarianUnitPemadamController::class, 'exportPdf'])
+        ->name('unit-pemadam.cek-harian-unit.export-pdf');
 
     Route::get('/alat-pemadam/cek-harian-alat', [CekHarianAlatController::class, 'index'])
         ->name('alat-pemadam.cek-harian-alat');
     Route::post('/alat-pemadam/cek-harian-alat', [CekHarianAlatController::class, 'store'])
         ->name('alat-pemadam.cek-harian-alat.store');
+    Route::get('/alat-pemadam/cek-harian-alat/{id}/export-pdf', [CekHarianAlatController::class, 'exportPdf'])
+        ->name('alat-pemadam.cek-harian-alat.export-pdf');
 
     // ===== Unit Rescue > Cek Harian Unit & Alat =====
     Route::get('/unit-rescue/cek-harian-unit', [CekHarianUnitRescueController::class, 'index'])
         ->name('unit-rescue.cek-harian-unit-rescue');
     Route::post('/unit-rescue/cek-harian-unit', [CekHarianUnitRescueController::class, 'store'])
         ->name('unit-rescue.cek-harian-unit-rescue.store');
+    Route::get('/unit-rescue/cek-harian-unit/{id}/export-pdf', [CekHarianUnitRescueController::class, 'exportPdf'])
+        ->name('unit-rescue.cek-harian-unit-rescue.export-pdf');
 
     Route::get('/alat-rescue/cek-harian-alat', [CekHarianAlatRescueController::class, 'index'])
         ->name('alat-rescue.cek-harian-alat');
     Route::post('/alat-rescue/cek-harian-alat', [CekHarianAlatRescueController::class, 'store'])
         ->name('alat-rescue.cek-harian-alat.store');
+    Route::get('/alat-rescue/cek-harian-alat/{id}/export-pdf', [CekHarianAlatRescueController::class, 'exportPdf'])
+        ->name('alat-rescue.cek-harian-alat.export-pdf');
 
     // ===== Command Center > Cek Alat CC =====
     Route::get('/alat-cc/cek-alat-cc', [CekAlatCcController::class, 'index'])
@@ -101,10 +109,21 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/pemeriksaan',                  [AdminController::class, 'pemeliharaanPemeriksaan'])->name('pemeriksaan');
         Route::get('/pemeliharaan',                 [AdminController::class, 'pemeliharaanPemeliharaan'])->name('pemeliharaan');
         Route::get('/surat-permohonan',             [AdminController::class, 'pemeliharaanPemeliharaan'])->name('surat-permohonan');
-        Route::get('/monitoring-aktual',            [AdminController::class, 'pemeliharaanMonitoringAktual'])->name('monitoring-aktual');
-        Route::post('/monitoring-aktual/{id}/progres', [AdminController::class, 'updateProgresPengerjaan'])->name('monitoring-aktual.progres');
         Route::get('/cetak-dokumen/{id}/{type}',    [AdminController::class, 'cetakDokumen'])->name('cetak-dokumen');
-        Route::resource('invoice', InvoiceController::class);
+        
+        // Monitoring Aktual Routes
+        Route::post('/monitoring-aktual/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('monitoring-aktual.update-status');
+        Route::resource('monitoring-aktual', InvoiceController::class, [
+            'names' => 'monitoring-aktual',
+            'parameters' => ['monitoring-aktual' => 'invoice'],
+        ]);
+
+        // Monitoring Invoice Routes
+        Route::post('/invoice/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('invoice.update-status');
+        Route::resource('invoice', InvoiceController::class, [
+            'names' => 'invoice',
+            'parameters' => ['invoice' => 'invoice'],
+        ]);
         Route::get('/kartu-kendali-aktual',                [AdminController::class, 'pemeliharaanKartuKendaliAktual'])->name('kartu-kendali-aktual');
         Route::get('/kartu-kendali-pembayaran',                [AdminController::class, 'pemeliharaanKartuKendaliPembayaran'])->name('kartu-kendali-pembayaran');
 

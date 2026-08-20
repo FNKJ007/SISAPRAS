@@ -34,8 +34,8 @@ class AdminController extends Controller
         $totalPemeriksaan = \App\Models\CekHarianUnit::whereYear('created_at', $currentYear)->count() 
                             + \App\Models\CekHarianAlat::whereYear('created_at', $currentYear)->count();
 
-        $totalInvoiceBiaya = \App\Models\Invoice::whereYear('tanggal_invoice', $currentYear)->sum('total_biaya');
-        $totalInvoiceCount = \App\Models\Invoice::whereYear('tanggal_invoice', $currentYear)->count();
+        $totalInvoiceBiaya = \App\Models\Invoice::where('kategori_monitoring', 'aktual')->whereYear('tanggal_invoice', $currentYear)->sum('total_biaya');
+        $totalInvoiceCount = \App\Models\Invoice::where('kategori_monitoring', 'aktual')->whereYear('tanggal_invoice', $currentYear)->count();
 
         // 2. Monthly Chart Datasets (Jan - Dec)
         $chartInspeksiUnit = [];
@@ -47,7 +47,7 @@ class AdminController extends Controller
             $unitCheck = \App\Models\CekHarianUnit::whereYear('created_at', $currentYear)->whereMonth('created_at', $m)->count();
             $alatCheck = \App\Models\CekHarianAlat::whereYear('created_at', $currentYear)->whereMonth('created_at', $m)->count();
             $pengajuan = \App\Models\Pengajuan::whereYear('created_at', $currentYear)->whereMonth('created_at', $m)->count();
-            $biaya     = \App\Models\Invoice::whereYear('tanggal_invoice', $currentYear)->whereMonth('tanggal_invoice', $m)->sum('total_biaya');
+            $biaya     = \App\Models\Invoice::where('kategori_monitoring', 'aktual')->whereYear('tanggal_invoice', $currentYear)->whereMonth('tanggal_invoice', $m)->sum('total_biaya');
 
             $chartInspeksiUnit[] = $unitCheck;
             $chartInspeksiAlat[] = $alatCheck;
@@ -414,34 +414,31 @@ class AdminController extends Controller
     public function pemeliharaanKartuKendaliPembayaran(Request $request)
     {
         $tahunList = \App\Models\Invoice::whereNotNull('tahun_anggaran')
+            ->where(function ($q) {
+                $q->where('kategori_monitoring', 'invoice')
+                  ->orWhereNull('kategori_monitoring');
+            })
             ->distinct()
             ->orderByDesc('tahun_anggaran')
             ->pluck('tahun_anggaran')
             ->filter()
             ->values();
 
-        $rekeningList = \App\Models\Invoice::whereNotNull('kode_rekening')
-            ->where('kode_rekening', '!=', '')
-            ->distinct()
-            ->orderBy('kode_rekening')
-            ->pluck('kode_rekening');
-
         $tahunFilter    = $request->query('tahun', $tahunList->first() ?? date('Y'));
-        $rekeningFilter = $request->query('kode_rekening', 'semua');
         $statusFilter   = $request->query('status', 'semua');
         $searchQuery    = $request->query('search', '');
 
         $query = \App\Models\Invoice::with('unit')
+            ->where(function ($q) {
+                $q->where('kategori_monitoring', 'invoice')
+                  ->orWhereNull('kategori_monitoring');
+            })
             ->where(function ($q) use ($tahunFilter) {
                 $q->where('tahun_anggaran', $tahunFilter)
                   ->orWhereYear('tanggal_invoice', $tahunFilter);
             })
             ->orderBy('tanggal_invoice', 'asc')
             ->orderBy('id', 'asc');
-
-        if ($rekeningFilter !== 'semua') {
-            $query->where('kode_rekening', $rekeningFilter);
-        }
 
         if ($statusFilter !== 'semua' && in_array($statusFilter, ['draft', 'diajukan', 'disetujui', 'lunas'])) {
             $query->where('status', $statusFilter);
@@ -478,9 +475,7 @@ class AdminController extends Controller
             'kartuKendaliRows' => $kartuKendaliRows,
             'kpi'              => $kpi,
             'tahunList'        => $tahunList,
-            'rekeningList'     => $rekeningList,
             'tahunFilter'      => $tahunFilter,
-            'rekeningFilter'   => $rekeningFilter,
             'statusFilter'     => $statusFilter,
             'searchQuery'      => $searchQuery,
         ]);
@@ -493,57 +488,62 @@ class AdminController extends Controller
      */
     public function pemeliharaanKartuKendaliAktual(Request $request)
     {
-        $tahunList = Pengajuan::where('status', 'disetujui')
-            ->whereNotNull('tanggal_keberangkatan')
-            ->pluck('tanggal_keberangkatan')
-            ->map(fn ($tgl) => \Carbon\Carbon::parse($tgl)->format('Y'))
-            ->unique()
-            ->sortDesc()
-            ->values();
-
-        $tahunFilter  = $request->query('tahun', $tahunList->first() ?? date('Y'));
-        $statusFilter = $request->query('status_pengerjaan', 'semua');
-        $posFilter    = $request->query('pos', 'semua');
-        $searchQuery  = $request->query('search', '');
-
-        $query = Pengajuan::where('status', 'disetujui')
-            ->where(function ($q) use ($tahunFilter) {
-                $q->whereYear('tanggal_mulai_pengerjaan', $tahunFilter)
-                  ->orWhereYear('tanggal_keberangkatan', $tahunFilter);
-            })
-            ->orderBy('tanggal_mulai_pengerjaan', 'asc')
-            ->orderBy('id', 'asc');
-
-        if ($statusFilter !== 'semua' && in_array($statusFilter, ['belum_mulai', 'proses', 'selesai'])) {
-            $query->where('status_pengerjaan', $statusFilter);
+        // Auto-sync pengajuan to aktual invoices
+        $pengajuans = Pengajuan::all();
+        foreach ($pengajuans as $p) {
+            InvoiceController::syncPengajuanToAktualInvoice($p);
         }
 
-        if ($posFilter !== 'semua') {
-            $query->where('pos', $posFilter);
+        $tahunList = \App\Models\Invoice::where('kategori_monitoring', 'aktual')
+            ->whereNotNull('tahun_anggaran')
+            ->distinct()
+            ->orderByDesc('tahun_anggaran')
+            ->pluck('tahun_anggaran')
+            ->filter()
+            ->values();
+
+        $tahunFilter    = $request->query('tahun', $tahunList->first() ?? date('Y'));
+        $statusFilter   = $request->query('status', 'semua');
+        $searchQuery    = $request->query('search', '');
+
+        $query = \App\Models\Invoice::with('unit')
+            ->where('kategori_monitoring', 'aktual')
+            ->where(function ($q) use ($tahunFilter) {
+                $q->where('tahun_anggaran', $tahunFilter)
+                  ->orWhereYear('tanggal_invoice', $tahunFilter);
+            })
+            ->orderBy('tanggal_invoice', 'asc')
+            ->orderBy('id', 'asc');
+
+        if ($statusFilter !== 'semua' && in_array($statusFilter, ['draft', 'diajukan', 'disetujui', 'lunas'])) {
+            $query->where('status', $statusFilter);
         }
 
         if (!empty($searchQuery)) {
             $query->where(function ($q) use ($searchQuery) {
-                $q->where('nomor_lambung', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('pos', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_pemegang', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('item_perbaikan', 'LIKE', "%{$searchQuery}%");
+                $q->where('nomor_invoice', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('no_pol', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('no_lambung', 'LIKE', "%{$searchQuery}%");
             });
         }
 
-        $kartuKendaliRows = $query->get();
+        $invoiceList = $query->get();
 
-        $posList = Pengajuan::where('status', 'disetujui')
-            ->whereNotNull('pos')
-            ->distinct()
-            ->orderBy('pos')
-            ->pluck('pos');
+        // Hitung saldo kumulatif berjalan
+        $saldoBerjalan = 0;
+        $kartuKendaliRows = $invoiceList->map(function ($invoice) use (&$saldoBerjalan) {
+            $saldoBerjalan += (float) $invoice->total_biaya;
+            $invoice->saldo_kumulatif = $saldoBerjalan;
+            return $invoice;
+        });
 
         $kpi = [
-            'total'       => $kartuKendaliRows->count(),
-            'belum_mulai' => $kartuKendaliRows->where('status_pengerjaan', 'belum_mulai')->count(),
-            'proses'      => $kartuKendaliRows->where('status_pengerjaan', 'proses')->count(),
-            'selesai'     => $kartuKendaliRows->where('status_pengerjaan', 'selesai')->count(),
+            'total_invoice'  => $invoiceList->count(),
+            'total_nilai'    => $invoiceList->sum('total_biaya'),
+            'total_lunas'    => $invoiceList->where('status', 'lunas')->sum('total_biaya'),
+            'total_belum'    => $invoiceList->whereIn('status', ['draft', 'diajukan', 'disetujui'])->sum('total_biaya'),
+            'jumlah_lunas'   => $invoiceList->where('status', 'lunas')->count(),
+            'jumlah_belum'   => $invoiceList->whereIn('status', ['draft', 'diajukan', 'disetujui'])->count(),
         ];
 
         return view('admin.pemeliharaan.kartu-kendali-aktual', [
@@ -552,8 +552,6 @@ class AdminController extends Controller
             'tahunList'        => $tahunList,
             'tahunFilter'      => $tahunFilter,
             'statusFilter'     => $statusFilter,
-            'posFilter'        => $posFilter,
-            'posList'          => $posList,
             'searchQuery'      => $searchQuery,
         ]);
     }

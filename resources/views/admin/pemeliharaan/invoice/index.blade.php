@@ -1,6 +1,13 @@
+@php
+    $isAktual = request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+    $pageTitle = $isAktual ? 'Monitoring Aktual' : 'Monitoring Invoice';
+    $subTitle  = $isAktual ? 'Monitoring data aktual pemeliharaan unit.' : 'Monitoring data invoice pemeliharaan unit.';
+    $routePrefix = $isAktual ? 'admin.pemeliharaan.monitoring-aktual' : 'admin.pemeliharaan.invoice';
+@endphp
+
 @extends('layouts.admin')
 
-@section('title', 'Monitoring Invoice — Admin')
+@section('title', $pageTitle . ' — Admin')
 
 @section('content')
 <style>
@@ -103,11 +110,11 @@
     {{-- Page Header --}}
     <div class="invoice-index-header">
         <div>
-            <h1 style="font-size:22px; font-weight:800; color:#121E4E; margin:0 0 2px 0;">Monitoring Invoice</h1>
-            <p style="font-size:13px; color:#64748B; margin:0;">Monitoring data invoice pemeliharaan unit.</p>
+            <h1 style="font-size:22px; font-weight:800; color:#121E4E; margin:0 0 2px 0;">{{ $pageTitle }}</h1>
+            <p style="font-size:13px; color:#64748B; margin:0;">{{ $subTitle }}</p>
         </div>
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-            <a href="{{ route('admin.pemeliharaan.invoice.create') }}"
+            <a href="{{ route($routePrefix . '.create') }}"
                style="display:inline-flex; align-items:center; gap:8px; padding:9px 18px; background:#1B2A6B; color:#FFFFFF; border-radius:10px; font-size:12.5px; font-weight:700; text-decoration:none; box-shadow:0 4px 12px rgba(27,42,107,0.25); transition:all 0.2s ease;">
                 <i data-lucide="plus-circle" style="width:16px; height:16px;"></i>
                 <span>Buat Invoice</span>
@@ -136,7 +143,7 @@
             </div>
         </div>
 
-        <form method="GET" action="{{ route('admin.pemeliharaan.invoice.index') }}" style="padding:18px 22px; border-bottom:1px solid #F1F5F9; background:#FAFAFA;">
+        <form method="GET" action="{{ route($routePrefix . '.index') }}" style="padding:18px 22px; border-bottom:1px solid #F1F5F9; background:#FAFAFA;">
             {{-- Pertahankan filter tabel (search/status) saat filter dashboard disubmit --}}
             @if(request('q'))<input type="hidden" name="q" value="{{ request('q') }}">@endif
             @if(request('status'))<input type="hidden" name="status" value="{{ request('status') }}">@endif
@@ -400,7 +407,7 @@
                             onmouseover="this.style.background='#F8FAFC';"
                             onmouseout="this.style.background='transparent';">
                             <td style="padding:14px 18px; font-size:13px; font-weight:700; color:#1B2A6B;">
-                                <a href="{{ route('admin.pemeliharaan.invoice.show', $invoice) }}"
+                                <a href="{{ route($routePrefix . '.show', $invoice) }}"
                                    style="color:#1B2A6B; text-decoration:none; font-weight:700;"
                                    onmouseover="this.style.textDecoration='underline';"
                                    onmouseout="this.style.textDecoration='none';">
@@ -412,8 +419,11 @@
                             </td>
                             <td style="padding:14px 18px;">
                                 <div style="font-size:13px; font-weight:700; color:#0F172A;">{{ $invoice->no_lambung ?? '—' }}</div>
-                                @if($invoice->jenis_mobil)
-                                    <div style="font-size:11.5px; color:#64748B; margin-top:2px;">{{ $invoice->jenis_mobil }}</div>
+                                @php
+                                    $namaUnitSub = optional($invoice->unit)->merk_tipe ?: $invoice->jenis_mobil;
+                                @endphp
+                                @if($namaUnitSub)
+                                    <div style="font-size:11.5px; color:#64748B; margin-top:2px;">{{ $namaUnitSub }}</div>
                                 @endif
                             </td>
                             <td style="padding:14px 18px; font-size:12.5px; font-weight:600; color:#1E293B;">
@@ -434,13 +444,21 @@
                                     ];
                                     $style = $statusStyles[$invoice->status] ?? 'background:#F1F5F9; color:#475569; border:1px solid #CBD5E1;';
                                 @endphp
-                                <span style="display:inline-flex; align-items:center; justify-content:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; {{ $style }}">
-                                    {{ $invoice->status }}
-                                </span>
+                                <form action="{{ route($routePrefix . '.update-status', $invoice) }}" method="POST" style="margin:0; display:inline-block;">
+                                    @csrf
+                                    <select name="status" onchange="this.form.submit()"
+                                            title="Klik untuk mengubah status invoice"
+                                            style="font-size:10.5px; font-weight:700; text-transform:uppercase; padding:3px 10px; border-radius:20px; cursor:pointer; outline:none; transition:all 0.2s; {{ $style }}">
+                                        <option value="draft" @selected($invoice->status === 'draft')>Draft</option>
+                                        <option value="diajukan" @selected($invoice->status === 'diajukan')>Diajukan</option>
+                                        <option value="disetujui" @selected($invoice->status === 'disetujui')>Disetujui</option>
+                                        <option value="lunas" @selected($invoice->status === 'lunas')>Lunas</option>
+                                    </select>
+                                </form>
                             </td>
                             <td style="padding:14px 18px; text-align:center; white-space:nowrap;">
                                 <div style="display:inline-flex; align-items:center; gap:6px; justify-content:center;">
-                                    <a href="{{ route('admin.pemeliharaan.invoice.show', ['invoice' => $invoice, 'download' => 1]) }}"
+                                    <a href="{{ route($routePrefix . '.show', ['invoice' => $invoice, 'download' => 1]) }}"
                                        target="_blank"
                                        title="Unduh Invoice (PDF)"
                                        style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; background:#FFFFFF; color:#1B2A6B; border:1px solid #1B2A6B; border-radius:8px; text-decoration:none; transition:all 0.2s;"
@@ -449,7 +467,7 @@
                                         <i data-lucide="download" style="width:15px; height:15px;"></i>
                                     </a>
 
-                                    <a href="{{ route('admin.pemeliharaan.invoice.edit', $invoice) }}"
+                                    <a href="{{ route($routePrefix . '.edit', $invoice) }}"
                                        title="Edit Invoice"
                                        style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; background:#FFFFFF; color:#1B2A6B; border:1px solid #1B2A6B; border-radius:8px; text-decoration:none; transition:all 0.2s;"
                                        onmouseover="this.style.background='#1B2A6B'; this.style.color='#FFFFFF';"
@@ -457,7 +475,7 @@
                                         <i data-lucide="pencil" style="width:15px; height:15px;"></i>
                                     </a>
 
-                                    <form action="{{ route('admin.pemeliharaan.invoice.destroy', $invoice) }}"
+                                    <form action="{{ route($routePrefix . '.destroy', $invoice) }}"
                                           method="POST"
                                           style="display:inline-block; margin:0;"
                                           onsubmit="return confirm('Hapus invoice {{ $invoice->nomor_invoice }}?')">
@@ -476,12 +494,14 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" style="padding:48px 20px; text-align:center; color:#64748B;">
-                                <div style="width:56px; height:56px; background:#F8FAFC; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:12px; border:1px solid #E2E8F0;">
-                                    <i data-lucide="file-x" style="width:26px; height:26px; color:#94A3B8;"></i>
+                            <td colspan="7" style="padding:56px 20px; text-align:center; background:#FFFFFF;">
+                                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                                    <div style="width:64px; height:64px; background:#F8FAFC; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin:0 auto 16px auto; border:1px solid #E2E8F0;">
+                                        <i data-lucide="file-x" style="width:30px; height:30px; color:#64748B;"></i>
+                                    </div>
+                                    <div style="font-size:16px; font-weight:800; color:#0F172A; margin-bottom:6px;">Belum Ada Data Invoice</div>
+                                    <div style="font-size:13px; color:#64748B; max-width:400px; margin:0 auto;">Belum ada catatan invoice yang tersimpan atau sesuai dengan kriteria filter.</div>
                                 </div>
-                                <div style="font-size:15px; font-weight:700; color:#334155; margin-bottom:4px;">Belum Ada Data Invoice</div>
-                                <div style="font-size:12.5px; color:#94A3B8;">Belum ada catatan invoice yang tersimpan atau sesuai dengan kriteria filter.</div>
                             </td>
                         </tr>
                     @endforelse

@@ -1,7 +1,12 @@
-{{-- resources/views/admin/pemeliharaan/invoice/edit.blade.php --}}
+@php
+    $isAktual = request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+    $pageTitle = $isAktual ? 'Monitoring Aktual' : 'Monitoring Invoice';
+    $routePrefix = $isAktual ? 'admin.pemeliharaan.monitoring-aktual' : 'admin.pemeliharaan.invoice';
+@endphp
+
 @extends('layouts.admin')
 
-@section('title', 'Edit Invoice')
+@section('title', 'Edit Invoice — ' . $pageTitle)
 
 @section('content')
 <style>
@@ -50,22 +55,22 @@
         <div>
             <h1 style="font-size:22px; font-weight:800; color:#121E4E; margin:0 0 6px 0;">Edit Invoice</h1>
             <div style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:#64748B;">
-                <a href="{{ route('admin.pemeliharaan.invoice.index') }}" style="color:#1B2A6B; text-decoration:none; font-weight:600;">Monitoring Invoice</a>
+                <a href="{{ route($routePrefix . '.index') }}" style="color:#1B2A6B; text-decoration:none; font-weight:600;">{{ $pageTitle }}</a>
                 <span>›</span>
                 <span style="color:#0F172A; font-weight:600;">{{ $invoice->nomor_invoice }}</span>
             </div>
         </div>
 
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-            <a href="{{ route('admin.pemeliharaan.invoice.index') }}" class="invoice-btn-back">
+            <a href="{{ route($routePrefix . '.index') }}" class="invoice-btn-back">
                 <i data-lucide="arrow-left" style="width:16px; height:16px;"></i>
-                <span>Kembali ke Daftar Invoice</span>
+                <span>Kembali ke Daftar</span>
             </a>
         </div>
     </div>
 
     {{-- Form Edit Invoice --}}
-    <form action="{{ route('admin.pemeliharaan.invoice.update', $invoice) }}" method="POST">
+    <form action="{{ route($routePrefix . '.update', $invoice) }}" method="POST">
         @csrf
         @method('PUT')
         @include('admin.pemeliharaan.invoice._form')
