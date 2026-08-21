@@ -15,6 +15,9 @@ class UserManagementController extends Controller
      */
     public function store(Request $request)
     {
+        $nip = trim((string) $request->input('nip'));
+        $existingUser = !empty($nip) ? User::where('nip', $nip)->first() : null;
+
         $messages = [
             'nip.required'        => 'NIP pengguna wajib diisi.',
             'nip.unique'          => 'NIP ini sudah terdaftar untuk pengguna lain.',
@@ -27,6 +30,36 @@ class UserManagementController extends Controller
             'status.required'     => 'Status akun (Aktif / Non-Aktif) wajib dipilih.',
         ];
 
+        if ($existingUser) {
+            // Pegawai sudah terdaftar di Data Pegawai -> Update akun login
+            $validated = $request->validate([
+                'nip'      => 'required|string|max:50',
+                'name'     => 'required|string|max:255',
+                'email'    => ['nullable', 'email', 'max:255', Rule::unique('users')->ignore($existingUser->id)],
+                'password' => 'required|string|min:6',
+                'role'     => 'required|in:admin,user',
+                'jabatan'  => 'nullable|string|max:100',
+                'bidang'   => 'nullable|string|max:100',
+                'pos'      => 'nullable|string|max:100',
+                'regu'     => 'nullable|string|max:50',
+                'no_hp'    => 'nullable|string|max:30',
+                'status'   => 'required|in:aktif,nonaktif',
+            ], $messages);
+
+            $validated['nip'] = trim($validated['nip']);
+            if (empty($validated['email'])) {
+                $validated['email'] = null;
+            }
+            $validated['password'] = Hash::make($validated['password']);
+
+            $existingUser->update($validated);
+
+            return redirect()
+                ->route('admin.pengaturan')
+                ->with('success', "Akun login untuk pegawai '{$existingUser->name}' (NIP: {$existingUser->nip}) berhasil diaktifkan / diperbarui.");
+        }
+
+        // Pegawai baru -> Buat akun dan simpan ke data pegawai
         $validated = $request->validate([
             'nip'      => 'required|string|max:50|unique:users,nip',
             'name'     => 'required|string|max:255',
@@ -53,7 +86,7 @@ class UserManagementController extends Controller
 
         return redirect()
             ->route('admin.pengaturan')
-            ->with('success', "Akun pengguna '{$validated['name']}' (NIP: {$validated['nip']}) berhasil dibuat.");
+            ->with('success', "Akun pengguna baru '{$validated['name']}' (NIP: {$validated['nip']}) berhasil dibuat dan tersimpan di data pegawai.");
     }
 
     /**

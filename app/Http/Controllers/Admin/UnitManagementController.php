@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Unit;
 use App\Models\Pos;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class UnitManagementController extends Controller
@@ -110,6 +111,8 @@ class UnitManagementController extends Controller
             $existingKategoriList = ['Pemadam', 'Rescue'];
         }
 
+        $pegawaiList = User::orderBy('name', 'asc')->get(['id', 'name', 'nip', 'jabatan', 'pos']);
+
         return view('admin.pemeliharaan.data-unit.index', compact(
             'unitList',
             'kpi',
@@ -118,6 +121,7 @@ class UnitManagementController extends Controller
             'posFilter',
             'searchQuery',
             'posList',
+            'pegawaiList',
             'existingJenisList',
             'existingPeruntukanList',
             'existingKategoriList'

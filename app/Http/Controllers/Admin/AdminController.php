@@ -755,6 +755,57 @@ class AdminController extends Controller
         ]);
     }
 
+    /* ==================== UNIT PENCEGAHAN ==================== */
+
+    /**
+     * Halaman Pengecekan Pencegahan: menampilkan hasil input Cek Harian Unit
+     * Kendaraan Pencegahan dan Cek Harian Alat Pencegahan yang diisi oleh petugas.
+     */
+    public function unitPencegahanPengecekan(Request $request)
+    {
+        $tab         = $request->query('tab', 'unit');
+        $searchQuery = $request->query('search', '');
+
+        // ===== Hasil Cek Harian Unit Kendaraan Pencegahan =====
+        $unitQuery = CekHarianUnit::where('kategori', 'pencegahan');
+
+        if (!empty($searchQuery)) {
+            $unitQuery->where(function ($q) use ($searchQuery) {
+                $q->where('pos', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('unit_nama', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
+        $cekUnitList = $unitQuery->latest()
+            ->paginate(10, ['*'], 'unit_page')
+            ->withQueryString();
+
+        // ===== Hasil Cek Harian Alat Pencegahan =====
+        $alatQuery = CekHarianAlat::where('kategori', 'pencegahan');
+
+        if (!empty($searchQuery)) {
+            $alatQuery->where(function ($q) use ($searchQuery) {
+                $q->where('pos', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
+        $cekAlatList = $alatQuery->latest()
+            ->paginate(10, ['*'], 'alat_page')
+            ->withQueryString();
+
+        // ===== Ringkasan KPI =====
+        $kpi = [
+            'total_cek_unit'   => CekHarianUnit::where('kategori', 'pencegahan')->count(),
+            'unit_ada_rusak'   => CekHarianUnit::where('kategori', 'pencegahan')->where('jumlah_rusak', '>', 0)->count(),
+            'total_cek_alat'   => CekHarianAlat::where('kategori', 'pencegahan')->count(),
+            'alat_rusak_total' => (int) CekHarianAlat::where('kategori', 'pencegahan')->sum('total_rusak'),
+        ];
+
+        return view('admin.unit-pencegahan.pengecekan', compact('cekUnitList', 'cekAlatList', 'kpi', 'tab', 'searchQuery'));
+    }
+
     /* ==================== COMMAND CENTER ==================== */
     public function commandCenterDataPeralatan()
     {
@@ -964,6 +1015,8 @@ class AdminController extends Controller
             ];
         }
 
+        $pegawaiList = \App\Models\User::orderBy('name', 'asc')->get(['id', 'name', 'nip', 'jabatan', 'bidang', 'pos', 'regu', 'email', 'role', 'status']);
+
         return view('admin.pengaturan', compact(
             'userList',
             'kpi',
@@ -974,6 +1027,7 @@ class AdminController extends Controller
             'statusFilter',
             'searchQuery',
             'posList',
+            'pegawaiList',
             'existingBidangList',
             'existingReguList',
             'existingJabatanList'

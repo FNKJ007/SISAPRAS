@@ -62,6 +62,11 @@
                 createNip = '';
                 createName = '';
                 createEmail = '';
+                createJabatan = '';
+                createBidang = '';
+                createPos = '';
+                createRegu = '';
+                createNoHp = '';
                 createModalOpen = true;
                 $nextTick(() => {
                     const passInput = document.getElementById('create_password_input');
@@ -367,17 +372,85 @@
                 @csrf
                 <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:16px;">
                     
+                    {{-- Pilihan Otomatis dari Master Data Pegawai (Autocomplete) --}}
+                    <div style="position:relative; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:12px; padding:12px;"
+                         x-data="{
+                             pegawaiOpen: false,
+                             pegawaiQuery: '',
+                             get filteredPegawai() {
+                                 if (!this.pegawaiQuery || this.pegawaiQuery.trim() === '') return {{ json_encode($pegawaiList) }}.slice(0, 10);
+                                 let q = this.pegawaiQuery.toLowerCase();
+                                 return {{ json_encode($pegawaiList) }}.filter(p => 
+                                     (p.name && p.name.toLowerCase().includes(q)) || 
+                                     (p.nip && p.nip.toLowerCase().includes(q)) ||
+                                     (p.jabatan && p.jabatan.toLowerCase().includes(q))
+                                 ).slice(0, 15);
+                             },
+                             selectPegawai(p) {
+                                 createNip = p.nip || '';
+                                 createName = p.name || '';
+                                 createJabatan = p.jabatan || '';
+                                 createBidang = p.bidang || '';
+                                 createPos = p.pos || '';
+                                 createRegu = p.regu || '';
+                                 createEmail = p.email || '';
+                                 this.pegawaiQuery = '';
+                                 this.pegawaiOpen = false;
+                             }
+                         }"
+                         @click.away="pegawaiOpen = false">
+                        
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                            <label style="font-size:12px; font-weight:800; color:#1E3A8A; margin:0; display:inline-flex; align-items:center; gap:6px;">
+                                <i data-lucide="user-check" style="width:15px; height:15px; color:#2563EB;"></i>
+                                <span>Ambil Data dari Master Pegawai <span style="font-weight:500; color:#475569;">(Auto-fill Cepat)</span></span>
+                            </label>
+                            <span style="font-size:11px; font-weight:600; color:#2563EB;">Ketik nama / NIP</span>
+                        </div>
+
+                        <div style="position:relative;">
+                            <input type="text"
+                                   x-model="pegawaiQuery"
+                                   @focus="pegawaiOpen = true"
+                                   @input="pegawaiOpen = true"
+                                   placeholder="Ketik nama atau NIP pegawai untuk mengisi otomatis..."
+                                   autocomplete="off"
+                                   style="width:100%; padding:8px 32px 8px 34px; font-size:12.5px; border-radius:8px; border:1px solid #93C5FD; background:#FFFFFF; outline:none; box-sizing:border-box;">
+                            <i data-lucide="search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:14px; height:14px; color:#3B82F6;"></i>
+                            <button type="button" @click="pegawaiOpen = !pegawaiOpen" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:#3B82F6; cursor:pointer;">
+                                <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+                            </button>
+                        </div>
+
+                        {{-- Autocomplete Dropdown List --}}
+                        <div x-show="pegawaiOpen && filteredPegawai.length > 0"
+                             style="display:none; position:absolute; left:12px; right:12px; top:100%; margin-top:4px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:10px; box-shadow:0 10px 25px rgba(15,23,42,0.18); max-height:210px; overflow-y:auto; z-index:99999;">
+                            <template x-for="p in filteredPegawai" :key="p.id">
+                                <div @click="selectPegawai(p)"
+                                     style="padding:9px 12px; border-bottom:1px solid #F1F5F9; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background 0.15s;"
+                                     onmouseover="this.style.background='#EFF6FF'"
+                                     onmouseout="this.style.background='transparent'">
+                                    <div>
+                                        <strong style="display:block; color:#0F172A; font-size:12.5px;" x-text="p.name"></strong>
+                                        <span style="font-size:11px; color:#64748B;" x-text="'NIP: ' + (p.nip || '—') + ' • ' + (p.jabatan || 'Petugas')"></span>
+                                    </div>
+                                    <span style="font-size:10.5px; font-weight:700; color:#1E40AF; background:#DBEAFE; padding:2px 8px; border-radius:10px;" x-text="p.pos || 'Disdamkar'"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    
                     {{-- NIP & Nama --}}
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">NIP <span style="color:#DC2626;">*</span></label>
                             <input type="text" name="nip" required x-model="createNip" autocomplete="off" placeholder="Contoh: 199501012020011001"
-                                   style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; font-family:monospace;">
+                                   style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; font-family:monospace; box-sizing:border-box;">
                         </div>
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nama Lengkap <span style="color:#DC2626;">*</span></label>
                             <input type="text" name="name" required x-model="createName" autocomplete="off" placeholder="Contoh: Ahmad Subagja"
-                                   style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                                   style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; box-sizing:border-box;">
                         </div>
                     </div>
 
@@ -397,7 +470,7 @@
                             <input :type="showPassCreate ? 'text' : 'password'" name="password" id="create_password_input" required autocomplete="new-password" placeholder="Masukkan atau generate password..."
                                    style="width:100%; padding:8px 36px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; font-family:monospace;">
                             <button type="button" @click="showPassCreate = !showPassCreate" tabindex="-1"
-                                    style="position:absolute; right:8px; background:none; border:none; color:#64748B; cursor:pointer;">
+                                     style="position:absolute; right:8px; background:none; border:none; color:#64748B; cursor:pointer;">
                                 <i :data-lucide="showPassCreate ? 'eye-off' : 'eye'" style="width:16px; height:16px;"></i>
                             </button>
                         </div>
@@ -408,7 +481,7 @@
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Email <span style="font-weight:400; color:#64748B;">(Opsional)</span></label>
                             <input type="email" name="email" x-model="createEmail" autocomplete="off" placeholder="Contoh: petugas@damkar.go.id (Kosongkan jika tidak ada)"
-                                   style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                                   style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; box-sizing:border-box;">
                         </div>
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Role Hak Akses <span style="color:#DC2626;">*</span></label>
@@ -422,11 +495,11 @@
                     {{-- Jabatan & Bidang --}}
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                         {{-- Jabatan (Input Manual + Dropdown Riwayat + Hapus) --}}
-                        <div x-data="{ open: false, val: '' }" style="position:relative;">
+                        <div x-data="{ open: false }" style="position:relative;">
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Jabatan</label>
                             <div style="position:relative; display:flex; align-items:center;">
-                                <input type="text" name="jabatan" x-model="val" placeholder="Ketik atau pilih jabatan..."
-                                       style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
+                                <input type="text" name="jabatan" x-model="createJabatan" placeholder="Ketik atau pilih jabatan..."
+                                       style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; box-sizing:border-box;"
                                        @focus="if(existingJabatanList.length > 0) open = true"
                                        @click.outside="open = false">
                                 <button type="button" @click="open = !open" tabindex="-1"
@@ -438,7 +511,7 @@
                                  style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                                 <template x-for="item in existingJabatanList" :key="item">
                                     <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
-                                         @click="val = item; open = false;"
+                                         @click="createJabatan = item; open = false;"
                                          onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
                                          onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
                                         <span x-text="item"></span>
@@ -448,11 +521,11 @@
                         </div>
 
                         {{-- Bidang (Input Manual + Dropdown Riwayat) --}}
-                        <div x-data="{ open: false, val: '' }" style="position:relative;">
+                        <div x-data="{ open: false }" style="position:relative;">
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Bidang</label>
                             <div style="position:relative; display:flex; align-items:center;">
-                                <input type="text" name="bidang" x-model="val" placeholder="Ketik atau pilih bidang..."
-                                       style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
+                                <input type="text" name="bidang" x-model="createBidang" placeholder="Ketik atau pilih bidang..."
+                                       style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; box-sizing:border-box;"
                                        @focus="if(existingBidangList.length > 0) open = true"
                                        @click.outside="open = false">
                                 <button type="button" @click="open = !open" tabindex="-1"
@@ -464,7 +537,7 @@
                                  style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                                 <template x-for="item in existingBidangList" :key="item">
                                     <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
-                                         @click="val = item; open = false;"
+                                         @click="createBidang = item; open = false;"
                                          onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
                                          onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
                                         <span x-text="item"></span>
@@ -478,7 +551,7 @@
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pos Penempatan</label>
-                            <select name="pos" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
+                            <select name="pos" x-model="createPos" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
                                 <option value="">— Pilih Pos —</option>
                                 @foreach($posList as $p)
                                     <option value="{{ $p->nama }}">{{ $p->nama }}</option>
@@ -486,11 +559,11 @@
                             </select>
                         </div>
                         {{-- Regu (Input Manual + Dropdown Riwayat) --}}
-                        <div x-data="{ open: false, val: '' }" style="position:relative;">
+                        <div x-data="{ open: false }" style="position:relative;">
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Regu</label>
                             <div style="position:relative; display:flex; align-items:center;">
-                                <input type="text" name="regu" x-model="val" placeholder="Ketik atau pilih regu..."
-                                       style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
+                                <input type="text" name="regu" x-model="createRegu" placeholder="Ketik atau pilih regu..."
+                                       style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; box-sizing:border-box;"
                                        @focus="if(existingReguList.length > 0) open = true"
                                        @click.outside="open = false">
                                 <button type="button" @click="open = !open" tabindex="-1"
@@ -502,7 +575,7 @@
                                  style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
                                 <template x-for="item in existingReguList" :key="item">
                                     <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
-                                         @click="val = item; open = false;"
+                                         @click="createRegu = item; open = false;"
                                          onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
                                          onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
                                         <span x-text="item"></span>
@@ -516,8 +589,8 @@
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">No. WhatsApp / HP</label>
-                            <input type="text" name="no_hp" placeholder="Contoh: 081234567890"
-                                   style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                            <input type="text" name="no_hp" x-model="createNoHp" placeholder="Contoh: 081234567890"
+                                   style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; box-sizing:border-box;">
                         </div>
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Status Akun <span style="color:#DC2626;">*</span></label>
@@ -810,6 +883,11 @@ function pengaturanApp() {
         createNip: '',
         createName: '',
         createEmail: '',
+        createJabatan: '',
+        createBidang: '',
+        createPos: '',
+        createRegu: '',
+        createNoHp: '',
         generatedPass: 'Damkar' + Math.floor(1000 + Math.random() * 9000) + '!',
         showPassCreate: false,
         showPassEdit: false,
