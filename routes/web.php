@@ -195,12 +195,22 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::prefix('unit-pemadam')->name('unit-pemadam.')->group(function () {
         Route::get('/pengecekan',  [AdminController::class, 'unitPemadamPengecekan'])->name('pengecekan');
         Route::get('/riwayat',     [AdminController::class, 'unitPemadamRiwayat'])->name('riwayat');
+        // Admin PDF export (akses oleh admin dari panel)
+        Route::get('/cek-harian-unit/{id}/export-pdf', [\App\Http\Controllers\CekHarianUnitPemadamController::class, 'exportPdf'])
+            ->name('cek-harian-unit.export-pdf');
+        Route::get('/cek-harian-alat/{id}/export-pdf', [\App\Http\Controllers\CekHarianAlatController::class, 'exportPdf'])
+            ->name('cek-harian-alat.export-pdf');
     });
 
     // Unit Rescue
     Route::prefix('unit-rescue')->name('unit-rescue.')->group(function () {
         Route::get('/pengecekan',  [AdminController::class, 'unitRescuePengecekan'])->name('pengecekan');
         Route::get('/riwayat',     [AdminController::class, 'unitRescueRiwayat'])->name('riwayat');
+        // Admin PDF export (akses oleh admin dari panel)
+        Route::get('/cek-harian-unit/{id}/export-pdf', [\App\Http\Controllers\CekHarianUnitRescueController::class, 'exportPdf'])
+            ->name('cek-harian-unit.export-pdf');
+        Route::get('/cek-harian-alat/{id}/export-pdf', [\App\Http\Controllers\CekHarianAlatRescueController::class, 'exportPdf'])
+            ->name('cek-harian-alat.export-pdf');
     });
 
     // Command Center

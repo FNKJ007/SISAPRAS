@@ -272,9 +272,18 @@
 
             <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#FFFFFF; z-index:10;">
                 <h3 style="font-size:15.5px; font-weight:800; color:#0F172A; margin:0;">Detail Cek Harian Unit Kendaraan Rescue</h3>
-                <button type="button" @click="unitModalOpen = false" style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:4px;">
-                    <i data-lucide="x" style="width:18px; height:18px;"></i>
-                </button>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <a :href="`/admin/unit-rescue/cek-harian-unit/${activeUnit.id}/export-pdf`" target="_blank"
+                       style="display:inline-flex; align-items:center; gap:8px; padding:6px 10px; background:#059669; color:#FFFFFF; border-radius:8px; font-size:12px; font-weight:700; text-decoration:none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" style="width:14px;height:14px;">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v8.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V4a1 1 0 011-1zM4 15a1 1 0 011 1v1h10v-1a1 1 0 112 0v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        <span style="font-size:12px;">Unduh PDF</span>
+                    </a>
+                    <button type="button" @click="unitModalOpen = false" style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:4px;">
+                        <i data-lucide="x" style="width:18px; height:18px;"></i>
+                    </button>
+                </div>
             </div>
 
             <div style="padding:18px 20px; font-size:12.5px;">
@@ -372,9 +381,18 @@
 
             <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#FFFFFF; z-index:10;">
                 <h3 style="font-size:15.5px; font-weight:800; color:#0F172A; margin:0;">Detail Cek Harian Alat Rescue</h3>
-                <button type="button" @click="alatModalOpen = false" style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:4px;">
-                    <i data-lucide="x" style="width:18px; height:18px;"></i>
-                </button>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <a :href="`/admin/unit-rescue/cek-harian-alat/${activeAlat.id}/export-pdf`" target="_blank"
+                       style="display:inline-flex; align-items:center; gap:8px; padding:6px 10px; background:#059669; color:#FFFFFF; border-radius:8px; font-size:12px; font-weight:700; text-decoration:none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" style="width:14px;height:14px;">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v8.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V4a1 1 0 011-1zM4 15a1 1 0 011 1v1h10v-1a1 1 0 112 0v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        <span style="font-size:12px;">Unduh PDF</span>
+                    </a>
+                    <button type="button" @click="alatModalOpen = false" style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:4px;">
+                        <i data-lucide="x" style="width:18px; height:18px;"></i>
+                    </button>
+                </div>
             </div>
 
             <div style="padding:18px 20px; font-size:12.5px;">
