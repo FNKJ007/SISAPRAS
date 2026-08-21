@@ -50,6 +50,15 @@ class CekAlatCcController extends Controller
 
         return redirect()
             ->route('alat-cc.cek-alat-cc')
-            ->with('success', "Pemeriksaan harian alat Command Center berhasil disimpan!");
+            ->with('success', "Pemeriksaan harian alat Command Center berhasil disimpan!")
+            ->with('cek_id', $record->id);
+    }
+
+    /**
+     * Export PDF hasil pemeriksaan alat Command Center.
+     */
+    public function exportPdf(int $id)
+    {
+        return $this->exportCekHarianAlatPdf($id, 'command_center');
     }
 }

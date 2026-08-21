@@ -43,7 +43,7 @@
         @php
             $steps = [
                 1 => 'Identitas',
-                2 => 'Pemanasan & BBM',
+                2 => 'Pemanasan, BBM & Kebersihan',
                 3 => 'Perlengkapan',
                 4 => 'Konfirmasi',
             ];
@@ -138,13 +138,63 @@
             </div>
         </div>
 
-        {{-- ===================== STEP 2 - KEBERSIHAN, PEMANASAN & BBM ===================== --}}
+        {{-- ===================== STEP 2 - PEMANASAN, BBM & KEBERSIHAN ===================== --}}
         <div data-step-panel="2" class="hidden space-y-6">
-            {{-- 1. Kebersihan Unit --}}
+            {{-- 1. Pemanasan Kendaraan --}}
+            <div class="p-4 rounded-xl border border-blue-200 bg-blue-50/30">
+                <h3 class="font-bold text-sm text-blue-950 flex items-center gap-2 mb-1">
+                    <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">1</span>
+                    <span>Pemanasan Kendaraan</span>
+                </h3>
+                <p class="text-xs text-gray-600 mb-3">(Unit harus dioperasikan dan dikendarai minimal sejauh 1 KM. Silakan lampirkan dokumentasi sebagai bukti)</p>
+                <label for="bukti_pemanasan"
+                       class="flex items-center justify-between border border-gray-300 bg-white rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
+                    <span id="buktiPemanasanLabel">Lampirkan Bukti Pemanasan</span>
+                    <span>📎</span>
+                </label>
+                <input id="bukti_pemanasan" type="file" name="bukti_pemanasan" accept="image/*" class="hidden">
+                <div id="buktiPemanasanPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
+                @error('bukti_pemanasan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- 2. Bahan Bakar Minyak (BBM) --}}
+            <div class="p-4 rounded-xl border border-amber-200 bg-amber-50/30">
+                <h3 class="font-bold text-sm text-amber-950 flex items-center gap-2 mb-3">
+                    <span class="w-6 h-6 rounded-full bg-amber-600 text-white flex items-center justify-center text-xs">2</span>
+                    <span>Bahan Bakar Minyak (BBM)</span>
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                    <div>
+                        <label for="jenis_bbm" class="block text-sm font-medium mb-1">Jenis BBM <span class="text-red-500">*</span></label>
+                        <p class="text-xs text-gray-500 mb-2">(Pilih jenis bahan bakar kendaraan)</p>
+                        <select id="jenis_bbm" name="jenis_bbm" required
+                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <option value="" selected disabled>Pilih Jenis BBM</option>
+                            <option value="solar" @selected(old('jenis_bbm', 'solar') === 'solar')>Solar</option>
+                            <option value="bensin" @selected(old('jenis_bbm') === 'bensin')>Bensin</option>
+                        </select>
+                        @error('jenis_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <p class="font-medium text-sm mb-1">Bukti Foto Level BBM</p>
+                        <p class="text-xs text-gray-500 mb-2">(Fotokan Speedometer untuk bukti level BBM)</p>
+                        <label for="bukti_bbm"
+                               class="flex items-center justify-between border border-gray-300 bg-white rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
+                            <span id="buktiBbmLabel">Lampirkan Bukti Level BBM</span>
+                            <span>📎</span>
+                        </label>
+                        <input id="bukti_bbm" type="file" name="bukti_bbm" accept="image/*" class="hidden">
+                        <div id="buktiBbmPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
+                        @error('bukti_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+
+            {{-- 3. Kebersihan Unit --}}
             <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/40">
                 <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
                     <h3 class="font-bold text-sm text-emerald-950 flex items-center gap-2">
-                        <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">1</span>
+                        <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">3</span>
                         <span>Pemeriksaan Kebersihan Unit</span>
                     </h3>
                     <span class="text-xs font-semibold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">Wajib Pasukan</span>
@@ -177,56 +227,6 @@
                         <input id="bukti_pencucian" type="file" name="bukti_pencucian" accept="image/*" class="hidden">
                         <div id="buktiPencucianPreview" class="mt-2 flex flex-wrap gap-2 hidden"></div>
                         @error('bukti_pencucian') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                    </div>
-                </div>
-            </div>
-
-            {{-- 2. Pemanasan Kendaraan --}}
-            <div class="p-4 rounded-xl border border-blue-200 bg-blue-50/30">
-                <h3 class="font-bold text-sm text-blue-950 flex items-center gap-2 mb-1">
-                    <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">2</span>
-                    <span>Pemanasan Kendaraan</span>
-                </h3>
-                <p class="text-xs text-gray-600 mb-3">(Unit harus dioperasikan dan dikendarai minimal sejauh 1 KM. Silakan lampirkan dokumentasi sebagai bukti)</p>
-                <label for="bukti_pemanasan"
-                       class="flex items-center justify-between border border-gray-300 bg-white rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
-                    <span id="buktiPemanasanLabel">Lampirkan Bukti Pemanasan</span>
-                    <span>📎</span>
-                </label>
-                <input id="bukti_pemanasan" type="file" name="bukti_pemanasan" accept="image/*" class="hidden">
-                <div id="buktiPemanasanPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
-                @error('bukti_pemanasan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-            </div>
-
-            {{-- 3. Bahan Bakar Minyak (BBM) --}}
-            <div class="p-4 rounded-xl border border-amber-200 bg-amber-50/30">
-                <h3 class="font-bold text-sm text-amber-950 flex items-center gap-2 mb-3">
-                    <span class="w-6 h-6 rounded-full bg-amber-600 text-white flex items-center justify-center text-xs">3</span>
-                    <span>Bahan Bakar Minyak (BBM)</span>
-                </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
-                    <div>
-                        <label for="jenis_bbm" class="block text-sm font-medium mb-1">Jenis BBM <span class="text-red-500">*</span></label>
-                        <p class="text-xs text-gray-500 mb-2">(Pilih jenis bahan bakar kendaraan)</p>
-                        <select id="jenis_bbm" name="jenis_bbm" required
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                            <option value="" selected disabled>Pilih Jenis BBM</option>
-                            <option value="solar" @selected(old('jenis_bbm', 'solar') === 'solar')>Solar</option>
-                            <option value="bensin" @selected(old('jenis_bbm') === 'bensin')>Bensin</option>
-                        </select>
-                        @error('jenis_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <p class="font-medium text-sm mb-1">Bukti Foto Level BBM</p>
-                        <p class="text-xs text-gray-500 mb-2">(Fotokan Speedometer untuk bukti level BBM)</p>
-                        <label for="bukti_bbm"
-                               class="flex items-center justify-between border border-gray-300 bg-white rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
-                            <span id="buktiBbmLabel">Lampirkan Bukti Level BBM</span>
-                            <span>📎</span>
-                        </label>
-                        <input id="bukti_bbm" type="file" name="bukti_bbm" accept="image/*" class="hidden">
-                        <div id="buktiBbmPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
-                        @error('bukti_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </div>
