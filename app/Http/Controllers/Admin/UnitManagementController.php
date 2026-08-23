@@ -67,9 +67,10 @@ class UnitManagementController extends Controller
 
         $posList = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
 
-        $defaultTypes = ['Pancar', 'Supply', 'Pompa', 'Rescue', 'R2', 'R3', 'Pick Up', 'Komando', 'Lainnya'];
+        $defaultTypes = ['Pancar', 'Supply', 'Pompa', 'Rescue', 'R2', 'R3', 'Pick Up', 'Lainnya'];
         $dbTypes = Unit::whereNotNull('jenis_kendaraan')
             ->where('jenis_kendaraan', '!=', '')
+            ->where('jenis_kendaraan', '!=', 'Komando')
             ->get()
             ->pluck('jenis_kendaraan')
             ->map(function ($v) {
@@ -83,33 +84,24 @@ class UnitManagementController extends Controller
 
         $existingJenisList = collect($defaultTypes)
             ->merge($dbTypes)
+            ->filter(fn($v) => $v !== 'Komando')
             ->unique()
             ->values()
             ->toArray();
 
-        $existingPeruntukanList = Unit::whereNotNull('peruntukan')
-            ->where('peruntukan', '!=', '')
-            ->get()
-            ->pluck('peruntukan')
-            ->map(fn($v) => ucwords(strtolower(trim($v))))
-            ->unique()
-            ->sort()
-            ->values()
-            ->toArray();
-
-        $existingKategoriList = Unit::whereNotNull('kategori')
+        $defaultKategori = ['Pemadam', 'Rescue', 'Pencegahan', 'Komando'];
+        $dbKategori = Unit::whereNotNull('kategori')
             ->where('kategori', '!=', '')
             ->get()
             ->pluck('kategori')
             ->map(fn($v) => ucwords(strtolower(str_replace('_', ' ', trim($v)))))
-            ->unique()
-            ->sort()
-            ->values()
             ->toArray();
 
-        if (empty($existingKategoriList)) {
-            $existingKategoriList = ['Pemadam', 'Rescue'];
-        }
+        $existingKategoriList = collect($defaultKategori)
+            ->merge($dbKategori)
+            ->unique()
+            ->values()
+            ->toArray();
 
         $pegawaiList = User::orderBy('name', 'asc')->get(['id', 'name', 'nip', 'jabatan', 'pos']);
 
@@ -123,7 +115,6 @@ class UnitManagementController extends Controller
             'posList',
             'pegawaiList',
             'existingJenisList',
-            'existingPeruntukanList',
             'existingKategoriList'
         ));
     }
@@ -180,15 +171,26 @@ class UnitManagementController extends Controller
             'pos'              => 'nullable|string|max:255',
             'pengemudi_1'      => 'nullable|string|max:255',
             'pengemudi_2'      => 'nullable|string|max:255',
-            'status'           => 'required|in:aktif,perbaikan,nonaktif',
+            'status'           => 'nullable|in:aktif,perbaikan,nonaktif',
             'catatan'          => 'nullable|string',
         ], $messages);
+
+        if (empty($validated['status'])) {
+            $validated['status'] = 'aktif';
+        }
 
         if (!empty($validated['jenis_kendaraan'])) {
             $jk = trim($validated['jenis_kendaraan']);
             $validated['jenis_kendaraan'] = in_array(strtoupper($jk), ['R2', 'R3', 'R4'])
                 ? strtoupper($jk)
                 : ucwords(strtolower($jk));
+        }
+
+        if (empty($validated['peruntukan'])) {
+            $validated['peruntukan'] = $validated['kategori'];
+        }
+        if (empty($validated['jenis_peruntukan'])) {
+            $validated['jenis_peruntukan'] = trim(($validated['jenis_kendaraan'] ?? '') . ' / ' . $validated['kategori'], ' /');
         }
 
         Unit::create($validated);
@@ -232,15 +234,26 @@ class UnitManagementController extends Controller
             'pos'              => 'nullable|string|max:255',
             'pengemudi_1'      => 'nullable|string|max:255',
             'pengemudi_2'      => 'nullable|string|max:255',
-            'status'           => 'required|in:aktif,perbaikan,nonaktif',
+            'status'           => 'nullable|in:aktif,perbaikan,nonaktif',
             'catatan'          => 'nullable|string',
         ], $messages);
+
+        if (empty($validated['status'])) {
+            $validated['status'] = $unit->status ?: 'aktif';
+        }
 
         if (!empty($validated['jenis_kendaraan'])) {
             $jk = trim($validated['jenis_kendaraan']);
             $validated['jenis_kendaraan'] = in_array(strtoupper($jk), ['R2', 'R3', 'R4'])
                 ? strtoupper($jk)
                 : ucwords(strtolower($jk));
+        }
+
+        if (empty($validated['peruntukan'])) {
+            $validated['peruntukan'] = $validated['kategori'];
+        }
+        if (empty($validated['jenis_peruntukan'])) {
+            $validated['jenis_peruntukan'] = trim(($validated['jenis_kendaraan'] ?? '') . ' / ' . $validated['kategori'], ' /');
         }
 
         $unit->update($validated);

@@ -15,9 +15,19 @@ class PegawaiManagementController extends Controller
      */
     public function index(Request $request)
     {
-        $searchQuery = $request->query('search', '');
+        $searchQuery  = $request->query('search', '');
+        $bidangFilter = $request->query('bidang', 'semua');
+        $posFilter    = $request->query('pos', 'semua');
 
         $query = User::orderBy('name', 'asc');
+
+        if ($bidangFilter !== 'semua') {
+            $query->where('bidang', 'LIKE', $bidangFilter);
+        }
+
+        if ($posFilter !== 'semua') {
+            $query->where('pos', 'LIKE', $posFilter);
+        }
 
         if (!empty($searchQuery)) {
             $query->where(function ($q) use ($searchQuery) {
@@ -35,12 +45,31 @@ class PegawaiManagementController extends Controller
 
         $kpi = [
             'total_pegawai' => $allUsers->count(),
-            'pejabat'       => $allUsers->filter(fn($u) => preg_match('/(kepala|kabid|kasi|sekretaris|kadis)/i', (string) $u->jabatan))->count(),
+            'pejabat'       => $allUsers->filter(fn($u) => preg_match('/(kepala|kabid|kasi|sekretaris|kadis|kasubag|subbag|sub\s*bagian)/i', (string) $u->jabatan))->count(),
             'danru'         => $allUsers->filter(fn($u) => preg_match('/(danru|komandan)/i', (string) $u->jabatan))->count(),
-            'petugas'       => $allUsers->filter(fn($u) => !preg_match('/(kepala|kabid|kasi|sekretaris|kadis|danru|komandan)/i', (string) $u->jabatan))->count(),
+            'petugas'       => $allUsers->filter(fn($u) => !preg_match('/(kepala|kabid|kasi|sekretaris|kadis|kasubag|subbag|sub\s*bagian|danru|komandan)/i', (string) $u->jabatan))->count(),
         ];
 
-        return view('admin.pemeliharaan.data-pegawai.index', compact('pegawaiList', 'kpi', 'searchQuery'));
+        $posList = \App\Models\Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
+
+        $existingBidangList = [
+            'Pemadam',
+            'Rescue',
+            'Pencegahan',
+            'Sarana Prasarana Dan Informasi',
+            'Sekretariat',
+            'Command Center',
+        ];
+
+        return view('admin.pemeliharaan.data-pegawai.index', compact(
+            'pegawaiList',
+            'kpi',
+            'searchQuery',
+            'bidangFilter',
+            'posFilter',
+            'posList',
+            'existingBidangList'
+        ));
     }
 
     /**
@@ -63,26 +92,25 @@ class PegawaiManagementController extends Controller
             'regu'    => 'nullable|string|max:50',
         ], $messages);
 
-        // Buat username / email unik dari nama / NIP
+        // Generate email unik berbasis NIP
         $cleanNip = preg_replace('/[^0-9]/', '', $validated['nip']);
         $uniqueEmail = !empty($cleanNip) ? "{$cleanNip}@disdamkar.go.id" : 'pegawai_' . Str::random(8) . '@disdamkar.go.id';
-
-        // Cek jika email sudah ada
         if (User::where('email', $uniqueEmail)->exists()) {
             $uniqueEmail = 'pegawai_' . time() . '_' . Str::random(4) . '@disdamkar.go.id';
         }
 
         User::create([
-            'name'     => $validated['name'],
-            'nip'      => $validated['nip'],
-            'jabatan'  => $validated['jabatan'],
-            'bidang'   => $validated['bidang'] ?? 'Sarana Prasarana Dan Informasi',
-            'pos'      => $validated['pos'] ?? 'Soreang (MAKO)',
-            'regu'     => $validated['regu'] ?? null,
-            'email'    => $uniqueEmail,
-            'password' => Hash::make('password123'),
-            'role'     => 'user',
-            'status'   => 'aktif',
+            'name'        => $validated['name'],
+            'nip'         => $validated['nip'],
+            'jabatan'     => $validated['jabatan'],
+            'bidang'      => $validated['bidang'] ?? 'Sarana Prasarana Dan Informasi',
+            'pos'         => $validated['pos'] ?? 'Soreang (MAKO)',
+            'regu'        => $validated['regu'] ?? null,
+            'email'       => $uniqueEmail,
+            'password'    => Hash::make(Str::random(32)),
+            'role'        => 'user',
+            'has_account' => false,
+            'status'      => 'aktif',
         ]);
 
         return redirect()
@@ -112,7 +140,14 @@ class PegawaiManagementController extends Controller
             'regu'    => 'nullable|string|max:50',
         ], $messages);
 
-        $user->update($validated);
+        $user->update([
+            'name'    => $validated['name'],
+            'nip'     => $validated['nip'],
+            'jabatan' => $validated['jabatan'],
+            'bidang'  => $validated['bidang'] ?? $user->bidang,
+            'pos'     => $validated['pos'] ?? $user->pos,
+            'regu'    => $validated['regu'] ?? $user->regu,
+        ]);
 
         return redirect()
             ->route('admin.pemeliharaan.data-pegawai')

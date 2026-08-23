@@ -19,8 +19,12 @@ class User extends Authenticatable
         'bidang',
         'pos',
         'regu',
+        'bidang_id',
+        'pos_id',
+        'regu_id',
         'no_hp',
         'status',
+        'has_account',
         'password',
     ];
 
@@ -33,6 +37,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'has_account'       => 'boolean',
             'password'          => 'hashed',
         ];
     }
@@ -54,26 +59,34 @@ class User extends Authenticatable
         });
     }
 
-    /**
-     * Cek apakah user adalah admin
-     */
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
 
+    public function isUser(): bool
+    {
+        return $this->role === 'user';
+    }
+
+    // 3NF Relationships
+    public function bidangRelasi()
+    {
+        return $this->belongsTo(Bidang::class, 'bidang_id');
+    }
+
+    public function posRelasi()
+    {
+        return $this->belongsTo(Pos::class, 'pos_id');
+    }
+
+    public function reguRelasi()
+    {
+        return $this->belongsTo(Regu::class, 'regu_id');
+    }
+
     public function pengajuans()
     {
-        return $this->hasMany(Pengajuan::class);
-    }
-
-    public function cekHarianUnits()
-    {
-        return $this->hasMany(CekHarianUnit::class);
-    }
-
-    public function cekHarianAlats()
-    {
-        return $this->hasMany(CekHarianAlat::class);
+        return $this->hasMany(Pengajuan::class, 'user_id');
     }
 }

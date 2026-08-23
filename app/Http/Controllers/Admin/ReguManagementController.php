@@ -49,11 +49,18 @@ class ReguManagementController extends Controller
         $allRegu = Regu::all();
         $posList = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
 
-        $danruList = User::where('jabatan', 'Danru')
+        $danruList = User::where(function($q) {
+                $q->where('jabatan', 'LIKE', '%Danru%')
+                  ->orWhere('jabatan', 'LIKE', '%Komandan%');
+            })
             ->orderBy('name', 'asc')
-            ->get(['id', 'name', 'nip', 'jabatan', 'pos', 'bidang']);
+            ->get(['id', 'name', 'nip', 'jabatan', 'pos', 'bidang', 'regu']);
 
-        $allPegawai = User::orderBy('name', 'asc')->get(['id', 'name', 'nip', 'jabatan']);
+        if ($danruList->isEmpty()) {
+            $danruList = User::orderBy('name', 'asc')->get(['id', 'name', 'nip', 'jabatan', 'pos', 'bidang', 'regu']);
+        }
+
+        $allPegawai = User::orderBy('name', 'asc')->get(['id', 'name', 'nip', 'jabatan', 'pos', 'bidang', 'regu']);
 
         $bidangOptions = ['Pemadam', 'Rescue', 'Pencegahan', 'Command Center'];
 

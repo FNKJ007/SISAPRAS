@@ -8,6 +8,9 @@
     editModalOpen: false,
     deleteModalOpen: false,
     activeRegu: {},
+    createNamaRegu: 'Regu 1',
+    createPos: '',
+    createBidang: 'Pemadam',
     createDanruName: '',
     createDanruNip: '',
     editUrl: '',
@@ -252,7 +255,7 @@
                     {{-- Nama Regu --}}
                     <div style="margin-bottom:14px;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Nama Regu <span style="color:#DC2626;">*</span></label>
-                        <input type="text" name="nama" value="{{ old('nama') }}" placeholder="Contoh: Regu 1" required
+                        <input type="text" name="nama" x-model="createNamaRegu" placeholder="Contoh: Regu 1" required
                                style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;">
                     </div>
 
@@ -260,10 +263,10 @@
                         {{-- Pos Penempatan --}}
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Pos <span style="color:#DC2626;">*</span></label>
-                            <select name="pos" required style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF;">
-                                <option value="" selected disabled>Pilih Pos</option>
+                            <select name="pos" x-model="createPos" required style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF;">
+                                <option value="" disabled>Pilih Pos</option>
                                 @foreach($posList as $p)
-                                    <option value="{{ $p->nama }}" @selected(old('pos') === $p->nama)>{{ $p->nama }}</option>
+                                    <option value="{{ $p->nama }}">{{ $p->nama }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -271,10 +274,10 @@
                         {{-- Bidang Tugas --}}
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Bidang <span style="color:#DC2626;">*</span></label>
-                            <select name="bidang" required style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF;">
-                                <option value="" selected disabled>Pilih Bidang</option>
+                            <select name="bidang" x-model="createBidang" required style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF;">
+                                <option value="" disabled>Pilih Bidang</option>
                                 @foreach($bidangOptions as $b)
-                                    <option value="{{ $b }}" @selected(old('bidang', 'Pemadam') === $b)>{{ $b }}</option>
+                                    <option value="{{ $b }}">{{ $b }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -295,7 +298,17 @@
                              },
                              select(d) {
                                  this.search = d.name;
+                                 createDanruName = d.name;
                                  createDanruNip = d.nip || '';
+                                 if (d.pos) {
+                                     createPos = d.pos;
+                                 }
+                                 if (d.bidang) {
+                                     createBidang = d.bidang;
+                                 }
+                                 if (d.regu) {
+                                     createNamaRegu = d.regu;
+                                 }
                                  this.danruOpen = false;
                              }
                          }"
@@ -330,7 +343,7 @@
                                      onmouseout="this.style.background='transparent'">
                                     <div>
                                         <strong style="display:block; color:#0F172A; font-size:12.5px;" x-text="item.name"></strong>
-                                        <span style="font-size:11px; color:#64748B;" x-text="'NIP: ' + (item.nip || '—')"></span>
+                                        <span style="font-size:11px; color:#64748B;" x-text="'NIP: ' + (item.nip || '—') + (item.pos ? ' • Pos: ' + item.pos : '') + (item.bidang ? ' • ' + item.bidang : '')"></span>
                                     </div>
                                     <span style="padding:2px 8px; border-radius:12px; background:#DBEAFE; color:#1E40AF; font-size:10.5px; font-weight:700;">
                                         Danru
@@ -441,6 +454,15 @@
                              select(d) {
                                  activeRegu.danru = d.name;
                                  activeRegu.nip_danru = d.nip || '';
+                                 if (d.pos) {
+                                     activeRegu.pos = d.pos;
+                                 }
+                                 if (d.bidang) {
+                                     activeRegu.bidang = d.bidang;
+                                 }
+                                 if (d.regu) {
+                                     activeRegu.nama = d.regu;
+                                 }
                                  this.danruOpen = false;
                              }
                          }"

@@ -984,17 +984,16 @@ class AdminController extends Controller
             'bidang'  => $bidangCounts,
         ];
 
-        $existingReguList = \App\Models\User::whereNotNull('regu')
-            ->where('regu', '!=', '')
-            ->pluck('regu')
+        $existingReguList = \App\Models\Regu::distinct()
+            ->orderBy('nama', 'asc')
+            ->pluck('nama')
             ->map(fn($v) => ucwords(strtolower(trim($v))))
             ->unique()
-            ->sort()
             ->values()
             ->toArray();
 
         if (empty($existingReguList)) {
-            $existingReguList = ['Regu 1', 'Regu 2', 'Regu 3', 'Regu 4'];
+            $existingReguList = ['Regu 1', 'Regu 2'];
         }
 
         $existingJabatanList = \App\Models\User::whereNotNull('jabatan')
@@ -1016,6 +1015,7 @@ class AdminController extends Controller
         }
 
         $pegawaiList = \App\Models\User::orderBy('name', 'asc')->get(['id', 'name', 'nip', 'jabatan', 'bidang', 'pos', 'regu', 'email', 'role', 'status']);
+        $allReguList = \App\Models\Regu::orderBy('pos', 'asc')->orderBy('nama', 'asc')->get(['id', 'nama', 'pos', 'bidang', 'danru', 'nip_danru']);
 
         return view('admin.pengaturan', compact(
             'userList',
@@ -1028,6 +1028,7 @@ class AdminController extends Controller
             'searchQuery',
             'posList',
             'pegawaiList',
+            'allReguList',
             'existingBidangList',
             'existingReguList',
             'existingJabatanList'

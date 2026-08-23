@@ -20,25 +20,16 @@ class Peralatan extends Model
         'kondisi_rusak',
         'satuan',
         'lokasi',
+        'bidang_id',
+        'pos_id',
         'status',
         'catatan',
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::saving(function ($peralatan) {
-            if ($peralatan->kategori) {
-                $peralatan->kategori = ucwords(strtolower(str_replace('_', ' ', trim($peralatan->kategori))));
-            }
-        });
-    }
-
     public static array $kategoriMap = [
-        'Pemadam'        => 'Pemadam',
-        'Rescue'         => 'Rescue',
-        'Command Center' => 'Command Center',
+        'pemadam'        => 'Pemadam',
+        'rescue'         => 'Rescue',
+        'command_center' => 'Command Center',
     ];
 
     public static array $statusMap = [
@@ -46,4 +37,20 @@ class Peralatan extends Model
         'perlu_perhatian' => 'Perlu Perhatian',
         'rusak'           => 'Rusak',
     ];
+
+    // 3NF Relationships
+    public function posRelasi()
+    {
+        return $this->belongsTo(Pos::class, 'pos_id');
+    }
+
+    public function bidangRelasi()
+    {
+        return $this->belongsTo(Bidang::class, 'bidang_id');
+    }
+
+    public function cekHarianAlats()
+    {
+        return $this->hasMany(CekHarianAlat::class, 'peralatan_id');
+    }
 }

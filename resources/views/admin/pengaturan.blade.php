@@ -547,41 +547,36 @@
                         </div>
                     </div>
 
-                    {{-- Pos & Regu --}}
+                    {{-- Pos & Regu (Regu Sesuai Pos) --}}
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pos Penempatan</label>
-                            <select name="pos" x-model="createPos" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
+                            <select name="pos" x-model="createPos" @change="onPosChangeCreate()" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
                                 <option value="">— Pilih Pos —</option>
                                 @foreach($posList as $p)
                                     <option value="{{ $p->nama }}">{{ $p->nama }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        {{-- Regu (Input Manual + Dropdown Riwayat) --}}
-                        <div x-data="{ open: false }" style="position:relative;">
-                            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Regu</label>
-                            <div style="position:relative; display:flex; align-items:center;">
-                                <input type="text" name="regu" x-model="createRegu" placeholder="Ketik atau pilih regu..."
-                                       style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; box-sizing:border-box;"
-                                       @focus="if(existingReguList.length > 0) open = true"
-                                       @click.outside="open = false">
-                                <button type="button" @click="open = !open" tabindex="-1"
-                                        style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
-                                    <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
-                                </button>
+                        <div>
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                                <label style="font-size:12px; font-weight:700; color:#334155; margin:0;">Regu</label>
+                                <span style="font-size:11px; color:#2563EB; font-weight:600;" x-show="createPos" x-text="'(Pos: ' + createPos + ')'"></span>
                             </div>
-                            <div x-show="open && existingReguList.length > 0" x-cloak
-                                 style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
-                                <template x-for="item in existingReguList" :key="item">
-                                    <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
-                                         @click="createRegu = item; open = false;"
-                                         onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                         onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                        <span x-text="item"></span>
-                                    </div>
+                            <select name="regu" x-model="createRegu" @change="onReguChangeCreate()" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
+                                <option value="">— Pilih Regu Sesuai Pos —</option>
+                                <template x-for="r in getRegusForPos(createPos)" :key="r.id">
+                                    <option :value="r.nama" x-text="r.nama + ' — ' + r.bidang + (r.danru ? ' (Danru: ' + r.danru + ')' : '')"></option>
                                 </template>
-                            </div>
+                                <template x-if="getRegusForPos(createPos).length === 0">
+                                    <optgroup label="Pilihan Standar">
+                                        <option value="Regu 1">Regu 1</option>
+                                        <option value="Regu 2">Regu 2</option>
+                                        <option value="Regu 3">Regu 3</option>
+                                        <option value="Regu 4">Regu 4</option>
+                                    </optgroup>
+                                </template>
+                            </select>
                         </div>
                     </div>
 
@@ -722,41 +717,36 @@
                         </div>
                     </div>
 
-                    {{-- Pos & Regu --}}
+                    {{-- Pos & Regu (Regu Sesuai Pos) --}}
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pos Penempatan</label>
-                            <select name="pos" x-model="activeUser.pos" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
+                            <select name="pos" x-model="activeUser.pos" @change="onPosChangeEdit()" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
                                 <option value="">— Pilih Pos —</option>
                                 @foreach($posList as $p)
                                     <option value="{{ $p->nama }}">{{ $p->nama }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        {{-- Edit: Regu (Input Manual + Dropdown Riwayat) --}}
-                        <div x-data="{ open: false }" style="position:relative;">
-                            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Regu</label>
-                            <div style="position:relative; display:flex; align-items:center;">
-                                <input type="text" name="regu" x-model="activeUser.regu" placeholder="Ketik atau pilih regu..."
-                                       style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
-                                       @focus="if(existingReguList.length > 0) open = true"
-                                       @click.outside="open = false">
-                                <button type="button" @click="open = !open" tabindex="-1"
-                                        style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
-                                    <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
-                                </button>
+                        <div>
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                                <label style="font-size:12px; font-weight:700; color:#334155; margin:0;">Regu</label>
+                                <span style="font-size:11px; color:#2563EB; font-weight:600;" x-show="activeUser.pos" x-text="'(Pos: ' + activeUser.pos + ')'"></span>
                             </div>
-                            <div x-show="open && existingReguList.length > 0" x-cloak
-                                 style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
-                                <template x-for="item in existingReguList" :key="item">
-                                    <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
-                                         @click="activeUser.regu = item; open = false;"
-                                         onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                         onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                        <span x-text="item"></span>
-                                    </div>
+                            <select name="regu" x-model="activeUser.regu" @change="onReguChangeEdit()" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
+                                <option value="">— Pilih Regu Sesuai Pos —</option>
+                                <template x-for="r in getRegusForPos(activeUser.pos)" :key="r.id">
+                                    <option :value="r.nama" x-text="r.nama + ' — ' + r.bidang + (r.danru ? ' (Danru: ' + r.danru + ')' : '')"></option>
                                 </template>
-                            </div>
+                                <template x-if="getRegusForPos(activeUser.pos).length === 0">
+                                    <optgroup label="Pilihan Standar">
+                                        <option value="Regu 1">Regu 1</option>
+                                        <option value="Regu 2">Regu 2</option>
+                                        <option value="Regu 3">Regu 3</option>
+                                        <option value="Regu 4">Regu 4</option>
+                                    </optgroup>
+                                </template>
+                            </select>
                         </div>
                     </div>
 
@@ -888,6 +878,56 @@ function pengaturanApp() {
         createPos: '',
         createRegu: '',
         createNoHp: '',
+        allReguList: @json($allReguList ?? []),
+        getRegusForPos(posName) {
+            if (!posName || posName.trim() === '') {
+                return this.allReguList;
+            }
+            let clean = posName.toLowerCase().replace(/[^a-z0-9]/g, '');
+            let matched = this.allReguList.filter(r => {
+                let rClean = (r.pos || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                return rClean.includes(clean) || clean.includes(rClean);
+            });
+            return matched;
+        },
+        onPosChangeCreate() {
+            if (!this.createPos) return;
+            let regus = this.getRegusForPos(this.createPos);
+            if (regus.length > 0) {
+                if (!this.createRegu || !regus.some(r => r.nama.toLowerCase() === this.createRegu.toLowerCase())) {
+                    this.createRegu = regus[0].nama;
+                    if (!this.createBidang || this.createBidang === 'Pemadam' || this.createBidang === 'Rescue') {
+                        this.createBidang = regus[0].bidang;
+                    }
+                }
+            }
+        },
+        onPosChangeEdit() {
+            if (!this.activeUser.pos) return;
+            let regus = this.getRegusForPos(this.activeUser.pos);
+            if (regus.length > 0) {
+                if (!this.activeUser.regu || !regus.some(r => r.nama.toLowerCase() === this.activeUser.regu.toLowerCase())) {
+                    this.activeUser.regu = regus[0].nama;
+                    if (!this.activeUser.bidang || this.activeUser.bidang === 'Pemadam' || this.activeUser.bidang === 'Rescue') {
+                        this.activeUser.bidang = regus[0].bidang;
+                    }
+                }
+            }
+        },
+        onReguChangeCreate() {
+            let regus = this.getRegusForPos(this.createPos);
+            let found = regus.find(r => r.nama === this.createRegu);
+            if (found && found.bidang && (!this.createBidang || this.createBidang === 'Pemadam' || this.createBidang === 'Rescue')) {
+                this.createBidang = found.bidang;
+            }
+        },
+        onReguChangeEdit() {
+            let regus = this.getRegusForPos(this.activeUser.pos);
+            let found = regus.find(r => r.nama === this.activeUser.regu);
+            if (found && found.bidang && (!this.activeUser.bidang || this.activeUser.bidang === 'Pemadam' || this.activeUser.bidang === 'Rescue')) {
+                this.activeUser.bidang = found.bidang;
+            }
+        },
         generatedPass: 'Damkar' + Math.floor(1000 + Math.random() * 9000) + '!',
         showPassCreate: false,
         showPassEdit: false,

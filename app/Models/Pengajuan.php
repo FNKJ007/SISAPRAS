@@ -11,6 +11,12 @@ class Pengajuan extends Model
 
     protected $fillable = [
         'user_id',
+        'unit_id',
+        'bidang_id',
+        'pos_id',
+        'regu_id',
+        'danru_user_id',
+        'kabid_user_id',
         'bidang',
         'pos',
         'regu',
@@ -54,233 +60,223 @@ class Pengajuan extends Model
         'spi'        => 'SPI',
     ];
 
-    public static array $posMap = [
-        'baleendah'       => 'Baleendah',
-        'cicalengka'      => 'Cicalengka',
-        'cileunyi'        => 'Cileunyi',
-        'ciparay'         => 'Ciparay',
-        'majalaya'        => 'Majalaya',
-        'margaasih'       => 'Margaasih (TKI)',
-        'margaasih(tki)'  => 'Margaasih (TKI)',
-        'margaasihtki'    => 'Margaasih (TKI)',
-        'ciwidey'         => 'Ciwidey (Pacira)',
-        'ciwidey(pacira)' => 'Ciwidey (Pacira)',
-        'ciwideypacira'   => 'Ciwidey (Pacira)',
-        'pangalengan'     => 'Pangalengan',
-        'soreang'         => 'Soreang (MAKO)',
-        'soreang(mako)'   => 'Soreang (MAKO)',
-        'soreangmako'     => 'Soreang (MAKO)',
-        'pencegahan'      => 'Pencegahan',
-        'spi'             => 'SPI',
-    ];
-
-    public static array $reguMap = [
-        'pemadam1'    => 'Regu Pemadam 1',
-        'pemadam2'    => 'Regu Pemadam 2',
-        'rescue1'     => 'Regu Rescue 1',
-        'rescue2'     => 'Regu Rescue 2',
-        'pencegahan1' => 'Regu Pencegahan',
-        'spi1'        => 'SPI',
-    ];
-
     public static array $jenisKendaraanMap = [
-        'pancar'   => 'Pancar',
-        'pompa'    => 'Pompa',
-        'rescueK'  => 'Rescue',
-        'tangki'   => 'Water supply/tangki',
-        'komando'  => 'Komando',
-        'motor1'   => 'Motor roda dua',
-        'motor2'   => 'Motor roda tiga',
+        'pancaran'       => 'Pancaran',
+        'water_supply'   => 'Water Supply',
+        'quick_response' => 'Quick Response',
+        'komando'        => 'Komando',
+        'rescue'         => 'Rescue',
+        'r2'             => 'R2',
+        'r3'             => 'R3',
     ];
 
-    public static array $nomorLambungMap = [
-        'p01'      => 'P-01 / D 8518 V',
-        'p02'      => 'P-02 / D 9923 Z',
-        'p03'      => 'P-03 / NKR81-7000441',
-        'p04'      => 'P-04 / D 9429 V',
-        'p05'      => 'P-05 / D 9921 V',
-        'p06'      => 'P-06 / D 9932 V',
-        'p07'      => 'P-07 / D 9914 V',
-        'p08'      => 'P-08 / D 9060 V',
-        'p09'      => 'P-09 / D 9920 Z',
-        'p10'      => 'P-10 / D 8559 V',
-        'p11'      => 'P-11 / D 9958 Y',
-        'p12'      => 'P-12 / D 9957 Y',
-        'r01'      => 'R-01 / D 9933 V',
-        'r02'      => 'R-02 / NKR816-7000009',
-        'r03'      => 'R-03 / NKR71G-7403639',
-        'r04'      => 'R-04 / D 9964 Y',
-        's01'      => 'S-01 / D 8517 V',
-        's02'      => 'S-02 / D 8516 V',
-        'mp01'     => 'MP-01 / D 3296 Z',
-        'mp02'     => 'MP-02 / D 3297 Z',
-        'mp03'     => 'MP-03 / D 5650 V (SOREANG)',
-        'mp04'     => 'MP-04 / D 5061 V (BALEENDAH)',
-        'd8507v'   => 'D 8507 V',
-        'd8508v'   => 'D 8508 V',
-        'lainlain' => 'LAIN-LAIN',
+    public static array $statusMap = [
+        'menunggu'  => 'Menunggu',
+        'disetujui' => 'Disetujui',
+        'ditolak'   => 'Ditolak',
     ];
 
-    /**
-     * Accessor untuk Kode Verifikasi (Format: HAR-YYYYMMDD-XXXX)
-     */
-    public function getKodeVerifikasiAttribute(): string
+    protected static function boot()
     {
-        $dateStr = $this->created_at ? $this->created_at->format('Ymd') : date('Ymd');
-        return 'HAR-' . $dateStr . '-' . sprintf('%04d', $this->id);
-    }
+        parent::boot();
 
-    /**
-     * Accessor untuk memecah string item_perbaikan menjadi array item
-     */
-    public function getItemListAttribute(): array
-    {
-        if (empty($this->item_perbaikan)) {
-            return [];
-        }
-        $items = preg_split('/[,;\n\r]+/', $this->item_perbaikan);
-        $cleaned = array_map(function($item) {
-            return ucwords(strtolower(trim($item)));
-        }, $items);
-        return array_values(array_filter($cleaned));
-    }
-
-    /**
-     * Accessor untuk mengambil item yang disetujui saja (menapis item yang ditolak)
-     */
-    public function getVerifiedItemListAttribute(): array
-    {
-        $rawVerifs = $this->item_verifikasis;
-
-        if (!empty($rawVerifs) && is_array($rawVerifs)) {
-            $approved = [];
-
-            foreach ($rawVerifs as $key => $val) {
-                // Format 1: Associative key => status ("Ban" => "disetujui", "Wiper" => "ditolak")
-                if (is_string($key) && is_string($val)) {
-                    if (strtolower(trim($val)) === 'disetujui') {
-                        $approved[] = ucwords(strtolower(trim($key)));
-                    }
-                }
-                // Format 2: Sequential array of objects/arrays
-                elseif (is_array($val)) {
-                    $name = $val['nama'] ?? $val['nama_item'] ?? (is_string($key) ? $key : '');
-                    $status = $val['status'] ?? '';
-                    if (strtolower(trim($status)) === 'disetujui' && !empty($name)) {
-                        $approved[] = ucwords(strtolower(trim($name)));
-                    }
+        static::saving(function ($pengajuan) {
+            // Auto-clean nomor lambung e.g. p01 -> P-01
+            if (!empty($pengajuan->nomor_lambung)) {
+                $raw = trim($pengajuan->nomor_lambung);
+                if (preg_match('/^([a-zA-Z]+)[-_ ]*(\d+)$/', $raw, $m)) {
+                    $pengajuan->nomor_lambung = strtoupper($m[1]) . '-' . str_pad($m[2], 2, '0', STR_PAD_LEFT);
                 }
             }
 
-            return array_values(array_unique(array_filter($approved)));
-        }
-
-        return $this->item_list;
-    }
-
-    /**
-     * Accessor untuk Bidang
-     */
-    public function getBidangAttribute($value)
-    {
-        if (empty($value)) return '-';
-        if (isset(self::$bidangMap[$value])) {
-            return self::$bidangMap[$value];
-        }
-        return ucwords(str_replace(['_', '-'], ' ', $value));
-    }
-
-    /**
-     * Accessor untuk Pos (Secara otomatis memformat huruf kapital dan tanda kurung)
-     */
-    public function getPosAttribute($value)
-    {
-        if (empty($value)) return '-';
-
-        $key = strtolower(str_replace([' ', '_', '-'], '', $value));
-
-        if (isset(self::$posMap[$key])) {
-            return self::$posMap[$key];
-        }
-
-        if (isset(self::$posMap[$value])) {
-            return self::$posMap[$value];
-        }
-
-        // Cek ke DB Pos
-        try {
-            $posDb = \App\Models\Pos::all()->first(function ($p) use ($key, $value) {
-                $dbKey = strtolower(str_replace([' ', '_', '-'], '', $p->nama));
-                return $dbKey === $key || strtolower($p->nama) === strtolower($value);
-            });
-            if ($posDb) {
-                return $posDb->nama;
+            // Auto-clean pos
+            if (!empty($pengajuan->pos)) {
+                $cleanPos = preg_replace('/[^a-z0-9]/', '', strtolower($pengajuan->pos));
+                if (str_contains($cleanPos, 'soreang') || str_contains($cleanPos, 'mako')) {
+                    $pengajuan->pos = 'Soreang (MAKO)';
+                } elseif (str_contains($cleanPos, 'ciwidey') || str_contains($cleanPos, 'pacira')) {
+                    $pengajuan->pos = 'Ciwidey (PACIRA)';
+                } elseif (str_contains($cleanPos, 'margaasih') || str_contains($cleanPos, 'tki')) {
+                    $pengajuan->pos = 'Margaasih (TKI)';
+                } else {
+                    $pengajuan->pos = ucwords(strtolower(trim($pengajuan->pos)));
+                }
             }
-        } catch (\Throwable $e) {}
 
-        // Fallback format rapi (Capital Case & (UPPERCASE) dalam kurung)
-        $formatted = ucwords(str_replace(['_', '-'], ' ', $value));
-        return preg_replace_callback('/\(([a-zA-Z0-9]+)\)/', function($matches) {
-            return '(' . strtoupper($matches[1]) . ')';
-        }, $formatted);
+            // Auto-clean bidang
+            if (!empty($pengajuan->bidang)) {
+                $cleanB = strtolower(trim($pengajuan->bidang));
+                if ($cleanB === 'spi' || str_contains($cleanB, 'sarana')) {
+                    $pengajuan->bidang = 'Sarana Prasarana Dan Informasi';
+                } elseif ($cleanB === 'cc' || str_contains($cleanB, 'command')) {
+                    $pengajuan->bidang = 'Command Center';
+                } else {
+                    $pengajuan->bidang = ucwords($cleanB);
+                }
+            }
+
+            // Auto-clean regu
+            if (!empty($pengajuan->regu)) {
+                $cleanR = strtolower(trim($pengajuan->regu));
+                if (preg_match('/regu[_\s]*([0-9]+)/i', $cleanR, $m)) {
+                    $num = (int)$m[1];
+                    $pengajuan->regu = $num > 0 ? "Regu {$num}" : "Regu 1";
+                } else {
+                    $pengajuan->regu = ucwords($cleanR);
+                }
+            }
+
+            // Auto-clean names
+            if (!empty($pengajuan->nama_pemegang)) {
+                $pengajuan->nama_pemegang = ucwords(strtolower(trim($pengajuan->nama_pemegang)));
+            }
+            if (!empty($pengajuan->nama_komandan_regu)) {
+                $pengajuan->nama_komandan_regu = ucwords(strtolower(trim($pengajuan->nama_komandan_regu)));
+            }
+            if (!empty($pengajuan->nama_kepala_bidang)) {
+                $parts = explode(',', $pengajuan->nama_kepala_bidang);
+                $name = ucwords(strtolower(trim($parts[0])));
+                if (count($parts) > 1) {
+                    $gelar = implode(',', array_slice($parts, 1));
+                    $pengajuan->nama_kepala_bidang = $name . ',' . $gelar;
+                } else {
+                    $pengajuan->nama_kepala_bidang = $name;
+                }
+            }
+        });
+
+        static::created(function ($pengajuan) {
+            if (!empty($pengajuan->item_perbaikan)) {
+                $rawItems = preg_split('/[,;\n\r]+/', $pengajuan->item_perbaikan);
+                foreach ($rawItems as $itemText) {
+                    $clean = trim($itemText);
+                    if ($clean) {
+                        PengajuanItem::create([
+                            'pengajuan_id'        => $pengajuan->id,
+                            'deskripsi_kerusakan' => ucwords(strtolower($clean)),
+                        ]);
+                    }
+                }
+            }
+        });
     }
 
-    /**
-     * Accessor untuk Regu
-     */
-    public function getReguAttribute($value)
-    {
-        if (empty($value)) return '-';
-        if (isset(self::$reguMap[$value])) {
-            return self::$reguMap[$value];
-        }
-        return ucwords(str_replace(['_', '-'], ' ', $value));
-    }
-
-    /**
-     * Accessor untuk Jenis Kendaraan
-     */
-    public function getJenisKendaraanAttribute($value)
-    {
-        if (empty($value)) return '-';
-        if (isset(self::$jenisKendaraanMap[$value])) {
-            return self::$jenisKendaraanMap[$value];
-        }
-        return ucwords(str_replace(['_', '-'], ' ', $value));
-    }
-
-    /**
-     * Accessor untuk Nomor Lambung
-     */
+    // Accessors for Title Case and Official Master Data Formats
     public function getNomorLambungAttribute($value)
     {
-        if (empty($value)) return '-';
-        if (isset(self::$nomorLambungMap[$value])) {
-            return self::$nomorLambungMap[$value];
+        if (!$value) return $value;
+        $raw = trim($value);
+        if (preg_match('/^([a-zA-Z]+)[-_ ]*(\d+)$/', $raw, $m)) {
+            return strtoupper($m[1]) . '-' . str_pad($m[2], 2, '0', STR_PAD_LEFT);
         }
-
-        // Cek ke DB Unit
-        try {
-            $unitDb = \App\Models\Unit::all()->first(function ($u) use ($value) {
-                $dbKey = strtolower(str_replace(['-', ' ', '/'], '', $u->nomor_lambung));
-                $searchKey = strtolower(str_replace(['-', ' ', '/'], '', $value));
-                return $dbKey === $searchKey;
-            });
-            if ($unitDb) {
-                $label = $unitDb->nomor_lambung;
-                if ($unitDb->plat_nomor) $label .= ' / ' . $unitDb->plat_nomor;
-                return $label;
-            }
-        } catch (\Throwable $e) {}
-
-        return strtoupper($value);
+        return strtoupper($raw);
     }
 
-    /**
-     * Relasi ke User
-     */
+    public function getPosAttribute($value)
+    {
+        if (!$value) return $value;
+        $clean = preg_replace('/[^a-z0-9]/', '', strtolower($value));
+        if (str_contains($clean, 'soreang') || str_contains($clean, 'mako')) {
+            return 'Soreang (MAKO)';
+        }
+        if (str_contains($clean, 'ciwidey') || str_contains($clean, 'pacira')) {
+            return 'Ciwidey (PACIRA)';
+        }
+        if (str_contains($clean, 'margaasih') || str_contains($clean, 'tki')) {
+            return 'Margaasih (TKI)';
+        }
+        return ucwords(strtolower($value));
+    }
+
+    public function getBidangAttribute($value)
+    {
+        if (!$value) return $value;
+        $clean = strtolower(trim($value));
+        if ($clean === 'spi' || str_contains($clean, 'sarana')) {
+            return 'Sarana Prasarana Dan Informasi';
+        }
+        if ($clean === 'cc' || str_contains($clean, 'command')) {
+            return 'Command Center';
+        }
+        return ucwords($clean);
+    }
+
+    public function getReguAttribute($value)
+    {
+        if (!$value) return 'Regu 1';
+        $clean = strtolower(trim($value));
+        if (preg_match('/regu[_\s]*([0-9]+)/i', $clean, $m)) {
+            $num = (int)$m[1];
+            return $num > 0 ? "Regu {$num}" : "Regu 1";
+        }
+        return ucwords($clean);
+    }
+
+    public function getNamaPemegangAttribute($value)
+    {
+        return $value ? ucwords(strtolower(trim($value))) : $value;
+    }
+
+    public function getNamaKomandanReguAttribute($value)
+    {
+        return $value ? ucwords(strtolower(trim($value))) : $value;
+    }
+
+    public function getNamaKepalaBidangAttribute($value)
+    {
+        if (!$value) return $value;
+        $parts = explode(',', $value);
+        $name = ucwords(strtolower(trim($parts[0])));
+        if (count($parts) > 1) {
+            $gelar = implode(',', array_slice($parts, 1));
+            return $name . ',' . $gelar;
+        }
+        return $name;
+    }
+
+    // 3NF Relationships
+    public function items()
+    {
+        return $this->hasMany(PengajuanItem::class, 'pengajuan_id');
+    }
+
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function unitRelasi()
+    {
+        return $this->belongsTo(Unit::class, 'unit_id');
+    }
+
+    public function bidangRelasi()
+    {
+        return $this->belongsTo(Bidang::class, 'bidang_id');
+    }
+
+    public function posRelasi()
+    {
+        return $this->belongsTo(Pos::class, 'pos_id');
+    }
+
+    public function reguRelasi()
+    {
+        return $this->belongsTo(Regu::class, 'regu_id');
+    }
+
+    public function danruUser()
+    {
+        return $this->belongsTo(User::class, 'danru_user_id');
+    }
+
+    public function kabidUser()
+    {
+        return $this->belongsTo(User::class, 'kabid_user_id');
+    }
+
+    public function invoice()
+    {
+        return $this->hasOne(Invoice::class, 'pengajuan_id');
     }
 }

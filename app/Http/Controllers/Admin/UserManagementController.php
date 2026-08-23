@@ -51,6 +51,7 @@ class UserManagementController extends Controller
                 $validated['email'] = null;
             }
             $validated['password'] = Hash::make($validated['password']);
+            $validated['has_account'] = true;
 
             $existingUser->update($validated);
 
@@ -81,6 +82,7 @@ class UserManagementController extends Controller
         }
 
         $validated['password'] = Hash::make($validated['password']);
+        $validated['has_account'] = true;
 
         User::create($validated);
 
@@ -123,6 +125,7 @@ class UserManagementController extends Controller
         if (empty($validated['email'])) {
             $validated['email'] = null;
         }
+        $validated['has_account'] = true;
 
         $user->update($validated);
 
@@ -148,7 +151,8 @@ class UserManagementController extends Controller
         ], $messages);
 
         $user->update([
-            'password' => Hash::make($validated['new_password']),
+            'password'    => Hash::make($validated['new_password']),
+            'has_account' => true,
         ]);
 
         return redirect()
