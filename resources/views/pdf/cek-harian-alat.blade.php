@@ -30,7 +30,7 @@
         .summary-box.ok { background: #ecfdf5; border-color: #a7f3d0; }
 
         .ttd { margin-top: 40px; width: 100%; }
-        .ttd td { width: 50%; text-align: center; font-size: 10.5px; padding-top: 40px; }
+        .ttd td { width: 33.33%; text-align: center; font-size: 10.5px; padding-top: 40px; }
         .ttd .garis { border-top: 1px solid #374151; padding-top: 4px; }
 
         .footer-note { margin-top: 18px; font-size: 9px; color: #9ca3af; text-align: center; }
@@ -118,14 +118,20 @@
         <tr>
             <td>
                 <div class="garis">
-                    {{ $record->nama_pemeriksa }}<br>
-                    Petugas Pemeriksa ({{ $record->jabatan }})
+                    &nbsp;<br>
+                    Kepala Bidang
                 </div>
             </td>
             <td>
                 <div class="garis">
-                    Mengetahui,<br>
-                    Kepala Pos / Regu
+                    &nbsp;<br>
+                    Danru
+                </div>
+            </td>
+            <td>
+                <div class="garis">
+                    {{ $record->nama_pemeriksa }}<br>
+                    Pemeriksa
                 </div>
             </td>
         </tr>

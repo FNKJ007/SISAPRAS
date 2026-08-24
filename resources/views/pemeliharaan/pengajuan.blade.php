@@ -147,31 +147,53 @@
             </div>
 
             {{-- ============ Nama Komandan Regu/Kepala Seksi ============ --}}
-            <div class="form-group">
+            <div class="form-group has-caret">
                 <label for="nama_komandan_regu">Nama Komandan Regu/Kepala Seksi</label>
-                <input type="text" name="nama_komandan_regu" id="nama_komandan_regu"
-                       value="{{ old('nama_komandan_regu', $defaultDanru->name ?? '') }}" data-autofilled="true" required>
+                <select name="nama_komandan_regu" id="nama_komandan_regu" data-autofilled="true" required>
+                    <option value="" disabled {{ !old('nama_komandan_regu') && !($defaultDanru->name ?? false) ? 'selected' : '' }}>Pilih Nama Danru/Kasi</option>
+                    @foreach ($danruOptions as $opt)
+                        @php
+                            $isSel = old('nama_komandan_regu')
+                                ? old('nama_komandan_regu') === $opt['name']
+                                : (($defaultDanru->name ?? null) === $opt['name']);
+                        @endphp
+                        <option value="{{ $opt['name'] }}" data-nip="{{ $opt['nip'] }}" {{ $isSel ? 'selected' : '' }}>
+                            {{ $opt['name'] }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
 
             {{-- ============ NIP Komandan Regu/Kepala Seksi ============ --}}
             <div class="form-group">
                 <label for="nip_komandan_regu">NIP Komandan Regu/Kepala Seksi</label>
                 <input type="text" name="nip_komandan_regu" id="nip_komandan_regu"
-                       value="{{ old('nip_komandan_regu', $defaultDanru->nip ?? '') }}" data-autofilled="true" required>
+                       value="{{ old('nip_komandan_regu', $defaultDanru->nip ?? '') }}" data-autofilled="true" readonly required>
             </div>
 
             {{-- ============ Nama Kepala Bidang ============ --}}
-            <div class="form-group">
+            <div class="form-group has-caret">
                 <label for="nama_kepala_bidang">Nama Kepala Bidang</label>
-                <input type="text" name="nama_kepala_bidang" id="nama_kepala_bidang"
-                       value="{{ old('nama_kepala_bidang', $defaultKabid->name ?? '') }}" data-autofilled="true" required>
+                <select name="nama_kepala_bidang" id="nama_kepala_bidang" data-autofilled="true" required>
+                    <option value="" disabled {{ !old('nama_kepala_bidang') && !($defaultKabid->name ?? false) ? 'selected' : '' }}>Pilih Nama Kabid</option>
+                    @foreach ($kabidOptions as $opt)
+                        @php
+                            $isSel = old('nama_kepala_bidang')
+                                ? old('nama_kepala_bidang') === $opt['name']
+                                : (($defaultKabid->name ?? null) === $opt['name']);
+                        @endphp
+                        <option value="{{ $opt['name'] }}" data-nip="{{ $opt['nip'] }}" {{ $isSel ? 'selected' : '' }}>
+                            {{ $opt['name'] }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
 
             {{-- ============ NIP Kepala Bidang ============ --}}
             <div class="form-group">
                 <label for="nip_kepala_bidang">NIP Kepala Bidang</label>
                 <input type="text" name="nip_kepala_bidang" id="nip_kepala_bidang"
-                       value="{{ old('nip_kepala_bidang', $defaultKabid->nip ?? '') }}" data-autofilled="true" required>
+                       value="{{ old('nip_kepala_bidang', $defaultKabid->nip ?? '') }}" data-autofilled="true" readonly required>
             </div>
 
             <div class="form-actions">
@@ -206,13 +228,36 @@
                 return (str || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
             }
 
+            // Isi NIP otomatis dari atribut data-nip milik opsi yang sedang dipilih
+            function fillNipFromSelect(selectEl, nipInputEl) {
+                if (!selectEl || !nipInputEl) return;
+                const opt = selectEl.options[selectEl.selectedIndex];
+                nipInputEl.value = (opt && opt.dataset && opt.dataset.nip) ? opt.dataset.nip : '';
+            }
+
+            // Set value select ke nama tertentu jika opsinya tersedia, lalu isi NIP-nya
+            function setSelectByName(selectEl, nipInputEl, name) {
+                if (!selectEl || !name) return false;
+                const target = normalizeKey(name);
+                const match = Array.from(selectEl.options).find(o => normalizeKey(o.value) === target);
+                if (match) {
+                    selectEl.value = match.value;
+                    fillNipFromSelect(selectEl, nipInputEl);
+                    return true;
+                }
+                return false;
+            }
+
+            if (namaDanruInput) namaDanruInput.addEventListener('change', () => fillNipFromSelect(namaDanruInput, nipDanruInput));
+            if (namaKabidInput) namaKabidInput.addEventListener('change', () => fillNipFromSelect(namaKabidInput, nipKabidInput));
+
             // Auto-match pejabat (Danru & Kabid) berdasarkan Pos/Regu/Bidang dari Master Data
             function updateOfficialsFromProfile() {
                 const selectedPos = posSelect && posSelect.selectedIndex >= 0 ? normalizeKey(posSelect.options[posSelect.selectedIndex].text) : '';
                 const selectedRegu = reguSelect && reguSelect.selectedIndex >= 0 ? normalizeKey(reguSelect.options[reguSelect.selectedIndex].text) : '';
                 const selectedBidang = bidangSelect && bidangSelect.selectedIndex >= 0 ? bidangSelect.options[bidangSelect.selectedIndex].text.trim().toLowerCase() : '';
 
-                // 1. Cari Danru dari Master Data Regu
+                // 1. Cari Danru dari Master Data Regu, lalu cocokkan ke opsi dropdown pegawai
                 if (allReguList.length > 0) {
                     let matchedRegu = allReguList.find(r => {
                         const rPos = normalizeKey(r.pos || '');
@@ -221,23 +266,23 @@
                                (rRegu && selectedRegu && rRegu === selectedRegu);
                     });
 
+                    let matched = false;
                     if (matchedRegu && matchedRegu.danru) {
-                        if (namaDanruInput) namaDanruInput.value = matchedRegu.danru;
-                        if (nipDanruInput) nipDanruInput.value = matchedRegu.nip_danru || '';
-                    } else if (danruUsers.length > 0) {
+                        matched = setSelectByName(namaDanruInput, nipDanruInput, matchedRegu.danru);
+                    }
+                    if (!matched && danruUsers.length > 0) {
                         let fallbackDanru = danruUsers.find(u => {
                             const uPos = normalizeKey(u.pos || '');
                             return uPos && selectedPos && (uPos.includes(selectedPos) || selectedPos.includes(uPos));
                         }) || danruUsers[0];
 
                         if (fallbackDanru) {
-                            if (namaDanruInput) namaDanruInput.value = fallbackDanru.name;
-                            if (nipDanruInput) nipDanruInput.value = fallbackDanru.nip;
+                            setSelectByName(namaDanruInput, nipDanruInput, fallbackDanru.name);
                         }
                     }
                 }
 
-                // 2. Cari Kabid dari Data Pejabat
+                // 2. Cari Kabid dari Data Pejabat, lalu cocokkan ke opsi dropdown pegawai
                 if (kabidUsers.length > 0) {
                     let matchedKabid = kabidUsers.find(u => {
                         const uBidang = (u.bidang || '').toLowerCase();
@@ -247,8 +292,7 @@
                     }) || kabidUsers[0];
 
                     if (matchedKabid) {
-                        if (namaKabidInput) namaKabidInput.value = matchedKabid.name;
-                        if (nipKabidInput) nipKabidInput.value = matchedKabid.nip;
+                        setSelectByName(namaKabidInput, nipKabidInput, matchedKabid.name);
                     }
                 }
             }

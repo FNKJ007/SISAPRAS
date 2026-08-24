@@ -32,8 +32,8 @@
 
             <div class="hero-content">
                 <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Damkar" class="hero-logo-img">
-                <h1 class="hero-title">SISAPRAS</h1>
-                <p class="hero-subtitle">Sistem Informasi Sarana Prasarana Dinas Pemadam Kebakaran & Penyelamatan</p>
+                <h1 class="hero-title">API</h1>
+                <p class="hero-subtitle">Aplikasi Pemeliharaan & Inspeksi Sarana</p>
             </div>
 
             <div class="hero-footer">

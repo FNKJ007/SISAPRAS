@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // =========================================================================
     //  MULTI-OPEN ACCORDION SUBMENU WITH SESSIONSTORAGE PERSISTENCE
     // =========================================================================
-    var STORAGE_KEY = 'sisapras_open_submenus';
+    var STORAGE_KEY = 'API_open_submenus';
 
     function getOpenSubmenus() {
         try {

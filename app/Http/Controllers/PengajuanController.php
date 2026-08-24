@@ -200,6 +200,28 @@ class PengajuanController extends Controller
             $defaultKabid = $kabidUsers->first();
         }
 
+        // Susun opsi dropdown Danru/Kasi (gabungan Data Pegawai + Data Regu) untuk dipilih user
+        $danruOptions = collect();
+        foreach ($danruUsers as $u) {
+            if (!empty($u->name)) {
+                $danruOptions->push(['name' => $u->name, 'nip' => $u->nip ?? '']);
+            }
+        }
+        foreach ($allReguList as $r) {
+            if (!empty($r->danru)) {
+                $danruOptions->push(['name' => $r->danru, 'nip' => $r->nip_danru ?? '']);
+            }
+        }
+        $danruOptions = $danruOptions->unique('name')->sortBy('name')->values();
+
+        // Susun opsi dropdown Kabid dari Data Pegawai
+        $kabidOptions = $kabidUsers
+            ->filter(fn($u) => !empty($u->name))
+            ->map(fn($u) => ['name' => $u->name, 'nip' => $u->nip ?? ''])
+            ->unique('name')
+            ->sortBy('name')
+            ->values();
+
         return view('pemeliharaan.pengajuan', compact(
             'bidangList',
             'posList',
@@ -212,6 +234,8 @@ class PengajuanController extends Controller
             'currentUser',
             'danruUsers',
             'kabidUsers',
+            'danruOptions',
+            'kabidOptions',
             'defaultUnit',
             'defaultDanru',
             'defaultKabid'
