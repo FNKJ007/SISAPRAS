@@ -184,7 +184,7 @@ class UserManagementController extends Controller
     }
 
     /**
-     * Hapus Akun Pengguna.
+     * Hapus Akun Pengguna (Nonaktifkan Akun Login tanpa menghapus data di Master Pegawai).
      */
     public function destroy($id)
     {
@@ -197,11 +197,14 @@ class UserManagementController extends Controller
         }
 
         $name = $user->name;
-        $user->delete();
+        $user->update([
+            'has_account' => false,
+            'password'    => null,
+        ]);
 
         return redirect()
             ->route('admin.pengaturan')
-            ->with('success', "Akun pengguna '{$name}' berhasil dihapus.");
+            ->with('success', "Akun login pengguna '{$name}' berhasil dihapus.");
     }
 
     /**

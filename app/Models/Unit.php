@@ -99,4 +99,52 @@ class Unit extends Model
     {
         return $this->hasMany(CekHarianUnit::class, 'unit_id');
     }
+
+    /**
+     * Sinkronisasi status armada unit secara otomatis berdasarkan data Pengajuan Pemeliharaan aktual.
+     * Jika unit memiliki pengajuan 'disetujui' yang sedang berjalan atau jadwal keberangkatan <= hari ini,
+     * status unit diset ke 'perbaikan'. Jika tidak ada atau pengerjaan 'selesai', status diset ke 'aktif'.
+     */
+    public static function syncStatusAll(): void
+    {
+        $today = now()->format('Y-m-d');
+
+        // Pengajuan disetujui yang belum selesai dan sudah/sedang dalam pengerjaan atau jadwal berangkat <= hari ini
+        $activeRepairPengajuans = Pengajuan::where('status', 'disetujui')
+            ->where('status_pengerjaan', '!=', 'selesai')
+            ->where(function ($q) use ($today) {
+                $q->where('status_pengerjaan', 'proses')
+                  ->orWhere(function ($q2) use ($today) {
+                      $q2->whereNotNull('tanggal_keberangkatan')
+                         ->whereDate('tanggal_keberangkatan', '<=', $today);
+                  });
+            })
+            ->get();
+
+        $repairUnitIds = $activeRepairPengajuans->pluck('unit_id')->filter()->unique()->toArray();
+        $repairNomorLambungs = $activeRepairPengajuans->pluck('nomor_lambung')
+            ->filter()
+            ->map(fn($n) => strtoupper(trim(preg_replace('/[^a-zA-Z0-9]/', '', $n))))
+            ->unique()
+            ->toArray();
+
+        $units = static::all();
+        foreach ($units as $unit) {
+            // Jangan ubah status unit jika memang dinonaktifkan secara permanen (nonaktif)
+            if ($unit->status === 'nonaktif') {
+                continue;
+            }
+
+            $cleanLambung = strtoupper(trim(preg_replace('/[^a-zA-Z0-9]/', '', $unit->nomor_lambung ?? '')));
+            $isInRepair = in_array($unit->id, $repairUnitIds, true) 
+                || in_array($cleanLambung, $repairNomorLambungs, true);
+
+            $targetStatus = $isInRepair ? 'perbaikan' : 'aktif';
+
+            if ($unit->status !== $targetStatus) {
+                $unit->status = $targetStatus;
+                $unit->saveQuietly();
+            }
+        }
+    }
 }

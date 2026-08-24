@@ -15,6 +15,8 @@ class UnitManagementController extends Controller
      */
     public function index(Request $request)
     {
+        Unit::syncStatusAll();
+
         $kategoriFilter = $request->query('kategori', 'semua');
         $statusFilter   = $request->query('status', 'semua');
         $posFilter      = $request->query('pos', 'semua');

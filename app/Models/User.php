@@ -47,6 +47,9 @@ class User extends Authenticatable
         parent::boot();
 
         static::saving(function ($user) {
+            if ($user->nip) {
+                $user->nip = preg_replace('/\s+/', '', trim($user->nip));
+            }
             if ($user->bidang) {
                 $user->bidang = ucwords(strtolower(trim($user->bidang)));
             }

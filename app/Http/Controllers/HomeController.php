@@ -70,30 +70,7 @@ class HomeController extends Controller
                 ];
             });
         } else {
-            // Data sampel bawaan jika belum ada record di bulan ini
-            $pengajuanList = collect([
-                (object) [
-                    'tanggal_pengajuan'     => $tanggalAwal->copy()->addDays(2)->toDateString(),
-                    'unit_nama'             => 'P-01 / D 8518 V (Soreang)',
-                    'status'                => 'menunggu',
-                    'item_perbaikan'        => 'Penggantian oli mesin & servis rem',
-                    'item_verifikasis'      => [],
-                    'tanggal_keberangkatan' => null,
-                    'catatan_admin'         => null,
-                ],
-                (object) [
-                    'tanggal_pengajuan'     => $tanggalAwal->copy()->addDays(5)->toDateString(),
-                    'unit_nama'             => 'R-01 / D 9933 V (Baleendah)',
-                    'status'                => 'disetujui',
-                    'item_perbaikan'        => 'Perbaikan katup hidrolik rescue & kelistrikan siren',
-                    'item_verifikasis'      => [
-                        ['nama' => 'katup hidrolik', 'status' => 'disetujui'],
-                        ['nama' => 'kelistrikan siren', 'status' => 'disetujui'],
-                    ],
-                    'tanggal_keberangkatan' => $tanggalAwal->copy()->addDays(5)->translatedFormat('l, d F Y'),
-                    'catatan_admin'         => 'Servis rutin berkala',
-                ],
-            ]);
+            $pengajuanList = collect([]);
         }
 
         // Grouping data pengajuan berdasarkan tanggal_pengajuan ('Y-m-d')
@@ -125,6 +102,7 @@ class HomeController extends Controller
         $totalPengajuan = $kpi['total_pengajuan'];
 
         // 5. Hitung Kesiapan Armada (Ready vs Di Bengkel) langsung dari Database Admin Data Unit
+        \App\Models\Unit::syncStatusAll();
         $totalDbUnits = \App\Models\Unit::count();
 
         if ($totalDbUnits > 0) {
@@ -137,10 +115,28 @@ class HomeController extends Controller
             foreach ($unitsInBengkel as $u) {
                 $posText = $u->pos ? " (" . ucfirst($u->pos) . ")" : "";
                 $platText = ($u->plat_nomor && $u->plat_nomor !== '—') ? " / {$u->plat_nomor}" : "";
+
+                // Ambil tanggal keberangkatan riil dari Pengajuan yang sedang disetujui/berjalan
+                $activePengajuan = Pengajuan::where(function ($q) use ($u) {
+                        $q->where('unit_id', $u->id)
+                          ->orWhere('nomor_lambung', $u->nomor_lambung);
+                    })
+                    ->where('status', 'disetujui')
+                    ->where('status_pengerjaan', '!=', 'selesai')
+                    ->latest()
+                    ->first();
+
+                $tglBerangkatStr = '-';
+                if ($activePengajuan && $activePengajuan->tanggal_keberangkatan) {
+                    $tglBerangkatStr = $activePengajuan->tanggal_keberangkatan->translatedFormat('d F Y');
+                } elseif ($u->updated_at) {
+                    $tglBerangkatStr = $u->updated_at->translatedFormat('d F Y');
+                }
+
                 $listBengkel[] = [
                     'nomor_lambung'         => $u->nomor_lambung ?? $u->nama,
                     'unit_nama'             => ($u->nomor_lambung ? strtoupper($u->nomor_lambung) . $platText : $u->nama) . $posText,
-                    'tanggal_keberangkatan' => $u->updated_at ? $u->updated_at->translatedFormat('d F Y') : '-',
+                    'tanggal_keberangkatan' => $tglBerangkatStr,
                 ];
             }
         } else {
@@ -178,20 +174,30 @@ class HomeController extends Controller
             'list_bengkel'  => $listBengkel,
         ];
 
-        // 5b. Status Pemeriksaan Unit Hari Ini untuk Pos Pengguna
-        $userPos = auth()->user() ? auth()->user()->pos : null;
+        // 5b. Status Pemeriksaan Unit Hari Ini Berdasarkan Pos Penempatan Pengguna yang Login
+        $user = auth()->user();
+        $userPos = $user ? trim((string) $user->pos) : '';
         $today = Carbon::today();
-        
+
         $todayChecks = \App\Models\CekHarianUnit::whereDate('created_at', $today)
             ->orWhereDate('tanggal_pemeriksaan', $today)
             ->pluck('unit_id')
             ->toArray();
 
         $queryPosUnits = \App\Models\Unit::query();
-        if ($userPos) {
-            $queryPosUnits->where('pos', 'LIKE', $userPos);
+        if (!empty($userPos)) {
+            $cleanPos = explode('(', $userPos)[0];
+            $cleanPos = trim($cleanPos);
+
+            $queryPosUnits->where(function ($q) use ($userPos, $cleanPos) {
+                $q->where('pos', $userPos)
+                  ->orWhere('pos', 'LIKE', "%{$cleanPos}%");
+            });
         }
+
         $posUnits = $queryPosUnits->orderBy('nomor_lambung', 'asc')->get();
+
+        // Fallback jika belum ada unit di pos tersebut: tampilkan default
         if ($posUnits->isEmpty()) {
             $posUnits = \App\Models\Unit::orderBy('nomor_lambung', 'asc')->take(6)->get();
         }
@@ -203,6 +209,8 @@ class HomeController extends Controller
                 'plat_nomor'    => $u->plat_nomor,
                 'merk_tipe'     => $u->merk_tipe,
                 'pos'           => $u->pos,
+                'pengemudi_1'   => $u->pengemudi_1,
+                'pengemudi_2'   => $u->pengemudi_2,
                 'status_armada' => $u->status === 'perbaikan' ? 'Dalam Perbaikan' : 'Siap Tempur / Operasi',
                 'sudah_dicek'   => in_array($u->id, $todayChecks),
             ];

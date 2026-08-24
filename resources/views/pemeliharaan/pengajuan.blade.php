@@ -147,53 +147,103 @@
             </div>
 
             {{-- ============ Nama Komandan Regu/Kepala Seksi ============ --}}
-            <div class="form-group has-caret">
+            <div class="form-group" x-data="comboboxDanru()" style="position:relative;">
                 <label for="nama_komandan_regu">Nama Komandan Regu/Kepala Seksi</label>
-                <select name="nama_komandan_regu" id="nama_komandan_regu" data-autofilled="true" required>
-                    <option value="" disabled {{ !old('nama_komandan_regu') && !($defaultDanru->name ?? false) ? 'selected' : '' }}>Pilih Nama Danru/Kasi</option>
-                    @foreach ($danruOptions as $opt)
-                        @php
-                            $isSel = old('nama_komandan_regu')
-                                ? old('nama_komandan_regu') === $opt['name']
-                                : (($defaultDanru->name ?? null) === $opt['name']);
-                        @endphp
-                        <option value="{{ $opt['name'] }}" data-nip="{{ $opt['nip'] }}" {{ $isSel ? 'selected' : '' }}>
-                            {{ $opt['name'] }}
-                        </option>
-                    @endforeach
-                </select>
+                <div style="position:relative;">
+                    <input type="text"
+                           name="nama_komandan_regu"
+                           id="nama_komandan_regu"
+                           x-model="searchQuery"
+                           @focus="open = true"
+                           @input="open = true; onType()"
+                           placeholder="Ketik atau pilih nama Danru/Kasi..."
+                           autocomplete="off"
+                           style="padding-right:36px;"
+                           required>
+                    <button type="button" @click.stop="open = !open"
+                            tabindex="-1"
+                            style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#64748B; cursor:pointer; padding:4px; display:flex; align-items:center;">
+                        <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+                    </button>
+                </div>
+
+                {{-- Floating Dropdown Suggestion List --}}
+                <div x-show="open && filteredList().length > 0"
+                     x-cloak
+                     @click.outside="open = false"
+                     style="position:absolute; left:0; right:0; top:100%; margin-top:4px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:10px; box-shadow:0 10px 25px rgba(15,23,42,0.15); max-height:220px; overflow-y:auto; z-index:99999;">
+                    <template x-for="item in filteredList()" :key="item.name">
+                        <div @click="selectItem(item)"
+                             style="padding:9px 14px; border-bottom:1px solid #F1F5F9; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background 0.15s;"
+                             onmouseover="this.style.background='#EFF6FF'"
+                             onmouseout="this.style.background='transparent'">
+                            <div>
+                                <strong style="display:block; color:#0F172A; font-size:13px;" x-text="item.name"></strong>
+                                <span style="font-size:11px; color:#64748B;" x-text="'NIP: ' + (item.nip || '—') + (item.pos ? ' • Pos ' + item.pos : '')"></span>
+                            </div>
+                            <span x-show="item.jabatan"
+                                  style="font-size:10.5px; font-weight:700; color:#1E40AF; background:#DBEAFE; padding:2px 8px; border-radius:10px;"
+                                  x-text="item.jabatan || 'Danru'"></span>
+                        </div>
+                    </template>
+                </div>
             </div>
 
             {{-- ============ NIP Komandan Regu/Kepala Seksi ============ --}}
             <div class="form-group">
                 <label for="nip_komandan_regu">NIP Komandan Regu/Kepala Seksi</label>
                 <input type="text" name="nip_komandan_regu" id="nip_komandan_regu"
-                       value="{{ old('nip_komandan_regu', $defaultDanru->nip ?? '') }}" data-autofilled="true" readonly required>
+                       value="{{ old('nip_komandan_regu', $defaultDanru->nip ?? '') }}" readonly required>
             </div>
 
             {{-- ============ Nama Kepala Bidang ============ --}}
-            <div class="form-group has-caret">
+            <div class="form-group" x-data="comboboxKabid()" style="position:relative;">
                 <label for="nama_kepala_bidang">Nama Kepala Bidang</label>
-                <select name="nama_kepala_bidang" id="nama_kepala_bidang" data-autofilled="true" required>
-                    <option value="" disabled {{ !old('nama_kepala_bidang') && !($defaultKabid->name ?? false) ? 'selected' : '' }}>Pilih Nama Kabid</option>
-                    @foreach ($kabidOptions as $opt)
-                        @php
-                            $isSel = old('nama_kepala_bidang')
-                                ? old('nama_kepala_bidang') === $opt['name']
-                                : (($defaultKabid->name ?? null) === $opt['name']);
-                        @endphp
-                        <option value="{{ $opt['name'] }}" data-nip="{{ $opt['nip'] }}" {{ $isSel ? 'selected' : '' }}>
-                            {{ $opt['name'] }}
-                        </option>
-                    @endforeach
-                </select>
+                <div style="position:relative;">
+                    <input type="text"
+                           name="nama_kepala_bidang"
+                           id="nama_kepala_bidang"
+                           x-model="searchQuery"
+                           @focus="open = true"
+                           @input="open = true; onType()"
+                           placeholder="Ketik atau pilih nama Kepala Bidang..."
+                           autocomplete="off"
+                           style="padding-right:36px;"
+                           required>
+                    <button type="button" @click.stop="open = !open"
+                            tabindex="-1"
+                            style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#64748B; cursor:pointer; padding:4px; display:flex; align-items:center;">
+                        <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+                    </button>
+                </div>
+
+                {{-- Floating Dropdown Suggestion List --}}
+                <div x-show="open && filteredList().length > 0"
+                     x-cloak
+                     @click.outside="open = false"
+                     style="position:absolute; left:0; right:0; top:100%; margin-top:4px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:10px; box-shadow:0 10px 25px rgba(15,23,42,0.15); max-height:220px; overflow-y:auto; z-index:99999;">
+                    <template x-for="item in filteredList()" :key="item.name">
+                        <div @click="selectItem(item)"
+                             style="padding:9px 14px; border-bottom:1px solid #F1F5F9; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background 0.15s;"
+                             onmouseover="this.style.background='#EFF6FF'"
+                             onmouseout="this.style.background='transparent'">
+                            <div>
+                                <strong style="display:block; color:#0F172A; font-size:13px;" x-text="item.name"></strong>
+                                <span style="font-size:11px; color:#64748B;" x-text="'NIP: ' + (item.nip || '—') + (item.bidang ? ' • ' + item.bidang : '')"></span>
+                            </div>
+                            <span x-show="item.jabatan"
+                                  style="font-size:10.5px; font-weight:700; color:#065F46; background:#D1FAE5; padding:2px 8px; border-radius:10px;"
+                                  x-text="item.jabatan || 'Pejabat'"></span>
+                        </div>
+                    </template>
+                </div>
             </div>
 
             {{-- ============ NIP Kepala Bidang ============ --}}
             <div class="form-group">
                 <label for="nip_kepala_bidang">NIP Kepala Bidang</label>
                 <input type="text" name="nip_kepala_bidang" id="nip_kepala_bidang"
-                       value="{{ old('nip_kepala_bidang', $defaultKabid->nip ?? '') }}" data-autofilled="true" readonly required>
+                       value="{{ old('nip_kepala_bidang', $defaultKabid->nip ?? '') }}" readonly required>
             </div>
 
             <div class="form-actions">
@@ -204,6 +254,85 @@
     </div>
 
     <script>
+        window.danruComp = null;
+        window.kabidComp = null;
+
+        function comboboxDanru() {
+            return {
+                open: false,
+                searchQuery: @json(old('nama_komandan_regu', $defaultDanru->name ?? '')),
+                items: @json($danruOptions ?? []),
+                init() {
+                    window.danruComp = this;
+                },
+                filteredList() {
+                    if (!this.searchQuery || this.searchQuery.trim() === '') {
+                        return this.items;
+                    }
+                    const q = this.searchQuery.toLowerCase();
+                    return this.items.filter(item => 
+                        (item.name && item.name.toLowerCase().includes(q)) ||
+                        (item.nip && item.nip.toLowerCase().includes(q)) ||
+                        (item.jabatan && item.jabatan.toLowerCase().includes(q)) ||
+                        (item.pos && item.pos.toLowerCase().includes(q))
+                    );
+                },
+                selectItem(item) {
+                    this.searchQuery = item.name;
+                    const nipInput = document.getElementById('nip_komandan_regu');
+                    if (nipInput) {
+                        nipInput.value = item.nip || '';
+                    }
+                    this.open = false;
+                },
+                onType() {
+                    const match = this.items.find(i => i.name.toLowerCase() === this.searchQuery.trim().toLowerCase());
+                    const nipInput = document.getElementById('nip_komandan_regu');
+                    if (nipInput) {
+                        nipInput.value = match ? (match.nip || '') : '';
+                    }
+                }
+            };
+        }
+
+        function comboboxKabid() {
+            return {
+                open: false,
+                searchQuery: @json(old('nama_kepala_bidang', $defaultKabid->name ?? '')),
+                items: @json($kabidOptions ?? []),
+                init() {
+                    window.kabidComp = this;
+                },
+                filteredList() {
+                    if (!this.searchQuery || this.searchQuery.trim() === '') {
+                        return this.items;
+                    }
+                    const q = this.searchQuery.toLowerCase();
+                    return this.items.filter(item => 
+                        (item.name && item.name.toLowerCase().includes(q)) ||
+                        (item.nip && item.nip.toLowerCase().includes(q)) ||
+                        (item.jabatan && item.jabatan.toLowerCase().includes(q)) ||
+                        (item.bidang && item.bidang.toLowerCase().includes(q))
+                    );
+                },
+                selectItem(item) {
+                    this.searchQuery = item.name;
+                    const nipInput = document.getElementById('nip_kepala_bidang');
+                    if (nipInput) {
+                        nipInput.value = item.nip || '';
+                    }
+                    this.open = false;
+                },
+                onType() {
+                    const match = this.items.find(i => i.name.toLowerCase() === this.searchQuery.trim().toLowerCase());
+                    const nipInput = document.getElementById('nip_kepala_bidang');
+                    if (nipInput) {
+                        nipInput.value = match ? (match.nip || '') : '';
+                    }
+                }
+            };
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             const allUnits = @json($unitList ?? []);
             const unitDetails = @json($unitDetails ?? []);
@@ -217,9 +346,7 @@
             const reguSelect = document.getElementById('regu');
             const bidangSelect = document.getElementById('bidang');
             const namaPemegangInput = document.getElementById('nama_pemegang');
-            const namaDanruInput = document.getElementById('nama_komandan_regu');
             const nipDanruInput = document.getElementById('nip_komandan_regu');
-            const namaKabidInput = document.getElementById('nama_kepala_bidang');
             const nipKabidInput = document.getElementById('nip_kepala_bidang');
 
             let isSyncing = false;
@@ -228,36 +355,13 @@
                 return (str || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
             }
 
-            // Isi NIP otomatis dari atribut data-nip milik opsi yang sedang dipilih
-            function fillNipFromSelect(selectEl, nipInputEl) {
-                if (!selectEl || !nipInputEl) return;
-                const opt = selectEl.options[selectEl.selectedIndex];
-                nipInputEl.value = (opt && opt.dataset && opt.dataset.nip) ? opt.dataset.nip : '';
-            }
-
-            // Set value select ke nama tertentu jika opsinya tersedia, lalu isi NIP-nya
-            function setSelectByName(selectEl, nipInputEl, name) {
-                if (!selectEl || !name) return false;
-                const target = normalizeKey(name);
-                const match = Array.from(selectEl.options).find(o => normalizeKey(o.value) === target);
-                if (match) {
-                    selectEl.value = match.value;
-                    fillNipFromSelect(selectEl, nipInputEl);
-                    return true;
-                }
-                return false;
-            }
-
-            if (namaDanruInput) namaDanruInput.addEventListener('change', () => fillNipFromSelect(namaDanruInput, nipDanruInput));
-            if (namaKabidInput) namaKabidInput.addEventListener('change', () => fillNipFromSelect(namaKabidInput, nipKabidInput));
-
             // Auto-match pejabat (Danru & Kabid) berdasarkan Pos/Regu/Bidang dari Master Data
             function updateOfficialsFromProfile() {
                 const selectedPos = posSelect && posSelect.selectedIndex >= 0 ? normalizeKey(posSelect.options[posSelect.selectedIndex].text) : '';
                 const selectedRegu = reguSelect && reguSelect.selectedIndex >= 0 ? normalizeKey(reguSelect.options[reguSelect.selectedIndex].text) : '';
                 const selectedBidang = bidangSelect && bidangSelect.selectedIndex >= 0 ? bidangSelect.options[bidangSelect.selectedIndex].text.trim().toLowerCase() : '';
 
-                // 1. Cari Danru dari Master Data Regu, lalu cocokkan ke opsi dropdown pegawai
+                // 1. Cari Danru dari Master Data Regu, lalu cocokkan ke input Danru
                 if (allReguList.length > 0) {
                     let matchedRegu = allReguList.find(r => {
                         const rPos = normalizeKey(r.pos || '');
@@ -266,23 +370,31 @@
                                (rRegu && selectedRegu && rRegu === selectedRegu);
                     });
 
-                    let matched = false;
                     if (matchedRegu && matchedRegu.danru) {
-                        matched = setSelectByName(namaDanruInput, nipDanruInput, matchedRegu.danru);
-                    }
-                    if (!matched && danruUsers.length > 0) {
+                        if (window.danruComp) {
+                            window.danruComp.searchQuery = matchedRegu.danru;
+                        }
+                        if (nipDanruInput) {
+                            nipDanruInput.value = matchedRegu.nip_danru || '';
+                        }
+                    } else if (danruUsers.length > 0) {
                         let fallbackDanru = danruUsers.find(u => {
                             const uPos = normalizeKey(u.pos || '');
                             return uPos && selectedPos && (uPos.includes(selectedPos) || selectedPos.includes(uPos));
                         }) || danruUsers[0];
 
                         if (fallbackDanru) {
-                            setSelectByName(namaDanruInput, nipDanruInput, fallbackDanru.name);
+                            if (window.danruComp) {
+                                window.danruComp.searchQuery = fallbackDanru.name;
+                            }
+                            if (nipDanruInput) {
+                                nipDanruInput.value = fallbackDanru.nip || '';
+                            }
                         }
                     }
                 }
 
-                // 2. Cari Kabid dari Data Pejabat, lalu cocokkan ke opsi dropdown pegawai
+                // 2. Cari Kabid dari Data Pejabat, lalu cocokkan ke input Kabid
                 if (kabidUsers.length > 0) {
                     let matchedKabid = kabidUsers.find(u => {
                         const uBidang = (u.bidang || '').toLowerCase();
@@ -292,7 +404,12 @@
                     }) || kabidUsers[0];
 
                     if (matchedKabid) {
-                        setSelectByName(namaKabidInput, nipKabidInput, matchedKabid.name);
+                        if (window.kabidComp) {
+                            window.kabidComp.searchQuery = matchedKabid.name;
+                        }
+                        if (nipKabidInput) {
+                            nipKabidInput.value = matchedKabid.nip || '';
+                        }
                     }
                 }
             }
@@ -301,12 +418,11 @@
             if (reguSelect) reguSelect.addEventListener('change', updateOfficialsFromProfile);
             if (bidangSelect) bidangSelect.addEventListener('change', updateOfficialsFromProfile);
 
-            // Filter opsi Nomor Lambung berdasarkan Pos & Jenis Kendaraan yang dipilih
+            // Filter opsi Nomor Lambung berdasarkan Pos yang dipilih
             function filterNomorLambung(preserveSelected = true) {
                 if (!lambungSelect) return;
 
                 const currentKey = lambungSelect.value;
-                const selectedJenis = jenisSelect && jenisSelect.value ? jenisSelect.value.trim().toUpperCase() : '';
                 
                 let selectedPosKey = '';
                 if (posSelect && posSelect.value && posSelect.selectedIndex >= 0) {
@@ -322,15 +438,11 @@
                 placeholderOpt.textContent = '— Pilih No. Lambung —';
                 lambungSelect.appendChild(placeholderOpt);
 
-                // Filter unit sesuai Pos DAN Jenis Kendaraan
+                // Filter unit sesuai Pos yang dipilih
                 const matchingUnits = allUnits.filter(u => {
-                    const uJenis = (u.jenis_kendaraan || '').trim().toUpperCase();
                     const uPosKey = normalizeKey(u.pos || '');
-
-                    const matchJenis = !selectedJenis || uJenis === selectedJenis || uJenis.includes(selectedJenis);
                     const matchPos = !selectedPosKey || uPosKey === selectedPosKey || uPosKey.includes(selectedPosKey) || selectedPosKey.includes(uPosKey);
-
-                    return matchJenis && matchPos;
+                    return matchPos;
                 });
 
                 let hasMatched = false;
@@ -348,8 +460,10 @@
                 if (!hasMatched) {
                     if (matchingUnits.length > 0) {
                         const targetUnit = (defaultUnitKey && matchingUnits.find(u => u.key === defaultUnitKey)) || matchingUnits[0];
-                        targetUnit ? (lambungSelect.value = targetUnit.key) : null;
-                        syncUnitDetails();
+                        if (targetUnit) {
+                            lambungSelect.value = targetUnit.key;
+                            syncUnitDetails();
+                        }
                     } else {
                         placeholderOpt.selected = true;
                         lambungSelect.value = '';

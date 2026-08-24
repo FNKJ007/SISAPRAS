@@ -80,7 +80,7 @@
                 <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
                     <h5 class="text-xs font-bold text-slate-900 flex items-center gap-2">
                         <i data-lucide="clipboard-check" class="w-4 h-4 text-blue-700"></i>
-                        <span>Status Pengecekan Unit Hari Ini {{ auth()->user()->pos ? '— Pos ' . ucfirst(auth()->user()->pos) : '' }}:</span>
+                        <span>Status Pengecekan Unit</span>
                     </h5>
                     <span class="text-[11px] text-slate-500 font-medium">Pastikan cek harian telah diisi sebelum operasi</span>
                 </div>
@@ -355,15 +355,6 @@
         </a>
     </div>
 
-    @if($totalPengajuan === 0)
-        <div class="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
-            <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3 text-gray-400">
-                <i data-lucide="calendar-x" class="w-6 h-6"></i>
-            </div>
-            <p class="text-sm font-bold text-gray-700">Belum Ada Pengajuan Pemeliharaan</p>
-            <p class="text-xs text-gray-400 mt-1 max-w-sm">Data pengajuan perbaikan atau pemeriksaan unit pada bulan {{ $bulanAktif->translatedFormat('F Y') }} akan tampil di sini.</p>
-        </div>
-    @else
         <div class="rounded-xl border border-gray-200 w-full overflow-hidden shadow-xs">
             <table class="w-full border-collapse table-fixed">
                 <thead>
@@ -426,7 +417,7 @@
                                             @endphp
                                             <div class="text-[9px] sm:text-[11px] leading-tight px-1.5 py-0.5 rounded-md border {{ $badgeStyle }} truncate font-bold shadow-2xs"
                                                  title="{{ $prefixLabel }}{{ $event->unit_nama }} ({{ ucfirst($event->status) }})">
-                                                {{ $prefixLabel }}{{ $event->unit_nama }}
+                                                 {{ $prefixLabel }}{{ $event->unit_nama }}
                                             </div>
                                         @endforeach
 
@@ -443,7 +434,6 @@
                 </tbody>
             </table>
         </div>
-    @endif
     
 </div>
 
