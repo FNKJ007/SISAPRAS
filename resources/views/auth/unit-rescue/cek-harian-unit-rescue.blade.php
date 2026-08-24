@@ -467,6 +467,46 @@
         }
     @endif
 
+    // Dynamic Filter Unit Kendaraan Rescue berdasarkan Pos yang dipilih
+    var posSelect = document.getElementById('pos');
+    var unitSelect = document.getElementById('unit_id');
+    var allUnitsData = @json($allUnits ?? $unitList ?? []);
+
+    function normalizeKeyPos(str) {
+        return (str || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    }
+
+    if (posSelect && unitSelect) {
+        posSelect.addEventListener('change', function () {
+            var selectedPosKey = normalizeKeyPos(this.value);
+            var currentUnitId = unitSelect.value;
+            unitSelect.innerHTML = '<option value="" disabled selected>Pilih Unit / Kendaraan Rescue</option>';
+
+            var matchedUnits = allUnitsData.filter(function (u) {
+                if (!selectedPosKey) return true;
+                var uPosKey = normalizeKeyPos(u.pos || '');
+                return uPosKey === selectedPosKey || uPosKey.includes(selectedPosKey) || selectedPosKey.includes(uPosKey);
+            });
+
+            var matched = false;
+            matchedUnits.forEach(function (u) {
+                var opt = document.createElement('option');
+                opt.value = u.id;
+                var label = u.nomor_lambung ? (u.nomor_lambung + ' — ' + u.plat_nomor + (u.pos ? ' [' + u.pos + ']' : '') + (u.merk_tipe ? ' (' + u.merk_tipe + ')' : '')) : (u.nama || '');
+                opt.textContent = label;
+                if (currentUnitId && String(u.id) === String(currentUnitId)) {
+                    opt.selected = true;
+                    matched = true;
+                }
+                unitSelect.appendChild(opt);
+            });
+
+            if (!matched && matchedUnits.length > 0) {
+                unitSelect.value = matchedUnits[0].id;
+            }
+        });
+    }
+
     showStep(currentStep);
 })();
 </script>

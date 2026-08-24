@@ -174,11 +174,9 @@ class HomeController extends Controller
             'list_bengkel'  => $listBengkel,
         ];
 
-        // 5b. Status Pemeriksaan Unit Hari Ini untuk Pengemudi / Pemegang Unit yang Login
+        // 5b. Status Pemeriksaan Unit Hari Ini Berdasarkan Pos Penempatan Pengguna yang Login
         $user = auth()->user();
-        $userPos = $user ? $user->pos : null;
-        $userName = $user ? trim($user->name) : '';
-        $userId = $user ? $user->id : 0;
+        $userPos = $user ? trim((string) $user->pos) : '';
         $today = Carbon::today();
 
         $todayChecks = \App\Models\CekHarianUnit::whereDate('created_at', $today)
@@ -186,36 +184,22 @@ class HomeController extends Controller
             ->pluck('unit_id')
             ->toArray();
 
-        $isPersonalUnits = false;
-        $queryUserUnits = \App\Models\Unit::query();
-        if ($user) {
-            $nameParts = explode(',', $userName);
-            $baseName = trim($nameParts[0]);
+        $queryPosUnits = \App\Models\Unit::query();
+        if (!empty($userPos)) {
+            $cleanPos = explode('(', $userPos)[0];
+            $cleanPos = trim($cleanPos);
 
-            $queryUserUnits->where(function ($q) use ($userId, $userName, $baseName) {
-                $q->where('pengemudi_utama_id', $userId)
-                  ->orWhere('pengemudi_cadangan_id', $userId)
-                  ->orWhere('pengemudi_1', 'LIKE', "%{$baseName}%")
-                  ->orWhere('pengemudi_2', 'LIKE', "%{$baseName}%")
-                  ->orWhere('pengemudi_1', 'LIKE', "%{$userName}%")
-                  ->orWhere('pengemudi_2', 'LIKE', "%{$userName}%");
+            $queryPosUnits->where(function ($q) use ($userPos, $cleanPos) {
+                $q->where('pos', $userPos)
+                  ->orWhere('pos', 'LIKE', "%{$cleanPos}%");
             });
         }
 
-        $posUnits = $queryUserUnits->orderBy('nomor_lambung', 'asc')->get();
+        $posUnits = $queryPosUnits->orderBy('nomor_lambung', 'asc')->get();
 
-        if ($posUnits->isNotEmpty()) {
-            $isPersonalUnits = true;
-        } else {
-            // Fallback untuk Admin / Komandan / Personil tanpa unit khusus: tampilkan unit di pos penempatan
-            $queryFallback = \App\Models\Unit::query();
-            if ($userPos) {
-                $queryFallback->where('pos', 'LIKE', $userPos);
-            }
-            $posUnits = $queryFallback->orderBy('nomor_lambung', 'asc')->get();
-            if ($posUnits->isEmpty()) {
-                $posUnits = \App\Models\Unit::orderBy('nomor_lambung', 'asc')->take(6)->get();
-            }
+        // Fallback jika belum ada unit di pos tersebut: tampilkan default
+        if ($posUnits->isEmpty()) {
+            $posUnits = \App\Models\Unit::orderBy('nomor_lambung', 'asc')->take(6)->get();
         }
 
         $userUnitStatus = $posUnits->map(function ($u) use ($todayChecks) {
@@ -253,7 +237,6 @@ class HomeController extends Controller
             'totalPengajuan',
             'summaryArmada',
             'userUnitStatus',
-            'isPersonalUnits',
             'availableYears'
         ));
     }
