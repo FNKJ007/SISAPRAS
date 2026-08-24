@@ -39,30 +39,30 @@
     <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Cek Harian Unit Kendaraan Pemadam</h1>
 
     {{-- ===================== STEPPER ===================== --}}
-    <div class="flex items-start justify-between mt-6 mb-8 select-none overflow-x-auto">
-        @php
-            $steps = [
-                1 => 'Identitas',
-                2 => 'Pemanasan & BBM',
-                3 => 'Tangki & Pompa',
-                4 => 'Kendaraan',
-                5 => 'Konfirmasi',
-            ];
-        @endphp
-        @foreach($steps as $num => $label)
-            <div class="flex items-center {{ $num < count($steps) ? 'flex-1' : '' }}">
-                <div class="flex flex-col items-center min-w-[70px]" data-step-indicator="{{ $num }}">
+    <div class="mt-6 mb-8 select-none">
+        <div class="grid grid-cols-5 gap-0 relative">
+            @php
+                $steps = [
+                    1 => 'Identitas',
+                    2 => 'Pemanasan, BBM & Kebersihan',
+                    3 => 'Tangki & Pompa',
+                    4 => 'Kendaraan',
+                    5 => 'Konfirmasi',
+                ];
+            @endphp
+            @foreach($steps as $num => $label)
+                <div class="flex flex-col items-center text-center relative" data-step-indicator="{{ $num }}">
+                    @if($num < count($steps))
+                        <div data-line class="absolute top-[18px] left-[50%] w-full h-0.5 bg-gray-200 transition-colors"></div>
+                    @endif
                     <div data-circle
-                         class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold border-2 border-gray-300 text-gray-400 bg-white transition-colors">
+                         class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold border-2 border-gray-300 text-gray-400 bg-white relative z-10 transition-colors shadow-xs">
                         {{ $num }}
                     </div>
-                    <span data-label class="text-xs mt-2 text-gray-400 text-center whitespace-nowrap">{{ $label }}</span>
+                    <span data-label class="text-[11px] sm:text-xs font-medium mt-2 text-gray-500 text-center px-1 leading-tight">{{ $label }}</span>
                 </div>
-                @if($num < count($steps))
-                    <div data-line class="flex-1 h-0.5 bg-gray-200 mx-2 mt-[18px] transition-colors"></div>
-                @endif
-            </div>
-        @endforeach
+            @endforeach
+        </div>
     </div>
 
     <form action="{{ route('unit-pemadam.cek-harian-unit.store') }}" method="POST" enctype="multipart/form-data" id="formCekHarianUnit" class="space-y-6">
@@ -84,9 +84,10 @@
                 </div>
                 <div>
                     <label for="nama_pemeriksa" class="block text-sm font-medium mb-1">Nama Pemeriksa <span class="text-red-500">*</span></label>
-                    <input type="text" id="nama_pemeriksa" name="nama_pemeriksa" value="{{ old('nama_pemeriksa', auth()->user()->name ?? '') }}"
+                    <input type="text" id="nama_pemeriksa" name="nama_pemeriksa"
+                           value="{{ old('nama_pemeriksa', auth()->user()->name ?? '') }}"
                            placeholder="Masukkan nama pemeriksa" required
-                           class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
+                           class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
                     @error('nama_pemeriksa') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
@@ -112,13 +113,17 @@
             </div>
         </div>
 
-        {{-- ===================== STEP 2 - PEMANASAN & BBM ===================== --}}
-        <div data-step-panel="2" class="hidden">
-            <div class="mb-5">
-                <p class="font-medium text-sm mb-1">Pemanasan Kendaraan</p>
-                <p class="text-xs text-gray-500 mb-2">(Unit harus dioperasikan dan dikendarai minimal sejauh 1 KM. Silakan lampirkan dokumentasi sebagai bukti)</p>
+        {{-- ===================== STEP 2 - PEMANASAN, BBM & KEBERSIHAN ===================== --}}
+        <div data-step-panel="2" class="hidden space-y-6">
+            {{-- 1. Pemanasan Kendaraan --}}
+            <div class="p-4 rounded-xl border border-blue-200 bg-blue-50/30">
+                <h3 class="font-bold text-sm text-blue-950 flex items-center gap-2 mb-1">
+                    <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">1</span>
+                    <span>Pemanasan Kendaraan</span>
+                </h3>
+                <p class="text-xs text-gray-600 mb-3">(Unit harus dioperasikan dan dikendarai minimal sejauh 1 KM. Silakan lampirkan dokumentasi sebagai bukti)</p>
                 <label for="bukti_pemanasan"
-                       class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
+                       class="flex items-center justify-between border border-gray-300 bg-white rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
                     <span id="buktiPemanasanLabel">Lampirkan Bukti Pemanasan</span>
                     <span>📎</span>
                 </label>
@@ -127,44 +132,78 @@
                 @error('bukti_pemanasan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
-            <p class="font-medium text-sm mb-2">BBM</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
-                <div>
-                    <label for="jenis_bbm" class="block text-sm font-medium mb-1">Jenis BBM <span class="text-red-500">*</span></label>
-                    <p class="text-xs text-gray-500 mb-2">(Pilih jenis bahan bakar kendaraan)</p>
-                    <select id="jenis_bbm" name="jenis_bbm" required
-                            class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option value="" selected disabled>Pilih Jenis BBM</option>
-                        <option value="solar" @selected(old('jenis_bbm', 'solar') === 'solar')>Solar</option>
-                        <option value="bensin" @selected(old('jenis_bbm') === 'bensin')>Bensin</option>
-                    </select>
-                    @error('jenis_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                </div>
-                <div>
-                    <p class="font-medium text-sm mb-1">Bukti Foto Level BBM</p>
-                    <p class="text-xs text-gray-500 mb-2">(Fotokan Speedometer untuk bukti level BBM)</p>
-                    <label for="bukti_bbm"
-                           class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
-                        <span id="buktiBbmLabel">Lampirkan Bukti Level BBM</span>
-                        <span>📎</span>
-                    </label>
-                    <input id="bukti_bbm" type="file" name="bukti_bbm" accept="image/*" class="hidden">
-                    <div id="buktiBbmPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
-                    @error('bukti_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            {{-- 2. Bahan Bakar Minyak (BBM) --}}
+            <div class="p-4 rounded-xl border border-amber-200 bg-amber-50/30">
+                <h3 class="font-bold text-sm text-amber-950 flex items-center gap-2 mb-3">
+                    <span class="w-6 h-6 rounded-full bg-amber-600 text-white flex items-center justify-center text-xs">2</span>
+                    <span>Bahan Bakar Minyak (BBM)</span>
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                    <div>
+                        <label for="jenis_bbm" class="block text-sm font-medium mb-1">Jenis BBM <span class="text-red-500">*</span></label>
+                        <p class="text-xs text-gray-500 mb-2">(Pilih jenis bahan bakar kendaraan)</p>
+                        <select id="jenis_bbm" name="jenis_bbm" required
+                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <option value="" selected disabled>Pilih Jenis BBM</option>
+                            <option value="solar" @selected(old('jenis_bbm', 'solar') === 'solar')>Solar</option>
+                            <option value="bensin" @selected(old('jenis_bbm') === 'bensin')>Bensin</option>
+                        </select>
+                        @error('jenis_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <p class="font-medium text-sm mb-1">Bukti Foto Level BBM</p>
+                        <p class="text-xs text-gray-500 mb-2">(Fotokan Speedometer untuk bukti level BBM)</p>
+                        <label for="bukti_bbm"
+                               class="flex items-center justify-between border border-gray-300 bg-white rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
+                            <span id="buktiBbmLabel">Lampirkan Bukti Level BBM</span>
+                            <span>📎</span>
+                        </label>
+                        <input id="bukti_bbm" type="file" name="bukti_bbm" accept="image/*" class="hidden">
+                        <div id="buktiBbmPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
+                        @error('bukti_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
                 </div>
             </div>
 
-            <div class="mt-4">
-                <p class="font-medium text-sm mb-1">Bukti Pencucian Kendaraan</p>
-                <p class="text-xs text-gray-500 mb-2">(Lampirkan foto sebagai bukti pencucian kendaraan)</p>
-                <label for="bukti_pencucian"
-                       class="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
-                    <span id="buktiPencucianLabel">Lampirkan Bukti Pencucian</span>
-                    <span>📎</span>
-                </label>
-                <input id="bukti_pencucian" type="file" name="bukti_pencucian" accept="image/*" class="hidden">
-                <div id="buktiPencucianPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
-                @error('bukti_pencucian') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            {{-- 3. Kebersihan Unit --}}
+            <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/40">
+                <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+                    <h3 class="font-bold text-sm text-emerald-950 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">3</span>
+                        <span>Pemeriksaan Kebersihan Unit</span>
+                    </h3>
+                    <span class="text-xs font-semibold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">Wajib Pasukan</span>
+                </div>
+                <p class="text-xs text-gray-600 mb-3">Pemeriksaan kondisi kebersihan unit kendaraan dan dokumentasi kegiatan pembersihan/pencucian oleh pasukan.</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Kondisi Kebersihan Unit <span class="text-red-500">*</span></label>
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <label class="flex items-center gap-2 border border-emerald-300 bg-white rounded-lg p-2.5 cursor-pointer hover:bg-emerald-50 transition">
+                                <input type="radio" name="kebersihan_unit" value="bersih" @checked(old('kebersihan_unit', 'bersih') === 'bersih') class="text-emerald-600 focus:ring-emerald-500">
+                                <span class="text-xs font-bold text-emerald-900">✨ Bersih</span>
+                            </label>
+                            <label class="flex items-center gap-2 border border-gray-300 bg-white rounded-lg p-2.5 cursor-pointer hover:bg-red-50 transition">
+                                <input type="radio" name="kebersihan_unit" value="tidak_bersih" @checked(old('kebersihan_unit') === 'tidak_bersih') class="text-red-600 focus:ring-red-500">
+                                <span class="text-xs font-bold text-gray-700">⚠️ Tidak Bersih</span>
+                            </label>
+                        </div>
+                        @error('kebersihan_unit') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Foto Kegiatan Pasukan Membersihkan Unit</label>
+                        <label for="bukti_pencucian"
+                               class="flex items-center justify-between border border-gray-300 bg-white rounded-lg px-3 py-2 text-xs text-gray-600 cursor-pointer hover:border-emerald-500 transition">
+                            <span id="buktiPencucianLabel">Lampirkan Foto Pembersihan</span>
+                            <span>📎</span>
+                        </label>
+                        <input id="bukti_pencucian" type="file" name="bukti_pencucian" accept="image/*" class="hidden">
+                        <div id="buktiPencucianPreview" class="mt-2 flex flex-wrap gap-2 hidden"></div>
+                        @error('bukti_pencucian') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
             </div>
         </div>
 

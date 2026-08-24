@@ -90,8 +90,7 @@
         $jenisWarna = [
             'Kebakaran'      => '#C0201F',
             'Rescue'         => '#1D4ED8',
-            'Penyelamatan'   => '#0891B2',
-            'Non-Kebakaran'  => '#64748B',
+            'Giat-Lainnya'   => '#64748B',
         ];
     @endphp
 
@@ -124,18 +123,15 @@
                 <canvas id="chartTrenKejadian" style="max-height:260px; width:100%;"></canvas>
             </div>
 
-            <div style="display:flex; gap:18px; padding:14px 22px; border-top:1px solid #F1F5F9; flex-wrap:wrap; background:#FAFCFE; justify-content:center;">
+                <div style="display:flex; gap:18px; padding:14px 22px; border-top:1px solid #F1F5F9; flex-wrap:wrap; background:#FAFCFE; justify-content:center;">
                 <div style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#334155;">
                     <span style="width:12px; height:12px; border-radius:3px; background:#C0201F; display:inline-block;"></span> Kebakaran
                 </div>
                 <div style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#334155;">
-                    <span style="width:12px; height:12px; border-radius:3px; background:#1D4ED8; display:inline-block;"></span> Rescue
+                    <span style="width:12px; height:12px; border-radius:3px; background:#1D4ED8; display:inline-block;"></span> Rescue / Penyelamatan
                 </div>
                 <div style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#334155;">
-                    <span style="width:12px; height:12px; border-radius:3px; background:#0891B2; display:inline-block;"></span> Penyelamatan
-                </div>
-                <div style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#334155;">
-                    <span style="width:12px; height:12px; border-radius:3px; background:#64748B; display:inline-block;"></span> Non-Kebakaran
+                    <span style="width:12px; height:12px; border-radius:3px; background:#64748B; display:inline-block;"></span> Giat Lainnya
                 </div>
             </div>
         </div>
@@ -190,8 +186,7 @@
                     <option value="">Semua Jenis</option>
                     <option value="Kebakaran" {{ request('jenis') == 'Kebakaran' ? 'selected' : '' }}>Kebakaran</option>
                     <option value="Rescue" {{ request('jenis') == 'Rescue' ? 'selected' : '' }}>Rescue</option>
-                    <option value="Penyelamatan" {{ request('jenis') == 'Penyelamatan' ? 'selected' : '' }}>Penyelamatan</option>
-                    <option value="Non-Kebakaran" {{ request('jenis') == 'Non-Kebakaran' ? 'selected' : '' }}>Non-Kebakaran</option>
+                    <option value="Giat-Lainnya" {{ request('jenis') == 'Giat-Lainnya' ? 'selected' : '' }}>Giat Lainnya</option>
                 </select>
             </div>
 
@@ -586,28 +581,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 datasets: [
                     {
                         label: 'Kebakaran',
-                        data: {{ json_encode($chartBulanan['Kebakaran']) }},
+                        data: {{ json_encode($chartBulanan['Kebakaran'] ?? array_fill(0,12,0)) }},
                         backgroundColor: '#C0201F',
                         borderRadius: 6,
                         borderSkipped: false,
                     },
                     {
-                        label: 'Rescue',
-                        data: {{ json_encode($chartBulanan['Rescue']) }},
+                        label: 'Rescue / Penyelamatan',
+                        data: {{ json_encode($chartBulanan['Rescue / Penyelamatan'] ?? array_fill(0,12,0)) }},
                         backgroundColor: '#1D4ED8',
                         borderRadius: 6,
                         borderSkipped: false,
                     },
                     {
-                        label: 'Penyelamatan',
-                        data: {{ json_encode($chartBulanan['Penyelamatan']) }},
-                        backgroundColor: '#0891B2',
-                        borderRadius: 6,
-                        borderSkipped: false,
-                    },
-                    {
                         label: 'Non-Kebakaran',
-                        data: {{ json_encode($chartBulanan['Non-Kebakaran']) }},
+                        data: {{ json_encode($chartBulanan['Non-Kebakaran'] ?? array_fill(0,12,0)) }},
                         backgroundColor: '#64748B',
                         borderRadius: 6,
                         borderSkipped: false,

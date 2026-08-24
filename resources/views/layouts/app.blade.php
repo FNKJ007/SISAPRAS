@@ -66,7 +66,16 @@
                         </ul>
                     </div>
 
+                    @php
+                        $userBidang = strtolower(auth()->user()->bidang ?? '');
+                        $isSpi = str_contains($userBidang, 'sarana prasarana') || str_contains($userBidang, 'spi');
+                        $isAdminSimulasi = auth()->user()->isAdmin() && session('admin_viewing_as_user');
+                        $noBidang = empty(trim(auth()->user()->bidang ?? ''));
+                        $showAll = $isSpi || $isAdminSimulasi || $noBidang;
+                    @endphp
+
                     {{-- === Unit Pemadam === --}}
+                    @if($showAll || str_contains($userBidang, 'pemadam'))
                     <div class="menu-group">
                         <button class="menu-title" type="button" data-target="menuPemadam">
                             <span class="menu-title-left">
@@ -90,8 +99,10 @@
                             </li>
                         </ul>
                     </div>
+                    @endif
 
                     {{-- === Unit Rescue === --}}
+                    @if($showAll || str_contains($userBidang, 'rescue'))
                     <div class="menu-group">
                         <button class="menu-title" type="button" data-target="menuRescue">
                             <span class="menu-title-left">
@@ -115,8 +126,37 @@
                             </li>
                         </ul>
                     </div>
+                    @endif
+
+                    {{-- === Bidang Pencegahan === --}}
+                    @if($showAll || str_contains($userBidang, 'pencegahan'))
+                    <div class="menu-group">
+                        <button class="menu-title" type="button" data-target="menuPencegahan">
+                            <span class="menu-title-left">
+                                <i data-lucide="shield" class="menu-icon"></i>
+                                <span>Pencegahan</span>
+                            </span>
+                            <i data-lucide="chevron-down" class="chevron"></i>
+                        </button>
+                        <ul class="submenu" id="menuPencegahan">
+                            <li>
+                                <a href="{{ route('unit-pencegahan.cek-harian-unit') }}"
+                                   class="{{ request()->routeIs('unit-pencegahan.cek-harian-unit') ? 'active' : '' }}">
+                                    Cek Harian Unit
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('alat-pencegahan.cek-harian-alat') }}"
+                                   class="{{ request()->routeIs('alat-pencegahan.cek-harian-alat') ? 'active' : '' }}">
+                                    Cek Harian Alat
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    @endif
 
                     {{-- === Command Center === --}}
+                    @if($showAll || str_contains($userBidang, 'command center'))
                     <div class="menu-group">
                         <button class="menu-title" type="button" data-target="menuCommand">
                             <span class="menu-title-left">
@@ -140,6 +180,7 @@
                             </li>
                         </ul>
                     </div>
+                    @endif
                 </div>
 
                 {{-- === Tombol Bawah Sidebar (Hanya 1 Tombol: Kembali ke Admin ATAU Logout) === --}}

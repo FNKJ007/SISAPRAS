@@ -55,14 +55,13 @@
                         <option value="{{ $p->nama }}" @selected(old('pos', auth()->user()->pos ?? '') == $p->nama)>{{ $p->nama }}</option>
                     @endforeach
                 </select>
-                @error('pos') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
             <div>
                 <label for="nama_pemeriksa" class="block text-sm font-medium mb-1">Nama Pemeriksa <span class="text-red-500">*</span></label>
                 <input type="text" id="nama_pemeriksa" name="nama_pemeriksa"
-                       value="{{ old('nama_pemeriksa', auth()->user()->name ?? '') }}" required
-                       placeholder="Masukkan nama pemeriksa"
-                       class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                       value="{{ old('nama_pemeriksa', auth()->user()->name ?? '') }}"
+                       placeholder="Masukkan nama pemeriksa" required
+                       class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
                 @error('nama_pemeriksa') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
             <div>

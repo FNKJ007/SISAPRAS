@@ -108,6 +108,39 @@ class AdminController extends Controller
             ->take(6)
             ->values();
 
+        // 5. Absen Pengecekan Harian Unit (Status Cek Hari Ini per Unit Armada)
+        $today = \Carbon\Carbon::today();
+        $todayCekUnits = \App\Models\CekHarianUnit::whereDate('created_at', $today)
+            ->orWhereDate('tanggal_pemeriksaan', $today)
+            ->latest()
+            ->get()
+            ->keyBy('unit_id');
+
+        $allUnits = \App\Models\Unit::orderBy('nomor_lambung', 'asc')->get();
+        $absenUnitList = $allUnits->map(function ($unit) use ($todayCekUnits) {
+            $cek = $todayCekUnits->get($unit->id);
+            return (object) [
+                'unit_id'        => $unit->id,
+                'nomor_lambung'  => $unit->nomor_lambung,
+                'plat_nomor'     => $unit->plat_nomor,
+                'merk_tipe'      => $unit->merk_tipe,
+                'kategori'       => $unit->kategori,
+                'pos'            => $unit->pos ?? '—',
+                'status_unit'    => $unit->status, // 'aktif' vs 'perbaikan'
+                'sudah_dicek'    => $cek !== null,
+                'nama_pemeriksa' => $cek ? $cek->nama_pemeriksa : null,
+                'jabatan'        => $cek ? $cek->jabatan : null,
+                'kebersihan'     => $cek ? ($cek->kebersihan_unit ?? 'bersih') : null,
+                'waktu_cek'      => $cek ? $cek->created_at->format('H:i') : null,
+            ];
+        });
+
+        $absenSummary = [
+            'total_unit'  => $allUnits->count(),
+            'sudah_dicek' => $absenUnitList->where('sudah_dicek', true)->count(),
+            'belum_dicek' => $absenUnitList->where('sudah_dicek', false)->count(),
+        ];
+
         return view('admin.dashboard', compact(
             'totalUnit',
             'unitPemadam',
@@ -127,7 +160,9 @@ class AdminController extends Controller
             'chartPemeliharaan',
             'chartBiaya',
             'posDistribution',
-            'activities'
+            'activities',
+            'absenUnitList',
+            'absenSummary'
         ));
     }
 
@@ -720,6 +755,57 @@ class AdminController extends Controller
         ]);
     }
 
+    /* ==================== UNIT PENCEGAHAN ==================== */
+
+    /**
+     * Halaman Pengecekan Pencegahan: menampilkan hasil input Cek Harian Unit
+     * Kendaraan Pencegahan dan Cek Harian Alat Pencegahan yang diisi oleh petugas.
+     */
+    public function unitPencegahanPengecekan(Request $request)
+    {
+        $tab         = $request->query('tab', 'unit');
+        $searchQuery = $request->query('search', '');
+
+        // ===== Hasil Cek Harian Unit Kendaraan Pencegahan =====
+        $unitQuery = CekHarianUnit::where('kategori', 'pencegahan');
+
+        if (!empty($searchQuery)) {
+            $unitQuery->where(function ($q) use ($searchQuery) {
+                $q->where('pos', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('unit_nama', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
+        $cekUnitList = $unitQuery->latest()
+            ->paginate(10, ['*'], 'unit_page')
+            ->withQueryString();
+
+        // ===== Hasil Cek Harian Alat Pencegahan =====
+        $alatQuery = CekHarianAlat::where('kategori', 'pencegahan');
+
+        if (!empty($searchQuery)) {
+            $alatQuery->where(function ($q) use ($searchQuery) {
+                $q->where('pos', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
+        $cekAlatList = $alatQuery->latest()
+            ->paginate(10, ['*'], 'alat_page')
+            ->withQueryString();
+
+        // ===== Ringkasan KPI =====
+        $kpi = [
+            'total_cek_unit'   => CekHarianUnit::where('kategori', 'pencegahan')->count(),
+            'unit_ada_rusak'   => CekHarianUnit::where('kategori', 'pencegahan')->where('jumlah_rusak', '>', 0)->count(),
+            'total_cek_alat'   => CekHarianAlat::where('kategori', 'pencegahan')->count(),
+            'alat_rusak_total' => (int) CekHarianAlat::where('kategori', 'pencegahan')->sum('total_rusak'),
+        ];
+
+        return view('admin.unit-pencegahan.pengecekan', compact('cekUnitList', 'cekAlatList', 'kpi', 'tab', 'searchQuery'));
+    }
+
     /* ==================== COMMAND CENTER ==================== */
     public function commandCenterDataPeralatan()
     {
@@ -898,17 +984,16 @@ class AdminController extends Controller
             'bidang'  => $bidangCounts,
         ];
 
-        $existingReguList = \App\Models\User::whereNotNull('regu')
-            ->where('regu', '!=', '')
-            ->pluck('regu')
+        $existingReguList = \App\Models\Regu::distinct()
+            ->orderBy('nama', 'asc')
+            ->pluck('nama')
             ->map(fn($v) => ucwords(strtolower(trim($v))))
             ->unique()
-            ->sort()
             ->values()
             ->toArray();
 
         if (empty($existingReguList)) {
-            $existingReguList = ['Regu 1', 'Regu 2', 'Regu 3', 'Regu 4'];
+            $existingReguList = ['Regu 1', 'Regu 2'];
         }
 
         $existingJabatanList = \App\Models\User::whereNotNull('jabatan')
@@ -929,6 +1014,9 @@ class AdminController extends Controller
             ];
         }
 
+        $pegawaiList = \App\Models\User::orderBy('name', 'asc')->get(['id', 'name', 'nip', 'jabatan', 'bidang', 'pos', 'regu', 'email', 'role', 'status']);
+        $allReguList = \App\Models\Regu::orderBy('pos', 'asc')->orderBy('nama', 'asc')->get(['id', 'nama', 'pos', 'bidang', 'danru', 'nip_danru']);
+
         return view('admin.pengaturan', compact(
             'userList',
             'kpi',
@@ -939,6 +1027,8 @@ class AdminController extends Controller
             'statusFilter',
             'searchQuery',
             'posList',
+            'pegawaiList',
+            'allReguList',
             'existingBidangList',
             'existingReguList',
             'existingJabatanList'

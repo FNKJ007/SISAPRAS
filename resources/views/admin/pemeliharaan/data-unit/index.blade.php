@@ -63,6 +63,8 @@
                         <option value="semua" @selected($kategoriFilter === 'semua')>Semua Kategori</option>
                         <option value="pemadam" @selected($kategoriFilter === 'pemadam')>Unit Pemadam</option>
                         <option value="rescue" @selected($kategoriFilter === 'rescue')>Unit Rescue</option>
+                        <option value="pencegahan" @selected($kategoriFilter === 'pencegahan')>Unit Pencegahan</option>
+                        <option value="komando" @selected($kategoriFilter === 'komando')>Unit Komando</option>
                     </select>
                 </div>
 
@@ -135,8 +137,8 @@
                             <th style="padding:12px 14px; width:140px;">MERK</th>
                             <th style="padding:12px 14px; width:70px; text-align:center;">TAHUN</th>
                             <th style="padding:12px 14px; width:65px; text-align:center;">CC</th>
-                            <th style="padding:12px 14px; width:135px;">JENIS KENDARAAN</th>
-                            <th style="padding:12px 14px; width:125px;">PERUNTUKAN</th>
+                            <th style="padding:12px 14px; width:140px;">JENIS KENDARAAN</th>
+                            <th style="padding:12px 14px; width:120px;">KATEGORI</th>
                             <th style="padding:12px 14px; width:110px;">PENEMPATAN</th>
                             <th style="padding:12px 14px; width:160px;">PENGEMUDI 1 &amp; 2</th>
                             <th style="padding:12px 14px; width:100px; text-align:center;">AKSI</th>
@@ -180,17 +182,32 @@
                                 {{-- Jenis Kendaraan --}}
                                 <td style="padding:12px 14px;">
                                     <span style="font-weight:700; font-size:11.5px; color:#0F172A; background:#F1F5F9; padding:3px 8px; border-radius:6px; border:1px solid #E2E8F0; display:inline-block;">
-                                        {{ $item->jenis_kendaraan ?: ($item->jenis_peruntukan ?? '—') }}
+                                        {{ $item->jenis_kendaraan ?: '—' }}
                                     </span>
                                 </td>
 
-                                {{-- Peruntukan --}}
+                                {{-- Kategori --}}
                                 <td style="padding:12px 14px;">
-                                    <div style="font-weight:700; font-size:11.5px; color:#1E293B;">{{ $item->peruntukan ?: '—' }}</div>
                                     @if(strtolower($item->kategori) === 'pemadam')
-                                        <span style="font-size:10px; color:#991B1B; font-weight:700;">● Pemadam</span>
+                                        <span style="background:#FEE2E2; color:#991B1B; border:1px solid #FECACA; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
+                                            <span style="width:6px; height:6px; border-radius:50%; background:#DC2626;"></span> Pemadam
+                                        </span>
+                                    @elseif(strtolower($item->kategori) === 'rescue')
+                                        <span style="background:#DBEAFE; color:#1E40AF; border:1px solid #BFDBFE; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
+                                            <span style="width:6px; height:6px; border-radius:50%; background:#2563EB;"></span> Rescue
+                                        </span>
+                                    @elseif(strtolower($item->kategori) === 'pencegahan')
+                                        <span style="background:#D1FAE5; color:#065F46; border:1px solid #A7F3D0; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
+                                            <span style="width:6px; height:6px; border-radius:50%; background:#059669;"></span> Pencegahan
+                                        </span>
+                                    @elseif(strtolower($item->kategori) === 'komando')
+                                        <span style="background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
+                                            <span style="width:6px; height:6px; border-radius:50%; background:#D97706;"></span> Komando
+                                        </span>
                                     @else
-                                        <span style="font-size:10px; color:#1D4ED8; font-weight:700;">● {{ $item->kategori ?: 'Rescue' }}</span>
+                                        <span style="background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
+                                            <span style="width:6px; height:6px; border-radius:50%; background:#64748B;"></span> {{ $item->kategori ?: 'Operasional' }}
+                                        </span>
                                     @endif
                                 </td>
 
@@ -334,35 +351,6 @@
                         </div>
                     </div>
 
-                    {{-- Peruntukan (Input Manual + Dropdown Riwayat + Hapus) --}}
-                    <div x-data="{ open: false, val: '{{ old('peruntukan') }}' }" style="position:relative;">
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Peruntukan</label>
-                        <div style="position:relative; display:flex; align-items:center;">
-                            <input type="text" name="peruntukan" x-model="val" placeholder="Ketik atau pilih peruntukan..."
-                                   style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('peruntukan') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;"
-                                   @focus="if(existingPeruntukanList.length > 0) open = true"
-                                   @click.outside="open = false">
-                            <button type="button" @click="open = !open" tabindex="-1"
-                                    style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
-                                <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
-                            </button>
-                        </div>
-                        @error('peruntukan')
-                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
-                        @enderror
-                        <div x-show="open && existingPeruntukanList.length > 0" x-cloak
-                             style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
-                            <template x-for="item in existingPeruntukanList" :key="item">
-                                <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
-                                     @click="val = item; open = false;"
-                                     onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
-                                     x-text="item">
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-
                     {{-- Kategori (Input Manual + Dropdown Riwayat + Hapus) --}}
                     <div x-data="{ open: false, val: '{{ old('kategori', 'Pemadam') }}' }" style="position:relative;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Kategori <span style="color:#DC2626;">*</span></label>
@@ -419,34 +407,109 @@
                             <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
                         @enderror
                     </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pengemudi 1</label>
-                        <input type="text" name="pengemudi_1" value="{{ old('pengemudi_1') }}" placeholder="Contoh: UDEN SUHENDI"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('pengemudi_1') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
+                    {{-- Pengemudi 1 (Ketik Autocomplete dari DB) --}}
+                    <div style="position:relative;"
+                         x-data="{
+                             open: false,
+                             search: '{{ old('pengemudi_1', '') }}',
+                             get filteredPegawai() {
+                                 if (!this.search || this.search.trim() === '') return {{ json_encode($pegawaiList) }};
+                                 let q = this.search.toLowerCase();
+                                 return {{ json_encode($pegawaiList) }}.filter(p => 
+                                     p.name.toLowerCase().includes(q) || 
+                                     (p.nip && p.nip.toLowerCase().includes(q)) ||
+                                     (p.jabatan && p.jabatan.toLowerCase().includes(q))
+                                 );
+                             },
+                             select(p) {
+                                 this.search = p.name;
+                                 this.open = false;
+                             }
+                         }"
+                         @click.away="open = false">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">
+                            Pengemudi 1 <span style="font-size:11px; font-weight:500; color:#2563EB;">(Ketik nama)</span>
+                        </label>
+                        <div style="position:relative;">
+                            <input type="text" name="pengemudi_1" x-model="search"
+                                   @focus="open = true"
+                                   @input="open = true"
+                                   placeholder="Ketik nama pengemudi 1..."
+                                   autocomplete="off"
+                                   style="width:100%; padding:8px 30px 8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('pengemudi_1') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none; box-sizing:border-box;">
+                            <button type="button" @click="open = !open" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#64748B; cursor:pointer;">
+                                <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+                            </button>
+                        </div>
+                        {{-- Dropdown Suggestions --}}
+                        <div x-show="open && filteredPegawai.length > 0"
+                             style="display:none; position:absolute; left:0; right:0; top:100%; margin-top:3px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(15,23,42,0.15); max-height:180px; overflow-y:auto; z-index:1000;">
+                            <template x-for="item in filteredPegawai" :key="item.id">
+                                <div @click="select(item)"
+                                     style="padding:8px 12px; border-bottom:1px solid #F1F5F9; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background 0.15s;"
+                                     onmouseover="this.style.background='#EFF6FF'"
+                                     onmouseout="this.style.background='transparent'">
+                                    <div>
+                                        <strong style="display:block; color:#0F172A; font-size:12px;" x-text="item.name"></strong>
+                                        <span style="font-size:11px; color:#64748B;" x-text="(item.jabatan || 'Pegawai') + (item.nip ? ' • NIP: ' + item.nip : '')"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
                     </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pengemudi 2</label>
-                        <input type="text" name="pengemudi_2" value="{{ old('pengemudi_2') }}" placeholder="Contoh: MUHAMAD ILHAM"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('pengemudi_2') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
-                    </div>
-                    <div style="grid-column: span 2;">
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Status Operasional <span style="color:#DC2626;">*</span></label>
-                        <select name="status" required style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('status') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none; background:#FFFFFF;">
-                            <option value="aktif" @selected(old('status', 'aktif') == 'aktif')>Aktif (Siaga Operasi)</option>
-                            <option value="perbaikan" @selected(old('status') == 'perbaikan')>Dalam Perbaikan</option>
-                            <option value="nonaktif" @selected(old('status') == 'nonaktif')>Non-Aktif</option>
-                        </select>
-                        @error('status')
-                            <span style="font-size:11px; color:#DC2626; font-weight:600; margin-top:3px; display:block;">{{ $message }}</span>
-                        @enderror
-                    </div>
-                </div>
 
-                <div style="margin-bottom:18px;">
-                    <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Catatan Khusus</label>
-                    <textarea name="catatan" rows="2" placeholder="Tuliskan catatan tambahan armada..."
-                              style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; resize:none;"></textarea>
+                    {{-- Pengemudi 2 (Ketik Autocomplete dari DB) --}}
+                    <div style="position:relative;"
+                         x-data="{
+                             open: false,
+                             search: '{{ old('pengemudi_2', '') }}',
+                             get filteredPegawai() {
+                                 if (!this.search || this.search.trim() === '') return {{ json_encode($pegawaiList) }};
+                                 let q = this.search.toLowerCase();
+                                 return {{ json_encode($pegawaiList) }}.filter(p => 
+                                     p.name.toLowerCase().includes(q) || 
+                                     (p.nip && p.nip.toLowerCase().includes(q)) ||
+                                     (p.jabatan && p.jabatan.toLowerCase().includes(q))
+                                 );
+                             },
+                             select(p) {
+                                 this.search = p.name;
+                                 this.open = false;
+                             }
+                         }"
+                         @click.away="open = false">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">
+                            Pengemudi 2 <span style="font-size:11px; font-weight:500; color:#2563EB;">(Ketik nama)</span>
+                        </label>
+                        <div style="position:relative;">
+                            <input type="text" name="pengemudi_2" x-model="search"
+                                   @focus="open = true"
+                                   @input="open = true"
+                                   placeholder="Ketik nama pengemudi 2..."
+                                   autocomplete="off"
+                                   style="width:100%; padding:8px 30px 8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('pengemudi_2') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none; box-sizing:border-box;">
+                            <button type="button" @click="open = !open" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#64748B; cursor:pointer;">
+                                <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+                            </button>
+                        </div>
+                        {{-- Dropdown Suggestions --}}
+                        <div x-show="open && filteredPegawai.length > 0"
+                             style="display:none; position:absolute; left:0; right:0; top:100%; margin-top:3px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(15,23,42,0.15); max-height:180px; overflow-y:auto; z-index:1000;">
+                            <template x-for="item in filteredPegawai" :key="item.id">
+                                <div @click="select(item)"
+                                     style="padding:8px 12px; border-bottom:1px solid #F1F5F9; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background 0.15s;"
+                                     onmouseover="this.style.background='#EFF6FF'"
+                                     onmouseout="this.style.background='transparent'">
+                                    <div>
+                                        <strong style="display:block; color:#0F172A; font-size:12px;" x-text="item.name"></strong>
+                                        <span style="font-size:11px; color:#64748B;" x-text="(item.jabatan || 'Pegawai') + (item.nip ? ' • NIP: ' + item.nip : '')"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
                 </div>
+                <input type="hidden" name="status" value="aktif">
 
                 <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid #E2E8F0; padding-top:14px;">
                     <button type="button" @click="createModalOpen = false"
@@ -529,32 +592,6 @@
                         </div>
                     </div>
 
-                    {{-- Edit: Peruntukan (Input Manual + Dropdown Riwayat + Hapus) --}}
-                    <div x-data="{ open: false }" style="position:relative;">
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Peruntukan</label>
-                        <div style="position:relative; display:flex; align-items:center;">
-                            <input type="text" name="peruntukan" x-model="activeUnit.peruntukan" placeholder="Ketik atau pilih peruntukan..."
-                                   style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
-                                   @focus="if(existingPeruntukanList.length > 0) open = true"
-                                   @click.outside="open = false">
-                            <button type="button" @click="open = !open" tabindex="-1"
-                                    style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
-                                <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
-                            </button>
-                        </div>
-                        <div x-show="open && existingPeruntukanList.length > 0" x-cloak
-                             style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
-                            <template x-for="item in existingPeruntukanList" :key="item">
-                                <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
-                                     @click="activeUnit.peruntukan = item; open = false;"
-                                     onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';"
-                                     x-text="item">
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-
                     {{-- Edit: Kategori (Input Manual + Dropdown Riwayat + Hapus) --}}
                     <div x-data="{ open: false }" style="position:relative;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Kategori <span style="color:#DC2626;">*</span></label>
@@ -599,31 +636,107 @@
                         <input type="text" name="cc" x-model="activeUnit.cc"
                                style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
                     </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pengemudi 1</label>
-                        <input type="text" name="pengemudi_1" x-model="activeUnit.pengemudi_1"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    {{-- Edit: Pengemudi 1 (Ketik Autocomplete dari DB) --}}
+                    <div style="position:relative;"
+                         x-data="{
+                             open: false,
+                             get filteredPegawai() {
+                                 if (!activeUnit.pengemudi_1 || activeUnit.pengemudi_1.trim() === '') return {{ json_encode($pegawaiList) }};
+                                 let q = activeUnit.pengemudi_1.toLowerCase();
+                                 return {{ json_encode($pegawaiList) }}.filter(p => 
+                                     p.name.toLowerCase().includes(q) || 
+                                     (p.nip && p.nip.toLowerCase().includes(q)) ||
+                                     (p.jabatan && p.jabatan.toLowerCase().includes(q))
+                                 );
+                             },
+                             select(p) {
+                                 activeUnit.pengemudi_1 = p.name;
+                                 this.open = false;
+                             }
+                         }"
+                         @click.away="open = false">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">
+                            Pengemudi 1 <span style="font-size:11px; font-weight:500; color:#2563EB;">(Ketik nama)</span>
+                        </label>
+                        <div style="position:relative;">
+                            <input type="text" name="pengemudi_1" x-model="activeUnit.pengemudi_1"
+                                   @focus="open = true"
+                                   @input="open = true"
+                                   placeholder="Ketik nama pengemudi 1..."
+                                   autocomplete="off"
+                                   style="width:100%; padding:8px 30px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; box-sizing:border-box;">
+                            <button type="button" @click="open = !open" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#64748B; cursor:pointer;">
+                                <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+                            </button>
+                        </div>
+                        {{-- Dropdown Suggestions --}}
+                        <div x-show="open && filteredPegawai.length > 0"
+                             style="display:none; position:absolute; left:0; right:0; top:100%; margin-top:3px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(15,23,42,0.15); max-height:180px; overflow-y:auto; z-index:1000;">
+                            <template x-for="item in filteredPegawai" :key="item.id">
+                                <div @click="select(item)"
+                                     style="padding:8px 12px; border-bottom:1px solid #F1F5F9; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background 0.15s;"
+                                     onmouseover="this.style.background='#EFF6FF'"
+                                     onmouseout="this.style.background='transparent'">
+                                    <div>
+                                        <strong style="display:block; color:#0F172A; font-size:12px;" x-text="item.name"></strong>
+                                        <span style="font-size:11px; color:#64748B;" x-text="(item.jabatan || 'Pegawai') + (item.nip ? ' • NIP: ' + item.nip : '')"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
                     </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pengemudi 2</label>
-                        <input type="text" name="pengemudi_2" x-model="activeUnit.pengemudi_2"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
-                    </div>
-                    <div style="grid-column: span 2;">
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Status Operasional <span style="color:#DC2626;">*</span></label>
-                        <select name="status" required x-model="activeUnit.status" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
-                            <option value="aktif">Aktif (Siap Operasi)</option>
-                            <option value="perbaikan">Dalam Perbaikan</option>
-                            <option value="nonaktif">Non-Aktif</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div style="margin-bottom:18px;">
-                    <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Catatan Khusus</label>
-                    <textarea name="catatan" rows="2" x-model="activeUnit.catatan" placeholder="Tuliskan catatan tambahan armada..."
-                              style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; resize:none;"></textarea>
+                    {{-- Edit: Pengemudi 2 (Ketik Autocomplete dari DB) --}}
+                    <div style="position:relative;"
+                         x-data="{
+                             open: false,
+                             get filteredPegawai() {
+                                 if (!activeUnit.pengemudi_2 || activeUnit.pengemudi_2.trim() === '') return {{ json_encode($pegawaiList) }};
+                                 let q = activeUnit.pengemudi_2.toLowerCase();
+                                 return {{ json_encode($pegawaiList) }}.filter(p => 
+                                     p.name.toLowerCase().includes(q) || 
+                                     (p.nip && p.nip.toLowerCase().includes(q)) ||
+                                     (p.jabatan && p.jabatan.toLowerCase().includes(q))
+                                 );
+                             },
+                             select(p) {
+                                 activeUnit.pengemudi_2 = p.name;
+                                 this.open = false;
+                             }
+                         }"
+                         @click.away="open = false">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">
+                            Pengemudi 2 <span style="font-size:11px; font-weight:500; color:#2563EB;">(Ketik nama)</span>
+                        </label>
+                        <div style="position:relative;">
+                            <input type="text" name="pengemudi_2" x-model="activeUnit.pengemudi_2"
+                                   @focus="open = true"
+                                   @input="open = true"
+                                   placeholder="Ketik nama pengemudi 2..."
+                                   autocomplete="off"
+                                   style="width:100%; padding:8px 30px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; box-sizing:border-box;">
+                            <button type="button" @click="open = !open" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#64748B; cursor:pointer;">
+                                <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+                            </button>
+                        </div>
+                        {{-- Dropdown Suggestions --}}
+                        <div x-show="open && filteredPegawai.length > 0"
+                             style="display:none; position:absolute; left:0; right:0; top:100%; margin-top:3px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(15,23,42,0.15); max-height:180px; overflow-y:auto; z-index:1000;">
+                            <template x-for="item in filteredPegawai" :key="item.id">
+                                <div @click="select(item)"
+                                     style="padding:8px 12px; border-bottom:1px solid #F1F5F9; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background 0.15s;"
+                                     onmouseover="this.style.background='#EFF6FF'"
+                                     onmouseout="this.style.background='transparent'">
+                                    <div>
+                                        <strong style="display:block; color:#0F172A; font-size:12px;" x-text="item.name"></strong>
+                                        <span style="font-size:11px; color:#64748B;" x-text="(item.jabatan || 'Pegawai') + (item.nip ? ' • NIP: ' + item.nip : '')"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
                 </div>
+                <input type="hidden" name="status" :value="activeUnit.status || 'aktif'">
 
                 <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid #E2E8F0; padding-top:14px;">
                     <button type="button" @click="editModalOpen = false"
@@ -876,7 +989,6 @@ function dataUnitApp() {
         editUrl: '',
         deleteUrl: '',
         existingJenisList: @json($existingJenisList ?? []),
-        existingPeruntukanList: @json($existingPeruntukanList ?? []),
         existingKategoriList: @json($existingKategoriList ?? []),
         openBukuServis(unitId) {
             this.bukuServisModalOpen = true;

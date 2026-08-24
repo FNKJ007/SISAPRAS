@@ -48,6 +48,50 @@
                         </a>
                     </div>
 
+                    {{-- === Master Data === --}}
+                    <div class="menu-group">
+                        <button class="menu-title"
+                                type="button" data-target="menuMasterData">
+                            <span class="menu-title-left">
+                                <i data-lucide="database" class="menu-icon"></i>
+                                <span>Master Data</span>
+                            </span>
+                            <i data-lucide="chevron-down" class="chevron"></i>
+                        </button>
+                        <ul class="submenu" id="menuMasterData">
+                            <li>
+                                <a href="{{ route('admin.pemeliharaan.data-unit') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-unit*') ? 'active' : '' }}">
+                                    Data Unit
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('admin.pemeliharaan.data-peralatan') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-peralatan*') ? 'active' : '' }}">
+                                    Data Peralatan
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('admin.pemeliharaan.data-pos') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-pos*') ? 'active' : '' }}">
+                                    Data Pos
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('admin.pemeliharaan.data-regu') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-regu*') ? 'active' : '' }}">
+                                    Data Regu
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('admin.pemeliharaan.data-pegawai') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.data-pegawai*') ? 'active' : '' }}">
+                                    Data Pegawai
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
                     {{-- === Pemeliharaan === --}}
                     <div class="menu-group">
                         <button class="menu-title"
@@ -98,21 +142,9 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('admin.pemeliharaan.data-unit') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.data-unit*') ? 'active' : '' }}">
-                                    Data Unit
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.pemeliharaan.data-peralatan') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.data-peralatan*') ? 'active' : '' }}">
-                                    Data Peralatan
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.pemeliharaan.data-pos') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.data-pos*') ? 'active' : '' }}">
-                                    Data Pos
+                                <a href="{{ route('admin.pemeliharaan.alokasi-kebersihan.index') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.alokasi-kebersihan.*') ? 'active' : '' }}">
+                                    Alokasi Kebersihan Unit
                                 </a>
                             </li>
                         </ul>
@@ -158,6 +190,26 @@
                         </ul>
                     </div>
 
+                    {{-- === Unit Pencegahan === --}}
+                    <div class="menu-group">
+                        <button class="menu-title"
+                                type="button" data-target="menuPencegahan">
+                            <span class="menu-title-left">
+                                <i data-lucide="shield" class="menu-icon"></i>
+                                <span>Unit Pencegahan</span>
+                            </span>
+                            <i data-lucide="chevron-down" class="chevron"></i>
+                        </button>
+                        <ul class="submenu" id="menuPencegahan">
+                            <li>
+                                <a href="{{ route('admin.unit-pencegahan.pengecekan') }}"
+                                   class="{{ request()->routeIs('admin.unit-pencegahan.pengecekan') ? 'active' : '' }}">
+                                    Pengecekan
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
                     {{-- === Command Center === --}}
                     <div class="menu-group">
                         <button class="menu-title"
@@ -188,16 +240,12 @@
                             </span>
                             <i data-lucide="chevron-down" class="chevron"></i>
                         </button>
-                        <ul class="submenu" id="menuApar">  
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a href="{{ route('admin.apar.monitoring-kejadian') }}"
-                                           class="nav-link {{ request()->routeIs('admin.apar.monitoring-kejadian') ? 'active' : '' }}">
-                                            <i class="far fa-circle nav-icon text-danger"></i>
-                                            <p>Monitoring Kejadian</p>
-                                        </a>
-                                    </li>
-                                </ul>
+                        <ul class="submenu" id="menuApar">
+                            <li>
+                                <a href="{{ route('admin.apar.monitoring-kejadian') }}"
+                                   class="{{ request()->routeIs('admin.apar.monitoring-kejadian') ? 'active' : '' }}">
+                                    Monitoring Kejadian
+                                </a>
                             </li>
                         </ul>
                     </div>

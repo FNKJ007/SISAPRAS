@@ -1,0 +1,226 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 max-w-5xl mx-auto">
+
+    {{-- Flash Message Success --}}
+    @if(session('success'))
+        <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between shadow-xs gap-3 flex-wrap">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">✓</div>
+                <div>
+                    <h4 class="font-bold text-sm">Pemeriksaan Alat Pencegahan Berhasil Disimpan!</h4>
+                    <p class="text-xs text-emerald-700 mt-0.5">{{ session('success') }}</p>
+                </div>
+            </div>
+            @if(session('cek_id'))
+                <a href="{{ route('alat-pencegahan.cek-harian-alat.export-pdf', session('cek_id')) }}"
+                   class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v8.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V4a1 1 0 011-1zM4 15a1 1 0 011 1v1h10v-1a1 1 0 112 0v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Unduh PDF
+                </a>
+            @endif
+        </div>
+    @endif
+
+    {{-- Flash Message Error --}}
+    @if(session('error'))
+        <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 flex items-center gap-3 shadow-xs">
+            <div class="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-sm shrink-0">!</div>
+            <div>
+                <h4 class="font-bold text-sm">Gagal Membuat PDF</h4>
+                <p class="text-xs text-red-700 mt-0.5">{{ session('error') }}</p>
+            </div>
+        </div>
+    @endif
+
+    <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Cek Harian Alat Pencegahan</h1>
+    <p class="text-gray-500 text-sm mt-1 mb-6">
+        Pemeriksaan kondisi dan kelengkapan alat pencegahan.
+    </p>
+
+    <form action="{{ route('alat-pencegahan.cek-harian-alat.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+        @csrf
+
+        {{-- Identitas Pemeriksaan: Pos Damkar, Nama Pemeriksa, Jabatan, Tanggal --}}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+                <label for="pos" class="block text-sm font-medium mb-1">Pos Damkar <span class="text-red-500">*</span></label>
+                <select id="pos" name="pos" required
+                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    <option value="" selected disabled>Pilih Pos Damkar</option>
+                    @foreach($posList ?? [] as $p)
+                        <option value="{{ $p->nama }}" @selected(old('pos', auth()->user()->pos ?? '') == $p->nama)>{{ $p->nama }}</option>
+                    @endforeach
+                </select>
+                @error('pos') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label for="nama_pemeriksa" class="block text-sm font-medium mb-1">Nama Pemeriksa <span class="text-red-500">*</span></label>
+                <input type="text" id="nama_pemeriksa" name="nama_pemeriksa"
+                       value="{{ old('nama_pemeriksa', auth()->user()->name ?? '') }}"
+                       placeholder="Masukkan nama pemeriksa" required
+                       class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                @error('nama_pemeriksa') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label for="jabatan" class="block text-sm font-medium mb-1">Jabatan <span class="text-red-500">*</span></label>
+                <input type="text" id="jabatan" name="jabatan"
+                       value="{{ old('jabatan', auth()->user()->jabatan ?? 'Petugas Regu') }}" required
+                       placeholder="Masukkan jabatan"
+                       class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                @error('jabatan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label for="tanggal_pemeriksaan" class="block text-sm font-medium mb-1">Tanggal Pemeriksaan <span class="text-red-500">*</span></label>
+                <input type="date" id="tanggal_pemeriksaan" name="tanggal_pemeriksaan" required
+                       value="{{ old('tanggal_pemeriksaan', date('Y-m-d')) }}"
+                       class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
+                @error('tanggal_pemeriksaan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
+        </div>
+
+        {{-- Daftar Pemeriksaan Alat --}}
+        <div class="pt-2">
+            <h2 class="text-base font-semibold border-b border-gray-200 pb-2 mb-4">Daftar Pemeriksaan Alat</h2>
+
+            <div class="space-y-3">
+                @foreach(($daftarAlat ?? []) as $index => $alat)
+                    @php
+                        $baikLama = old('alat.' . $index . '.jumlah_baik', $alat->jumlah_baik ?? 0);
+                        $rusakLama = old('alat.' . $index . '.jumlah_rusak', $alat->jumlah_rusak ?? 0);
+                        $nomorRusakLama = old('alat.' . $index . '.nomor_rusak');
+                    @endphp
+                    <div class="border border-gray-200 rounded-xl p-4 sm:p-5"
+                         x-data="{ jumlahBaik: {{ $baikLama }}, jumlahRusak: {{ $rusakLama }} }">
+
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+                            <div class="flex items-center gap-3 flex-1">
+                                <span class="flex-shrink-0 w-8 h-8 rounded-md bg-red-700 text-white text-xs font-bold flex items-center justify-center">
+                                    {{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}
+                                </span>
+                                <h3 class="font-semibold text-gray-900 text-sm sm:text-base">{{ $alat->nama }}</h3>
+                                <input type="hidden" name="alat[{{ $index }}][id]" value="{{ $alat->id }}">
+                            </div>
+
+                            {{-- Input Jumlah Baik & Rusak --}}
+                            <div class="flex items-center gap-3 sm:gap-4 flex-wrap">
+                                <div class="flex items-center gap-2">
+                                    <label for="baik_{{ $index }}" class="text-xs font-bold text-green-700 uppercase tracking-wide">Baik:</label>
+                                    <input type="number" id="baik_{{ $index }}" name="alat[{{ $index }}][jumlah_baik]"
+                                           x-model.number="jumlahBaik" min="0" placeholder="0"
+                                           class="w-20 rounded-lg border border-green-300 px-3 py-1.5 text-sm font-semibold text-green-800 bg-green-50/60 focus:outline-none focus:ring-2 focus:ring-green-600">
+                                </div>
+
+                                <div class="flex items-center gap-2">
+                                    <label for="rusak_{{ $index }}" class="text-xs font-bold text-red-700 uppercase tracking-wide">Rusak:</label>
+                                    <input type="number" id="rusak_{{ $index }}" name="alat[{{ $index }}][jumlah_rusak]"
+                                           x-model.number="jumlahRusak" min="0" placeholder="0"
+                                           class="w-20 rounded-lg border border-red-300 px-3 py-1.5 text-sm font-semibold text-red-800 bg-red-50/60 focus:outline-none focus:ring-2 focus:ring-red-600">
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Muncul otomatis jika ada alat yang rusak (jumlahRusak > 0) --}}
+                        <div class="mt-3 pt-3 border-t border-gray-100" x-show="jumlahRusak > 0" x-cloak>
+                            <label class="block text-xs font-semibold text-red-800 mb-1">Nomor / Keterangan Alat yang Rusak</label>
+                            <input type="text" name="alat[{{ $index }}][nomor_rusak]"
+                                   value="{{ $nomorRusakLama }}"
+                                   placeholder="Contoh: Unit 1 mengalami kerusakan / kebocoran"
+                                   class="w-full rounded-lg border border-red-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600 bg-red-50/30">
+                            <p class="text-[11px] text-gray-400 mt-1">Sebutkan keterangan spesifik barang yang rusak.</p>
+                            @error('alat.' . $index . '.nomor_rusak')
+                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- Catatan & Foto Umum (untuk keseluruhan pemeriksaan, bukan per-alat) --}}
+        <div class="pt-2">
+            <h2 class="text-base font-semibold border-b border-gray-200 pb-2 mb-4">Catatan &amp; Dokumentasi</h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="catatan_umum" class="block text-sm font-medium mb-1">Catatan Umum</label>
+                    <textarea id="catatan_umum" name="catatan_umum" rows="4"
+                              placeholder="Tuliskan catatan keseluruhan pemeriksaan (jika ada)..."
+                              class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-600">{{ old('catatan_umum') }}</textarea>
+                    @error('catatan_umum') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">Foto Dokumentasi</label>
+                    <label for="foto_umum" id="fotoUmumLabel"
+                           class="flex flex-col items-center justify-center h-[110px] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer text-center hover:border-blue-500 transition-colors">
+                        <span class="text-blue-600 text-lg leading-none">📷</span>
+                        <span class="text-xs text-blue-700 font-medium mt-1" id="fotoUmumText">+ Tambahkan Foto</span>
+                        <span class="text-[11px] text-gray-400">JPG, PNG, WEBP maks. 10MB</span>
+                    </label>
+                    <input id="foto_umum" type="file" name="foto_umum"
+                           accept="image/*" class="hidden">
+                    <div id="fotoUmumPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
+                    @error('foto_umum') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                </div>
+            </div>
+        </div>
+
+        {{-- Tombol Kirim --}}
+        <div class="flex justify-end pt-4 border-t border-gray-200">
+            <button type="submit" class="btn btn-primary">
+                <i data-lucide="send" class="w-4 h-4"></i> Simpan Pemeriksaan Alat Pencegahan
+            </button>
+        </div>
+
+    </form>
+</div>
+
+@push('scripts')
+<script>
+(function () {
+    var input = document.getElementById('foto_umum');
+    var labelText = document.getElementById('fotoUmumText');
+    var previewEl = document.getElementById('fotoUmumPreview');
+    var labelBox = document.getElementById('fotoUmumLabel');
+
+    if (!input || !labelText) return;
+
+    input.addEventListener('change', function () {
+        if (previewEl) previewEl.innerHTML = '';
+
+        if (input.files.length === 0) {
+            labelText.textContent = '+ Tambahkan Foto';
+            labelBox.classList.remove('border-emerald-500', 'bg-emerald-50/50');
+            if (previewEl) previewEl.classList.add('hidden');
+            return;
+        }
+
+        labelBox.classList.add('border-emerald-500', 'bg-emerald-50/50');
+        labelText.textContent = '✓ ' + input.files[0].name;
+
+        if (previewEl && input.files[0].type.startsWith('image/')) {
+            previewEl.classList.remove('hidden');
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var item = document.createElement('div');
+                item.className = 'relative border border-emerald-300 rounded-lg p-1.5 bg-emerald-50/30 flex items-center gap-2.5 shadow-2xs';
+                item.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview" class="w-12 h-12 object-cover rounded-md border border-emerald-200">
+                    <div>
+                        <span class="block text-xs font-bold text-emerald-900 truncate max-w-[160px]">${input.files[0].name}</span>
+                        <span class="block text-[10px] text-emerald-700 font-semibold">${(input.files[0].size / 1024).toFixed(1)} KB · Foto Terpilih ✓</span>
+                    </div>
+                `;
+                previewEl.appendChild(item);
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    });
+})();
+</script>
+@endpush
+@endsection
