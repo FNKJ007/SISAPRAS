@@ -14,13 +14,12 @@ class PengajuanController extends Controller
      */
     public function index()
     {
-        // Ambil Bidang dari Database Akun Pengguna (Generate Akun) + Fallback
+        // Ambil Bidang murni dari Master Data Pegawai (User)
         $bidangUserDb = \App\Models\User::whereNotNull('bidang')
             ->where('bidang', '!=', '')
-            ->get()
             ->pluck('bidang')
-            ->map(fn($b) => ucwords(strtolower(trim($b))))
-            ->concat(['Pemadam', 'Rescue', 'Command Center', 'Sekretariat', 'Sarana Prasarana'])
+            ->map(fn($b) => trim($b))
+            ->filter(fn($b) => !empty($b))
             ->unique()
             ->sort()
             ->values()

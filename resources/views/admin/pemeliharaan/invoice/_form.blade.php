@@ -1,9 +1,34 @@
 {{-- resources/views/admin/pemeliharaan/invoice/_form.blade.php --}}
 @php
     $isEdit = isset($invoice);
-    $selectedPengajuanId = $selectedPengajuanId ?? old('pengajuan_id', null);
+    $selectedPengajuanId = $selectedPengajuanId ?? old('pengajuan_id', request()->query('pengajuan_id', null));
     $isAktual = request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
     $routePrefix = $isAktual ? 'admin.pemeliharaan.monitoring-aktual' : 'admin.pemeliharaan.invoice';
+
+    // Cari pengajuan yang dipilih jika ada
+    $selectedPengajuan = null;
+    if ($selectedPengajuanId) {
+        $selectedPengajuan = (isset($pengajuans) ? $pengajuans->firstWhere('id', $selectedPengajuanId) : null) 
+            ?? \App\Models\Pengajuan::find($selectedPengajuanId);
+    }
+
+    $prefilledItems = [];
+    if (!$isEdit && !old('items') && $selectedPengajuan) {
+        $verifiedItems = $selectedPengajuan->verified_item_list;
+        if (!empty($verifiedItems)) {
+            foreach ($verifiedItems as $itName) {
+                $prefilledItems[] = [
+                    'tanggal'         => now()->format('Y-m-d'),
+                    'kode_item'       => '',
+                    'jenis_perbaikan' => ucwords(strtolower(trim($itName))),
+                    'vol'             => 1,
+                    'satuan'          => 'Pcs',
+                    'harga_satuan'    => 0,
+                    'potongan_persen' => 0,
+                ];
+            }
+        }
+    }
 
     $items = old('items', $isEdit ? $invoice->items->map(fn ($i) => [
         'tanggal' => $i->tanggal->format('Y-m-d'),
@@ -13,9 +38,9 @@
         'satuan' => $i->satuan,
         'harga_satuan' => (float) $i->harga_satuan,
         'potongan_persen' => (float) ($i->potongan_persen ?? 0),
-    ])->toArray() : [
+    ])->toArray() : (!empty($prefilledItems) ? $prefilledItems : [
         ['tanggal' => now()->format('Y-m-d'), 'kode_item' => '', 'jenis_perbaikan' => '', 'vol' => 1, 'satuan' => 'Pcs', 'harga_satuan' => 0, 'potongan_persen' => 0],
-    ]);
+    ]));
 @endphp
 
 {{-- Hidden fields for selected unit & pengajuan metadata --}}

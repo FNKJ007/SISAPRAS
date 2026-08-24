@@ -3,14 +3,7 @@
 @section('title', 'Data Pegawai & Pejabat — Admin')
 
 @section('content')
-<div x-data="{
-    createModalOpen: {{ isset($errors) && $errors->any() ? 'true' : 'false' }},
-    editModalOpen: false,
-    deleteModalOpen: false,
-    activePegawai: {},
-    editUrl: '',
-    deleteUrl: ''
-}">
+<div x-data="pegawaiApp()">
 
     {{-- Flash Message --}}
     @if(session('success'))
@@ -30,7 +23,7 @@
                 Kelola data kepegawaian personil, pejabat pimpinan struktural, dan petugas lapangan.
             </p>
         </div>
-        <button type="button" @click="createModalOpen = true"
+        <button type="button" @click="openCreateModal()"
                 style="padding:10px 18px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(27,42,107,0.2); transition:all 0.2s;">
             <i data-lucide="user-plus" style="width:16px; height:16px;"></i>
             <span>Tambah Pegawai Baru</span>
@@ -141,18 +134,13 @@
                                 <td style="padding:14px 16px; text-align:center; color:#64748B; font-weight:600;">
                                     {{ $pegawaiList->firstItem() + $index }}
                                 </td>
-                                <td style="padding:14px 16px;">
-                                    <span style="font-weight:800; color:#0F172A; display:inline-flex; align-items:center; gap:8px;">
-                                        <div style="width:28px; height:28px; border-radius:50%; background:#1B2A6B; color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800;">
-                                            {{ strtoupper(substr($item->name, 0, 1)) }}
-                                        </div>
-                                        <span>{{ $item->name }}</span>
-                                    </span>
+                                <td style="padding:14px 16px; font-weight:700; color:#0F172A;">
+                                    {{ $item->name }}
                                 </td>
                                 <td style="padding:14px 16px;">
                                     @if($item->nip)
                                         <span style="display:inline-block; padding:3px 8px; border-radius:6px; background:#F1F5F9; font-family:monospace; font-weight:700; color:#334155; font-size:12px;">
-                                            {{ $item->nip }}
+                                            {{ str_replace(' ', '', $item->nip) }}
                                         </span>
                                     @else
                                         <span style="color:#94A3B8; font-style:italic;">—</span>
@@ -165,14 +153,12 @@
                                         $isDanru = preg_match('/(danru|komandan)/i', $jabatanLower);
                                     @endphp
                                     @if($isPetinggi)
-                                        <span style="display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; background:#FEF3C7; color:#92400E;">
-                                            <i data-lucide="award" style="width:13px; height:13px;"></i>
-                                            <span>{{ $item->jabatan ?: 'Pejabat' }}</span>
+                                        <span style="display:inline-flex; align-items:center; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; background:#FEF3C7; color:#92400E;">
+                                            {{ $item->jabatan ?: 'Pejabat' }}
                                         </span>
                                     @elseif($isDanru)
-                                        <span style="display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; background:#DBEAFE; color:#1E40AF;">
-                                            <i data-lucide="shield" style="width:13px; height:13px;"></i>
-                                            <span>{{ $item->jabatan ?: 'Danru' }}</span>
+                                        <span style="display:inline-flex; align-items:center; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; background:#DBEAFE; color:#1E40AF;">
+                                            {{ $item->jabatan ?: 'Danru' }}
                                         </span>
                                     @else
                                         <span style="font-weight:600; color:#334155;">
@@ -185,34 +171,28 @@
                                         $bLower = strtolower($item->bidang ?? '');
                                     @endphp
                                     @if(str_contains($bLower, 'pemadam'))
-                                        <span style="display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#FEE2E2; color:#DC2626;">
-                                            <i data-lucide="flame" style="width:12px; height:12px;"></i>
-                                            <span>Pemadam</span>
+                                        <span style="display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#FEE2E2; color:#DC2626;">
+                                            Pemadam
                                         </span>
                                     @elseif(str_contains($bLower, 'rescue') || str_contains($bLower, 'penyelamatan'))
-                                        <span style="display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#DBEAFE; color:#2563EB;">
-                                            <i data-lucide="life-buoy" style="width:12px; height:12px;"></i>
-                                            <span>Rescue</span>
+                                        <span style="display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#DBEAFE; color:#2563EB;">
+                                            Rescue
                                         </span>
                                     @elseif(str_contains($bLower, 'pencegah'))
-                                        <span style="display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#FEF3C7; color:#D97706;">
-                                            <i data-lucide="shield-alert" style="width:12px; height:12px;"></i>
-                                            <span>Pencegahan</span>
+                                        <span style="display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#FEF3C7; color:#D97706;">
+                                            Pencegahan
                                         </span>
                                     @elseif(str_contains($bLower, 'sarana') || str_contains($bLower, 'spi'))
-                                        <span style="display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#E0E7FF; color:#4F46E5;">
-                                            <i data-lucide="wrench" style="width:12px; height:12px;"></i>
-                                            <span>Sarana Prasarana</span>
+                                        <span style="display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#E0E7FF; color:#4F46E5;">
+                                            Sarana Prasarana
                                         </span>
                                     @elseif(str_contains($bLower, 'sekretariat'))
-                                        <span style="display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#CFFAFE; color:#0891B2;">
-                                            <i data-lucide="building-2" style="width:12px; height:12px;"></i>
-                                            <span>Sekretariat</span>
+                                        <span style="display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#CFFAFE; color:#0891B2;">
+                                            Sekretariat
                                         </span>
                                     @elseif(str_contains($bLower, 'command') || str_contains($bLower, 'cc'))
-                                        <span style="display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#D1FAE5; color:#059669;">
-                                            <i data-lucide="radio" style="width:12px; height:12px;"></i>
-                                            <span>Command Center</span>
+                                        <span style="display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#D1FAE5; color:#059669;">
+                                            Command Center
                                         </span>
                                     @elseif($item->bidang)
                                         <span style="display:inline-block; padding:3px 8px; border-radius:6px; background:#F1F5F9; font-weight:700; color:#475569; font-size:11.5px;">
@@ -234,13 +214,33 @@
                                 </td>
                                 <td style="padding:14px 16px; text-align:center;">
                                     <div style="display:inline-flex; align-items:center; gap:6px;">
+                                        {{-- Tombol Buat Akun --}}
+                                        <a href="{{ route('admin.pengaturan', [
+                                                'generate' => 1,
+                                                'nip'      => $item->nip,
+                                                'name'     => $item->name,
+                                                'jabatan'  => $item->jabatan,
+                                                'bidang'   => $item->bidang,
+                                                'pos'      => $item->pos,
+                                                'regu'     => $item->regu,
+                                                'no_hp'    => $item->no_hp,
+                                            ]) }}"
+                                           style="padding:6px 9px; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px; color:#059669; cursor:pointer; font-size:12px; transition:all 0.15s; display:inline-flex; align-items:center; justify-content:center; text-decoration:none;"
+                                           title="Buat / Generate Akun Pengguna">
+                                            <i data-lucide="user-plus" style="width:14px; height:14px; color:#059669;"></i>
+                                        </a>
+
                                         {{-- Tombol Edit --}}
                                         <button type="button"
-                                                @click="
-                                                    activePegawai = {{ json_encode($item) }};
-                                                    editUrl = '{{ route('admin.pemeliharaan.data-pegawai.update', $item->id) }}';
-                                                    editModalOpen = true;
-                                                "
+                                                @click="openEditModal({
+                                                    id: {{ $item->id }},
+                                                    name: '{{ addslashes($item->name) }}',
+                                                    nip: '{{ addslashes($item->nip ?? '') }}',
+                                                    jabatan: '{{ addslashes($item->jabatan ?? '') }}',
+                                                    bidang: '{{ addslashes($item->bidang ?? '') }}',
+                                                    pos: '{{ addslashes($item->pos ?? '') }}',
+                                                    regu: '{{ addslashes($item->regu ?? '') }}'
+                                                }, '{{ route('admin.pemeliharaan.data-pegawai.update', $item->id) }}')"
                                                 style="padding:6px 9px; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px; color:#0F172A; cursor:pointer; font-size:12px; transition:all 0.15s;"
                                                 title="Edit Data Pegawai">
                                             <i data-lucide="edit-3" style="width:14px; height:14px; color:#2563EB;"></i>
@@ -248,11 +248,11 @@
 
                                         {{-- Tombol Hapus --}}
                                         <button type="button"
-                                                @click="
-                                                    activePegawai = {{ json_encode($item) }};
-                                                    deleteUrl = '{{ route('admin.pemeliharaan.data-pegawai.destroy', $item->id) }}';
-                                                    deleteModalOpen = true;
-                                                "
+                                                @click="openDeleteModal({
+                                                    id: {{ $item->id }},
+                                                    name: '{{ addslashes($item->name) }}',
+                                                    nip: '{{ addslashes($item->nip ?? '') }}'
+                                                }, '{{ route('admin.pemeliharaan.data-pegawai.destroy', $item->id) }}')"
                                                 style="padding:6px 9px; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px; color:#DC2626; cursor:pointer; font-size:12px; transition:all 0.15s;"
                                                 title="Hapus Pegawai">
                                             <i data-lucide="trash-2" style="width:14px; height:14px; color:#DC2626;"></i>
@@ -279,8 +279,8 @@
          x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
          x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
         <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;">
-            <div @click.away="createModalOpen = false" style="background:#FFFFFF; border-radius:20px; max-width:540px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); overflow:hidden;">
-                <div style="padding:20px 24px; background:#0F172A; color:#FFFFFF; display:flex; align-items:center; justify-content:space-between;">
+            <div @click.away="createModalOpen = false" style="background:#FFFFFF; border-radius:20px; max-width:540px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; overflow:visible;">
+                <div style="padding:20px 24px; background:#0F172A; color:#FFFFFF; display:flex; align-items:center; justify-content:space-between; border-top-left-radius:20px; border-top-right-radius:20px;">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <div style="width:34px; height:34px; border-radius:10px; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center;">
                             <i data-lucide="user-plus" style="width:18px; height:18px; color:#93C5FD;"></i>
@@ -312,36 +312,83 @@
                         @error('nip') <p style="font-size:11px; color:#DC2626; margin-top:4px;">{{ $message }}</p> @enderror
                     </div>
 
-                    {{-- Jabatan --}}
-                    <div style="margin-bottom:14px;">
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Jabatan <span style="color:#DC2626;">*</span></label>
-                        <input type="text" name="jabatan" value="{{ old('jabatan') }}" placeholder="Contoh: Kepala Bidang SPI / Danru / Petugas" required
-                                style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;">
+                    {{-- Jabatan (Ketik Bebas / Dropdown Riwayat) --}}
+                    <div x-data="{ open: false }" @click.outside="open = false" style="margin-bottom:14px; position:relative;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                            <label style="font-size:12px; font-weight:700; color:#334155; margin:0;">
+                                Jabatan <span style="color:#DC2626;">*</span>
+                            </label>
+                            <span style="font-size:11px; color:#64748B;">Ketik bebas atau pilih dari dropdown</span>
+                        </div>
+                        <div style="position:relative; display:flex; align-items:center;">
+                            <input type="text" name="jabatan" x-model="createJabatan"
+                                   placeholder="Contoh: Kepala Bidang SPI / Danru / Petugas" required
+                                   style="width:100%; padding:9px 36px 9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;"
+                                   @focus="open = true"
+                                   @input="open = true">
+                            <button type="button" @click.stop="open = !open" tabindex="-1"
+                                    style="position:absolute; right:1px; top:1px; bottom:1px; width:34px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
+                                <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+                            </button>
+                        </div>
+                        <div x-show="open && existingJabatanList.length > 0" x-cloak
+                             style="position:absolute; top:100%; left:0; right:0; max-height:180px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 12px 28px rgba(15,23,42,0.2); z-index:99999; margin-top:2px; -webkit-overflow-scrolling:touch;">
+                            <template x-for="item in (createJabatan ? existingJabatanList.filter(i => i.toLowerCase().includes(createJabatan.toLowerCase())) : existingJabatanList)" :key="item">
+                                <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer; display:flex; align-items:center; justify-content:space-between;"
+                                     @click="createJabatan = item; open = false;"
+                                     onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
+                                    <span x-text="item"></span>
+                                    <span x-show="createJabatan === item" style="color:#2563EB; font-size:11px; font-weight:700;">✓</span>
+                                </div>
+                            </template>
+                        </div>
                         @error('jabatan') <p style="font-size:11px; color:#DC2626; margin-top:4px;">{{ $message }}</p> @enderror
                     </div>
 
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px;">
-                        {{-- Bidang --}}
-                        <div>
-                            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Bidang / Bagian</label>
-                            <select name="bidang" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF; box-sizing:border-box;">
-                                <option value="">— Pilih Bidang —</option>
-                                @foreach($existingBidangList as $b)
-                                    <option value="{{ $b }}" {{ old('bidang') == $b ? 'selected' : '' }}>{{ $b }}</option>
-                                @endforeach
-                            </select>
+                    {{-- Bidang / Bagian (Ketik Bebas / Dropdown Riwayat - Full Width Serupa Jabatan) --}}
+                    <div x-data="{ open: false }" @click.outside="open = false" style="margin-bottom:14px; position:relative;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                            <label style="font-size:12px; font-weight:700; color:#334155; margin:0;">
+                                Bidang / Bagian <span style="color:#DC2626;">*</span>
+                            </label>
+                            <span style="font-size:11px; color:#64748B;">Ketik bebas atau pilih dari dropdown</span>
                         </div>
+                        <div style="position:relative; display:flex; align-items:center;">
+                            <input type="text" name="bidang" x-model="createBidang"
+                                   placeholder="Contoh: Sarana Prasarana Dan Informasi / Pemadam / Rescue" required
+                                   style="width:100%; padding:9px 36px 9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;"
+                                   @focus="open = true"
+                                   @input="open = true">
+                            <button type="button" @click.stop="open = !open" tabindex="-1"
+                                    style="position:absolute; right:1px; top:1px; bottom:1px; width:34px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
+                                <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+                            </button>
+                        </div>
+                        <div x-show="open && existingBidangList.length > 0" x-cloak
+                             style="position:absolute; top:100%; left:0; right:0; max-height:180px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 12px 28px rgba(15,23,42,0.2); z-index:99999; margin-top:2px; -webkit-overflow-scrolling:touch;">
+                            <template x-for="item in (createBidang ? existingBidangList.filter(i => i.toLowerCase().includes(createBidang.toLowerCase())) : existingBidangList)" :key="item">
+                                <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer; display:flex; align-items:center; justify-content:space-between;"
+                                     @click="createBidang = item; open = false;"
+                                     onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
+                                    <span x-text="item"></span>
+                                    <span x-show="createBidang === item" style="color:#2563EB; font-size:11px; font-weight:700;">✓</span>
+                                </div>
+                            </template>
+                        </div>
+                        @error('bidang') <p style="font-size:11px; color:#DC2626; margin-top:4px;">{{ $message }}</p> @enderror
+                    </div>
 
-                        {{-- Pos Penempatan --}}
-                        <div>
-                            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Pos Penempatan</label>
-                            <select name="pos" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF; box-sizing:border-box;">
-                                <option value="">— Pilih Pos —</option>
-                                @foreach($posList as $p)
-                                    <option value="{{ $p->nama }}" {{ old('pos') == $p->nama ? 'selected' : '' }}>{{ $p->nama }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                    {{-- Pos Penempatan --}}
+                    <div style="margin-bottom:20px;">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Pos Penempatan</label>
+                        <select name="pos" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF; box-sizing:border-box;">
+                            <option value="">— Pilih Pos Penempatan —</option>
+                            @foreach($posList as $p)
+                                <option value="{{ $p->nama }}" {{ old('pos') == $p->nama ? 'selected' : '' }}>{{ $p->nama }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <div style="display:flex; align-items:center; justify-content:flex-end; gap:10px;">
@@ -362,8 +409,8 @@
          x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
          x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
         <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;">
-            <div @click.away="editModalOpen = false" style="background:#FFFFFF; border-radius:20px; max-width:540px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); overflow:hidden;">
-                <div style="padding:20px 24px; background:#1E3A8A; color:#FFFFFF; display:flex; align-items:center; justify-content:space-between;">
+            <div @click.away="editModalOpen = false" style="background:#FFFFFF; border-radius:20px; max-width:540px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; overflow:visible;">
+                <div style="padding:20px 24px; background:#1E3A8A; color:#FFFFFF; display:flex; align-items:center; justify-content:space-between; border-top-left-radius:20px; border-top-right-radius:20px;">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <div style="width:34px; height:34px; border-radius:10px; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center;">
                             <i data-lucide="edit-3" style="width:18px; height:18px; color:#93C5FD;"></i>
@@ -394,35 +441,79 @@
                                 style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;">
                     </div>
 
-                    {{-- Jabatan --}}
-                    <div style="margin-bottom:14px;">
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Jabatan <span style="color:#DC2626;">*</span></label>
-                        <input type="text" name="jabatan" x-model="activePegawai.jabatan" placeholder="Jabatan" required
-                                style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;">
+                    {{-- Jabatan (Ketik Bebas / Dropdown Riwayat) --}}
+                    <div x-data="{ open: false }" @click.outside="open = false" style="margin-bottom:14px; position:relative;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                            <label style="font-size:12px; font-weight:700; color:#334155; margin:0;">
+                                Jabatan <span style="color:#DC2626;">*</span>
+                            </label>
+                            <span style="font-size:11px; color:#64748B;">Ketik bebas atau pilih dari dropdown</span>
+                        </div>
+                        <div style="position:relative; display:flex; align-items:center;">
+                            <input type="text" name="jabatan" x-model="activePegawai.jabatan" placeholder="Jabatan" required
+                                    style="width:100%; padding:9px 36px 9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;"
+                                    @focus="open = true"
+                                    @input="open = true">
+                            <button type="button" @click.stop="open = !open" tabindex="-1"
+                                    style="position:absolute; right:1px; top:1px; bottom:1px; width:34px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
+                                <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+                            </button>
+                        </div>
+                        <div x-show="open && existingJabatanList.length > 0" x-cloak
+                             style="position:absolute; top:100%; left:0; right:0; max-height:180px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 12px 28px rgba(15,23,42,0.2); z-index:99999; margin-top:2px; -webkit-overflow-scrolling:touch;">
+                            <template x-for="item in (activePegawai.jabatan ? existingJabatanList.filter(i => i.toLowerCase().includes(activePegawai.jabatan.toLowerCase())) : existingJabatanList)" :key="item">
+                                <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer; display:flex; align-items:center; justify-content:space-between;"
+                                     @click="activePegawai.jabatan = item; open = false;"
+                                     onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
+                                    <span x-text="item"></span>
+                                    <span x-show="activePegawai.jabatan === item" style="color:#2563EB; font-size:11px; font-weight:700;">✓</span>
+                                </div>
+                            </template>
+                        </div>
                     </div>
 
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px;">
-                        {{-- Bidang --}}
-                        <div>
-                            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Bidang / Bagian</label>
-                            <select name="bidang" x-model="activePegawai.bidang" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF; box-sizing:border-box;">
-                                <option value="">— Pilih Bidang —</option>
-                                @foreach($existingBidangList as $b)
-                                    <option value="{{ $b }}">{{ $b }}</option>
-                                @endforeach
-                            </select>
+                    {{-- Bidang / Bagian (Ketik Bebas / Dropdown Riwayat - Full Width Serupa Jabatan) --}}
+                    <div x-data="{ open: false }" @click.outside="open = false" style="margin-bottom:14px; position:relative;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                            <label style="font-size:12px; font-weight:700; color:#334155; margin:0;">
+                                Bidang / Bagian <span style="color:#DC2626;">*</span>
+                            </label>
+                            <span style="font-size:11px; color:#64748B;">Ketik bebas atau pilih dari dropdown</span>
                         </div>
+                        <div style="position:relative; display:flex; align-items:center;">
+                            <input type="text" name="bidang" x-model="activePegawai.bidang" placeholder="Ketik atau pilih bidang..." required
+                                   style="width:100%; padding:9px 36px 9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;"
+                                   @focus="open = true"
+                                   @input="open = true">
+                            <button type="button" @click.stop="open = !open" tabindex="-1"
+                                    style="position:absolute; right:1px; top:1px; bottom:1px; width:34px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
+                                <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
+                            </button>
+                        </div>
+                        <div x-show="open && existingBidangList.length > 0" x-cloak
+                             style="position:absolute; top:100%; left:0; right:0; max-height:180px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 12px 28px rgba(15,23,42,0.2); z-index:99999; margin-top:2px; -webkit-overflow-scrolling:touch;">
+                            <template x-for="item in (activePegawai.bidang ? existingBidangList.filter(i => i.toLowerCase().includes(activePegawai.bidang.toLowerCase())) : existingBidangList)" :key="item">
+                                <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer; display:flex; align-items:center; justify-content:space-between;"
+                                     @click="activePegawai.bidang = item; open = false;"
+                                     onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
+                                     onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
+                                    <span x-text="item"></span>
+                                    <span x-show="activePegawai.bidang === item" style="color:#2563EB; font-size:11px; font-weight:700;">✓</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
 
-                        {{-- Pos Penempatan --}}
-                        <div>
-                            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Pos Penempatan</label>
-                            <select name="pos" x-model="activePegawai.pos" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF; box-sizing:border-box;">
-                                <option value="">— Pilih Pos —</option>
-                                @foreach($posList as $p)
-                                    <option value="{{ $p->nama }}">{{ $p->nama }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                    {{-- Pos Penempatan --}}
+                    <div style="margin-bottom:20px;">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Pos Penempatan</label>
+                        <select name="pos" x-model="activePegawai.pos" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF; box-sizing:border-box;">
+                            <option value="">— Pilih Pos Penempatan —</option>
+                            @foreach($posList as $p)
+                                <option value="{{ $p->nama }}">{{ $p->nama }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <div style="display:flex; align-items:center; justify-content:flex-end; gap:10px;">
@@ -469,4 +560,61 @@
     </div>
 
 </div>
+
+<script>
+function pegawaiApp() {
+    return {
+        createModalOpen: {{ isset($errors) && $errors->any() ? 'true' : 'false' }},
+        editModalOpen: false,
+        deleteModalOpen: false,
+        activePegawai: {
+            id: null,
+            name: '',
+            nip: '',
+            jabatan: '',
+            bidang: '',
+            pos: '',
+            regu: ''
+        },
+        editUrl: '',
+        deleteUrl: '',
+        createJabatan: @json(old('jabatan', '')),
+        createBidang: @json(old('bidang', '')),
+        existingJabatanList: @json($existingJabatanList ?? []),
+        existingBidangList: @json($existingBidangList ?? []),
+        openCreateModal() {
+            this.createJabatan = '';
+            this.createBidang = '';
+            this.createModalOpen = true;
+            this.$nextTick(() => {
+                if (window.lucide) window.lucide.createIcons();
+            });
+        },
+        openEditModal(item, updateUrl) {
+            this.activePegawai = Object.assign({
+                id: null,
+                name: '',
+                nip: '',
+                jabatan: '',
+                bidang: '',
+                pos: '',
+                regu: ''
+            }, item);
+            this.editUrl = updateUrl;
+            this.editModalOpen = true;
+            this.$nextTick(() => {
+                if (window.lucide) window.lucide.createIcons();
+            });
+        },
+        openDeleteModal(item, destroyUrl) {
+            this.activePegawai = Object.assign({}, item);
+            this.deleteUrl = destroyUrl;
+            this.deleteModalOpen = true;
+            this.$nextTick(() => {
+                if (window.lucide) window.lucide.createIcons();
+            });
+        }
+    };
+}
+</script>
 @endsection

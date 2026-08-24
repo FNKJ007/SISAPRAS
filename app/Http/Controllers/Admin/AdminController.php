@@ -15,6 +15,8 @@ class AdminController extends Controller
      */
     public function dashboard(Request $request)
     {
+        \App\Models\Unit::syncStatusAll();
+
         $currentYear = (int) $request->query('tahun', date('Y'));
 
         // 1. KPI Stats Summary
@@ -923,7 +925,7 @@ class AdminController extends Controller
         $statusFilter = $request->query('status', 'semua');
         $searchQuery  = $request->query('search', '');
 
-        $query = \App\Models\User::orderBy('id', 'asc');
+        $query = \App\Models\User::where('has_account', true)->orderBy('id', 'asc');
 
         if ($roleFilter !== 'semua') {
             $query->where('role', $roleFilter);
@@ -958,29 +960,26 @@ class AdminController extends Controller
 
         $posList = \App\Models\Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
 
-        $existingBidangList = \App\Models\User::whereNotNull('bidang')
+        $existingBidangList = \App\Models\User::where('has_account', true)->whereNotNull('bidang')
             ->where('bidang', '!=', '')
             ->pluck('bidang')
-            ->map(fn($v) => ucwords(strtolower(trim($v))))
+            ->map(fn($v) => trim($v))
+            ->filter(fn($v) => !empty($v))
             ->unique()
             ->sort()
             ->values()
             ->toArray();
 
-        if (empty($existingBidangList)) {
-            $existingBidangList = ['Pemadam', 'Rescue', 'Command Center', 'Sekretariat', 'Sarana Prasarana'];
-        }
-
         // Hitung statistik per Bidang secara dinamis
         $bidangCounts = [];
         foreach ($existingBidangList as $b) {
-            $bidangCounts[$b] = \App\Models\User::where('bidang', 'LIKE', $b)->count();
+            $bidangCounts[$b] = \App\Models\User::where('has_account', true)->where('bidang', 'LIKE', $b)->count();
         }
 
         $kpi = [
-            'total'   => \App\Models\User::count(),
-            'admin'   => \App\Models\User::where('role', 'admin')->count(),
-            'aktif'   => \App\Models\User::where('status', 'aktif')->count(),
+            'total'   => \App\Models\User::where('has_account', true)->count(),
+            'admin'   => \App\Models\User::where('has_account', true)->where('role', 'admin')->count(),
+            'aktif'   => \App\Models\User::where('has_account', true)->where('status', 'aktif')->count(),
             'bidang'  => $bidangCounts,
         ];
 
@@ -1000,19 +999,11 @@ class AdminController extends Controller
             ->where('jabatan', '!=', '')
             ->pluck('jabatan')
             ->map(fn($v) => trim($v))
+            ->filter(fn($v) => !empty($v))
             ->unique()
+            ->sort()
             ->values()
             ->toArray();
-
-        if (empty($existingJabatanList)) {
-            $existingJabatanList = [
-                'Komandan Regu (Danru)',
-                'Kepala Seksi (Kasi)',
-                'Kepala Bidang (Kabid)',
-                'Anggota / Petugas',
-                'Pengemudi / Driver',
-            ];
-        }
 
         $pegawaiList = \App\Models\User::orderBy('name', 'asc')->get(['id', 'name', 'nip', 'jabatan', 'bidang', 'pos', 'regu', 'email', 'role', 'status']);
         $allReguList = \App\Models\Regu::orderBy('pos', 'asc')->orderBy('nama', 'asc')->get(['id', 'nama', 'pos', 'bidang', 'danru', 'nip_danru']);

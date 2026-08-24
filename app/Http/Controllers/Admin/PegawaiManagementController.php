@@ -52,14 +52,25 @@ class PegawaiManagementController extends Controller
 
         $posList = \App\Models\Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
 
-        $existingBidangList = [
-            'Pemadam',
-            'Rescue',
-            'Pencegahan',
-            'Sarana Prasarana Dan Informasi',
-            'Sekretariat',
-            'Command Center',
-        ];
+        $existingBidangList = User::whereNotNull('bidang')
+            ->where('bidang', '!=', '')
+            ->pluck('bidang')
+            ->map(fn($v) => trim($v))
+            ->filter(fn($v) => !empty($v))
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
+
+        $existingJabatanList = User::whereNotNull('jabatan')
+            ->where('jabatan', '!=', '')
+            ->pluck('jabatan')
+            ->map(fn($v) => trim($v))
+            ->filter(fn($v) => !empty($v))
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
 
         return view('admin.pemeliharaan.data-pegawai.index', compact(
             'pegawaiList',
@@ -68,7 +79,8 @@ class PegawaiManagementController extends Controller
             'bidangFilter',
             'posFilter',
             'posList',
-            'existingBidangList'
+            'existingBidangList',
+            'existingJabatanList'
         ));
     }
 
