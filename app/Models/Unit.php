@@ -22,6 +22,10 @@ class Unit extends Model
         'peruntukan',
         'jenis_peruntukan',
         'pos',
+        'bidang_id',
+        'pos_id',
+        'pengemudi_utama_id',
+        'pengemudi_cadangan_id',
         'pengemudi_1',
         'pengemudi_2',
         'status',
@@ -53,43 +57,46 @@ class Unit extends Model
     }
 
     public static array $kategoriMap = [
-        'pemadam' => 'Pemadam',
-        'rescue'  => 'Rescue',
+        'pemadam'    => 'Pemadam',
+        'rescue'     => 'Rescue',
+        'pencegahan' => 'Pencegahan',
+        'komando'    => 'Komando',
     ];
 
     public static array $statusMap = [
         'aktif'     => 'Aktif',
-        'perbaikan' => 'Perbaikan / Bengkel',
+        'perbaikan' => 'Dalam Perbaikan',
         'nonaktif'  => 'Non-Aktif',
     ];
+
+    // 3NF Relationships
+    public function posRelasi()
+    {
+        return $this->belongsTo(Pos::class, 'pos_id');
+    }
+
+    public function bidangRelasi()
+    {
+        return $this->belongsTo(Bidang::class, 'bidang_id');
+    }
+
+    public function pengemudiUtama()
+    {
+        return $this->belongsTo(User::class, 'pengemudi_utama_id');
+    }
+
+    public function pengemudiCadangan()
+    {
+        return $this->belongsTo(User::class, 'pengemudi_cadangan_id');
+    }
+
+    public function pengajuans()
+    {
+        return $this->hasMany(Pengajuan::class, 'unit_id');
+    }
 
     public function cekHarianUnits()
     {
         return $this->hasMany(CekHarianUnit::class, 'unit_id');
-    }
-
-    public function cekHarianAlats()
-    {
-        return $this->hasMany(CekHarianAlat::class, 'unit_id');
-    }
-
-    public function getNoPolAttribute()
-    {
-        return $this->plat_nomor;
-    }
-
-    public function getNoLambungAttribute()
-    {
-        return $this->nomor_lambung;
-    }
-
-    public function getJenisMobilAttribute()
-    {
-        return $this->jenis_kendaraan ?: ($this->merk_tipe ?: $this->jenis_peruntukan);
-    }
-
-    public function getLokasiAttribute()
-    {
-        return $this->pos;
     }
 }

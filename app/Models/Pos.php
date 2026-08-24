@@ -104,4 +104,30 @@ class Pos extends Model
     {
         return Unit::where('pos', 'LIKE', $this->nama)->count();
     }
+
+    // 3NF Relationships
+    public function units()
+    {
+        return $this->hasMany(Unit::class, 'pos_id');
+    }
+
+    public function users()
+    {
+        return $this->hasMany(User::class, 'pos_id');
+    }
+
+    public function regus()
+    {
+        return $this->hasMany(Regu::class, 'pos_id');
+    }
+
+    public function peralatans()
+    {
+        return $this->hasMany(Peralatan::class, 'pos_id');
+    }
+
+    public function pengajuans()
+    {
+        return $this->hasMany(Pengajuan::class, 'pos_id');
+    }
 }

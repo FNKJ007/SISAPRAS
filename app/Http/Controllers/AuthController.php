@@ -50,9 +50,19 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ], $messages);
 
+        $nip = trim($request->input('nip'));
+        $targetUser = \App\Models\User::where('nip', $nip)->first();
+
+        if ($targetUser && (!$targetUser->has_account || $targetUser->status === 'nonaktif')) {
+            RateLimiter::hit($throttleKey);
+            return back()->withErrors([
+                'nip' => 'Pegawai ini belum memiliki hak akses login sistem. Silakan hubungi Administrator.',
+            ])->onlyInput('nip');
+        }
+
         // 3. PROSES AUTENTIKASI menggunakan NIP
         $credentials = [
-            'nip'      => trim($request->input('nip')),
+            'nip'      => $nip,
             'password' => $request->input('password'),
         ];
 

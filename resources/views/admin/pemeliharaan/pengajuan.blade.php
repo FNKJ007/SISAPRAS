@@ -236,19 +236,19 @@
                     <div style="display:flex; flex-direction:column; gap:8px;">
                         <div>
                             <span style="color:#64748B; font-size:10.5px; display:block;">Unit &amp; Pos:</span>
-                            <strong style="color:#0F172A;" x-text="(activeItem.nomor_lambung || '-') + ' — ' + cleanPos(activeItem.pos)"></strong>
+                            <strong style="color:#0F172A;" x-text="formatUnit(activeItem.nomor_lambung) + ' — ' + formatPos(activeItem.pos)"></strong>
                         </div>
                         <div>
                             <span style="color:#64748B; font-size:10.5px; display:block;">Regu:</span>
-                            <span style="color:#1E293B; font-weight:700;" x-text="activeItem.regu || '-'"></span>
+                            <span style="color:#1E293B; font-weight:700;" x-text="formatRegu(activeItem.regu)"></span>
                         </div>
                         <div>
                             <span style="color:#64748B; font-size:10.5px; display:block;">Jenis Kendaraan:</span>
-                            <span style="color:#1E293B; font-weight:700;" x-text="activeItem.jenis_kendaraan || '-'"></span>
+                            <span style="color:#1E293B; font-weight:700;" x-text="formatTitle(activeItem.jenis_kendaraan)"></span>
                         </div>
                         <div>
                             <span style="color:#64748B; font-size:10.5px; display:block;">Bidang:</span>
-                            <span style="color:#1E293B; font-weight:700;" x-text="activeItem.bidang || '-'"></span>
+                            <span style="color:#1E293B; font-weight:700;" x-text="formatTitle(activeItem.bidang)"></span>
                         </div>
                         <div>
                             <span style="color:#64748B; font-size:10.5px; display:block;">Item Perbaikan:</span>
@@ -266,17 +266,17 @@
                     <div style="display:flex; flex-direction:column; gap:8px; border-left:1px solid #E2E8F0; padding-left:12px; font-size:11.5px;">
                         <div>
                             <span style="color:#64748B; font-size:10.5px; display:block;">Pemegang Unit:</span>
-                            <strong style="color:#1E293B;" x-text="activeItem.nama_pemegang || '-'"></strong>
+                            <strong style="color:#1E293B;" x-text="formatTitle(activeItem.nama_pemegang)"></strong>
                             <span style="color:#94A3B8; font-size:10.5px; display:block;" x-text="'NIP. ' + (activeItem.nip_pemegang || '-')"></span>
                         </div>
                         <div>
                             <span style="color:#64748B; font-size:10.5px; display:block;">Komandan Regu:</span>
-                            <strong style="color:#1E293B;" x-text="activeItem.nama_komandan_regu || '-'"></strong>
+                            <strong style="color:#1E293B;" x-text="formatTitle(activeItem.nama_komandan_regu)"></strong>
                             <span style="color:#94A3B8; font-size:10.5px; display:block;" x-text="'NIP. ' + (activeItem.nip_komandan_regu || '-')"></span>
                         </div>
                         <div>
                             <span style="color:#64748B; font-size:10.5px; display:block;">Kepala Bidang:</span>
-                            <strong style="color:#1E293B;" x-text="activeItem.nama_kepala_bidang || '-'"></strong>
+                            <strong style="color:#1E293B;" x-text="formatKabid(activeItem.nama_kepala_bidang)"></strong>
                             <span style="color:#94A3B8; font-size:10.5px; display:block;" x-text="'NIP. ' + (activeItem.nip_kepala_bidang || '-')"></span>
                         </div>
                     </div>
@@ -536,13 +536,59 @@ function pengajuanAdminModal() {
             });
         },
 
-        cleanPos(pos) {
+        formatUnit(val) {
+            if (!val) return '-';
+            let s = String(val).trim().toUpperCase();
+            let m = s.match(/^([A-Z]+)[-_ ]*(\d+)$/);
+            if (m) {
+                let num = m[2].padStart(2, '0');
+                return `${m[1]}-${num}`;
+            }
+            return s;
+        },
+
+        formatPos(pos) {
             if (!pos) return '-';
             let str = String(pos).trim();
             if (str.toLowerCase().startsWith('pos ')) {
                 str = str.substring(4).trim();
             }
-            return str;
+            let clean = str.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (clean.includes('soreang') || clean.includes('mako')) return 'Soreang (MAKO)';
+            if (clean.includes('ciwidey') || clean.includes('pacira')) return 'Ciwidey (PACIRA)';
+            if (clean.includes('margaasih') || clean.includes('tki')) return 'Margaasih (TKI)';
+            return str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        },
+
+        formatRegu(regu) {
+            if (!regu) return 'Regu 1';
+            let m = String(regu).match(/regu[_\s]*(\d+)/i);
+            if (m) {
+                let num = parseInt(m[1]);
+                return num > 0 ? `Regu ${num}` : 'Regu 1';
+            }
+            return String(regu);
+        },
+
+        formatTitle(str) {
+            if (!str) return '-';
+            let s = String(str).trim();
+            if (['r2', 'r3'].includes(s.toLowerCase())) return s.toUpperCase();
+            return s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        },
+
+        formatKabid(str) {
+            if (!str) return '-';
+            let parts = String(str).split(',');
+            let name = parts[0].trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+            if (parts.length > 1) {
+                return name + ',' + parts.slice(1).join(',');
+            }
+            return name;
+        },
+
+        cleanPos(pos) {
+            return this.formatPos(pos);
         },
 
         setAllItems(status) {

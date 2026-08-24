@@ -17,39 +17,45 @@ class Regu extends Model
         'bidang',
         'danru',
         'nip_danru',
+        'bidang_id',
+        'pos_id',
+        'danru_user_id',
         'status',
         'catatan',
     ];
 
-    /**
-     * Anggota personil yang bertugas pada regu & pos ini.
-     */
-    public function anggotas()
+    // 3NF Relationships
+    public function posRelasi()
     {
-        return $this->hasMany(User::class, 'regu', 'nama')
-            ->where(function ($q) {
-                if ($this->pos) {
-                    $q->where('pos', 'LIKE', "%{$this->pos}%");
-                }
-            });
+        return $this->belongsTo(Pos::class, 'pos_id');
     }
 
-    /**
-     * Hitung jumlah anggota aktif dalam regu ini.
-     */
+    public function bidangRelasi()
+    {
+        return $this->belongsTo(Bidang::class, 'bidang_id');
+    }
+
+    public function danruUser()
+    {
+        return $this->belongsTo(User::class, 'danru_user_id');
+    }
+
+    public function anggotas()
+    {
+        return $this->hasMany(User::class, 'regu_id');
+    }
+
     public function getTotalAnggotaAttribute(): int
     {
-        $query = User::where('status', 'aktif')
-            ->where('regu', $this->nama);
+        if ($this->id) {
+            $count = User::where('regu_id', $this->id)->where('status', 'aktif')->count();
+            if ($count > 0) return $count;
+        }
 
+        $query = User::where('status', 'aktif')->where('regu', $this->nama);
         if (!empty($this->pos)) {
             $query->where('pos', 'LIKE', "%{$this->pos}%");
         }
-
-        if (!empty($this->bidang)) {
-            $query->where('bidang', 'LIKE', "%{$this->bidang}%");
-        }
-
         return $query->count();
     }
 }
