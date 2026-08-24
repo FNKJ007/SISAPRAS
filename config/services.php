@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'apar_website' => [
+        // Ganti dengan URL website APAR/Monitoring Kejadian yang sebenarnya di .env: APAR_WEBSITE_URL=https://...
+        'url' => env('APAR_WEBSITE_URL', '#'),
+    ],
+
 ];

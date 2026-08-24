@@ -243,11 +243,11 @@
                         <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Yudha Brama Jaya" class="logo logo-right">
                     </div>
 
-                    {{-- SISAPRAS Brand di Header (Tanpa Logo) --}}
+                    {{-- API Brand di Header (Tanpa Logo) --}}
                     <div class="topbar-brand">
                         <div class="topbar-brand-text">
-                            <span class="topbar-brand-title">SISAPRAS</span>
-                            <span class="topbar-brand-subtitle">Sistem Informasi Sarana Prasarana</span>
+                            <span class="topbar-brand-title">API</span>
+                            <span class="topbar-brand-subtitle">Aplikasi Pemeliharaan & Inspeksi Sarana</span>
                         </div>
                     </div>
                 </div>

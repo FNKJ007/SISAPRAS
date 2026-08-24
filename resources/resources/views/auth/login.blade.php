@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISAPRAS — Portal Login Dinas Pemadam Kebakaran</title>
+    <title>API — Portal Login Dinas Pemadam Kebakaran</title>
 
     <!-- Google Fonts Plus Jakarta Sans & Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,8 +41,8 @@
                 <div class="hero-logo-wrapper">
                     <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Damkar" class="hero-logo">
                 </div>
-                <h1 class="hero-title-gradient">SISAPRAS</h1>
-                <p class="hero-desc">Sistem Informasi Sarana Prasarana Dinas Pemadam Kebakaran & Penyelamatan</p>
+                <h1 class="hero-title-gradient">API</h1>
+                <p class="hero-desc">Aplikasi Pemeliharaan & Inspeksi Sarana</p>
             </div>
 
             <div class="hero-footer-text">
