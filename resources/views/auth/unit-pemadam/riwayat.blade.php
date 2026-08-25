@@ -457,6 +457,28 @@
                         <div><strong class="text-gray-500">Kondisi Rusak:</strong> <span class="font-bold text-red-600" x-text="(selectedUnit.jumlah_rusak || 0) + ' item'"></span></div>
                     </div>
 
+                    <div x-show="selectedUnit.bukti_pemanasan || selectedUnit.bukti_bbm || selectedUnit.bukti_pencucian || (selectedUnit.dokumentasi_tangki_pompa && selectedUnit.dokumentasi_tangki_pompa.length)" class="mb-4">
+                        <h4 class="font-bold text-xs uppercase tracking-wider text-gray-700 mb-2">Bukti Pengecekan</h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <template x-for="photo in [
+                                { label: 'Pemanasan', path: selectedUnit.bukti_pemanasan },
+                                { label: 'Level BBM', path: selectedUnit.bukti_bbm },
+                                { label: 'Pembersihan', path: selectedUnit.bukti_pencucian }
+                            ]" :key="photo.label">
+                                <div x-show="photo.path" class="text-center">
+                                    <div class="text-[10px] font-semibold text-gray-500 mb-1" x-text="photo.label"></div>
+                                    <img :src="'/storage/' + photo.path" :alt="'Bukti ' + photo.label" class="w-full h-28 object-contain rounded-lg border border-gray-200 bg-gray-50 p-1">
+                                </div>
+                            </template>
+                            <template x-for="(path, index) in (selectedUnit.dokumentasi_tangki_pompa || [])" :key="'tangki-' + index">
+                                <div class="text-center">
+                                    <div class="text-[10px] font-semibold text-gray-500 mb-1" x-text="'Tangki & Pompa ' + (index + 1)"></div>
+                                    <img :src="'/storage/' + path" :alt="'Bukti tangki dan pompa ' + (index + 1)" class="w-full h-28 object-contain rounded-lg border border-gray-200 bg-gray-50 p-1">
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
                     <h4 class="font-bold text-xs uppercase tracking-wider text-gray-700 mb-2">Item Perlengkapan yang Rusak / Catatan</h4>
                     <div class="space-y-1.5 max-h-56 overflow-y-auto border border-gray-200 rounded-xl p-3 bg-white">
                         <template x-for="(val, key) in (selectedUnit.perlengkapan || {})" :key="key">

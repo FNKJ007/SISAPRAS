@@ -45,9 +45,16 @@ trait HandlesCekHarianUnit
                     $dokTangkiData[] = $d;
                 }
             }
+                $logoData = null;
+                $logoPath = public_path('images/logo-damkar.png');
+                if (file_exists($logoPath)) {
+                    $logoData = 'data:' . (mime_content_type($logoPath) ?: 'image/png') . ';base64,' . base64_encode(file_get_contents($logoPath));
+                }
 
             $pdf = Pdf::loadView('pdf.cek-harian-unit', [
                 'record'               => $record,
+                    'unit'                 => $record->unit,
+                    'logo_data'            => $logoData,
                 'judul'                => $kategori === 'rescue'
                     ? 'Hasil Cek Harian Unit Kendaraan Rescue'
                     : 'Hasil Cek Harian Unit Kendaraan Pemadam',

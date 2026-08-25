@@ -4,215 +4,153 @@
     <meta charset="utf-8">
     <title>{{ $judul }}</title>
     <style>
-        @page { margin: 28px 32px; }
+        @page { margin: 20px 22px 18px; }
         * { box-sizing: border-box; }
-        body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; color: #1f2937; }
-
-        .header { text-align: center; border-bottom: 2px solid #059669; padding-bottom: 10px; margin-bottom: 16px; }
-        .header h1 { font-size: 15px; margin: 0 0 2px; color: #065f46; }
-        .header p { font-size: 10px; margin: 0; color: #6b7280; }
-
-        table.info { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
-        table.info td { padding: 4px 6px; vertical-align: top; font-size: 10.5px; }
-        table.info td.label { width: 150px; color: #6b7280; }
-        table.info td.value { font-weight: bold; }
-
-        h2.section { font-size: 12px; background: #ecfdf5; color: #065f46; padding: 6px 8px; border-left: 3px solid #059669; margin: 16px 0 8px; }
-
-        table.data { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-        table.data th, table.data td { border: 1px solid #d1d5db; padding: 5px 7px; font-size: 10px; text-align: left; }
-        table.data th { background: #f3f4f6; color: #374151; }
-        table.data td.center { text-align: center; }
-
-        .status-baik { color: #059669; font-weight: bold; }
-        .status-rusak { color: #dc2626; font-weight: bold; }
-
-        .summary-box { margin-top: 10px; padding: 8px 10px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 4px; font-size: 11px; }
-        .summary-box.ok { background: #ecfdf5; border-color: #a7f3d0; }
-
-        .ttd { margin-top: 40px; width: 100%; }
-        .ttd td { width: 33.33%; text-align: center; font-size: 10.5px; padding-top: 40px; }
-        .ttd .garis { border-top: 1px solid #374151; padding-top: 4px; }
-
-        .footer-note { margin-top: 18px; font-size: 9px; color: #9ca3af; text-align: center; }
+        body { font-family: DejaVu Sans, sans-serif; font-size: 8px; color: #111; }
+        .kop { width: 100%; border-bottom: 3px solid #111; padding-bottom: 8px; margin-bottom: 7px; }
+        .kop td { vertical-align: middle; }
+        .logo { width: 52px; height: 52px; object-fit: contain; }
+        .kop-title { text-align: center; font-size: 15px; font-weight: bold; line-height: 1.15; }
+        .report-title { text-align: center; font-size: 12px; font-weight: bold; padding: 6px 0 10px; }
+        .meta { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+        .meta td { height: 15px; padding: 1px 3px; vertical-align: top; }
+        .meta .group { font-weight: bold; padding-left: 0; padding-top: 3px; }
+        .meta .key { width: 10%; }
+        .meta .value { width: 25%; border-bottom: 1px dotted #777; }
+        .meta .key-right { width: 12%; }
+        .meta .value-right { width: 28%; border-bottom: 1px dotted #777; }
+        table.inspection { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .inspection th, .inspection td { border: 1px solid #555; padding: 2px 3px; vertical-align: top; line-height: 1.15; }
+        .inspection th { background: #bfbfbf; text-align: center; font-weight: bold; vertical-align: middle; height: 27px; }
+        .inspection .no { width: 4%; text-align: center; }
+        .inspection .item { width: 27%; }
+        .inspection .standard { width: 27%; }
+        .inspection .condition { width: 3.6%; text-align: center; padding: 1px; }
+        .inspection .action { width: 12%; }
+        .inspection .result { width: 12%; }
+        .inspection .category td { font-weight: bold; background: #f2f2f2; padding: 3px; }
+        .inspection .category .no { font-size: 9px; vertical-align: middle; }
+        .check { font-weight: bold; font-size: 10px; text-align: center; }
+        .muted { color: #555; }
+        .legend { margin-top: 7px; width: 42%; border-collapse: collapse; }
+        .legend td { padding: 1px 3px; }
+        .evidence { page-break-inside: avoid; margin-top: 12px; }
+        .evidence-title { font-size: 10px; font-weight: bold; border-bottom: 1px solid #555; padding-bottom: 3px; margin-bottom: 5px; }
+        .evidence-grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .evidence-grid td { width: 25%; padding: 3px; text-align: center; vertical-align: top; }
+        .evidence-grid img { width: 100%; height: 105px; object-fit: contain; border: 1px solid #777; padding: 2px; }
+        .evidence-label { font-size: 7px; font-weight: bold; margin-bottom: 3px; }
+        .signatures { width: 100%; margin-top: 12px; border-collapse: collapse; }
+        .signatures td { width: 33.33%; text-align: center; vertical-align: top; height: 75px; }
+        .signature-line { padding-top: 48px; border-bottom: 1px solid #111; display: inline-block; min-width: 145px; }
+        .signature-name { font-weight: bold; text-decoration: underline; margin-top: 3px; }
+        .footer { text-align: right; color: #666; font-size: 7px; margin-top: 4px; }
     </style>
 </head>
 <body>
+    @php
+        $unit = $unit ?? $record->unit;
+        $items = collect($record->perlengkapan ?? [])->filter(function ($item, $key) {
+            return !in_array($key, ['kebersihan_bagian_dalam', 'kebersihan_bagian_luar']);
+        });
+        $specialItems = collect([
+            ['label' => 'Kondisi Kebersihan Unit', 'status' => $record->kebersihan_unit === 'tidak_bersih' ? 'rusak' : 'baik', 'catatan' => null, 'show' => true],
+            ['label' => 'Level Air Tangki', 'status' => $record->level_air, 'catatan' => $record->level_air, 'show' => $record->kategori === 'pemadam'],
+            ['label' => 'Kondisi Tangki Air', 'status' => $record->kondisi_tangki_air, 'catatan' => null, 'show' => $record->kategori === 'pemadam'],
+            ['label' => 'Kebocoran Tangki Air', 'status' => $record->kebocoran_tangki_air, 'catatan' => null, 'show' => $record->kategori === 'pemadam'],
+            ['label' => 'Tekanan Pompa', 'status' => $record->tekanan_pompa, 'catatan' => null, 'show' => $record->kategori === 'pemadam'],
+            ['label' => 'Selang Induk', 'status' => $record->selang_induk, 'catatan' => null, 'show' => $record->kategori === 'pemadam'],
+        ])->filter(function ($item) {
+            return $item['show'] && $item['status'] !== null && $item['status'] !== '';
+        });
+        $items = $specialItems->concat($items);
+        $categoryNames = [
+            'pemadam' => ['Pemeriksaan Mesin & Komponen Mekanikal', 'Pemeriksaan Kabin & Kelistrikan Utama', 'Pemeriksaan Sasis, Ban, & Eksterior', 'Pemeriksaan Pompa & Sistem Pemadam', 'Pemeriksaan Perlengkapan & Peralatan'],
+            'rescue' => ['Pemeriksaan Mesin, Kabin & Kelistrikan', 'Pemeriksaan Sasis, Ban, & Eksterior', 'Pemeriksaan Perlengkapan Rescue'],
+            'pencegahan' => ['Pemeriksaan Kendaraan & Kelistrikan', 'Pemeriksaan Sasis, Ban, & Eksterior', 'Pemeriksaan Perlengkapan Pencegahan'],
+        ];
+        $categories = $categoryNames[$record->kategori] ?? ['Pemeriksaan Kendaraan dan Perlengkapan'];
+        $itemsPerCategory = (int) ceil(max($items->count(), 1) / count($categories));
+        $chunks = $items->values()->chunk($itemsPerCategory);
+        $tanggal = strtotime($record->tanggal_pemeriksaan);
+        $hari = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'];
+    @endphp
 
-    <div class="header">
-        <h1>{{ $judul }}</h1>
-        <p>Dicetak pada {{ now()->translatedFormat('d F Y, H:i') }} WIB</p>
-    </div>
+    <table class="kop"><tr><td style="width: 13%; text-align: center;">@if($logo_data)<img class="logo" src="{{ $logo_data }}">@endif</td><td class="kop-title">Dinas Pemadam Kebakaran dan Penyelamatan<br>Kabupaten Bandung</td><td style="width: 13%;"></td></tr></table>
+    <div class="report-title">PEMERIKSAAN KENDARAAN PEMADAM KEBAKARAN DAN PENYELAMATAN</div>
 
-    <table class="info">
-        <tr>
-            <td class="label">Unit Kendaraan</td>
-            <td class="value">: {{ $record->unit_nama }}</td>
-            <td class="label">Tanggal Pemeriksaan</td>
-            <td class="value">: {{ \Carbon\Carbon::parse($record->tanggal_pemeriksaan)->translatedFormat('d F Y') }}</td>
-        </tr>
-        <tr>
-            <td class="label">Nama Pemeriksa</td>
-            <td class="value">: {{ $record->nama_pemeriksa }}</td>
-            <td class="label">Jabatan</td>
-            <td class="value">: {{ $record->jabatan }}</td>
-        </tr>
-        <tr>
-            <td class="label">Pos</td>
-            <td class="value">: {{ $record->pos ?? '-' }}</td>
-            <td class="label">Kebersihan Unit</td>
-            <td class="value">: <span style="{{ ($record->kebersihan_unit ?? 'bersih') === 'tidak_bersih' ? 'color:#dc2626;' : 'color:#059669;' }}">{{ ($record->kebersihan_unit ?? 'bersih') === 'tidak_bersih' ? 'Tidak Bersih' : 'Bersih' }}</span></td>
-        </tr>
-        <tr>
-            <td class="label">Jenis BBM</td>
-            <td class="value">: {{ ucfirst($record->jenis_bbm ?? '-') }}</td>
-            <td class="label"></td>
-            <td class="value"></td>
-        </tr>
+    <table class="meta">
+        <tr><td class="group" colspan="4">DATA KENDARAAN :</td><td class="group" colspan="4">TANGGAL PEMELIHARAAN :</td></tr>
+        <tr><td class="key">TNKB</td><td>:</td><td class="value">{{ $unit->plat_nomor ?? '-' }}</td><td></td><td class="key-right">Hari</td><td>:</td><td class="value-right">{{ $hari[date('l', $tanggal)] ?? date('l', $tanggal) }}</td><td></td></tr>
+        <tr><td class="key">No. Rangka</td><td>:</td><td class="value">{{ $unit->no_rangka_mesin ?? '-' }}</td><td></td><td class="key-right">Tanggal</td><td>:</td><td class="value-right">{{ date('d-m-Y', $tanggal) }}</td><td></td></tr>
+        <tr><td class="key">Merk</td><td>:</td><td class="value">{{ $unit->merk_tipe ?? '-' }}</td><td></td><td class="key-right">Kilometer</td><td>:</td><td class="value-right">-</td><td></td></tr>
+        <tr><td class="key">Tahun</td><td>:</td><td class="value">{{ $unit->tahun_pembuatan ?? '-' }}</td><td></td><td class="key-right">Pemeriksa</td><td>:</td><td class="value-right">{{ $record->nama_pemeriksa }}</td><td></td></tr>
+        <tr><td class="key">Kapasitas</td><td>:</td><td class="value">{{ $unit->cc ? $unit->cc . ' CC' : '-' }}</td><td></td><td class="key-right">NIP</td><td>:</td><td class="value-right">{{ $record->user->nip ?? '-' }}</td><td></td></tr>
+        <tr><td class="key">No. Lambung</td><td>:</td><td class="value">{{ $unit->nomor_lambung ?? $record->unit_nama ?? '-' }}</td><td></td><td class="key-right">Penempatan</td><td>:</td><td class="value-right">{{ $record->pos ?? $unit->pos ?? '-' }}</td><td></td></tr>
     </table>
 
-    @if(!empty($bukti_pemanasan_data) || !empty($bukti_bbm_data) || !empty($bukti_pencucian_data) || (!empty($dok_tangki_data) && count($dok_tangki_data) > 0))
-    <h2 class="section">Dokumentasi Foto</h2>
-
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
-        <tr>
-            @if(!empty($bukti_pencucian_data))
-            <td style="width: 33.33%; vertical-align: top; padding: 2px 4px;">
-                <div style="font-weight: bold; margin-bottom: 4px;">Bukti Kebersihan Unit</div>
-                <div><img src="{{ $bukti_pencucian_data }}" style="width: 100%; max-height: 135px; border: 1px solid #ddd; padding: 3px;"></div>
-            </td>
-            @endif
-
-            @if(!empty($bukti_pemanasan_data))
-            <td style="width: 33.33%; vertical-align: top; padding: 2px 4px;">
-                <div style="font-weight: bold; margin-bottom: 4px;">Bukti Pemanasan</div>
-                <div><img src="{{ $bukti_pemanasan_data }}" style="width: 100%; max-height: 135px; border: 1px solid #ddd; padding: 3px;"></div>
-            </td>
-            @endif
-
-            @if(!empty($bukti_bbm_data))
-            <td style="width: 33.33%; vertical-align: top; padding: 2px 4px;">
-                <div style="font-weight: bold; margin-bottom: 4px;">Bukti Level BBM</div>
-                <div><img src="{{ $bukti_bbm_data }}" style="width: 100%; max-height: 135px; border: 1px solid #ddd; padding: 3px;"></div>
-            </td>
-            @endif
-        </tr>
-    </table>
-
-    @if(!empty($dok_tangki_data) && count($dok_tangki_data) > 0)
-    <div style="margin-top: 6px; margin-bottom: 10px;">
-        <div style="font-weight: bold; margin-bottom: 4px;">Dokumentasi Pengecekan Tangki dan Pompa (maksimal 3 foto)</div>
-        <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-                @foreach($dok_tangki_data as $index => $img)
-                <td style="width: 33.33%; vertical-align: top; padding: 2px 4px;">
-                    <div><img src="{{ $img }}" style="width: 100%; max-height: 135px; border: 1px solid #ddd; padding: 3px;"></div>
-                </td>
-                @endforeach
-                @for($i = count($dok_tangki_data); $i < 3; $i++)
-                <td style="width: 33.33%; padding: 2px 4px;"></td>
-                @endfor
-            </tr>
-        </table>
-    </div>
-    @endif
-    @endif
-
-    <h2 class="section">Tangki &amp; Pompa</h2>
-    <table class="info">
-        <tr>
-            <td class="label">Level Air</td>
-            <td class="value">: {{ $record->level_air ?? '-' }}</td>
-            <td class="label">Kondisi Tangki Air</td>
-            <td class="value">: {{ $record->kondisi_tangki_air ?? '-' }}</td>
-        </tr>
-        <tr>
-            <td class="label">Kebocoran Tangki Air</td>
-            <td class="value">: {{ $record->kebocoran_tangki_air ?? '-' }}</td>
-            <td class="label">Tekanan Pompa</td>
-            <td class="value">: {{ $record->tekanan_pompa ?? '-' }}</td>
-        </tr>
-        <tr>
-            <td class="label">Selang Induk</td>
-            <td class="value">: {{ $record->selang_induk ?? '-' }}</td>
-            <td class="label"></td>
-            <td class="value"></td>
-        </tr>
-        @if($record->catatan_tangki_pompa)
-        <tr>
-            <td class="label">Catatan</td>
-            <td class="value" colspan="3">: {{ $record->catatan_tangki_pompa }}</td>
-        </tr>
-        @endif
-    </table>
-
-    <h2 class="section">Kelengkapan &amp; Kondisi Kendaraan</h2>
-    <table class="data">
-        <thead>
-            <tr>
-                <th style="width: 30px;">No</th>
-                <th>Item Pemeriksaan</th>
-                <th style="width: 70px;">Status</th>
-                <th>Catatan</th>
-            </tr>
-        </thead>
+    <table class="inspection">
+        <thead><tr><th class="no">No</th><th class="item">Item Pemeriksaan</th><th class="standard">Standar</th><th colspan="5">Kondisi</th><th class="action">Rencana Tindak<br>Lanjut</th><th class="result">Hasil Tindak<br>Lanjut</th></tr><tr><th></th><th></th><th></th><th class="condition">R</th><th class="condition">RR</th><th class="condition">RS</th><th class="condition">TF</th><th class="condition">T</th><th></th><th></th></tr></thead>
         <tbody>
-            <tr>
-                <td class="center">1</td>
-                <td>Kondisi Kebersihan Unit</td>
-                <td class="center {{ ($record->kebersihan_unit ?? 'bersih') === 'tidak_bersih' ? 'status-rusak' : 'status-baik' }}">
-                    {{ ($record->kebersihan_unit ?? 'bersih') === 'tidak_bersih' ? 'TIDAK BERSIH' : 'BERSIH' }}
-                </td>
-                <td>-</td>
-            </tr>
-            @php $no = 2; @endphp
-            @foreach($record->perlengkapan ?? [] as $key => $item)
-                @if(!in_array($key, ['kebersihan_bagian_dalam', 'kebersihan_bagian_luar']))
-                <tr>
-                    <td class="center">{{ $no++ }}</td>
-                    <td>{{ $item['label'] ?? '-' }}</td>
-                    <td class="center {{ ($item['status'] ?? '') === 'rusak' ? 'status-rusak' : 'status-baik' }}">
-                        {{ strtoupper($item['status'] ?? 'baik') }}
-                    </td>
-                    <td>{{ $item['catatan'] ?? '-' }}</td>
-                </tr>
-                @endif
+        @foreach($chunks as $categoryIndex => $categoryItems)
+            <tr class="category"><td class="no">{{ $categoryIndex + 1 }}</td><td colspan="9">{{ $categories[$categoryIndex] ?? end($categories) }}</td></tr>
+            @foreach($categoryItems as $item)
+                @php
+                    $status = strtolower($item['status'] ?? 'baik');
+                    $isRusak = $status === 'rusak';
+                    $isPerluPerhatian = in_array($status, ['perlu_perhatian', 'perlu perhatian']);
+                    $note = trim($item['catatan'] ?? '');
+                @endphp
+                <tr><td class="no"></td><td>- {{ $item['label'] ?? '-' }}</td><td class="muted">{{ $isRusak || $isPerluPerhatian ? 'Perlu tindak lanjut sesuai hasil pemeriksaan.' : 'Berfungsi baik dan sesuai standar.' }}</td><td class="condition check">{{ $isRusak ? 'X' : '' }}</td><td class="condition check">{{ $isPerluPerhatian ? 'X' : '' }}</td><td class="condition"></td><td class="condition"></td><td class="condition"></td><td class="action">{{ $isRusak || $isPerluPerhatian ? ($note ?: 'Perlu pemeriksaan/perbaikan') : '-' }}</td><td class="result">-</td></tr>
             @endforeach
+        @endforeach
         </tbody>
     </table>
 
-    <div class="summary-box {{ ($record->jumlah_rusak ?? 0) > 0 ? '' : 'ok' }}">
-        @if(($record->jumlah_rusak ?? 0) > 0)
-            <strong>{{ $record->jumlah_rusak }} item</strong> dalam kondisi RUSAK dan perlu tindak lanjut perbaikan.
-        @else
-            Seluruh item kelengkapan kendaraan dalam kondisi BAIK.
-        @endif
-    </div>
+    @if($bukti_pemanasan_data || $bukti_bbm_data || $bukti_pencucian_data || count($dok_tangki_data ?? []) > 0)
+        <div class="evidence">
+            <div class="evidence-title">BUKTI PENGECEKAN / DOKUMENTASI FOTO</div>
+            <table class="evidence-grid">
+                <tr>
+                    @if($bukti_pemanasan_data)
+                        <td><div class="evidence-label">Bukti Pemanasan</div><img src="{{ $bukti_pemanasan_data }}"></td>
+                    @endif
+                    @if($bukti_bbm_data)
+                        <td><div class="evidence-label">Bukti Level BBM</div><img src="{{ $bukti_bbm_data }}"></td>
+                    @endif
+                    @if($bukti_pencucian_data)
+                        <td><div class="evidence-label">Bukti Pembersihan Unit</div><img src="{{ $bukti_pencucian_data }}"></td>
+                    @endif
+                    @foreach($dok_tangki_data ?? [] as $index => $image)
+                        <td><div class="evidence-label">Tangki &amp; Pompa {{ $index + 1 }}</div><img src="{{ $image }}"></td>
+                        @if(($index + 1) % 4 === 0 && !$loop->last)</tr><tr>@endif
+                    @endforeach
+                </tr>
+            </table>
+        </div>
+    @endif
 
-    <table class="ttd">
+    <table class="legend"><tr><td>R</td><td>Rusak</td><td>RR</td><td>Rusak Ringan</td><td>RS</td><td>Rusak Sedang</td></tr><tr><td>TF</td><td>Tidak Berfungsi</td><td>T</td><td colspan="3">Tambahan</td></tr></table>
+    <table class="signatures">
         <tr>
             <td>
-                <div class="garis">
-                    {{ $record->nama_kabid ?? '-' }}<br>
-                    Kepala Bidang
-                </div>
+                Pemeriksa :<br>
+                <span class="signature-line"></span><br>
+                <span class="signature-name">{{ $record->nama_pemeriksa ?: '-' }}</span><br>
+                {{ $record->user->nip ?? '' }}
             </td>
             <td>
-                <div class="garis">
-                    {{ $record->nama_danru ?? '-' }}<br>
-                    Danru
-                </div>
+                Komandan Regu :<br>
+                <span class="signature-line"></span><br>
+                <span class="signature-name">{{ $record->nama_danru ?: '-' }}</span>
             </td>
             <td>
-                <div class="garis">
-                    {{ $record->nama_pemeriksa }}<br>
-                    Pengemudi
-                </div>
+                Kepala Bidang :<br>
+                <span class="signature-line"></span><br>
+                <span class="signature-name">{{ $record->nama_kabid ?: '-' }}</span>
             </td>
         </tr>
     </table>
-
-    <p class="footer-note">Dokumen ini dihasilkan otomatis oleh sistem dan sah tanpa tanda tangan basah.</p>
-
+    <div class="footer">Dokumen ini dihasilkan otomatis oleh sistem.</div>
 </body>
 </html>
