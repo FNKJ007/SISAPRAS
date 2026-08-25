@@ -9,10 +9,11 @@ use App\Models\Pos;
 use Illuminate\Http\Request;
 
 use App\Traits\HandlesCekHarianAlat;
+use App\Traits\HandlesOfficialsData;
 
 class CekHarianAlatController extends Controller
 {
-    use HandlesCekHarianAlat;
+    use HandlesCekHarianAlat, HandlesOfficialsData;
 
     /**
      * Daftar unit/kendaraan pemadam dari database Admin Data Unit.
@@ -29,6 +30,7 @@ class CekHarianAlatController extends Controller
     {
         $unitList = $this->unitList();
         $posList  = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
+        $officials = $this->getOfficialsData('pemadam');
 
         // Ambil data peralatan pemadam langsung dari Panel Admin Data Peralatan (Urut A-Z)
         $peralatanDb = Peralatan::where('kategori', 'LIKE', 'pemadam')->orderBy('nama', 'asc')->get();
@@ -43,7 +45,10 @@ class CekHarianAlatController extends Controller
             ];
         });
 
-        return view('auth.alat-pemadam.cek-harian-alat', compact('unitList', 'daftarAlat', 'posList'));
+        return view('auth.alat-pemadam.cek-harian-alat', array_merge(
+            compact('unitList', 'daftarAlat', 'posList'),
+            $officials
+        ));
     }
 
     /**

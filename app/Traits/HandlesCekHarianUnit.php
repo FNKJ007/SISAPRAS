@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\CekHarianUnit;
+use App\Models\CekHarianAlat;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -74,38 +75,56 @@ trait HandlesCekHarianUnit
             'jabatan.required'                 => 'Jabatan petugas pemeriksa wajib diisi.',
             'unit_id.required'                 => 'Silakan pilih unit kendaraan yang diperiksa.',
             'pos.required'                     => 'Silakan pilih pos tempat pemeriksaan.',
+            'jenis_bbm.required'               => 'Silakan pilih jenis BBM kendaraan.',
+            'bukti_pemanasan.required'         => 'Foto bukti pemanasan kendaraan wajib dilampirkan.',
             'bukti_pemanasan.image'            => 'Foto bukti pemanasan harus berupa file gambar (JPG/PNG/WebP).',
             'bukti_pemanasan.max'              => 'Ukuran foto bukti pemanasan tidak boleh melebihi 10 MB.',
-            'bukti_pencucian.image'            => 'Foto bukti pencucian harus berupa file gambar (JPG/PNG/WebP).',
-            'bukti_pencucian.max'              => 'Ukuran foto bukti pencucian tidak boleh melebihi 10 MB.',
+            'bukti_bbm.required'               => 'Foto bukti level BBM wajib dilampirkan.',
             'bukti_bbm.image'                  => 'Foto bukti BBM harus berupa file gambar (JPG/PNG/WebP).',
             'bukti_bbm.max'                    => 'Ukuran foto bukti BBM tidak boleh melebihi 10 MB.',
-            'dokumentasi_tangki_pompa.*.image' => 'Foto dokumentasi tangki/pompa harus berupa file gambar.',
-            'dokumentasi_tangki_pompa.*.max'   => 'Ukuran foto dokumentasi tangki/pompa maksimal 10 MB per file.',
+            'bukti_pencucian.required'         => 'Foto kegiatan pasukan membersihkan unit wajib dilampirkan.',
+            'bukti_pencucian.image'            => 'Foto bukti pencucian harus berupa file gambar (JPG/PNG/WebP).',
+            'kebersihan_unit.required'          => 'Silakan pilih kondisi kebersihan unit.',
+            'level_air.required'                => 'Silakan pilih level air tangki.',
+            'kondisi_tangki_air.required'       => 'Silakan pilih kondisi tangki air.',
+            'kebocoran_tangki_air.required'     => 'Silakan pilih kondisi kebocoran tangki air.',
+            'tekanan_pompa.required'            => 'Silakan pilih kondisi tekanan pompa.',
+            'selang_induk.required'             => 'Silakan pilih kondisi selang induk.',
+            'dokumentasi_tangki_pompa.required' => 'Foto dokumentasi pengecekan tangki dan pompa wajib dilampirkan.',
+            'dokumentasi_tangki_pompa.min'      => 'Foto dokumentasi tangki dan pompa wajib dilampirkan minimal 1 foto.',
+            'dokumentasi_tangki_pompa.max'      => 'Foto dokumentasi tangki dan pompa maksimal 3 foto.',
+            'dokumentasi_tangki_pompa.*.image'  => 'Foto dokumentasi tangki/pompa harus berupa file gambar (JPG/PNG/WebP).',
+            'dokumentasi_tangki_pompa.*.max'    => 'Ukuran foto dokumentasi tangki/pompa maksimal 10 MB per file.',
         ];
 
-        $validated = $request->validate([
+        $isPemadam = strtolower($kategori) === 'pemadam';
+
+        $rules = [
             'nama_pemeriksa'             => 'required|string|max:255',
             'jabatan'                    => 'required|string|max:255',
-            'unit_id'                    => 'required|integer',
             'pos'                        => 'required|string|max:255',
-            'kebersihan_unit'            => 'nullable|string|in:bersih,tidak_bersih',
+            'nama_danru'                 => 'nullable|string|max:255',
+            'nama_kabid'                 => 'nullable|string|max:255',
+            'unit_id'                    => 'required|integer',
+            'kebersihan_unit'            => 'required|string|in:bersih,tidak_bersih',
             'tanggal'                    => 'nullable|date',
-            'jenis_bbm'                  => 'nullable|string|max:50',
-            'bukti_pemanasan'            => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
-            'bukti_pencucian'            => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
-            'bukti_bbm'                  => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
-            'level_air'                  => 'nullable|string|max:100',
-            'kondisi_tangki_air'         => 'nullable|string|max:100',
-            'kebocoran_tangki_air'       => 'nullable|string|max:100',
-            'tekanan_pompa'              => 'nullable|string|max:100',
-            'selang_induk'               => 'nullable|string|max:100',
+            'jenis_bbm'                  => 'required|string|max:50',
+            'bukti_pemanasan'            => 'required|image|mimes:jpeg,png,jpg,webp|max:10240',
+            'bukti_pencucian'            => 'required|image|mimes:jpeg,png,jpg,webp|max:10240',
+            'bukti_bbm'                  => 'required|image|mimes:jpeg,png,jpg,webp|max:10240',
+            'level_air'                  => $isPemadam ? 'required|string|max:100' : 'nullable|string|max:100',
+            'kondisi_tangki_air'         => $isPemadam ? 'required|string|max:100' : 'nullable|string|max:100',
+            'kebocoran_tangki_air'       => $isPemadam ? 'required|string|max:100' : 'nullable|string|max:100',
+            'tekanan_pompa'              => $isPemadam ? 'required|string|max:100' : 'nullable|string|max:100',
+            'selang_induk'               => $isPemadam ? 'required|string|max:100' : 'nullable|string|max:100',
             'catatan_tangki_pompa'       => 'nullable|string',
-            'dokumentasi_tangki_pompa'   => 'nullable|array',
-            'dokumentasi_tangki_pompa.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
+            'dokumentasi_tangki_pompa'   => $isPemadam ? 'required|array|min:1|max:3' : 'nullable|array',
+            'dokumentasi_tangki_pompa.*' => 'image|mimes:jpeg,png,jpg,webp|max:10240',
             'perlengkapan'               => 'nullable|array',
             'catatan'                    => 'nullable|string',
-        ], $messages);
+        ];
+
+        $validated = $request->validate($rules, $messages);
 
         $unitObj  = Unit::find($validated['unit_id']);
         $unitNama = $unitObj ? "{$unitObj->nomor_lambung} ({$unitObj->plat_nomor})" : ("Unit #" . $validated['unit_id']);
@@ -162,6 +181,8 @@ trait HandlesCekHarianUnit
             'nama_pemeriksa'           => $validated['nama_pemeriksa'],
             'jabatan'                  => $validated['jabatan'],
             'pos'                      => $validated['pos'] ?? ($unitObj ? $unitObj->pos : null),
+            'nama_danru'               => $validated['nama_danru'] ?? null,
+            'nama_kabid'               => $validated['nama_kabid'] ?? null,
             'tanggal_pemeriksaan'      => $validated['tanggal'] ?? date('Y-m-d'),
             'bukti_pemanasan'          => $buktiPemanasanPath,
             'bukti_pencucian'          => $buktiPencucianPath,
@@ -177,5 +198,77 @@ trait HandlesCekHarianUnit
             'perlengkapan'             => $processedPerlengkapan,
             'jumlah_rusak'             => $jumlahRusak,
         ]);
+    }
+
+    /**
+     * Mengambil query riwayat Cek Harian Unit & Cek Harian Alat untuk halaman Riwayat User.
+     */
+    protected function getRiwayatData(Request $request, string $kategori): array
+    {
+        $tab         = $request->query('tab', 'unit'); // 'unit' atau 'alat'
+        $searchQuery = $request->query('search', '');
+        $tanggal     = $request->query('tanggal', '');
+
+        // ===== Hasil Cek Harian Unit Kendaraan =====
+        $unitQuery = CekHarianUnit::where(function ($q) use ($kategori) {
+            $q->where('kategori', $kategori);
+            if ($kategori === 'pemadam') {
+                $q->orWhereNull('kategori');
+            }
+        });
+
+        if (!empty($searchQuery)) {
+            $unitQuery->where(function ($q) use ($searchQuery) {
+                $q->where('pos', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_danru', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_kabid', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('unit_nama', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
+        if (!empty($tanggal)) {
+            $unitQuery->where(function ($q) use ($tanggal) {
+                $q->whereDate('tanggal_pemeriksaan', $tanggal)
+                  ->orWhereDate('created_at', $tanggal);
+            });
+        }
+
+        $cekUnitList = $unitQuery->latest('tanggal_pemeriksaan')
+            ->latest('id')
+            ->paginate(10, ['*'], 'unit_page')
+            ->withQueryString();
+
+        // ===== Hasil Cek Harian Alat =====
+        $alatQuery = CekHarianAlat::where(function ($q) use ($kategori) {
+            $q->where('kategori', $kategori);
+            if ($kategori === 'pemadam') {
+                $q->orWhereNull('kategori');
+            }
+        });
+
+        if (!empty($searchQuery)) {
+            $alatQuery->where(function ($q) use ($searchQuery) {
+                $q->where('pos', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_danru', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_kabid', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('unit_nama', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
+        if (!empty($tanggal)) {
+            $alatQuery->where(function ($q) use ($tanggal) {
+                $q->whereDate('tanggal_pemeriksaan', $tanggal)
+                  ->orWhereDate('created_at', $tanggal);
+            });
+        }
+
+        $cekAlatList = $alatQuery->latest('tanggal_pemeriksaan')
+            ->latest('id')
+            ->paginate(10, ['*'], 'alat_page')
+            ->withQueryString();
+
+        return compact('cekUnitList', 'cekAlatList', 'tab', 'searchQuery', 'tanggal');
     }
 }

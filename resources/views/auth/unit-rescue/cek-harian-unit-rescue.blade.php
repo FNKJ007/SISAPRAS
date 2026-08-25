@@ -109,6 +109,92 @@
                     </select>
                     @error('unit_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
+
+                {{-- Nama Komandan Regu (Danru) --}}
+                <div x-data="comboboxDanru()" style="position:relative;">
+                    <label for="nama_danru" class="block text-sm font-medium mb-1">Nama Komandan Regu (Danru) <span class="text-red-500">*</span></label>
+                    <div style="position:relative;">
+                        <input type="text" id="nama_danru" name="nama_danru"
+                               x-model="searchQuery"
+                               @focus="open = true"
+                               @input="open = true"
+                               placeholder="Ketik atau pilih nama Danru..."
+                               autocomplete="off"
+                               required
+                               class="w-full rounded-lg border border-gray-300 px-3 py-2.5 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                        <button type="button" @click.stop="open = !open" tabindex="-1"
+                                style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:#64748B; cursor:pointer; padding:4px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    {{-- Floating Dropdown Suggestion List --}}
+                    <div x-show="open && filteredList().length > 0"
+                         x-cloak
+                         @click.outside="open = false"
+                         style="position:absolute; left:0; right:0; top:100%; margin-top:4px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:10px; box-shadow:0 10px 25px rgba(15,23,42,0.15); max-height:200px; overflow-y:auto; z-index:99999;">
+                        <template x-for="item in filteredList()" :key="item.name">
+                            <div @click="selectItem(item)"
+                                 style="padding:8px 12px; border-bottom:1px solid #F1F5F9; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background 0.15s;"
+                                 onmouseover="this.style.background='#EFF6FF'"
+                                 onmouseout="this.style.background='transparent'">
+                                <div>
+                                    <strong style="display:block; color:#0F172A; font-size:12.5px;" x-text="item.name"></strong>
+                                    <span style="font-size:11px; color:#64748B;" x-text="item.pos ? 'Pos ' + item.pos : (item.bidang || '')"></span>
+                                </div>
+                                <span x-show="item.jabatan"
+                                      style="font-size:10px; font-weight:700; color:#1E40AF; background:#DBEAFE; padding:2px 6px; border-radius:8px;"
+                                      x-text="item.jabatan"></span>
+                            </div>
+                        </template>
+                    </div>
+                    @error('nama_danru') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                {{-- Nama Kepala Bidang --}}
+                <div x-data="comboboxKabid()" style="position:relative;">
+                    <label for="nama_kabid" class="block text-sm font-medium mb-1">Nama Kepala Bidang <span class="text-red-500">*</span></label>
+                    <div style="position:relative;">
+                        <input type="text" id="nama_kabid" name="nama_kabid"
+                               x-model="searchQuery"
+                               @focus="open = true"
+                               @input="open = true"
+                               placeholder="Ketik atau pilih nama Kepala Bidang..."
+                               autocomplete="off"
+                               required
+                               class="w-full rounded-lg border border-gray-300 px-3 py-2.5 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                        <button type="button" @click.stop="open = !open" tabindex="-1"
+                                style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:#64748B; cursor:pointer; padding:4px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    {{-- Floating Dropdown Suggestion List --}}
+                    <div x-show="open && filteredList().length > 0"
+                         x-cloak
+                         @click.outside="open = false"
+                         style="position:absolute; left:0; right:0; top:100%; margin-top:4px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:10px; box-shadow:0 10px 25px rgba(15,23,42,0.15); max-height:200px; overflow-y:auto; z-index:99999;">
+                        <template x-for="item in filteredList()" :key="item.name">
+                            <div @click="selectItem(item)"
+                                 style="padding:8px 12px; border-bottom:1px solid #F1F5F9; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background 0.15s;"
+                                 onmouseover="this.style.background='#EFF6FF'"
+                                 onmouseout="this.style.background='transparent'">
+                                <div>
+                                    <strong style="display:block; color:#0F172A; font-size:12.5px;" x-text="item.name"></strong>
+                                    <span style="font-size:11px; color:#64748B;" x-text="item.bidang || ''"></span>
+                                </div>
+                                <span x-show="item.jabatan"
+                                      style="font-size:10px; font-weight:700; color:#065F46; background:#D1FAE5; padding:2px 6px; border-radius:8px;"
+                                      x-text="item.jabatan"></span>
+                            </div>
+                        </template>
+                    </div>
+                    @error('nama_kabid') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                </div>
             </div>
         </div>
 
@@ -118,15 +204,16 @@
             <div class="p-4 rounded-xl border border-blue-200 bg-blue-50/30">
                 <h3 class="font-bold text-sm text-blue-950 flex items-center gap-2 mb-1">
                     <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">1</span>
-                    <span>Pemanasan Kendaraan</span>
+                    <span>Pemanasan Kendaraan <span class="text-red-500">*</span></span>
                 </h3>
                 <p class="text-xs text-gray-600 mb-3">(Unit harus dioperasikan dan dikendarai minimal sejauh 1 KM. Silakan lampirkan dokumentasi sebagai bukti)</p>
                 <label for="bukti_pemanasan"
                        class="flex items-center justify-between border border-gray-300 bg-white rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
-                    <span id="buktiPemanasanLabel">Lampirkan Bukti Pemanasan</span>
+                    <span id="buktiPemanasanLabel">Lampirkan Bukti Pemanasan <span class="text-red-500">*</span></span>
                     <span>📎</span>
                 </label>
                 <input id="bukti_pemanasan" type="file" name="bukti_pemanasan" accept="image/*" class="hidden">
+                <p id="err_bukti_pemanasan" class="text-xs text-red-600 font-medium mt-1.5 hidden"></p>
                 <div id="buktiPemanasanPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
                 @error('bukti_pemanasan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
@@ -135,7 +222,7 @@
             <div class="p-4 rounded-xl border border-amber-200 bg-amber-50/30">
                 <h3 class="font-bold text-sm text-amber-950 flex items-center gap-2 mb-3">
                     <span class="w-6 h-6 rounded-full bg-amber-600 text-white flex items-center justify-center text-xs">2</span>
-                    <span>Bahan Bakar Minyak (BBM)</span>
+                    <span>Bahan Bakar Minyak (BBM) <span class="text-red-500">*</span></span>
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                     <div>
@@ -150,14 +237,15 @@
                         @error('jenis_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <p class="font-medium text-sm mb-1">Bukti Foto Level BBM</p>
+                        <p class="font-medium text-sm mb-1">Bukti Foto Level BBM <span class="text-red-500">*</span></p>
                         <p class="text-xs text-gray-500 mb-2">(Fotokan Speedometer untuk bukti level BBM)</p>
                         <label for="bukti_bbm"
                                class="flex items-center justify-between border border-gray-300 bg-white rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
-                            <span id="buktiBbmLabel">Lampirkan Bukti Level BBM</span>
+                            <span id="buktiBbmLabel">Lampirkan Bukti Level BBM <span class="text-red-500">*</span></span>
                             <span>📎</span>
                         </label>
                         <input id="bukti_bbm" type="file" name="bukti_bbm" accept="image/*" class="hidden">
+                        <p id="err_bukti_bbm" class="text-xs text-red-600 font-medium mt-1.5 hidden"></p>
                         <div id="buktiBbmPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
                         @error('bukti_bbm') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>
@@ -169,20 +257,21 @@
                 <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
                     <h3 class="font-bold text-sm text-emerald-950 flex items-center gap-2">
                         <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">3</span>
-                        <span>Pemeriksaan Kebersihan Unit</span>
+                        <span>Pemeriksaan Kebersihan Unit <span class="text-red-500">*</span></span>
                     </h3>
                     <span class="text-xs font-semibold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">Wajib Pasukan</span>
                 </div>
                 <p class="text-xs text-gray-600 mb-3">Dokumentasi kegiatan pembersihan/pencucian unit rescue oleh pasukan. (Kondisi kebersihan unit diisi pada bagian Kendaraan)</p>
 
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1.5">Foto Kegiatan Pasukan Membersihkan Unit</label>
+                    <label class="block text-xs font-bold text-gray-700 mb-1.5">Foto Kegiatan Pasukan Membersihkan Unit <span class="text-red-500">*</span></label>
                     <label for="bukti_pencucian"
                            class="flex items-center justify-between border border-gray-300 bg-white rounded-lg px-3 py-2 text-xs text-gray-600 cursor-pointer hover:border-emerald-500 transition">
-                        <span id="buktiPencucianLabel">Lampirkan Foto Pembersihan</span>
+                        <span id="buktiPencucianLabel">Lampirkan Foto Pembersihan <span class="text-red-500">*</span></span>
                         <span>📎</span>
                     </label>
                     <input id="bukti_pencucian" type="file" name="bukti_pencucian" accept="image/*" class="hidden">
+                    <p id="err_bukti_pencucian" class="text-xs text-red-600 font-medium mt-1.5 hidden"></p>
                     <div id="buktiPencucianPreview" class="mt-2 flex flex-wrap gap-2 hidden"></div>
                     @error('bukti_pencucian') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
@@ -194,18 +283,20 @@
         <div data-step-panel="3" class="hidden">
             <p class="font-medium text-sm mb-3">Pemeriksaan Perlengkapan Kendaraan</p>
 
-            <div class="mb-4 p-4 rounded-xl border border-emerald-200 bg-emerald-50/40">
-                <label for="kebersihan_unit" class="block text-xs font-bold text-gray-700 mb-1.5">Kondisi Kebersihan Unit <span class="text-red-500">*</span></label>
-                <select id="kebersihan_unit" name="kebersihan_unit" required
-                        class="w-full sm:w-72 rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600">
-                    <option value="" disabled {{ !old('kebersihan_unit') ? 'selected' : '' }}>Pilih Kondisi Kebersihan</option>
-                    <option value="bersih" @selected(old('kebersihan_unit', 'bersih') === 'bersih')>✨ Bersih</option>
-                    <option value="tidak_bersih" @selected(old('kebersihan_unit') === 'tidak_bersih')>⚠️ Tidak Bersih</option>
-                </select>
-                @error('kebersihan_unit') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-            </div>
-
             <div class="space-y-3">
+                {{-- Kondisi Kebersihan Unit (Paling Atas) --}}
+                <div class="grid grid-cols-1 sm:grid-cols-[160px_140px_1fr] gap-3 items-center">
+                    <span class="text-sm font-medium">Kondisi Kebersihan Unit <span class="text-red-500">*</span></span>
+                    <select id="kebersihan_unit" name="kebersihan_unit" required
+                            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600">
+                        <option value="bersih" @selected(old('kebersihan_unit', 'bersih') === 'bersih')>Bersih</option>
+                        <option value="tidak_bersih" @selected(old('kebersihan_unit') === 'tidak_bersih')>Tidak Bersih</option>
+                    </select>
+                    <input type="text" name="catatan_kebersihan_unit" value="{{ old('catatan_kebersihan_unit') }}"
+                           placeholder="Catatan (jika ada)"
+                           class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600">
+                </div>
+                @error('kebersihan_unit') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 @php
                     $perlengkapan = [
                         'ban_cadangan'                => 'Ban Cadangan',
@@ -379,13 +470,78 @@
 
     function validateCurrentStep() {
         var panel = wizard.querySelector('[data-step-panel="' + currentStep + '"]');
-        var requiredFields = panel.querySelectorAll('[required]');
+        var requiredFields = panel.querySelectorAll('input[required]:not([type="file"]), select[required], textarea[required]');
         for (var i = 0; i < requiredFields.length; i++) {
             if (!requiredFields[i].value) {
                 requiredFields[i].reportValidity();
                 return false;
             }
         }
+
+        // Validasi Step 2: Lampiran Foto Pemanasan, BBM & Kebersihan Wajib Diisi
+        if (currentStep === 2) {
+            var inputPemanasan = document.getElementById('bukti_pemanasan');
+            var inputBbm = document.getElementById('bukti_bbm');
+            var inputPencucian = document.getElementById('bukti_pencucian');
+
+            var errPemanasan = document.getElementById('err_bukti_pemanasan');
+            var errBbm = document.getElementById('err_bukti_bbm');
+            var errPencucian = document.getElementById('err_bukti_pencucian');
+
+            var labelPemanasan = inputPemanasan ? document.querySelector('label[for="bukti_pemanasan"]') : null;
+            var labelBbm = inputBbm ? document.querySelector('label[for="bukti_bbm"]') : null;
+            var labelPencucian = inputPencucian ? document.querySelector('label[for="bukti_pencucian"]') : null;
+
+            var isValid = true;
+            var firstInvalid = null;
+
+            // Reset visual errors
+            if (errPemanasan) errPemanasan.classList.add('hidden');
+            if (errBbm) errBbm.classList.add('hidden');
+            if (errPencucian) errPencucian.classList.add('hidden');
+
+            if (labelPemanasan) labelPemanasan.classList.remove('border-red-500', 'bg-red-50/50');
+            if (labelBbm) labelBbm.classList.remove('border-red-500', 'bg-red-50/50');
+            if (labelPencucian) labelPencucian.classList.remove('border-red-500', 'bg-red-50/50');
+
+            if (!inputPemanasan || !inputPemanasan.files || inputPemanasan.files.length === 0) {
+                isValid = false;
+                if (!firstInvalid) firstInvalid = labelPemanasan;
+                if (labelPemanasan) labelPemanasan.classList.add('border-red-500', 'bg-red-50/50');
+                if (errPemanasan) {
+                    errPemanasan.textContent = 'Foto bukti pemanasan kendaraan wajib dilampirkan.';
+                    errPemanasan.classList.remove('hidden');
+                }
+            }
+
+            if (!inputBbm || !inputBbm.files || inputBbm.files.length === 0) {
+                isValid = false;
+                if (!firstInvalid) firstInvalid = labelBbm;
+                if (labelBbm) labelBbm.classList.add('border-red-500', 'bg-red-50/50');
+                if (errBbm) {
+                    errBbm.textContent = 'Bukti foto level BBM wajib dilampirkan.';
+                    errBbm.classList.remove('hidden');
+                }
+            }
+
+            if (!inputPencucian || !inputPencucian.files || inputPencucian.files.length === 0) {
+                isValid = false;
+                if (!firstInvalid) firstInvalid = labelPencucian;
+                if (labelPencucian) labelPencucian.classList.add('border-red-500', 'bg-red-50/50');
+                if (errPencucian) {
+                    errPencucian.textContent = 'Foto kegiatan pasukan membersihkan unit wajib dilampirkan.';
+                    errPencucian.classList.remove('hidden');
+                }
+            }
+
+            if (!isValid) {
+                if (firstInvalid) {
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -413,14 +569,17 @@
 
         input.addEventListener('change', function () {
             if (previewEl) previewEl.innerHTML = '';
+            var errEl = document.getElementById('err_' + inputId);
 
             if (input.files.length === 0) {
                 labelEl.textContent = placeholder;
-                labelEl.parentElement.classList.remove('border-emerald-500', 'bg-emerald-50/50');
+                labelEl.parentElement.classList.remove('border-emerald-500', 'bg-emerald-50/50', 'border-red-500', 'bg-red-50/50');
                 if (previewEl) previewEl.classList.add('hidden');
                 return;
             }
 
+            if (errEl) errEl.classList.add('hidden');
+            labelEl.parentElement.classList.remove('border-red-500', 'bg-red-50/50');
             labelEl.parentElement.classList.add('border-emerald-500', 'bg-emerald-50/50');
 
             if (input.files.length === 1) {
@@ -455,7 +614,7 @@
 
     bindFilePreview('bukti_pemanasan', 'buktiPemanasanLabel', 'buktiPemanasanPreview', 'Lampirkan Bukti Pemanasan');
     bindFilePreview('bukti_bbm', 'buktiBbmLabel', 'buktiBbmPreview', 'Lampirkan Bukti Level BBM');
-    bindFilePreview('bukti_pencucian', 'buktiPencucianLabel', 'buktiPencucianPreview', 'Lampirkan Bukti Pencucian');
+    bindFilePreview('bukti_pencucian', 'buktiPencucianLabel', 'buktiPencucianPreview', 'Lampirkan Foto Pembersihan');
 
     @if($errors->any())
         var firstError = wizard.querySelector('.text-red-600');
@@ -471,44 +630,123 @@
     var posSelect = document.getElementById('pos');
     var unitSelect = document.getElementById('unit_id');
     var allUnitsData = @json($allUnits ?? $unitList ?? []);
+    var allReguData = @json($allReguList ?? []);
+    var danruUsersData = @json($danruUsers ?? []);
 
     function normalizeKeyPos(str) {
         return (str || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
     }
 
-    if (posSelect && unitSelect) {
+    if (posSelect) {
         posSelect.addEventListener('change', function () {
             var selectedPosKey = normalizeKeyPos(this.value);
-            var currentUnitId = unitSelect.value;
-            unitSelect.innerHTML = '<option value="" disabled selected>Pilih Unit / Kendaraan Rescue</option>';
 
-            var matchedUnits = allUnitsData.filter(function (u) {
-                if (!selectedPosKey) return true;
-                var uPosKey = normalizeKeyPos(u.pos || '');
-                return uPosKey === selectedPosKey || uPosKey.includes(selectedPosKey) || selectedPosKey.includes(uPosKey);
-            });
+            if (unitSelect) {
+                var currentUnitId = unitSelect.value;
+                unitSelect.innerHTML = '<option value="" disabled selected>Pilih Unit / Kendaraan Rescue</option>';
 
-            var matched = false;
-            matchedUnits.forEach(function (u) {
-                var opt = document.createElement('option');
-                opt.value = u.id;
-                var label = u.nomor_lambung ? (u.nomor_lambung + ' — ' + u.plat_nomor + (u.pos ? ' [' + u.pos + ']' : '') + (u.merk_tipe ? ' (' + u.merk_tipe + ')' : '')) : (u.nama || '');
-                opt.textContent = label;
-                if (currentUnitId && String(u.id) === String(currentUnitId)) {
-                    opt.selected = true;
-                    matched = true;
+                var matchedUnits = allUnitsData.filter(function (u) {
+                    if (!selectedPosKey) return true;
+                    var uPosKey = normalizeKeyPos(u.pos || '');
+                    return uPosKey === selectedPosKey || uPosKey.includes(selectedPosKey) || selectedPosKey.includes(uPosKey);
+                });
+
+                var matched = false;
+                matchedUnits.forEach(function (u) {
+                    var opt = document.createElement('option');
+                    opt.value = u.id;
+                    var label = u.nomor_lambung ? (u.nomor_lambung + ' — ' + u.plat_nomor + (u.pos ? ' [' + u.pos + ']' : '') + (u.merk_tipe ? ' (' + u.merk_tipe + ')' : '')) : (u.nama || '');
+                    opt.textContent = label;
+                    if (currentUnitId && String(u.id) === String(currentUnitId)) {
+                        opt.selected = true;
+                        matched = true;
+                    }
+                    unitSelect.appendChild(opt);
+                });
+
+                if (!matched && matchedUnits.length > 0) {
+                    unitSelect.value = matchedUnits[0].id;
                 }
-                unitSelect.appendChild(opt);
-            });
+            }
 
-            if (!matched && matchedUnits.length > 0) {
-                unitSelect.value = matchedUnits[0].id;
+            // Auto-update Danru saat Pos diganti
+            if (allReguData.length > 0 && window.danruComp) {
+                var matchedRegu = allReguData.find(function (r) {
+                    var rPos = normalizeKeyPos(r.pos || '');
+                    return rPos && selectedPosKey && (rPos.includes(selectedPosKey) || selectedPosKey.includes(rPos));
+                });
+                if (matchedRegu && matchedRegu.danru) {
+                    window.danruComp.searchQuery = matchedRegu.danru;
+                } else if (danruUsersData.length > 0) {
+                    var fallback = danruUsersData.find(function (u) {
+                        var uPos = normalizeKeyPos(u.pos || '');
+                        return uPos && selectedPosKey && (uPos.includes(selectedPosKey) || selectedPosKey.includes(uPos));
+                    }) || danruUsersData[0];
+                    if (fallback) {
+                        window.danruComp.searchQuery = fallback.name;
+                    }
+                }
             }
         });
     }
 
     showStep(currentStep);
 })();
+
+window.danruComp = null;
+window.kabidComp = null;
+
+function comboboxDanru() {
+    return {
+        open: false,
+        searchQuery: @json(old('nama_danru', $defaultDanruName ?? '')),
+        items: @json($danruOptions ?? []),
+        init() {
+            window.danruComp = this;
+        },
+        filteredList() {
+            if (!this.searchQuery || this.searchQuery.trim() === '') {
+                return this.items;
+            }
+            const q = this.searchQuery.toLowerCase();
+            return this.items.filter(item => 
+                (item.name && item.name.toLowerCase().includes(q)) ||
+                (item.jabatan && item.jabatan.toLowerCase().includes(q)) ||
+                (item.pos && item.pos.toLowerCase().includes(q))
+            );
+        },
+        selectItem(item) {
+            this.searchQuery = item.name;
+            this.open = false;
+        }
+    };
+}
+
+function comboboxKabid() {
+    return {
+        open: false,
+        searchQuery: @json(old('nama_kabid', $defaultKabidName ?? '')),
+        items: @json($kabidOptions ?? []),
+        init() {
+            window.kabidComp = this;
+        },
+        filteredList() {
+            if (!this.searchQuery || this.searchQuery.trim() === '') {
+                return this.items;
+            }
+            const q = this.searchQuery.toLowerCase();
+            return this.items.filter(item => 
+                (item.name && item.name.toLowerCase().includes(q)) ||
+                (item.jabatan && item.jabatan.toLowerCase().includes(q)) ||
+                (item.bidang && item.bidang.toLowerCase().includes(q))
+            );
+        },
+        selectItem(item) {
+            this.searchQuery = item.name;
+            this.open = false;
+        }
+    };
+}
 </script>
 @endpush
 @endsection

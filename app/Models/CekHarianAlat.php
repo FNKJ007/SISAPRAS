@@ -15,6 +15,8 @@ class CekHarianAlat extends Model
         'nama_pemeriksa',
         'jabatan',
         'pos',
+        'nama_danru',
+        'nama_kabid',
         'unit_id',
         'unit_nama',
         'tanggal_pemeriksaan',

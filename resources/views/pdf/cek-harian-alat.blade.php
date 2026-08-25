@@ -118,13 +118,13 @@
         <tr>
             <td>
                 <div class="garis">
-                    &nbsp;<br>
+                    {{ $record->nama_kabid ?? '-' }}<br>
                     Kepala Bidang
                 </div>
             </td>
             <td>
                 <div class="garis">
-                    &nbsp;<br>
+                    {{ $record->nama_danru ?? '-' }}<br>
                     Danru
                 </div>
             </td>

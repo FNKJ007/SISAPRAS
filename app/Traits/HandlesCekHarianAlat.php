@@ -33,9 +33,12 @@ trait HandlesCekHarianAlat
 
             $pdf = Pdf::loadView('pdf.cek-harian-alat', [
                 'record'        => $record,
-                'judul'         => $kategori === 'rescue'
-                    ? 'Hasil Cek Harian Alat Rescue'
-                    : 'Hasil Cek Harian Alat Pemadam',
+                'judul'         => match($kategori) {
+                    'rescue'         => 'Hasil Cek Harian Alat Rescue',
+                    'pencegahan'     => 'Hasil Cek Harian Alat Pencegahan',
+                    'command_center' => 'Hasil Cek Peralatan Command Center',
+                    default          => 'Hasil Cek Harian Alat Pemadam',
+                },
                 'foto_umum_data' => $fotoUmumData,
             ])->setPaper('a4', 'portrait');
 
@@ -57,6 +60,7 @@ trait HandlesCekHarianAlat
             'jabatan.required'             => 'Jabatan petugas pemeriksa wajib diisi.',
             'tanggal_pemeriksaan.required' => 'Tanggal pemeriksaan wajib diisi.',
             'alat.required'                => 'Daftar peralatan yang diperiksa wajib diisi.',
+            'foto_umum.required'           => 'Foto dokumentasi pemeriksaan alat wajib dilampirkan.',
             'foto_umum.uploaded'           => 'File foto dokumentasi gagal diunggah. Ukuran foto terlalu besar (Maks 10MB).',
             'foto_umum.image'              => 'File foto dokumentasi harus berupa gambar (JPG/PNG/WebP).',
             'foto_umum.max'                => 'Ukuran foto dokumentasi tidak boleh lebih dari 10 MB.',
@@ -66,6 +70,8 @@ trait HandlesCekHarianAlat
             'nama_pemeriksa'      => 'required|string|max:255',
             'jabatan'             => 'required|string|max:255',
             'pos'                 => 'nullable|string|max:255',
+            'nama_danru'          => 'nullable|string|max:255',
+            'nama_kabid'          => 'nullable|string|max:255',
             'unit_id'             => 'nullable|integer',
             'tanggal_pemeriksaan' => 'required|date',
 
@@ -76,7 +82,7 @@ trait HandlesCekHarianAlat
             'alat.*.nomor_rusak'  => 'nullable|string|max:500',
 
             'catatan_umum'        => 'nullable|string',
-            'foto_umum'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+            'foto_umum'           => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
         ], $messages);
 
         $unitId = $validated['unit_id'] ?? null;
@@ -126,6 +132,8 @@ trait HandlesCekHarianAlat
             'nama_pemeriksa'      => $validated['nama_pemeriksa'],
             'jabatan'             => $validated['jabatan'],
             'pos'                 => $validated['pos'] ?? ($unitObj ? $unitObj->pos : null),
+            'nama_danru'          => $validated['nama_danru'] ?? null,
+            'nama_kabid'          => $validated['nama_kabid'] ?? null,
             'tanggal_pemeriksaan' => $validated['tanggal_pemeriksaan'],
             'alat'                => $processedAlat,
             'total_baik'          => $totalBaik,

@@ -97,6 +97,12 @@
                                     Cek Harian Alat
                                 </a>
                             </li>
+                            <li>
+                                <a href="{{ route('unit-pemadam.riwayat') }}"
+                                   class="{{ request()->routeIs('unit-pemadam.riwayat') ? 'active' : '' }}">
+                                    Riwayat Pengecekan
+                                </a>
+                            </li>
                         </ul>
                     </div>
                     @endif
@@ -122,6 +128,12 @@
                                 <a href="{{ route('alat-rescue.cek-harian-alat') }}"
                                    class="{{ request()->routeIs('alat-rescue.cek-harian-alat') ? 'active' : '' }}">
                                     Cek Harian Alat
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('unit-rescue.riwayat') }}"
+                                   class="{{ request()->routeIs('unit-rescue.riwayat') ? 'active' : '' }}">
+                                    Riwayat Pengecekan
                                 </a>
                             </li>
                         </ul>
@@ -151,6 +163,12 @@
                                     Cek Harian Alat
                                 </a>
                             </li>
+                            <li>
+                                <a href="{{ route('unit-pencegahan.riwayat') }}"
+                                   class="{{ request()->routeIs('unit-pencegahan.riwayat') ? 'active' : '' }}">
+                                    Riwayat Pengecekan
+                                </a>
+                            </li>
                         </ul>
                     </div>
                     @endif
@@ -173,14 +191,27 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="https://apar.bandungkab.go.id" target="_blank" rel="noopener noreferrer" style="display:flex; align-items:center; justify-space-between;">
-                                    <span>APAR</span>
-                                    <i data-lucide="external-link" style="width:13px; height:13px; margin-left:auto; opacity:0.8;"></i>
+                                <a href="{{ route('alat-cc.riwayat') }}"
+                                   class="{{ request()->routeIs('alat-cc.riwayat') ? 'active' : '' }}">
+                                    Riwayat Pengecekan
                                 </a>
                             </li>
                         </ul>
                     </div>
                     @endif
+
+                    {{-- === Monitoring Kejadian (Tampil di semua bidang, posisi paling bawah menu) === --}}
+                    <div class="menu-group">
+                        <a href="https://apar.bandungkab.go.id/" target="_blank" rel="noopener noreferrer"
+                           class="menu-title"
+                           style="text-decoration:none;">
+                            <span class="menu-title-left">
+                                <i data-lucide="activity" class="menu-icon"></i>
+                                <span>Monitoring Kejadian</span>
+                            </span>
+                            <i data-lucide="external-link" class="chevron" style="width:13px; height:13px; opacity:0.8;"></i>
+                        </a>
+                    </div>
                 </div>
 
                 {{-- === Tombol Bawah Sidebar (Hanya 1 Tombol: Kembali ke Admin ATAU Logout) === --}}

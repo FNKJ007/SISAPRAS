@@ -7,10 +7,11 @@ use App\Models\Unit;
 use App\Models\Pos;
 use Illuminate\Http\Request;
 use App\Traits\HandlesCekHarianUnit;
+use App\Traits\HandlesOfficialsData;
 
 class CekHarianUnitPencegahanController extends Controller
 {
-    use HandlesCekHarianUnit;
+    use HandlesCekHarianUnit, HandlesOfficialsData;
 
     /**
      * Daftar unit/kendaraan pencegahan dari database Admin Data Unit sesuai Pos pengguna.
@@ -103,8 +104,12 @@ class CekHarianUnitPencegahanController extends Controller
         $unitList           = $this->unitList();
         $posList            = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
         $perlengkapanLabels = $this->perlengkapanLabels();
+        $officials          = $this->getOfficialsData('pencegahan');
 
-        return view('auth.unit-pencegahan.cek-harian-unit', compact('unitList', 'allUnits', 'posList', 'perlengkapanLabels'));
+        return view('auth.unit-pencegahan.cek-harian-unit', array_merge(
+            compact('unitList', 'allUnits', 'posList', 'perlengkapanLabels'),
+            $officials
+        ));
     }
 
     /**
@@ -126,5 +131,14 @@ class CekHarianUnitPencegahanController extends Controller
     public function exportPdf(int $id)
     {
         return $this->exportCekHarianUnitPdf($id, 'pencegahan');
+    }
+
+    /**
+     * Menampilkan halaman riwayat pengecekan unit & alat pencegahan untuk user.
+     */
+    public function riwayat(Request $request)
+    {
+        $data = $this->getRiwayatData($request, 'pencegahan');
+        return view('auth.unit-pencegahan.riwayat', $data);
     }
 }

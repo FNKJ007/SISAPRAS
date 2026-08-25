@@ -226,13 +226,14 @@
 
                     {{-- === Monitoring Kejadian (APAR) - link langsung ke website APAR eksternal === --}}
                     <div class="menu-group">
-                        <a href="https://apar.bandungkab.go.id" target="_blank" rel="noopener"
+                        <a href="https://apar.bandungkab.go.id/" target="_blank" rel="noopener noreferrer"
                            class="menu-title"
                            style="text-decoration:none;">
                             <span class="menu-title-left">
-                                <i data-lucide="shield-alert" class="menu-icon"></i>
+                                <i data-lucide="activity" class="menu-icon"></i>
                                 <span>Monitoring Kejadian</span>
                             </span>
+                            <i data-lucide="external-link" class="chevron" style="width:13px; height:13px; opacity:0.8;"></i>
                         </a>
                     </div>
 

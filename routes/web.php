@@ -86,6 +86,9 @@ Route::middleware(['auth', 'user'])->group(function () {
             ->name('alat-pemadam.cek-harian-alat.store');
         Route::get('/alat-pemadam/cek-harian-alat/{id}/export-pdf', [CekHarianAlatController::class, 'exportPdf'])
             ->name('alat-pemadam.cek-harian-alat.export-pdf');
+
+        Route::get('/unit-pemadam/riwayat', [CekHarianUnitPemadamController::class, 'riwayat'])
+            ->name('unit-pemadam.riwayat');
     });
 
     // ===== Unit Rescue > Cek Harian Unit & Alat (Bidang Rescue & SPI) =====
@@ -103,6 +106,9 @@ Route::middleware(['auth', 'user'])->group(function () {
             ->name('alat-rescue.cek-harian-alat.store');
         Route::get('/alat-rescue/cek-harian-alat/{id}/export-pdf', [CekHarianAlatRescueController::class, 'exportPdf'])
             ->name('alat-rescue.cek-harian-alat.export-pdf');
+
+        Route::get('/unit-rescue/riwayat', [CekHarianUnitRescueController::class, 'riwayat'])
+            ->name('unit-rescue.riwayat');
     });
 
     // ===== Unit Pencegahan > Cek Harian Unit & Alat (Bidang Pencegahan & SPI) =====
@@ -120,6 +126,9 @@ Route::middleware(['auth', 'user'])->group(function () {
             ->name('alat-pencegahan.cek-harian-alat.store');
         Route::get('/alat-pencegahan/cek-harian-alat/{id}/export-pdf', [CekHarianAlatPencegahanController::class, 'exportPdf'])
             ->name('alat-pencegahan.cek-harian-alat.export-pdf');
+
+        Route::get('/unit-pencegahan/riwayat', [CekHarianUnitPencegahanController::class, 'riwayat'])
+            ->name('unit-pencegahan.riwayat');
     });
 
     // ===== Command Center > Cek Alat CC (Bidang Command Center & SPI) =====
@@ -130,6 +139,9 @@ Route::middleware(['auth', 'user'])->group(function () {
             ->name('alat-cc.cek-alat-cc.store');
         Route::get('/alat-cc/cek-alat-cc/{id}/export-pdf', [CekAlatCcController::class, 'exportPdf'])
             ->name('alat-cc.cek-alat-cc.export-pdf');
+
+        Route::get('/alat-cc/riwayat', [CekAlatCcController::class, 'riwayat'])
+            ->name('alat-cc.riwayat');
     });
 });
 
