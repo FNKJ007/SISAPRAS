@@ -84,14 +84,6 @@ class InvoiceController extends Controller
     {
         $isAktual = $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
 
-        // Auto sync for Monitoring Aktual
-        if ($isAktual) {
-            $pengajuans = Pengajuan::all();
-            foreach ($pengajuans as $p) {
-                self::syncPengajuanToAktualInvoice($p);
-            }
-        }
-
         $query = Invoice::with('unit')
             ->when($isAktual, function ($q) {
                 $q->where('kategori_monitoring', 'aktual');
@@ -110,10 +102,6 @@ class InvoiceController extends Controller
                   ->orWhere('no_lambung', 'LIKE', "%{$search}%")
                   ->orWhere('lokasi', 'LIKE', "%{$search}%");
             });
-        }
-
-        if ($status = $request->get('status')) {
-            $query->where('status', $status);
         }
 
         $invoices = $query->paginate(10)->withQueryString();
@@ -288,7 +276,7 @@ class InvoiceController extends Controller
                 'potongan'            => $validated['potongan'] ?? 0,
                 'pajak'               => $validated['pajak'] ?? 0,
                 'biaya_lain'          => $validated['biaya_lain'] ?? 0,
-                'status'              => $validated['status'],
+                'status'              => $validated['status'] ?? $request->input('status', 'disetujui'),
                 'kategori_monitoring' => $isAktual ? 'aktual' : 'invoice',
                 'pengajuan_id'        => $request->input('pengajuan_id'),
                 'catatan'             => $validated['catatan'] ?? null,
@@ -387,7 +375,7 @@ class InvoiceController extends Controller
                 'potongan'        => $validated['potongan'] ?? 0,
                 'pajak'           => $validated['pajak'] ?? 0,
                 'biaya_lain'      => $validated['biaya_lain'] ?? 0,
-                'status'          => $validated['status'],
+                'status'          => $validated['status'] ?? $request->input('status', $invoice->status ?? 'disetujui'),
                 'catatan'         => $validated['catatan'] ?? null,
             ]);
 
@@ -462,7 +450,6 @@ class InvoiceController extends Controller
             'tanggal_invoice.date'             => 'Format tanggal invoice tidak valid.',
             'tahun_anggaran.required'          => 'Tahun anggaran wajib diisi.',
             'tahun_anggaran.digits'            => 'Tahun anggaran harus 4 digit angka (contoh: 2026).',
-            'status.required'                  => 'Status invoice wajib dipilih.',
             'items.required'                   => 'Rincian perbaikan / suku cadang minimal 1 item.',
             'items.min'                        => 'Rincian perbaikan / suku cadang minimal 1 item.',
             'items.*.jenis_perbaikan.required' => 'Uraian jenis perbaikan wajib diisi.',
@@ -489,7 +476,7 @@ class InvoiceController extends Controller
             'potongan'        => ['nullable', 'numeric', 'min:0'],
             'pajak'           => ['nullable', 'numeric', 'min:0'],
             'biaya_lain'      => ['nullable', 'numeric', 'min:0'],
-            'status'          => ['required', Rule::in(['draft', 'diajukan', 'disetujui', 'lunas'])],
+            'status'          => ['nullable', Rule::in(['draft', 'diajukan', 'disetujui', 'lunas'])],
             'catatan'         => ['nullable', 'string'],
 
             'items'                 => ['required', 'array', 'min:1'],

@@ -24,41 +24,49 @@
         </div>
     @endif
 
-    {{-- Ringkasan KPI Cards (Di Mobile tampil 2x2 Kesamping / Ke Kanan) --}}
+    {{-- Ringkasan KPI Cards (5 Cards) --}}
     <div class="kpi-grid-container">
 
         {{-- Total --}}
         <a href="{{ route('admin.pemeliharaan.pengajuan', ['status' => 'semua']) }}" style="text-decoration:none; color:inherit;">
-            <div class="kpi-card" style="background:#FFFFFF; border-radius:14px; padding:18px 20px; border:1px solid #E2E8F0; box-shadow:0 4px 14px rgba(0,0,0,0.03); transition:all 0.2s ease; {{ $statusFilter == 'semua' ? 'border-color:#1B2A6B; ring:2px solid #1B2A6B;' : '' }}">
-                <div class="kpi-title" style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:0.5px;">Total Pengajuan</div>
-                <div class="kpi-number" style="font-size:28px; font-weight:800; color:#0F172A; margin-top:6px;">{{ $kpi['total'] }}</div>
+            <div class="kpi-card" style="background:#FFFFFF; border-radius:14px; padding:16px 18px; border:1px solid #E2E8F0; box-shadow:0 4px 14px rgba(0,0,0,0.03); transition:all 0.2s ease; {{ $statusFilter == 'semua' ? 'border-color:#1B2A6B; ring:2px solid #1B2A6B;' : '' }}">
+                <div class="kpi-title" style="font-size:10.5px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:0.5px;">Total Pengajuan</div>
+                <div class="kpi-number" style="font-size:26px; font-weight:800; color:#0F172A; margin-top:4px;">{{ $kpi['total'] }}</div>
             </div>
         </a>
 
         {{-- Menunggu --}}
         <a href="{{ route('admin.pemeliharaan.pengajuan', ['status' => 'menunggu']) }}" style="text-decoration:none; color:inherit;">
-            <div class="kpi-card" style="background:#FFFFFF; border-radius:14px; padding:18px 20px; border:1px solid #FEF3C7; background:linear-gradient(180deg, #FFFFFF 0%, #FFFBEB 100%); box-shadow:0 4px 14px rgba(217,119,6,0.06); transition:all 0.2s ease; {{ $statusFilter == 'menunggu' ? 'border-color:#D97706;' : '' }}">
+            <div class="kpi-card" style="background:#FFFFFF; border-radius:14px; padding:16px 18px; border:1px solid #FEF3C7; background:linear-gradient(180deg, #FFFFFF 0%, #FFFBEB 100%); box-shadow:0 4px 14px rgba(217,119,6,0.06); transition:all 0.2s ease; {{ $statusFilter == 'menunggu' ? 'border-color:#D97706;' : '' }}">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div class="kpi-title" style="font-size:11px; font-weight:700; color:#92400E; text-transform:uppercase; letter-spacing:0.5px;">Menunggu Verifikasi</div>
-                    <span style="width:8px; height:8px; border-radius:50%; background:#F59E0B;" class="animate-ping"></span>
+                    <div class="kpi-title" style="font-size:10.5px; font-weight:700; color:#92400E; text-transform:uppercase; letter-spacing:0.5px;">Menunggu Verifikasi</div>
+                    <span style="width:7px; height:7px; border-radius:50%; background:#F59E0B;" class="animate-ping"></span>
                 </div>
-                <div class="kpi-number" style="font-size:28px; font-weight:800; color:#B45309; margin-top:6px;">{{ $kpi['menunggu'] }}</div>
+                <div class="kpi-number" style="font-size:26px; font-weight:800; color:#B45309; margin-top:4px;">{{ $kpi['menunggu'] }}</div>
             </div>
         </a>
 
-        {{-- Disetujui --}}
+        {{-- Disetujui / Di Bengkel --}}
         <a href="{{ route('admin.pemeliharaan.pengajuan', ['status' => 'disetujui']) }}" style="text-decoration:none; color:inherit;">
-            <div class="kpi-card" style="background:#FFFFFF; border-radius:14px; padding:18px 20px; border:1px solid #D1FAE5; background:linear-gradient(180deg, #FFFFFF 0%, #ECFDF5 100%); box-shadow:0 4px 14px rgba(16,185,129,0.06); transition:all 0.2s ease; {{ $statusFilter == 'disetujui' ? 'border-color:#10B981;' : '' }}">
-                <div class="kpi-title" style="font-size:11px; font-weight:700; color:#065F46; text-transform:uppercase; letter-spacing:0.5px;">Disetujui / Diproses</div>
-                <div class="kpi-number" style="font-size:28px; font-weight:800; color:#047857; margin-top:6px;">{{ $kpi['disetujui'] }}</div>
+            <div class="kpi-card" style="background:#FFFFFF; border-radius:14px; padding:16px 18px; border:1px solid #BFDBFE; background:linear-gradient(180deg, #FFFFFF 0%, #EFF6FF 100%); box-shadow:0 4px 14px rgba(37,99,235,0.06); transition:all 0.2s ease; {{ $statusFilter == 'disetujui' ? 'border-color:#2563EB;' : '' }}">
+                <div class="kpi-title" style="font-size:10.5px; font-weight:700; color:#1D4ED8; text-transform:uppercase; letter-spacing:0.5px;">Disetujui / Di Bengkel</div>
+                <div class="kpi-number" style="font-size:26px; font-weight:800; color:#1E40AF; margin-top:4px;">{{ $kpi['disetujui'] }}</div>
+            </div>
+        </a>
+
+        {{-- Selesai (Kembali ke Pos) --}}
+        <a href="{{ route('admin.pemeliharaan.pengajuan', ['status' => 'selesai']) }}" style="text-decoration:none; color:inherit;">
+            <div class="kpi-card" style="background:#FFFFFF; border-radius:14px; padding:16px 18px; border:1px solid #D1FAE5; background:linear-gradient(180deg, #FFFFFF 0%, #ECFDF5 100%); box-shadow:0 4px 14px rgba(16,185,129,0.06); transition:all 0.2s ease; {{ $statusFilter == 'selesai' ? 'border-color:#10B981;' : '' }}">
+                <div class="kpi-title" style="font-size:10.5px; font-weight:700; color:#065F46; text-transform:uppercase; letter-spacing:0.5px;">Selesai (Di Pos)</div>
+                <div class="kpi-number" style="font-size:26px; font-weight:800; color:#047857; margin-top:4px;">{{ $kpi['selesai'] }}</div>
             </div>
         </a>
 
         {{-- Ditolak --}}
         <a href="{{ route('admin.pemeliharaan.pengajuan', ['status' => 'ditolak']) }}" style="text-decoration:none; color:inherit;">
-            <div class="kpi-card" style="background:#FFFFFF; border-radius:14px; padding:18px 20px; border:1px solid #FEE2E2; background:linear-gradient(180deg, #FFFFFF 0%, #FEF2F2 100%); box-shadow:0 4px 14px rgba(239,68,68,0.06); transition:all 0.2s ease; {{ $statusFilter == 'ditolak' ? 'border-color:#EF4444;' : '' }}">
-                <div class="kpi-title" style="font-size:11px; font-weight:700; color:#991B1B; text-transform:uppercase; letter-spacing:0.5px;">Ditolak</div>
-                <div class="kpi-number" style="font-size:28px; font-weight:800; color:#B91C1C; margin-top:6px;">{{ $kpi['ditolak'] }}</div>
+            <div class="kpi-card" style="background:#FFFFFF; border-radius:14px; padding:16px 18px; border:1px solid #FEE2E2; background:linear-gradient(180deg, #FFFFFF 0%, #FEF2F2 100%); box-shadow:0 4px 14px rgba(239,68,68,0.06); transition:all 0.2s ease; {{ $statusFilter == 'ditolak' ? 'border-color:#EF4444;' : '' }}">
+                <div class="kpi-title" style="font-size:10.5px; font-weight:700; color:#991B1B; text-transform:uppercase; letter-spacing:0.5px;">Ditolak</div>
+                <div class="kpi-number" style="font-size:26px; font-weight:800; color:#B91C1C; margin-top:4px;">{{ $kpi['ditolak'] }}</div>
             </div>
         </a>
 
@@ -79,12 +87,16 @@
                     Menunggu ({{ $kpi['menunggu'] }})
                 </a>
                 <a href="{{ route('admin.pemeliharaan.pengajuan', ['status' => 'disetujui', 'search' => $searchQuery]) }}"
-                   style="padding:6px 14px; font-size:12px; font-weight:600; border-radius:8px; text-decoration:none; transition:all 0.15s ease; {{ $statusFilter == 'disetujui' ? 'background:#059669; color:#FFFFFF; box-shadow:0 2px 6px rgba(5,150,105,0.2);' : 'color:#64748B;' }}">
-                    Disetujui
+                   style="padding:6px 14px; font-size:12px; font-weight:600; border-radius:8px; text-decoration:none; transition:all 0.15s ease; {{ $statusFilter == 'disetujui' ? 'background:#2563EB; color:#FFFFFF; box-shadow:0 2px 6px rgba(37,99,235,0.2);' : 'color:#64748B;' }}">
+                    Disetujui ({{ $kpi['disetujui'] }})
+                </a>
+                <a href="{{ route('admin.pemeliharaan.pengajuan', ['status' => 'selesai', 'search' => $searchQuery]) }}"
+                   style="padding:6px 14px; font-size:12px; font-weight:600; border-radius:8px; text-decoration:none; transition:all 0.15s ease; {{ $statusFilter == 'selesai' ? 'background:#059669; color:#FFFFFF; box-shadow:0 2px 6px rgba(5,150,105,0.2);' : 'color:#64748B;' }}">
+                    Selesai ({{ $kpi['selesai'] }})
                 </a>
                 <a href="{{ route('admin.pemeliharaan.pengajuan', ['status' => 'ditolak', 'search' => $searchQuery]) }}"
                    style="padding:6px 14px; font-size:12px; font-weight:600; border-radius:8px; text-decoration:none; transition:all 0.15s ease; {{ $statusFilter == 'ditolak' ? 'background:#DC2626; color:#FFFFFF; box-shadow:0 2px 6px rgba(220,38,38,0.2);' : 'color:#64748B;' }}">
-                    Ditolak
+                    Ditolak ({{ $kpi['ditolak'] }})
                 </a>
             </div>
 
@@ -159,7 +171,7 @@
                                         </div>
                                     @else
                                         <div style="font-weight:600; color:#1E293B;" title="{{ $item->item_perbaikan }}">
-                                            {{ $item->item_perbaikan }}
+                                             {{ $item->item_perbaikan }}
                                         </div>
                                     @endif
                                     <div style="font-size:11px; color:#64748B; margin-top:3px;">Jenis: {{ ucfirst($item->jenis_kendaraan) }}</div>
@@ -169,12 +181,27 @@
                                     <div style="font-size:11px; color:#94A3B8;">NIP. {{ $item->nip_pemegang }}</div>
                                 </td>
                                 <td style="padding:14px 18px; white-space:nowrap;">
-                                    @if($item->status === 'disetujui')
-                                        <span style="background:#D1FAE5; color:#065F46; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; border:1px solid #A7F3D0; display:inline-flex; align-items:center; gap:5px;">
-                                            <span style="width:6px; height:6px; border-radius:50%; background:#10B981;"></span> Disetujui
+                                    @if($item->status === 'selesai' || $item->status_pengerjaan === 'selesai')
+                                        <span style="background:#ECFDF5; color:#065F46; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; border:1px solid #A7F3D0; display:inline-flex; align-items:center; gap:5px;">
+                                            <span style="width:6px; height:6px; border-radius:50%; background:#10B981;"></span> Selesai
+                                        </span>
+                                        @if($item->tanggal_selesai_pengerjaan)
+                                            <div style="font-size:11px; color:#059669; font-weight:600; margin-top:4px; display:flex; align-items:center; gap:4px;">
+                                                <i data-lucide="check-check" style="width:12px; height:12px;"></i>
+                                                <span>Kembali: {{ $item->tanggal_selesai_pengerjaan->format('d/m/Y') }}</span>
+                                            </div>
+                                        @else
+                                            <div style="font-size:11px; color:#059669; font-weight:600; margin-top:4px; display:flex; align-items:center; gap:4px;">
+                                                <i data-lucide="check-check" style="width:12px; height:12px;"></i>
+                                                <span>Unit di Pos</span>
+                                            </div>
+                                        @endif
+                                    @elseif($item->status === 'disetujui')
+                                        <span style="background:#EFF6FF; color:#1D4ED8; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; border:1px solid #BFDBFE; display:inline-flex; align-items:center; gap:5px;">
+                                            <span style="width:6px; height:6px; border-radius:50%; background:#2563EB;"></span> Disetujui
                                         </span>
                                         @if($item->tanggal_keberangkatan)
-                                            <div style="font-size:11px; color:#047857; font-weight:600; margin-top:4px; display:flex; align-items:center; gap:4px;">
+                                            <div style="font-size:11px; color:#1D4ED8; font-weight:600; margin-top:4px; display:flex; align-items:center; gap:4px;">
                                                 <i data-lucide="calendar" style="width:12px; height:12px;"></i>
                                                 <span>Bengkel: {{ $item->tanggal_keberangkatan->format('d/m/Y') }}</span>
                                             </div>
@@ -190,11 +217,34 @@
                                     @endif
                                 </td>
                                 <td style="padding:14px 18px; text-align:center; white-space:nowrap;">
-                                    <button type="button" @click="openModal({{ json_encode($item) }})"
-                                            style="padding:6px 14px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(27,42,107,0.15);">
-                                        <i data-lucide="eye" style="width:14px; height:14px;"></i>
-                                        <span>Detail &amp; Verifikasi</span>
-                                    </button>
+                                    <div style="display:inline-flex; align-items:center; gap:6px;">
+                                        @php
+                                            $todayStr = now()->format('Y-m-d');
+                                            $tglBerangkatStr = $item->tanggal_keberangkatan ? $item->tanggal_keberangkatan->format('Y-m-d') : null;
+                                            // Tombol selesai HANYA muncul jika pengajuan sudah disetujui, belum selesai, dan SUDAH MASUK tanggal jadwal ke bengkel (<= hari ini)
+                                            $isSudahMasukBengkel = ($item->status === 'disetujui' || $item->status_pengerjaan === 'proses')
+                                                && $item->status !== 'selesai'
+                                                && $item->status_pengerjaan !== 'selesai'
+                                                && (!$tglBerangkatStr || $tglBerangkatStr <= $todayStr);
+                                        @endphp
+                                        @if($isSudahMasukBengkel)
+                                            <form action="{{ route('admin.pemeliharaan.pengajuan.selesai', $item->id) }}" method="POST" style="display:inline-block; margin:0;">
+                                                @csrf
+                                                <button type="submit"
+                                                        onclick="return confirm('Tandai perbaikan unit {{ $item->nomor_lambung }} telah selesai dan unit sudah kembali ke pos?')"
+                                                        title="Selesaikan perbaikan & unit kembali ke pos"
+                                                        style="padding:6px 12px; background:#ECFDF5; color:#065F46; border:1px solid #A7F3D0; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 4px rgba(16,185,129,0.15);">
+                                                    <i data-lucide="check-circle" style="width:14px; height:14px; color:#10B981;"></i>
+                                                    <span>Selesai</span>
+                                                </button>
+                                            </form>
+                                        @endif
+                                        <button type="button" @click="openModal({{ json_encode($item) }})"
+                                                style="padding:6px 14px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(27,42,107,0.15);">
+                                            <i data-lucide="eye" style="width:14px; height:14px;"></i>
+                                            <span>Detail &amp; Verifikasi</span>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
@@ -396,11 +446,19 @@
 }
 
 .verif-pill-btn.pill-disetujui-active {
+    background-color: #EFF6FF !important;
+    color: #1D4ED8 !important;
+    border-color: #BFDBFE !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 4px rgba(37, 99, 235, 0.15) !important;
+}
+
+.verif-pill-btn.pill-selesai-active {
     background-color: #D1FAE5 !important;
     color: #065F46 !important;
-    border-color: #A7F3D0 !important;
+    border-color: #10B981 !important;
     font-weight: 700 !important;
-    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.15) !important;
+    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.2) !important;
 }
 
 .verif-pill-btn.pill-ditolak-active {
@@ -439,12 +497,20 @@
 
 .kpi-grid-container {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
     margin-bottom: 24px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
+    .kpi-grid-container {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 12px !important;
+    }
+}
+
+@media (max-width: 640px) {
     .kpi-grid-container {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;

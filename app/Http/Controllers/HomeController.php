@@ -39,13 +39,16 @@ class HomeController extends Controller
 
         $dbPengajuan = Pengajuan::where(function ($query) use ($tanggalAwal, $tanggalAkhir) {
             $query->whereBetween('tanggal_keberangkatan', [$tanggalAwal->format('Y-m-d'), $tanggalAkhir->format('Y-m-d')])
+                  ->orWhereBetween('tanggal_selesai_pengerjaan', [$tanggalAwal->format('Y-m-d'), $tanggalAkhir->format('Y-m-d')])
                   ->orWhereBetween('created_at', [$tanggalAwal->copy()->startOfDay(), $tanggalAkhir->copy()->endOfDay()]);
         })->latest()->get();
 
+        $todayStr = now()->format('Y-m-d');
+
         if ($dbPengajuan->count() > 0) {
-            $pengajuanList = $dbPengajuan->map(function ($item) {
-                // Tanggal penempatan di kalender: Gunakan tanggal_keberangkatan jika disetujui, atau created_at
-                $tglTarget = ($item->status === 'disetujui' && $item->tanggal_keberangkatan)
+            $pengajuanList = $dbPengajuan->map(function ($item) use ($todayStr) {
+                // Tanggal penempatan di kalender: Gunakan tanggal_keberangkatan jika ada, atau created_at
+                $tglTarget = ($item->tanggal_keberangkatan)
                     ? $item->tanggal_keberangkatan->toDateString()
                     : $item->created_at->toDateString();
 
@@ -59,13 +62,37 @@ class HomeController extends Controller
                     }
                 }
 
+                $tglBerangkatStr = $item->tanggal_keberangkatan ? $item->tanggal_keberangkatan->format('Y-m-d') : null;
+
+                if ($item->status === 'selesai' || $item->status_pengerjaan === 'selesai') {
+                    $statusKalender = 'selesai';
+                    $statusLabel    = 'Selesai';
+                } elseif ($item->status === 'disetujui') {
+                    if ($tglBerangkatStr && $tglBerangkatStr > $todayStr) {
+                        $statusKalender = 'disetujui_ke_bengkel';
+                        $statusLabel    = 'Disetujui ke Bengkel';
+                    } else {
+                        $statusKalender = 'dalam_perbaikan';
+                        $statusLabel    = 'Dalam Perbaikan';
+                    }
+                } elseif ($item->status === 'ditolak') {
+                    $statusKalender = 'ditolak';
+                    $statusLabel    = 'Ditolak Admin';
+                } else {
+                    $statusKalender = 'menunggu';
+                    $statusLabel    = 'Menunggu Verifikasi';
+                }
+
                 return (object) [
                     'tanggal_pengajuan'     => $tglTarget,
                     'unit_nama'             => strtoupper($item->nomor_lambung) . ' (' . ucfirst($item->pos) . ')',
-                    'status'                => $item->status, // 'menunggu', 'disetujui', 'ditolak'
+                    'status'                => $item->status,
+                    'status_kalender'       => $statusKalender,
+                    'status_label'          => $statusLabel,
                     'item_perbaikan'        => $item->item_perbaikan,
                     'item_verifikasis'      => $itemVerificatedList,
                     'tanggal_keberangkatan' => $item->tanggal_keberangkatan ? $item->tanggal_keberangkatan->translatedFormat('l, d F Y') : null,
+                    'tanggal_selesai'       => $item->tanggal_selesai_pengerjaan ? $item->tanggal_selesai_pengerjaan->translatedFormat('l, d F Y') : null,
                     'catatan_admin'         => $item->catatan_admin,
                 ];
             });
@@ -94,9 +121,10 @@ class HomeController extends Controller
         // 4. Hitung Statistik Ringkasan KPI
         $kpi = [
             'total_pengajuan'  => $pengajuanList->count(),
-            'menunggu'         => $pengajuanList->where('status', 'menunggu')->count(),
-            'disetujui'        => $pengajuanList->where('status', 'disetujui')->count(),
-            'ditolak'          => $pengajuanList->where('status', 'ditolak')->count(),
+            'menunggu'         => $pengajuanList->where('status_kalender', 'menunggu')->count(),
+            'disetujui'        => $pengajuanList->whereIn('status_kalender', ['disetujui_ke_bengkel', 'dalam_perbaikan'])->count(),
+            'selesai'          => $pengajuanList->where('status_kalender', 'selesai')->count(),
+            'ditolak'          => $pengajuanList->where('status_kalender', 'ditolak')->count(),
         ];
         $ringkasan      = $kpi;
         $totalPengajuan = $kpi['total_pengajuan'];
@@ -174,9 +202,14 @@ class HomeController extends Controller
             'list_bengkel'  => $listBengkel,
         ];
 
-        // 5b. Status Pemeriksaan Unit Hari Ini Berdasarkan Pos Penempatan Pengguna yang Login
+        // 5b. Status Pemeriksaan Unit Hari Ini Berdasarkan Pos & Bidang Pengguna yang Login
         $user = auth()->user();
         $userPos = $user ? trim((string) $user->pos) : '';
+        $userBidang = strtolower(trim((string) ($user->bidang ?? '')));
+        $isAdminSimulasi = $user && $user->isAdmin() && session('admin_viewing_as_user');
+        $isSpi = str_contains($userBidang, 'sarana prasarana') || str_contains($userBidang, 'spi');
+        $showAllBidang = ($user && $user->isAdmin() && !$isAdminSimulasi) || $isSpi;
+
         $today = Carbon::today();
 
         $todayChecks = \App\Models\CekHarianUnit::whereDate('created_at', $today)
@@ -185,6 +218,8 @@ class HomeController extends Controller
             ->toArray();
 
         $queryPosUnits = \App\Models\Unit::query();
+
+        // 1. Filter berdasarkan Pos Penempatan Pengguna
         if (!empty($userPos)) {
             $cleanPos = explode('(', $userPos)[0];
             $cleanPos = trim($cleanPos);
@@ -195,12 +230,43 @@ class HomeController extends Controller
             });
         }
 
-        $posUnits = $queryPosUnits->orderBy('nomor_lambung', 'asc')->get();
-
-        // Fallback jika belum ada unit di pos tersebut: tampilkan default
-        if ($posUnits->isEmpty()) {
-            $posUnits = \App\Models\Unit::orderBy('nomor_lambung', 'asc')->take(6)->get();
+        // 2. Filter berdasarkan Bidang Pengguna (Pemadam, Rescue, Pencegahan)
+        if (!$showAllBidang && !empty($userBidang)) {
+            if (str_contains($userBidang, 'pemadam')) {
+                $queryPosUnits->where(function ($q) {
+                    $q->where(function ($sub) {
+                        $sub->where('kategori', 'Pemadam')
+                            ->where(function ($s2) {
+                                $s2->where('peruntukan', 'NOT LIKE', '%pencegahan%')
+                                   ->orWhereNull('peruntukan');
+                            });
+                    })
+                    ->orWhere('peruntukan', 'LIKE', '%pemadam%')
+                    ->orWhere('nomor_lambung', 'LIKE', 'P-%')
+                    ->orWhere('nomor_lambung', 'LIKE', 'S-%')
+                    ->orWhere('nomor_lambung', 'LIKE', 'MP-%');
+                })
+                ->where('nomor_lambung', 'NOT LIKE', 'PC-%')
+                ->where('peruntukan', 'NOT LIKE', '%pencegahan%')
+                ->where('peruntukan', 'NOT LIKE', '%rescue%')
+                ->where('kategori', '!=', 'Rescue')
+                ->where('kategori', '!=', 'Komando');
+            } elseif (str_contains($userBidang, 'rescue')) {
+                $queryPosUnits->where(function ($q) {
+                    $q->where('kategori', 'Rescue')
+                      ->orWhere('peruntukan', 'LIKE', '%rescue%')
+                      ->orWhere('nomor_lambung', 'LIKE', 'R-%');
+                });
+            } elseif (str_contains($userBidang, 'pencegahan')) {
+                $queryPosUnits->where(function ($q) {
+                    $q->where('kategori', 'Pencegahan')
+                      ->orWhere('peruntukan', 'LIKE', '%pencegahan%')
+                      ->orWhere('nomor_lambung', 'LIKE', 'PC-%');
+                });
+            }
         }
+
+        $posUnits = $queryPosUnits->orderBy('nomor_lambung', 'asc')->get();
 
         $userUnitStatus = $posUnits->map(function ($u) use ($todayChecks) {
             return (object) [
@@ -214,7 +280,14 @@ class HomeController extends Controller
                 'status_armada' => $u->status === 'perbaikan' ? 'Dalam Perbaikan' : 'Siap Tempur / Operasi',
                 'sudah_dicek'   => in_array($u->id, $todayChecks),
             ];
-        });
+        })->sort(function ($a, $b) {
+            // 1. Prioritas Utama: Belum Dicek (false/0) di atas, Sudah Dicek (true/1) di bawah
+            if ($a->sudah_dicek !== $b->sudah_dicek) {
+                return $a->sudah_dicek ? 1 : -1;
+            }
+            // 2. Prioritas Kedua: Urutan alfabetis & angka natural berdasarkan nomor lambung
+            return strnatcasecmp($a->nomor_lambung, $b->nomor_lambung);
+        })->values();
 
         // 6. Range Tahun Dinamis (Otomatis mencakup record tertua di DB s.d. 10 tahun ke depan)
         $minDbYear = Pengajuan::min('created_at') ? Carbon::parse(Pengajuan::min('created_at'))->year : date('Y') - 5;

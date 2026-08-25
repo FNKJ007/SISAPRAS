@@ -102,22 +102,51 @@ class Unit extends Model
 
     /**
      * Sinkronisasi status armada unit secara otomatis berdasarkan data Pengajuan Pemeliharaan aktual.
-     * Jika unit memiliki pengajuan 'disetujui' yang sedang berjalan atau jadwal keberangkatan <= hari ini,
-     * status unit diset ke 'perbaikan'. Jika tidak ada atau pengerjaan 'selesai', status diset ke 'aktif'.
+     * Aturan:
+     * 1. Jika pengajuan 'disetujui' dengan tanggal_keberangkatan di masa depan (> hari ini),
+     *    unit belum masuk bengkel sehingga status tetap 'aktif' (Ready).
+     * 2. Jika tanggal_keberangkatan <= hari ini (sudah masuk jadwal) dan belum selesai,
+     *    unit berubah status menjadi 'perbaikan' (Dalam Perbaikan).
+     * 3. Jika status pengerjaan 'selesai' atau pengajuan ditolak/menunggu, status kembali 'aktif'.
      */
     public static function syncStatusAll(): void
     {
         $today = now()->format('Y-m-d');
 
-        // Pengajuan disetujui yang belum selesai dan sudah/sedang dalam pengerjaan atau jadwal berangkat <= hari ini
+        // 1. Sinkronisasi status_pengerjaan pada Pengajuan yang disetujui berdasarkan tanggal keberangkatan
+        $approvedPengajuans = Pengajuan::where('status', 'disetujui')
+            ->where('status_pengerjaan', '!=', 'selesai')
+            ->get();
+
+        foreach ($approvedPengajuans as $p) {
+            $tglBerangkat = $p->tanggal_keberangkatan ? $p->tanggal_keberangkatan->format('Y-m-d') : null;
+            if ($tglBerangkat) {
+                if ($tglBerangkat <= $today && $p->status_pengerjaan === 'belum_mulai') {
+                    $p->status_pengerjaan = 'proses';
+                    if ((int)$p->progress_persen === 0) {
+                        $p->progress_persen = 10;
+                    }
+                    $p->saveQuietly();
+                } elseif ($tglBerangkat > $today && $p->status_pengerjaan === 'proses') {
+                    // Jadwal masih besok / masa depan, belum masuk bengkel fisik
+                    $p->status_pengerjaan = 'belum_mulai';
+                    $p->progress_persen = 0;
+                    $p->saveQuietly();
+                }
+            }
+        }
+
+        // 2. Tentukan unit mana saja yang saat ini BENAR-BENAR sudah masuk bengkel (tanggal_keberangkatan <= hari ini)
         $activeRepairPengajuans = Pengajuan::where('status', 'disetujui')
             ->where('status_pengerjaan', '!=', 'selesai')
             ->where(function ($q) use ($today) {
-                $q->where('status_pengerjaan', 'proses')
-                  ->orWhere(function ($q2) use ($today) {
-                      $q2->whereNotNull('tanggal_keberangkatan')
-                         ->whereDate('tanggal_keberangkatan', '<=', $today);
-                  });
+                $q->where(function ($q2) use ($today) {
+                    $q2->whereNotNull('tanggal_keberangkatan')
+                       ->whereDate('tanggal_keberangkatan', '<=', $today);
+                })->orWhere(function ($q3) use ($today) {
+                    $q3->whereNull('tanggal_keberangkatan')
+                       ->where('status_pengerjaan', 'proses');
+                });
             })
             ->get();
 

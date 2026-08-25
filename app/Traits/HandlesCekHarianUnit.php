@@ -51,13 +51,44 @@ trait HandlesCekHarianUnit
                     $logoData = 'data:' . (mime_content_type($logoPath) ?: 'image/png') . ';base64,' . base64_encode(file_get_contents($logoPath));
                 }
 
+            $pemeriksaNip = $record->user->nip ?? \App\Models\User::where('name', $record->nama_pemeriksa)->value('nip') ?? '';
+
+            $danruNip = '';
+            if (!empty($record->nama_danru)) {
+                $danruNip = \App\Models\User::where('name', $record->nama_danru)->value('nip')
+                    ?? \App\Models\User::where('name', 'LIKE', '%' . $record->nama_danru . '%')->value('nip') ?? '';
+            }
+
+            $kabidNip = '';
+            $kabidLabel = match($kategori) {
+                'rescue'     => 'Kepala Bidang Penyelamatan',
+                'pencegahan' => 'Kepala Bidang Pencegahan Kebakaran',
+                default      => 'Kepala Bidang Pemadaman',
+            };
+            if (!empty($record->nama_kabid)) {
+                $kabidUser = \App\Models\User::where('name', $record->nama_kabid)->first()
+                    ?? \App\Models\User::where('name', 'LIKE', '%' . $record->nama_kabid . '%')->first();
+                if ($kabidUser) {
+                    $kabidNip = $kabidUser->nip ?? '';
+                    if (!empty($kabidUser->jabatan)) {
+                        $kabidLabel = $kabidUser->jabatan;
+                    }
+                }
+            }
+
             $pdf = Pdf::loadView('pdf.cek-harian-unit', [
                 'record'               => $record,
-                    'unit'                 => $record->unit,
-                    'logo_data'            => $logoData,
-                'judul'                => $kategori === 'rescue'
-                    ? 'Hasil Cek Harian Unit Kendaraan Rescue'
-                    : 'Hasil Cek Harian Unit Kendaraan Pemadam',
+                'unit'                 => $record->unit,
+                'logo_data'            => $logoData,
+                'pemeriksa_nip'        => $pemeriksaNip,
+                'danru_nip'            => $danruNip,
+                'kabid_nip'            => $kabidNip,
+                'kabid_label'          => $kabidLabel,
+                'judul'                => match($kategori) {
+                    'rescue'     => 'Hasil Cek Harian Unit Kendaraan Rescue',
+                    'pencegahan' => 'Hasil Cek Harian Unit Kendaraan Pencegahan',
+                    default      => 'Hasil Cek Harian Unit Kendaraan Pemadam',
+                },
                 'bukti_pemanasan_data' => $buktiPemanasanData,
                 'bukti_bbm_data'       => $buktiBbmData,
                 'bukti_pencucian_data' => $buktiPencucianData,

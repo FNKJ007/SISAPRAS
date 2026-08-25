@@ -114,23 +114,43 @@
         @endif
     </div>
 
+    @php
+        $pemeriksaNip = $pemeriksa_nip ?? ($record->user->nip ?? (\App\Models\User::where('name', $record->nama_pemeriksa)->value('nip') ?? ''));
+        $danruNip = $danru_nip ?? (\App\Models\User::where('name', $record->nama_danru)->value('nip') ?? (\App\Models\User::where('name', 'LIKE', '%' . $record->nama_danru . '%')->value('nip') ?? ''));
+        $kabidNip = $kabid_nip ?? (\App\Models\User::where('name', $record->nama_kabid)->value('nip') ?? (\App\Models\User::where('name', 'LIKE', '%' . $record->nama_kabid . '%')->value('nip') ?? ''));
+
+        $kabidUser = !empty($record->nama_kabid)
+            ? (\App\Models\User::where('name', $record->nama_kabid)->first()
+                ?? \App\Models\User::where('name', 'LIKE', '%' . $record->nama_kabid . '%')->first())
+            : null;
+
+        $kabidLabel = $kabid_label ?? ($kabidUser->jabatan ?? match($record->kategori) {
+            'rescue'         => 'Kepala Bidang Penyelamatan',
+            'pencegahan'     => 'Kepala Bidang Pencegahan Kebakaran',
+            'command_center' => 'Kepala Bidang Sarana, Prasarana Dan Informasi',
+            default          => 'Kepala Bidang Pemadaman',
+        });
+    @endphp
     <table class="ttd">
         <tr>
             <td>
                 <div class="garis">
-                    {{ $record->nama_kabid ?? '-' }}<br>
-                    Kepala Bidang
+                    <strong>{{ $record->nama_kabid ?? '-' }}</strong><br>
+                    @if($kabidNip) <span style="font-size:9px; color:#4b5563;">{{ $kabidNip }}</span><br> @endif
+                    {{ $kabidLabel }}
                 </div>
             </td>
             <td>
                 <div class="garis">
-                    {{ $record->nama_danru ?? '-' }}<br>
-                    Danru
+                    <strong>{{ $record->nama_danru ?? '-' }}</strong><br>
+                    @if($danruNip) <span style="font-size:9px; color:#4b5563;">{{ $danruNip }}</span><br> @endif
+                    Komandan Regu
                 </div>
             </td>
             <td>
                 <div class="garis">
-                    {{ $record->nama_pemeriksa }}<br>
+                    <strong>{{ $record->nama_pemeriksa }}</strong><br>
+                    @if($pemeriksaNip) <span style="font-size:9px; color:#4b5563;">{{ $pemeriksaNip }}</span><br> @endif
                     Pemeriksa
                 </div>
             </td>
