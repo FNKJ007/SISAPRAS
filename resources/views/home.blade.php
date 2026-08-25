@@ -8,7 +8,7 @@
     {{-- ===================== SUMMARY STATUS ARMADA (READY VS DI BENGKEL) ===================== --}}
     <div class="border-gray-100">
         <div class="flex items-center justify-between flex-wrap gap-4 mb-4">
-            <div>
+            <div class="hidden sm:block">
                 <h3 class="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
                     <i data-lucide="shield-check" class="w-5 h-5 text-blue-700"></i>
                     <span>Status Kesiapan Armada &amp; Pemeliharaan Unit</span>
@@ -17,7 +17,7 @@
                     Ringkasan unit operasional yang siap bertugas dan unit yang sedang berada di bengkel per hari ini.
                 </p>
             </div>
-            <div class="text-xs text-gray-500 font-medium bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg">
+            <div class="text-xs text-gray-500 font-medium bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg w-full sm:w-auto text-center sm:text-left">
                 Per hari ini: <strong class="text-gray-900 font-bold">{{ $hariIniString }}</strong>
             </div>
         </div>
@@ -81,11 +81,16 @@
                     <h5 class="text-xs font-bold text-slate-900 flex items-center gap-2">
                         <i data-lucide="clipboard-check" class="w-4 h-4 text-blue-700"></i>
                         <span>Status Pengecekan Unit</span>
+                        @if(auth()->check() && auth()->user()->pos)
+                            <span class="text-[10px] font-bold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded-full">
+                                {{ auth()->user()->pos }}
+                            </span>
+                        @endif
                     </h5>
                     <span class="text-[11px] text-slate-500 font-medium">Pastikan cek harian telah diisi sebelum operasi</span>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 {{ count($userUnitStatus) > 3 ? 'max-h-[265px] sm:max-h-[340px] overflow-y-auto custom-scrollbar pr-1' : '' }}">
                     @foreach($userUnitStatus as $unitSt)
                         <div class="bg-white border rounded-xl p-3 flex flex-col justify-between gap-2 shadow-2xs {{ $unitSt->sudah_dicek ? 'border-emerald-200 bg-emerald-50/20' : 'border-red-200 bg-red-50/20' }}">
                             <div class="flex items-start justify-between gap-2">
@@ -192,27 +197,55 @@
 
                             <span class="inline-flex items-center gap-1.5 text-[10.5px] font-extrabold px-2.5 py-1 rounded-full w-fit shadow-2xs"
                                   :class="{
-                                      'bg-amber-50 text-amber-900 border border-amber-300': event.status === 'menunggu',
-                                      'bg-blue-50 text-blue-900 border border-blue-300': event.status === 'disetujui',
-                                      'bg-red-50 text-red-900 border border-red-300': event.status === 'ditolak'
+                                      'bg-amber-50 text-amber-900 border border-amber-300': event.status_kalender === 'menunggu',
+                                      'bg-blue-50 text-blue-900 border border-blue-300': event.status_kalender === 'disetujui_ke_bengkel',
+                                      'bg-orange-50 text-orange-950 border border-orange-300': event.status_kalender === 'dalam_perbaikan',
+                                      'bg-emerald-50 text-emerald-900 border border-emerald-300': event.status_kalender === 'selesai',
+                                      'bg-red-50 text-red-900 border border-red-300': event.status_kalender === 'ditolak'
                                   }">
                                 <span class="w-1.5 h-1.5 rounded-full"
                                       :class="{
-                                          'bg-amber-500': event.status === 'menunggu',
-                                          'bg-blue-600': event.status === 'disetujui',
-                                          'bg-red-600': event.status === 'ditolak'
+                                          'bg-amber-500': event.status_kalender === 'menunggu',
+                                          'bg-blue-600': event.status_kalender === 'disetujui_ke_bengkel',
+                                          'bg-orange-500': event.status_kalender === 'dalam_perbaikan',
+                                          'bg-emerald-500': event.status_kalender === 'selesai',
+                                          'bg-red-600': event.status_kalender === 'ditolak'
                                       }"></span>
-                                <span x-text="event.status === 'menunggu' ? 'Menunggu Verifikasi' : (event.status === 'disetujui' ? 'Disetujui ke Bengkel' : 'Ditolak Admin')"></span>
+                                <span x-text="event.status_label"></span>
                             </span>
                         </div>
 
-                        {{-- Jadwal Keberangkatan Bengkel --}}
-                        <template x-if="event.tanggal_keberangkatan && event.status === 'disetujui'">
-                            <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 flex items-center gap-2 text-xs font-semibold text-emerald-900">
+                        {{-- Jadwal Keberangkatan Bengkel (Belum Berangkat / Masa Depan) --}}
+                        <template x-if="event.tanggal_keberangkatan && event.status_kalender === 'disetujui_ke_bengkel'">
+                            <div class="bg-blue-50/70 border border-blue-200 rounded-lg p-2.5 flex items-center gap-2 text-xs font-semibold text-blue-900">
                                 <span class="text-base">🚛</span>
                                 <div>
-                                    <span class="text-[10px] font-bold text-emerald-700 block uppercase">Jadwal Ke Bengkel</span>
-                                    <span class="font-bold text-emerald-900" x-text="event.tanggal_keberangkatan"></span>
+                                    <span class="text-[10px] font-bold text-blue-700 block uppercase">Jadwal Ke Bengkel</span>
+                                    <span class="font-bold text-blue-900" x-text="event.tanggal_keberangkatan"></span>
+                                </div>
+                            </div>
+                        </template>
+
+                        {{-- Sedang Dalam Perbaikan di Bengkel --}}
+                        <template x-if="event.status_kalender === 'dalam_perbaikan'">
+                            <div class="bg-orange-50/80 border border-orange-200 rounded-lg p-2.5 flex items-center gap-2 text-xs font-semibold text-orange-950">
+                                <span class="text-base">⚙️</span>
+                                <div>
+                                    <span class="text-[10px] font-bold text-orange-700 block uppercase">Proses Perbaikan</span>
+                                    <span class="font-bold text-orange-950">Unit Sedang Dikerjakan di Bengkel</span>
+                                    <span class="text-[10.5px] font-normal text-orange-800 block" x-show="event.tanggal_keberangkatan" x-text="'Masuk Bengkel: ' + event.tanggal_keberangkatan"></span>
+                                </div>
+                            </div>
+                        </template>
+
+                        {{-- Sudah Selesai Perbaikan & Kembali ke Pos --}}
+                        <template x-if="event.status_kalender === 'selesai'">
+                            <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 flex items-center gap-2 text-xs font-semibold text-emerald-900">
+                                <span class="text-base">✅</span>
+                                <div>
+                                    <span class="text-[10px] font-bold text-emerald-700 block uppercase">Status Pemeliharaan</span>
+                                    <span class="font-bold text-emerald-900">Selesai &amp; Unit Kembali Siap Operasi</span>
+                                    <span class="text-[10.5px] font-normal text-emerald-800 block" x-show="event.tanggal_selesai" x-text="'Tanggal Selesai: ' + event.tanggal_selesai"></span>
                                 </div>
                             </div>
                         </template>
@@ -273,8 +306,8 @@
             </p>
         </div>
 
-        {{-- Ringkasan KPI Status Badges (Menunggu, Disetujui, Ditolak) --}}
-        <div class="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
+        {{-- Ringkasan KPI Status Badges (Menunggu, Disetujui, Selesai, Ditolak) --}}
+        <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
             <div class="flex items-center justify-between sm:justify-start gap-2 text-xs font-semibold bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-3 py-1.5 shadow-2xs">
                 <div class="flex items-center gap-1.5">
                     <span class="w-2 h-2 rounded-full bg-amber-500"></span>
@@ -288,6 +321,13 @@
                     <span>Disetujui / Bengkel:</span>
                 </div>
                 <span class="bg-blue-200/80 text-blue-950 px-2 py-0.5 rounded-md text-[11px] font-bold">{{ $ringkasan['disetujui'] }}</span>
+            </div>
+            <div class="flex items-center justify-between sm:justify-start gap-2 text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl px-3 py-1.5 shadow-2xs">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                    <span>Selesai:</span>
+                </div>
+                <span class="bg-emerald-200/80 text-emerald-950 px-2 py-0.5 rounded-md text-[11px] font-bold">{{ $ringkasan['selesai'] }}</span>
             </div>
             <div class="flex items-center justify-between sm:justify-start gap-2 text-xs font-semibold bg-red-50 border border-red-200 text-red-900 rounded-xl px-3 py-1.5 shadow-2xs">
                 <div class="flex items-center gap-1.5">
@@ -376,7 +416,7 @@
                                     $isBulanIni = $hari->month === $bulanAktif->month;
                                     $isHariIni = $hari->isToday();
                                     $adaData = $eventsHariIni->count() > 0;
-                                    $adaDisetujui = $eventsHariIni->contains('status', 'disetujui');
+                                    $adaDisetujui = $eventsHariIni->contains(fn($e) => in_array($e->status_kalender ?? $e->status, ['disetujui_ke_bengkel', 'dalam_perbaikan']));
                                 @endphp
                                 <td class="align-top border-r border-gray-100 last:border-r-0 p-1 sm:p-2 h-16 sm:h-20 w-[14.28%] relative transition-all duration-150
                                            {{ $isBulanIni ? 'bg-white' : 'bg-slate-50/70 opacity-60' }}
@@ -394,29 +434,34 @@
                                         </span>
 
                                         @if($adaDisetujui)
-                                            <span class="w-2 h-2 rounded-full bg-blue-600 animate-ping" title="Unit disetujui ke bengkel"></span>
+                                            <span class="w-2 h-2 rounded-full bg-blue-600 animate-ping" title="Unit dijadwalkan / dalam perbaikan di bengkel"></span>
                                         @endif
                                     </div>
 
-                                    {{-- Event Badges (Sangat Jelas dengan Status Menunggu, Disetujui, Ditolak) --}}
+                                    {{-- Event Badges (Menunggu, Disetujui ke Bengkel, Dalam Perbaikan, Selesai, Ditolak) --}}
                                     <div class="space-y-1">
                                         @foreach($eventsHariIni->take(2) as $event)
                                             @php
-                                                $badgeStyle = match($event->status) {
-                                                    'menunggu'  => 'bg-amber-100/90 text-amber-900 border-amber-300',
-                                                    'disetujui' => 'bg-blue-100/90 text-blue-900 border-blue-300',
-                                                    'ditolak'   => 'bg-red-100/90 text-red-900 border-red-300',
-                                                    default     => 'bg-slate-100 text-slate-800 border-slate-300',
+                                                $statusK = $event->status_kalender ?? $event->status;
+                                                $badgeStyle = match($statusK) {
+                                                    'menunggu'              => 'bg-amber-100/90 text-amber-900 border-amber-300',
+                                                    'disetujui_ke_bengkel'  => 'bg-blue-100/90 text-blue-900 border-blue-300',
+                                                    'dalam_perbaikan'       => 'bg-orange-100/90 text-orange-950 border-orange-300',
+                                                    'selesai'               => 'bg-emerald-100/90 text-emerald-900 border-emerald-300',
+                                                    'ditolak'               => 'bg-red-100/90 text-red-900 border-red-300',
+                                                    default                 => 'bg-slate-100 text-slate-800 border-slate-300',
                                                 };
-                                                $prefixLabel = match($event->status) {
-                                                    'menunggu'  => '⏳ ',
-                                                    'disetujui' => '✅ ',
-                                                    'ditolak'   => '❌ ',
-                                                    default     => '',
+                                                $prefixLabel = match($statusK) {
+                                                    'menunggu'              => '⏳ ',
+                                                    'disetujui_ke_bengkel'  => '🗓️ ',
+                                                    'dalam_perbaikan'       => '⚙️ ',
+                                                    'selesai'               => '✓ ',
+                                                    'ditolak'               => '❌ ',
+                                                    default                 => '',
                                                 };
                                             @endphp
                                             <div class="text-[9px] sm:text-[11px] leading-tight px-1.5 py-0.5 rounded-md border {{ $badgeStyle }} truncate font-bold shadow-2xs"
-                                                 title="{{ $prefixLabel }}{{ $event->unit_nama }} ({{ ucfirst($event->status) }})">
+                                                 title="{{ $prefixLabel }}{{ $event->unit_nama }} ({{ $event->status_label ?? ucfirst($event->status) }})">
                                                  {{ $prefixLabel }}{{ $event->unit_nama }}
                                             </div>
                                         @endforeach

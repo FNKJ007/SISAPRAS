@@ -74,18 +74,39 @@
         $chunks = $items->values()->chunk($itemsPerCategory);
         $tanggal = strtotime($record->tanggal_pemeriksaan);
         $hari = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'];
+
+        $pemeriksaNip = $pemeriksa_nip ?? ($record->user->nip ?? (\App\Models\User::where('name', $record->nama_pemeriksa)->value('nip') ?? ''));
+        $danruNip = $danru_nip ?? (\App\Models\User::where('name', $record->nama_danru)->value('nip') ?? (\App\Models\User::where('name', 'LIKE', '%' . $record->nama_danru . '%')->value('nip') ?? ''));
+        $kabidNip = $kabid_nip ?? (\App\Models\User::where('name', $record->nama_kabid)->value('nip') ?? (\App\Models\User::where('name', 'LIKE', '%' . $record->nama_kabid . '%')->value('nip') ?? ''));
+
+        $kabidUser = !empty($record->nama_kabid)
+            ? (\App\Models\User::where('name', $record->nama_kabid)->first()
+                ?? \App\Models\User::where('name', 'LIKE', '%' . $record->nama_kabid . '%')->first())
+            : null;
+
+        $kabidLabel = $kabid_label ?? ($kabidUser->jabatan ?? match($record->kategori) {
+            'rescue'     => 'Kepala Bidang Penyelamatan',
+            'pencegahan' => 'Kepala Bidang Pencegahan Kebakaran',
+            default      => 'Kepala Bidang Pemadaman',
+        });
+
+        $reportTitle = match($record->kategori) {
+            'rescue'     => 'PEMERIKSAAN KENDARAAN RESCUE',
+            'pencegahan' => 'PEMERIKSAAN KENDARAAN PENCEGAHAN',
+            default      => 'PEMERIKSAAN KENDARAAN PEMADAM KEBAKARAN',
+        };
     @endphp
 
     <table class="kop"><tr><td style="width: 13%; text-align: center;">@if($logo_data)<img class="logo" src="{{ $logo_data }}">@endif</td><td class="kop-title">Dinas Pemadam Kebakaran dan Penyelamatan<br>Kabupaten Bandung</td><td style="width: 13%;"></td></tr></table>
-    <div class="report-title">PEMERIKSAAN KENDARAAN PEMADAM KEBAKARAN DAN PENYELAMATAN</div>
+    <div class="report-title">{{ $reportTitle }}</div>
 
     <table class="meta">
         <tr><td class="group" colspan="4">DATA KENDARAAN :</td><td class="group" colspan="4">TANGGAL PEMELIHARAAN :</td></tr>
         <tr><td class="key">TNKB</td><td>:</td><td class="value">{{ $unit->plat_nomor ?? '-' }}</td><td></td><td class="key-right">Hari</td><td>:</td><td class="value-right">{{ $hari[date('l', $tanggal)] ?? date('l', $tanggal) }}</td><td></td></tr>
         <tr><td class="key">No. Rangka</td><td>:</td><td class="value">{{ $unit->no_rangka_mesin ?? '-' }}</td><td></td><td class="key-right">Tanggal</td><td>:</td><td class="value-right">{{ date('d-m-Y', $tanggal) }}</td><td></td></tr>
-        <tr><td class="key">Merk</td><td>:</td><td class="value">{{ $unit->merk_tipe ?? '-' }}</td><td></td><td class="key-right">Kilometer</td><td>:</td><td class="value-right">-</td><td></td></tr>
-        <tr><td class="key">Tahun</td><td>:</td><td class="value">{{ $unit->tahun_pembuatan ?? '-' }}</td><td></td><td class="key-right">Pemeriksa</td><td>:</td><td class="value-right">{{ $record->nama_pemeriksa }}</td><td></td></tr>
-        <tr><td class="key">Kapasitas</td><td>:</td><td class="value">{{ $unit->cc ? $unit->cc . ' CC' : '-' }}</td><td></td><td class="key-right">NIP</td><td>:</td><td class="value-right">{{ $record->user->nip ?? '-' }}</td><td></td></tr>
+        <tr><td class="key">Merk</td><td>:</td><td class="value">{{ $unit->merk_tipe ?? '-' }}</td><td></td><td class="key-right">Kilometer</td><td>:</td><td class="value-right"></td><td></td></tr>
+        <tr><td class="key">Tahun</td><td>:</td><td class="value">{{ $unit->tahun_pembuatan ?? '-' }}</td><td></td><td class="key-right">Pengemudi</td><td>:</td><td class="value-right">{{ $record->nama_pemeriksa }}</td><td></td></tr>
+        <tr><td class="key">Kapasitas</td><td>:</td><td class="value">{{ !empty($unit->cc) ? $unit->cc . ' CC' : '-' }}</td><td></td><td class="key-right">NIP</td><td>:</td><td class="value-right">{{ $pemeriksaNip ?: '-' }}</td><td></td></tr>
         <tr><td class="key">No. Lambung</td><td>:</td><td class="value">{{ $unit->nomor_lambung ?? $record->unit_nama ?? '-' }}</td><td></td><td class="key-right">Penempatan</td><td>:</td><td class="value-right">{{ $record->pos ?? $unit->pos ?? '-' }}</td><td></td></tr>
     </table>
 
@@ -134,20 +155,22 @@
     <table class="signatures">
         <tr>
             <td>
-                Pemeriksa :<br>
+                {{ $kabidLabel }}<br>
+                <span class="signature-line"></span><br>
+                <span class="signature-name">{{ $record->nama_kabid ?: '-' }}</span><br>
+                {{ $kabidNip }}
+            </td>
+            <td>
+                Komandan Regu<br>
+                <span class="signature-line"></span><br>
+                <span class="signature-name">{{ $record->nama_danru ?: '-' }}</span><br>
+                {{ $danruNip }}
+            </td>
+            <td>
+                Pengemudi<br>
                 <span class="signature-line"></span><br>
                 <span class="signature-name">{{ $record->nama_pemeriksa ?: '-' }}</span><br>
-                {{ $record->user->nip ?? '' }}
-            </td>
-            <td>
-                Komandan Regu :<br>
-                <span class="signature-line"></span><br>
-                <span class="signature-name">{{ $record->nama_danru ?: '-' }}</span>
-            </td>
-            <td>
-                Kepala Bidang :<br>
-                <span class="signature-line"></span><br>
-                <span class="signature-name">{{ $record->nama_kabid ?: '-' }}</span>
+                {{ $pemeriksaNip }}
             </td>
         </tr>
     </table>

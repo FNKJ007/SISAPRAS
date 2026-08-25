@@ -349,45 +349,42 @@
         <div class="section-header">II. Ringkasan Realisasi Pemeliharaan &amp; Anggaran</div>
         <div class="kpi-row">
             <div class="kpi-card">
-                <div class="kpi-lbl">Total Perbaikan Fisik</div>
-                <div class="kpi-val" style="color:#1B2A6B;">{{ $totalTerlaksana }} Kali</div>
+                <div class="kpi-lbl">Total Pengajuan Perbaikan</div>
+                <div class="kpi-val" style="color:#1B2A6B;">{{ $pengajuanList->count() }} Kali</div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-lbl">Total Realisasi Biaya</div>
-                <div class="kpi-val" style="color:#059669;">Rp {{ number_format($totalBiaya, 0, ',', '.') }}</div>
+                <div class="kpi-lbl">Total Kendali Pembayaran</div>
+                <div class="kpi-val" style="color:#1B2A6B; font-size:12.5px;">Rp {{ number_format($totalBiayaPembayaran, 0, ',', '.') }}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-lbl">Total Kendali Aktual</div>
+                <div class="kpi-val" style="color:#059669; font-size:12.5px;">Rp {{ number_format($totalBiayaAktual, 0, ',', '.') }}</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-lbl">Terakhir Servis</div>
-                <div class="kpi-val" style="font-size:13.5px;">{{ $terakhirServis }}</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-lbl">Jadwal Keberangkatan</div>
-                <div class="kpi-val" style="font-size:13.5px; color:#2563EB;">{{ $jadwalMendatang ?? '—' }}</div>
+                <div class="kpi-val" style="font-size:12.5px;">{{ $terakhirServis }}</div>
             </div>
         </div>
 
-        {{-- Bagian III: Riwayat Pengajuan Perbaikan & Fisik --}}
-        <div class="section-header">III. Riwayat Pengajuan Perbaikan &amp; Fisik Pengerjaan Bengkel</div>
+        {{-- Bagian III: Riwayat Pengajuan Perbaikan --}}
+        <div class="section-header">III. Riwayat Pengajuan Perbaikan Kendaraan Dinas</div>
         @if($pengajuanList->isEmpty())
-            <div style="background:#F8FAFC; border:1px dashed #CBD5E1; padding:14px; text-align:center; color:#64748B; font-size:11.5px; border-radius:6px; margin-bottom:20px;">
+            <div style="background:#F8FAFC; border:1px dashed #CBD5E1; padding:14px; text-align:center; color:#64748B; font-size:11.5px; border-radius:6px; margin-bottom:16px;">
                 Belum ada rekam medis pengajuan perbaikan yang tercatat untuk unit kendaraan dinas ini.
             </div>
         @else
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th style="width:5%; text-align:center;">No</th>
-                        <th style="width:14%;">Tanggal</th>
-                        <th style="width:30%;">Item / Komponen Kerusakan</th>
-                        <th style="width:25%;">Pemohon &amp; Pos</th>
-                        <th style="width:26%;">Status &amp; Progres Pengerjaan</th>
+                        <th style="width:6%; text-align:center;">No</th>
+                        <th style="width:18%;">Tanggal</th>
+                        <th style="width:42%;">Item / Komponen Kerusakan</th>
+                        <th style="width:34%;">Pemohon &amp; Pos</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($pengajuanList as $index => $p)
                         @php
-                            $keberangkatan = $p->tanggal_keberangkatan ? $p->tanggal_keberangkatan->format('Y-m-d') : null;
-                            $isFuture = $keberangkatan && $keberangkatan > $today && $p->status_pengerjaan === 'belum_mulai';
                             $tglText = ($p->tanggal_mulai_pengerjaan ?? $p->tanggal_keberangkatan)?->format('d/m/Y')
                                 ?? ($p->created_at ? $p->created_at->format('d/m/Y') : '—');
                         @endphp
@@ -399,47 +396,77 @@
                                 <div><strong>{{ $p->nama_pemegang }}</strong></div>
                                 <div style="font-size:10.5px; color:#64748B;">Pos {{ $p->pos }}</div>
                             </td>
-                            <td>
-                                @if($isFuture)
-                                    <span style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; padding:3px 10px; border-radius:20px; font-weight:700; font-size:10.5px; display:inline-block;">🗓️ Dijadwalkan ({{ $p->tanggal_keberangkatan?->format('d/m/Y') }})</span>
-                                @elseif($p->status_pengerjaan === 'selesai')
-                                    <span style="background:#D1FAE5; color:#065F46; border:1px solid #A7F3D0; padding:3px 10px; border-radius:20px; font-weight:700; font-size:10.5px; display:inline-block;">✓ Selesai (100%)</span>
-                                @elseif($p->status_pengerjaan === 'proses')
-                                    <span style="background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; padding:3px 10px; border-radius:20px; font-weight:700; font-size:10.5px; display:inline-block;">⚙️ Dalam Pengerjaan ({{ $p->progress_persen }}%)</span>
-                                @else
-                                    <span style="background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; padding:3px 10px; border-radius:20px; font-weight:700; font-size:10.5px; display:inline-block;">Belum Mulai</span>
-                                @endif
-                            </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
         @endif
 
-        {{-- Bagian IV: Riwayat Realisasi Biaya & Invoice --}}
-        <div class="section-header">IV. Riwayat Realisasi Biaya &amp; Invoice Pembayaran Bengkel</div>
-        @if($invoiceList->isEmpty())
-            <div style="background:#F8FAFC; border:1px dashed #CBD5E1; padding:14px; text-align:center; color:#64748B; font-size:11.5px; border-radius:6px; margin-bottom:20px;">
-                Belum ada rekam medis invoice / realisasi pembayaran untuk unit kendaraan dinas ini.
+        {{-- Bagian IV.A: Hasil Kartu Kendali Pembayaran --}}
+        <div class="section-header">IV.A. Hasil Rekam Medis Kartu Kendali Pembayaran (Monitoring Invoice)</div>
+        @if($kendaliPembayaranList->isEmpty())
+            <div style="background:#F8FAFC; border:1px dashed #CBD5E1; padding:14px; text-align:center; color:#64748B; font-size:11.5px; border-radius:6px; margin-bottom:16px;">
+                Belum ada catatan realisasi pada Kartu Kendali Pembayaran untuk unit ini.
             </div>
         @else
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th style="width:5%; text-align:center;">No</th>
-                        <th style="width:14%;">Tgl Invoice</th>
-                        <th style="width:25%;">Nomor Invoice</th>
-                        <th style="width:36%;">Uraian Realisasi Pemeliharaan</th>
-                        <th style="width:20%; text-align:right;">Jumlah Biaya (Rp)</th>
+                        <th style="width:6%; text-align:center;">No</th>
+                        <th style="width:18%;">Tgl Invoice</th>
+                        <th style="width:28%;">Nomor Invoice</th>
+                        <th style="width:26%;">Nama Bengkel</th>
+                        <th style="width:22%; text-align:right;">Jumlah Biaya (Rp)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($invoiceList as $index => $inv)
+                    @foreach($kendaliPembayaranList as $index => $inv)
                         <tr>
                             <td style="text-align:center; font-weight:700;">{{ $index + 1 }}</td>
                             <td>{{ $inv->tanggal_invoice ? $inv->tanggal_invoice->format('d/m/Y') : '—' }}</td>
                             <td style="font-weight:700; color:#1B2A6B;">{{ $inv->nomor_invoice }}</td>
-                            <td>{{ $inv->uraian ?? 'Jasa Perbaikan & Penggantian Suku Cadang' }}</td>
+                            <td>{{ $inv->nama_bengkel ?? '—' }}</td>
+                            <td style="text-align:right; font-weight:700; color:#1B2A6B;">
+                                Rp {{ number_format((float)$inv->total_biaya, 0, ',', '.') }}
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+                <tfoot>
+                    <tr style="background:#F1F5F9; font-weight:800;">
+                        <td colspan="4" style="text-align:right; font-size:10.5px; text-transform:uppercase;">Subtotal Kendali Pembayaran:</td>
+                        <td style="text-align:right; color:#1B2A6B; font-size:11.5px;">
+                            Rp {{ number_format($totalBiayaPembayaran, 0, ',', '.') }}
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        @endif
+
+        {{-- Bagian IV.B: Hasil Kartu Kendali Aktual --}}
+        <div class="section-header">IV.B. Hasil Rekam Medis Kartu Kendali Aktual (Monitoring Aktual)</div>
+        @if($kendaliAktualList->isEmpty())
+            <div style="background:#F8FAFC; border:1px dashed #CBD5E1; padding:14px; text-align:center; color:#64748B; font-size:11.5px; border-radius:6px; margin-bottom:20px;">
+                Belum ada catatan pemeliharaan pada Kartu Kendali Aktual untuk unit ini.
+            </div>
+        @else
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width:6%; text-align:center;">No</th>
+                        <th style="width:18%;">Tanggal</th>
+                        <th style="width:28%;">Nomor Rujukan / Invoice</th>
+                        <th style="width:26%;">Nama Bengkel / Pelaksana</th>
+                        <th style="width:22%; text-align:right;">Jumlah Biaya (Rp)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($kendaliAktualList as $index => $inv)
+                        <tr>
+                            <td style="text-align:center; font-weight:700;">{{ $index + 1 }}</td>
+                            <td>{{ $inv->tanggal_invoice ? $inv->tanggal_invoice->format('d/m/Y') : '—' }}</td>
+                            <td style="font-weight:700; color:#065F46;">{{ $inv->nomor_invoice }}</td>
+                            <td>{{ $inv->nama_bengkel ?? '—' }}</td>
                             <td style="text-align:right; font-weight:700; color:#059669;">
                                 Rp {{ number_format((float)$inv->total_biaya, 0, ',', '.') }}
                             </td>
@@ -448,9 +475,9 @@
                 </tbody>
                 <tfoot>
                     <tr style="background:#F1F5F9; font-weight:800;">
-                        <td colspan="4" style="text-align:right; font-size:11px; text-transform:uppercase;">Total Realisasi Terlaksana:</td>
-                        <td style="text-align:right; color:#059669; font-size:12.5px;">
-                            Rp {{ number_format($totalBiaya, 0, ',', '.') }}
+                        <td colspan="4" style="text-align:right; font-size:10.5px; text-transform:uppercase;">Subtotal Kendali Aktual:</td>
+                        <td style="text-align:right; color:#059669; font-size:11.5px;">
+                            Rp {{ number_format($totalBiayaAktual, 0, ',', '.') }}
                         </td>
                     </tr>
                 </tfoot>

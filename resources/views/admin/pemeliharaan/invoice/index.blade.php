@@ -144,9 +144,8 @@
         </div>
 
         <form method="GET" action="{{ route($routePrefix . '.index') }}" style="padding:18px 22px; border-bottom:1px solid #F1F5F9; background:#FAFAFA;">
-            {{-- Pertahankan filter tabel (search/status) saat filter dashboard disubmit --}}
+            {{-- Pertahankan filter tabel (search) saat filter dashboard disubmit --}}
             @if(request('q'))<input type="hidden" name="q" value="{{ request('q') }}">@endif
-            @if(request('status'))<input type="hidden" name="status" value="{{ request('status') }}">@endif
 
             <div class="dashboard-filter-row" style="display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap;">
 
@@ -314,7 +313,7 @@
 
         {{-- Filter & Search Toolbar --}}
         <div style="padding:16px 20px; border-bottom:1px solid #F1F5F9; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; background:#FAFAFA;">
-            <form method="GET" action="{{ route('admin.pemeliharaan.invoice.index') }}" class="invoice-filter-form">
+            <form method="GET" action="{{ route($routePrefix . '.index') }}" class="invoice-filter-form">
                 @if(!empty($selectedUnitIds))
                     @foreach($selectedUnitIds as $uid)
                         <input type="hidden" name="unit[]" value="{{ $uid }}">
@@ -339,25 +338,14 @@
                                onblur="this.style.borderColor='#CBD5E1';">
                     </div>
 
-                    {{-- Status Select Filter --}}
-                    <select name="status"
-                            style="padding:8px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; outline:none; background:#FFFFFF; color:#1E293B; font-weight:600; cursor:pointer; transition:border-color 0.2s;"
-                            onfocus="this.style.borderColor='#1B2A6B';"
-                            onblur="this.style.borderColor='#CBD5E1';">
-                        <option value="">Semua Status</option>
-                        @foreach (['draft' => 'Draft', 'diajukan' => 'Diajukan', 'disetujui' => 'Disetujui', 'lunas' => 'Lunas'] as $value => $label)
-                            <option value="{{ $value }}" {{ request('status') === $value ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-
                     <button type="submit"
                             style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(27,42,107,0.18); transition:all 0.2s;">
                         <i data-lucide="search" style="width:14px; height:14px;"></i>
                         <span>Cari</span>
                     </button>
 
-                    @if(request('q') || request('status'))
-                        <a href="{{ route('admin.pemeliharaan.invoice.index') }}"
+                    @if(request('q'))
+                        <a href="{{ route($routePrefix . '.index') }}"
                            style="display:inline-flex; align-items:center; gap:4px; padding:8px 14px; background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; text-decoration:none; font-weight:600; transition:all 0.2s;">
                             <i data-lucide="rotate-ccw" style="width:13px; height:13px;"></i>
                             <span>Reset</span>
@@ -375,7 +363,7 @@
 
         {{-- Table Data --}}
         <div style="overflow-x:auto;">
-            <table style="width:100%; min-width:900px; border-collapse:collapse; text-align:left;">
+            <table style="width:100%; min-width:850px; border-collapse:collapse; text-align:left;">
                 <thead>
                     <tr style="background:#1B2A6B; color:#FFFFFF;">
                         <th style="padding:14px 18px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #101B4B;">
@@ -390,11 +378,8 @@
                         <th style="padding:14px 18px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #101B4B; width:130px;">
                             No. Polisi
                         </th>
-                        <th style="padding:14px 18px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #101B4B; text-align:right; width:160px;">
+                        <th style="padding:14px 18px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #101B4B; text-align:right; width:170px;">
                             Total Biaya
-                        </th>
-                        <th style="padding:14px 18px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #101B4B; text-align:center; width:120px;">
-                            Status
                         </th>
                         <th style="padding:14px 18px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #101B4B; text-align:center; width:140px;">
                             Aksi
@@ -435,28 +420,6 @@
                                 Rp {{ number_format($invoice->total_biaya, 0, ',', '.') }}
                             </td>
                             <td style="padding:14px 18px; text-align:center; white-space:nowrap;">
-                                @php
-                                    $statusStyles = [
-                                        'draft' => 'background:#F1F5F9; color:#475569; border:1px solid #CBD5E1;',
-                                        'diajukan' => 'background:#FEF3C7; color:#92400E; border:1px solid #FDE68A;',
-                                        'disetujui' => 'background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE;',
-                                        'lunas' => 'background:#ECFDF5; color:#065F46; border:1px solid #A7F3D0;',
-                                    ];
-                                    $style = $statusStyles[$invoice->status] ?? 'background:#F1F5F9; color:#475569; border:1px solid #CBD5E1;';
-                                @endphp
-                                <form action="{{ route($routePrefix . '.update-status', $invoice) }}" method="POST" style="margin:0; display:inline-block;">
-                                    @csrf
-                                    <select name="status" onchange="this.form.submit()"
-                                            title="Klik untuk mengubah status invoice"
-                                            style="font-size:10.5px; font-weight:700; text-transform:uppercase; padding:3px 10px; border-radius:20px; cursor:pointer; outline:none; transition:all 0.2s; {{ $style }}">
-                                        <option value="draft" @selected($invoice->status === 'draft')>Draft</option>
-                                        <option value="diajukan" @selected($invoice->status === 'diajukan')>Diajukan</option>
-                                        <option value="disetujui" @selected($invoice->status === 'disetujui')>Disetujui</option>
-                                        <option value="lunas" @selected($invoice->status === 'lunas')>Lunas</option>
-                                    </select>
-                                </form>
-                            </td>
-                            <td style="padding:14px 18px; text-align:center; white-space:nowrap;">
                                 <div style="display:inline-flex; align-items:center; gap:6px; justify-content:center;">
                                     <a href="{{ route($routePrefix . '.show', ['invoice' => $invoice, 'download' => 1]) }}"
                                        target="_blank"
@@ -494,7 +457,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" style="padding:56px 20px; text-align:center; background:#FFFFFF;">
+                            <td colspan="6" style="padding:56px 20px; text-align:center; background:#FFFFFF;">
                                 <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
                                     <div style="width:64px; height:64px; background:#F8FAFC; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin:0 auto 16px auto; border:1px solid #E2E8F0;">
                                         <i data-lucide="file-x" style="width:30px; height:30px; color:#64748B;"></i>

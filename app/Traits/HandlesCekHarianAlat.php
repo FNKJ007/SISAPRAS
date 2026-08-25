@@ -29,10 +29,38 @@ trait HandlesCekHarianAlat
 
             Pdf::setOptions(["isRemoteEnabled" => false, "isHtml5ParserEnabled" => true]);
 
-            $fotoUmumData = $this->imageToDataUri($record->foto_umum);
+            $pemeriksaNip = $record->user->nip ?? \App\Models\User::where('name', $record->nama_pemeriksa)->value('nip') ?? '';
+
+            $danruNip = '';
+            if (!empty($record->nama_danru)) {
+                $danruNip = \App\Models\User::where('name', $record->nama_danru)->value('nip')
+                    ?? \App\Models\User::where('name', 'LIKE', '%' . $record->nama_danru . '%')->value('nip') ?? '';
+            }
+
+            $kabidNip = '';
+            $kabidLabel = match($kategori) {
+                'rescue'         => 'Kepala Bidang Penyelamatan',
+                'pencegahan'     => 'Kepala Bidang Pencegahan Kebakaran',
+                'command_center' => 'Kepala Bidang Sarana, Prasarana Dan Informasi',
+                default          => 'Kepala Bidang Pemadaman',
+            };
+            if (!empty($record->nama_kabid)) {
+                $kabidUser = \App\Models\User::where('name', $record->nama_kabid)->first()
+                    ?? \App\Models\User::where('name', 'LIKE', '%' . $record->nama_kabid . '%')->first();
+                if ($kabidUser) {
+                    $kabidNip = $kabidUser->nip ?? '';
+                    if (!empty($kabidUser->jabatan)) {
+                        $kabidLabel = $kabidUser->jabatan;
+                    }
+                }
+            }
 
             $pdf = Pdf::loadView('pdf.cek-harian-alat', [
                 'record'        => $record,
+                'pemeriksa_nip' => $pemeriksaNip,
+                'danru_nip'     => $danruNip,
+                'kabid_nip'     => $kabidNip,
+                'kabid_label'   => $kabidLabel,
                 'judul'         => match($kategori) {
                     'rescue'         => 'Hasil Cek Harian Alat Rescue',
                     'pencegahan'     => 'Hasil Cek Harian Alat Pencegahan',

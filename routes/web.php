@@ -167,6 +167,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::prefix('pemeliharaan')->name('pemeliharaan.')->group(function () {
         Route::get('/pengajuan',                    [AdminController::class, 'pemeliharaanPengajuan'])->name('pengajuan');
         Route::post('/pengajuan/{id}/verifikasi',   [AdminController::class, 'verifikasiPengajuan'])->name('pengajuan.verifikasi');
+        Route::post('/pengajuan/{id}/selesai',      [AdminController::class, 'selesaikanPengajuan'])->name('pengajuan.selesai');
         Route::get('/pemeriksaan',                  [AdminController::class, 'pemeliharaanPemeriksaan'])->name('pemeriksaan');
         Route::get('/pemeliharaan',                 [AdminController::class, 'pemeliharaanPemeliharaan'])->name('pemeliharaan');
         Route::get('/surat-permohonan',             [AdminController::class, 'pemeliharaanPemeliharaan'])->name('surat-permohonan');
@@ -198,6 +199,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/data-unit/{id}/cetak-buku-servis', [UnitManagementController::class, 'cetakBukuServis'])->name('data-unit.cetak-buku-servis');
         Route::post('/data-unit',                   [UnitManagementController::class, 'store'])->name('data-unit.store');
         Route::put('/data-unit/{id}',               [UnitManagementController::class, 'update'])->name('data-unit.update');
+        Route::post('/data-unit/{id}/set-ready',    [UnitManagementController::class, 'setReady'])->name('data-unit.set-ready');
         Route::delete('/data-unit/{id}',            [UnitManagementController::class, 'destroy'])->name('data-unit.destroy');
         Route::post('/data-unit/remove-history-option', [UnitManagementController::class, 'removeHistoryOption'])->name('data-unit.remove-history-option');
 
