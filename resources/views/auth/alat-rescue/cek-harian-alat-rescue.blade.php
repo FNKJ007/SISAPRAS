@@ -44,8 +44,8 @@
     <form action="{{ route('alat-rescue.cek-harian-alat.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
 
-        {{-- Identitas Pemeriksaan: Pos Damkar, Nama Pemeriksa, Jabatan, Tanggal --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {{-- Identitas Pemeriksaan: Pos Damkar, Nama Pemeriksa, Jabatan, Tanggal, Danru, Kabid --}}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
                 <label for="pos" class="block text-sm font-medium mb-1">Pos Damkar <span class="text-red-500">*</span></label>
                 <select id="pos" name="pos" required
@@ -79,6 +79,92 @@
                        value="{{ old('tanggal_pemeriksaan', date('Y-m-d')) }}"
                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
                 @error('tanggal_pemeriksaan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- Nama Komandan Regu (Danru) --}}
+            <div x-data="comboboxDanru()" style="position:relative;">
+                <label for="nama_danru" class="block text-sm font-medium mb-1">Nama Komandan Regu (Danru) <span class="text-red-500">*</span></label>
+                <div style="position:relative;">
+                    <input type="text" id="nama_danru" name="nama_danru"
+                           x-model="searchQuery"
+                           @focus="open = true"
+                           @input="open = true"
+                           placeholder="Ketik atau pilih nama Danru..."
+                           autocomplete="off"
+                           required
+                           class="w-full rounded-lg border border-gray-300 px-3 py-2.5 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                    <button type="button" @click.stop="open = !open" tabindex="-1"
+                            style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:#64748B; cursor:pointer; padding:4px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                </div>
+
+                {{-- Floating Dropdown Suggestion List --}}
+                <div x-show="open && filteredList().length > 0"
+                     x-cloak
+                     @click.outside="open = false"
+                     style="position:absolute; left:0; right:0; top:100%; margin-top:4px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:10px; box-shadow:0 10px 25px rgba(15,23,42,0.15); max-height:200px; overflow-y:auto; z-index:99999;">
+                    <template x-for="item in filteredList()" :key="item.name">
+                        <div @click="selectItem(item)"
+                             style="padding:8px 12px; border-bottom:1px solid #F1F5F9; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background 0.15s;"
+                             onmouseover="this.style.background='#EFF6FF'"
+                             onmouseout="this.style.background='transparent'">
+                            <div>
+                                <strong style="display:block; color:#0F172A; font-size:12.5px;" x-text="item.name"></strong>
+                                <span style="font-size:11px; color:#64748B;" x-text="item.pos ? 'Pos ' + item.pos : (item.bidang || '')"></span>
+                            </div>
+                            <span x-show="item.jabatan"
+                                  style="font-size:10px; font-weight:700; color:#1E40AF; background:#DBEAFE; padding:2px 6px; border-radius:8px;"
+                                  x-text="item.jabatan"></span>
+                        </div>
+                    </template>
+                </div>
+                @error('nama_danru') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- Nama Kepala Bidang --}}
+            <div x-data="comboboxKabid()" style="position:relative;">
+                <label for="nama_kabid" class="block text-sm font-medium mb-1">Nama Kepala Bidang <span class="text-red-500">*</span></label>
+                <div style="position:relative;">
+                    <input type="text" id="nama_kabid" name="nama_kabid"
+                           x-model="searchQuery"
+                           @focus="open = true"
+                           @input="open = true"
+                           placeholder="Ketik atau pilih nama Kepala Bidang..."
+                           autocomplete="off"
+                           required
+                           class="w-full rounded-lg border border-gray-300 px-3 py-2.5 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+                    <button type="button" @click.stop="open = !open" tabindex="-1"
+                            style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:#64748B; cursor:pointer; padding:4px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                </div>
+
+                {{-- Floating Dropdown Suggestion List --}}
+                <div x-show="open && filteredList().length > 0"
+                     x-cloak
+                     @click.outside="open = false"
+                     style="position:absolute; left:0; right:0; top:100%; margin-top:4px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:10px; box-shadow:0 10px 25px rgba(15,23,42,0.15); max-height:200px; overflow-y:auto; z-index:99999;">
+                        <template x-for="item in filteredList()" :key="item.name">
+                            <div @click="selectItem(item)"
+                                 style="padding:8px 12px; border-bottom:1px solid #F1F5F9; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background 0.15s;"
+                                 onmouseover="this.style.background='#EFF6FF'"
+                                 onmouseout="this.style.background='transparent'">
+                            <div>
+                                <strong style="display:block; color:#0F172A; font-size:12.5px;" x-text="item.name"></strong>
+                                <span style="font-size:11px; color:#64748B;" x-text="item.bidang || ''"></span>
+                            </div>
+                            <span x-show="item.jabatan"
+                                  style="font-size:10px; font-weight:700; color:#065F46; background:#D1FAE5; padding:2px 6px; border-radius:8px;"
+                                  x-text="item.jabatan"></span>
+                        </div>
+                    </template>
+                </div>
+                @error('nama_kabid') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
         </div>
 
@@ -154,15 +240,16 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium mb-1">Foto Dokumentasi</label>
+                    <label class="block text-sm font-medium mb-1">Foto Dokumentasi <span class="text-red-500">*</span></label>
                     <label for="foto_umum" id="fotoUmumLabel"
                            class="flex flex-col items-center justify-center h-[110px] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer text-center hover:border-blue-500 transition-colors">
                         <span class="text-blue-600 text-lg leading-none">📷</span>
-                        <span class="text-xs text-blue-700 font-medium mt-1" id="fotoUmumText">+ Tambahkan Foto</span>
+                        <span class="text-xs text-blue-700 font-medium mt-1" id="fotoUmumText">+ Tambahkan Foto <span class="text-red-500">*</span></span>
                         <span class="text-[11px] text-gray-400">JPG, PNG, WEBP maks. 10MB</span>
                     </label>
                     <input id="foto_umum" type="file" name="foto_umum"
                            accept="image/*" class="hidden">
+                    <p id="err_foto_umum" class="text-xs text-red-600 font-medium mt-1.5 hidden"></p>
                     <div id="fotoUmumPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
                     @error('foto_umum') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
@@ -182,45 +269,156 @@
 @push('scripts')
 <script>
 (function () {
+    var form = document.querySelector('form');
     var input = document.getElementById('foto_umum');
     var labelText = document.getElementById('fotoUmumText');
     var previewEl = document.getElementById('fotoUmumPreview');
     var labelBox = document.getElementById('fotoUmumLabel');
+    var errEl = document.getElementById('err_foto_umum');
 
-    if (!input || !labelText) return;
+    if (form && input) {
+        form.addEventListener('submit', function (e) {
+            if (!input.files || input.files.length === 0) {
+                e.preventDefault();
+                if (labelBox) {
+                    labelBox.classList.add('border-red-500', 'bg-red-50/50');
+                }
+                if (errEl) {
+                    errEl.textContent = 'Foto dokumentasi pemeriksaan alat wajib dilampirkan.';
+                    errEl.classList.remove('hidden');
+                }
+                if (labelBox) {
+                    labelBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return false;
+            }
+        });
+    }
 
-    input.addEventListener('change', function () {
-        if (previewEl) previewEl.innerHTML = '';
+    if (input && labelText) {
+        input.addEventListener('change', function () {
+            if (previewEl) previewEl.innerHTML = '';
 
-        if (input.files.length === 0) {
-            labelText.textContent = '+ Tambahkan Foto';
-            labelBox.classList.remove('border-emerald-500', 'bg-emerald-50/50');
-            if (previewEl) previewEl.classList.add('hidden');
-            return;
-        }
+            if (input.files.length === 0) {
+                labelText.textContent = '+ Tambahkan Foto';
+                labelBox.classList.remove('border-emerald-500', 'bg-emerald-50/50', 'border-red-500', 'bg-red-50/50');
+                if (previewEl) previewEl.classList.add('hidden');
+                return;
+            }
 
-        labelBox.classList.add('border-emerald-500', 'bg-emerald-50/50');
-        labelText.textContent = '✓ ' + input.files[0].name;
+            if (errEl) errEl.classList.add('hidden');
+            labelBox.classList.remove('border-red-500', 'bg-red-50/50');
+            labelBox.classList.add('border-emerald-500', 'bg-emerald-50/50');
+            labelText.textContent = '✓ ' + input.files[0].name;
 
-        if (previewEl && input.files[0].type.startsWith('image/')) {
-            previewEl.classList.remove('hidden');
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                var item = document.createElement('div');
-                item.className = 'relative border border-emerald-300 rounded-lg p-1.5 bg-emerald-50/30 flex items-center gap-2.5 shadow-2xs';
-                item.innerHTML = `
-                    <img src="${e.target.result}" alt="Preview" class="w-12 h-12 object-cover rounded-md border border-emerald-200">
-                    <div>
-                        <span class="block text-xs font-bold text-emerald-900 truncate max-w-[160px]">${input.files[0].name}</span>
-                        <span class="block text-[10px] text-emerald-700 font-semibold">${(input.files[0].size / 1024).toFixed(1)} KB · Foto Terpilih ✓</span>
-                    </div>
-                `;
-                previewEl.appendChild(item);
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-    });
+            if (previewEl && input.files[0].type.startsWith('image/')) {
+                previewEl.classList.remove('hidden');
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var item = document.createElement('div');
+                    item.className = 'relative border border-emerald-300 rounded-lg p-1.5 bg-emerald-50/30 flex items-center gap-2.5 shadow-2xs';
+                    item.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview" class="w-12 h-12 object-cover rounded-md border border-emerald-200">
+                        <div>
+                            <span class="block text-xs font-bold text-emerald-900 truncate max-w-[160px]">${input.files[0].name}</span>
+                            <span class="block text-[10px] text-emerald-700 font-semibold">${(input.files[0].size / 1024).toFixed(1)} KB · Foto Terpilih ✓</span>
+                        </div>
+                    `;
+                    previewEl.appendChild(item);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        });
+    }
+
+    var posSelect = document.getElementById('pos');
+    var allReguData = @json($allReguList ?? []);
+    var danruUsersData = @json($danruUsers ?? []);
+
+    function normalizeKeyPos(str) {
+        return (str || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    }
+
+    if (posSelect) {
+        posSelect.addEventListener('change', function () {
+            var selectedPosKey = normalizeKeyPos(this.value);
+
+            // Auto-update Danru saat Pos diganti
+            if (allReguData.length > 0 && window.danruComp) {
+                var matchedRegu = allReguData.find(function (r) {
+                    var rPos = normalizeKeyPos(r.pos || '');
+                    return rPos && selectedPosKey && (rPos.includes(selectedPosKey) || selectedPosKey.includes(rPos));
+                });
+                if (matchedRegu && matchedRegu.danru) {
+                    window.danruComp.searchQuery = matchedRegu.danru;
+                } else if (danruUsersData.length > 0) {
+                    var fallback = danruUsersData.find(function (u) {
+                        var uPos = normalizeKeyPos(u.pos || '');
+                        return uPos && selectedPosKey && (uPos.includes(selectedPosKey) || selectedPosKey.includes(uPos));
+                    }) || danruUsersData[0];
+                    if (fallback) {
+                        window.danruComp.searchQuery = fallback.name;
+                    }
+                }
+            }
+        });
+    }
 })();
+
+window.danruComp = null;
+window.kabidComp = null;
+
+function comboboxDanru() {
+    return {
+        open: false,
+        searchQuery: @json(old('nama_danru', $defaultDanruName ?? '')),
+        items: @json($danruOptions ?? []),
+        init() {
+            window.danruComp = this;
+        },
+        filteredList() {
+            if (!this.searchQuery || this.searchQuery.trim() === '') {
+                return this.items;
+            }
+            const q = this.searchQuery.toLowerCase();
+            return this.items.filter(item => 
+                (item.name && item.name.toLowerCase().includes(q)) ||
+                (item.jabatan && item.jabatan.toLowerCase().includes(q)) ||
+                (item.pos && item.pos.toLowerCase().includes(q))
+            );
+        },
+        selectItem(item) {
+            this.searchQuery = item.name;
+            this.open = false;
+        }
+    };
+}
+
+function comboboxKabid() {
+    return {
+        open: false,
+        searchQuery: @json(old('nama_kabid', $defaultKabidName ?? '')),
+        items: @json($kabidOptions ?? []),
+        init() {
+            window.kabidComp = this;
+        },
+        filteredList() {
+            if (!this.searchQuery || this.searchQuery.trim() === '') {
+                return this.items;
+            }
+            const q = this.searchQuery.toLowerCase();
+            return this.items.filter(item => 
+                (item.name && item.name.toLowerCase().includes(q)) ||
+                (item.jabatan && item.jabatan.toLowerCase().includes(q)) ||
+                (item.bidang && item.bidang.toLowerCase().includes(q))
+            );
+        },
+        selectItem(item) {
+            this.searchQuery = item.name;
+            this.open = false;
+        }
+    };
+}
 </script>
 @endpush
 @endsection

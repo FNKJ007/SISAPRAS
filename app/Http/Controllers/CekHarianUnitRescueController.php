@@ -8,10 +8,11 @@ use App\Models\Pos;
 use Illuminate\Http\Request;
 
 use App\Traits\HandlesCekHarianUnit;
+use App\Traits\HandlesOfficialsData;
 
 class CekHarianUnitRescueController extends Controller
 {
-    use HandlesCekHarianUnit;
+    use HandlesCekHarianUnit, HandlesOfficialsData;
 
     /**
      * Daftar unit/kendaraan rescue dari database Admin Data Unit sesuai Pos pengguna.
@@ -113,8 +114,12 @@ class CekHarianUnitRescueController extends Controller
             ->get();
         $unitList = $this->unitList();
         $posList  = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
+        $officials = $this->getOfficialsData('rescue');
 
-        return view('auth.unit-rescue.cek-harian-unit-rescue', compact('unitList', 'allUnits', 'posList'));
+        return view('auth.unit-rescue.cek-harian-unit-rescue', array_merge(
+            compact('unitList', 'allUnits', 'posList'),
+            $officials
+        ));
     }
 
     /**
@@ -136,5 +141,14 @@ class CekHarianUnitRescueController extends Controller
     public function exportPdf($id)
     {
         return $this->exportCekHarianUnitPdf((int) $id, 'rescue');
+    }
+
+    /**
+     * Menampilkan halaman riwayat pengecekan unit & alat rescue untuk user.
+     */
+    public function riwayat(Request $request)
+    {
+        $data = $this->getRiwayatData($request, 'rescue');
+        return view('auth.unit-rescue.riwayat', $data);
     }
 }

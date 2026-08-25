@@ -74,34 +74,46 @@
     @if(!empty($bukti_pemanasan_data) || !empty($bukti_bbm_data) || !empty($bukti_pencucian_data) || (!empty($dok_tangki_data) && count($dok_tangki_data) > 0))
     <h2 class="section">Dokumentasi Foto</h2>
 
-    <div style="display:flex; gap:8px; margin-bottom:10px;">
-        @if(!empty($bukti_pencucian_data))
-        <div style="width:33%;">
-            <strong>Bukti Kebersihan Unit</strong>
-            <div style="margin-top:6px;"><img src="{{ $bukti_pencucian_data }}" style="max-width:100%; height:auto; border:1px solid #ddd; padding:4px;"></div>
-        </div>
-        @endif
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+        <tr>
+            @if(!empty($bukti_pencucian_data))
+            <td style="width: 33.33%; vertical-align: top; padding: 2px 4px;">
+                <div style="font-weight: bold; margin-bottom: 4px;">Bukti Kebersihan Unit</div>
+                <div><img src="{{ $bukti_pencucian_data }}" style="width: 100%; max-height: 135px; border: 1px solid #ddd; padding: 3px;"></div>
+            </td>
+            @endif
 
-        @if(!empty($bukti_pemanasan_data))
-        <div style="width:33%;">
-            <strong>Bukti Pemanasan</strong>
-            <div style="margin-top:6px;"><img src="{{ $bukti_pemanasan_data }}" style="max-width:100%; height:auto; border:1px solid #ddd; padding:4px;"></div>
-        </div>
-        @endif
+            @if(!empty($bukti_pemanasan_data))
+            <td style="width: 33.33%; vertical-align: top; padding: 2px 4px;">
+                <div style="font-weight: bold; margin-bottom: 4px;">Bukti Pemanasan</div>
+                <div><img src="{{ $bukti_pemanasan_data }}" style="width: 100%; max-height: 135px; border: 1px solid #ddd; padding: 3px;"></div>
+            </td>
+            @endif
 
-        @if(!empty($bukti_bbm_data))
-        <div style="width:33%;">
-            <strong>Bukti Level BBM</strong>
-            <div style="margin-top:6px;"><img src="{{ $bukti_bbm_data }}" style="max-width:100%; height:auto; border:1px solid #ddd; padding:4px;"></div>
-        </div>
-        @endif
-    </div>
+            @if(!empty($bukti_bbm_data))
+            <td style="width: 33.33%; vertical-align: top; padding: 2px 4px;">
+                <div style="font-weight: bold; margin-bottom: 4px;">Bukti Level BBM</div>
+                <div><img src="{{ $bukti_bbm_data }}" style="width: 100%; max-height: 135px; border: 1px solid #ddd; padding: 3px;"></div>
+            </td>
+            @endif
+        </tr>
+    </table>
 
     @if(!empty($dok_tangki_data) && count($dok_tangki_data) > 0)
-    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
-        @foreach($dok_tangki_data as $img)
-        <div style="width:32%;"><img src="{{ $img }}" style="max-width:100%; height:auto; border:1px solid #ddd; padding:4px;"></div>
-        @endforeach
+    <div style="margin-top: 6px; margin-bottom: 10px;">
+        <div style="font-weight: bold; margin-bottom: 4px;">Dokumentasi Pengecekan Tangki dan Pompa (maksimal 3 foto)</div>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                @foreach($dok_tangki_data as $index => $img)
+                <td style="width: 33.33%; vertical-align: top; padding: 2px 4px;">
+                    <div><img src="{{ $img }}" style="width: 100%; max-height: 135px; border: 1px solid #ddd; padding: 3px;"></div>
+                </td>
+                @endforeach
+                @for($i = count($dok_tangki_data); $i < 3; $i++)
+                <td style="width: 33.33%; padding: 2px 4px;"></td>
+                @endfor
+            </tr>
+        </table>
     </div>
     @endif
     @endif
@@ -145,15 +157,26 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($record->perlengkapan ?? [] as $item)
             <tr>
-                <td class="center">{{ $loop->iteration }}</td>
-                <td>{{ $item['label'] ?? '-' }}</td>
-                <td class="center {{ ($item['status'] ?? '') === 'rusak' ? 'status-rusak' : 'status-baik' }}">
-                    {{ strtoupper($item['status'] ?? 'baik') }}
+                <td class="center">1</td>
+                <td>Kondisi Kebersihan Unit</td>
+                <td class="center {{ ($record->kebersihan_unit ?? 'bersih') === 'tidak_bersih' ? 'status-rusak' : 'status-baik' }}">
+                    {{ ($record->kebersihan_unit ?? 'bersih') === 'tidak_bersih' ? 'TIDAK BERSIH' : 'BERSIH' }}
                 </td>
-                <td>{{ $item['catatan'] ?? '-' }}</td>
+                <td>-</td>
             </tr>
+            @php $no = 2; @endphp
+            @foreach($record->perlengkapan ?? [] as $key => $item)
+                @if(!in_array($key, ['kebersihan_bagian_dalam', 'kebersihan_bagian_luar']))
+                <tr>
+                    <td class="center">{{ $no++ }}</td>
+                    <td>{{ $item['label'] ?? '-' }}</td>
+                    <td class="center {{ ($item['status'] ?? '') === 'rusak' ? 'status-rusak' : 'status-baik' }}">
+                        {{ strtoupper($item['status'] ?? 'baik') }}
+                    </td>
+                    <td>{{ $item['catatan'] ?? '-' }}</td>
+                </tr>
+                @endif
             @endforeach
         </tbody>
     </table>
@@ -170,13 +193,13 @@
         <tr>
             <td>
                 <div class="garis">
-                    &nbsp;<br>
+                    {{ $record->nama_kabid ?? '-' }}<br>
                     Kepala Bidang
                 </div>
             </td>
             <td>
                 <div class="garis">
-                    &nbsp;<br>
+                    {{ $record->nama_danru ?? '-' }}<br>
                     Danru
                 </div>
             </td>

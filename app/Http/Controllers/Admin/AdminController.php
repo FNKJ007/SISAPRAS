@@ -27,9 +27,9 @@ class AdminController extends Controller
         $unitAktif        = \App\Models\Unit::whereYear('created_at', '<=', $currentYear)->where('status', 'aktif')->count();
         $unitPerbaikan    = \App\Models\Unit::whereYear('created_at', '<=', $currentYear)->where('status', 'perbaikan')->count();
 
-        $totalPeralatan   = \App\Models\Peralatan::whereYear('created_at', '<=', $currentYear)->sum('jumlah_total');
-        $jenisPeralatan   = \App\Models\Peralatan::whereYear('created_at', '<=', $currentYear)->count();
-        $peralatanBaik    = \App\Models\Peralatan::whereYear('created_at', '<=', $currentYear)->where('status', 'baik')->count();
+        $totalPeralatan   = \App\Models\Peralatan::whereYear('created_at', '<=', $currentYear)->count();
+        $jenisPeralatan   = $totalPeralatan;
+        $peralatanBaik    = $totalPeralatan;
 
         // Transaksi & Aktivitas pada tahun yang dipilih ($currentYear)
         $totalPengajuan   = \App\Models\Pengajuan::whereYear('created_at', $currentYear)->count();
