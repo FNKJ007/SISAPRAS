@@ -19,7 +19,11 @@ trait HandlesCekHarianAlat
     protected function exportCekHarianAlatPdf(int $id, string $kategori)
     {
         try {
-            $record = CekHarianAlat::where('kategori', $kategori)->findOrFail($id);
+            $recordQuery = CekHarianAlat::where('kategori', $kategori);
+            if (!auth()->user()?->isAdmin()) {
+                $recordQuery->where('user_id', auth()->id());
+            }
+            $record = $recordQuery->findOrFail($id);
 
             if (function_exists('set_time_limit')) {
                 @set_time_limit(300);

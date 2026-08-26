@@ -77,7 +77,8 @@ class CekAlatCcController extends Controller
         $searchQuery = $request->query('search', '');
         $tanggal     = $request->query('tanggal', '');
 
-        $alatQuery = CekHarianAlat::where('kategori', 'command_center');
+        $alatQuery = CekHarianAlat::where('user_id', auth()->id())
+            ->where('kategori', 'command_center');
 
         if (!empty($searchQuery)) {
             $alatQuery->where(function ($q) use ($searchQuery) {

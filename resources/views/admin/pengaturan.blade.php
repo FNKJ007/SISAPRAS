@@ -298,6 +298,7 @@
                                             <button type="button" @click="
                                                 activeUser = {{ json_encode($item) }};
                                                 resetUrl = '{{ route('admin.pengaturan.users.reset-password', $item->id) }}';
+                                                resetPassword = generateNewPassword();
                                                 resetModalOpen = true;
                                             " title="Reset Password" style="padding:5px 9px; background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">
                                                 Kunci
@@ -714,7 +715,7 @@
                     <i data-lucide="key-round" style="width:20px; height:20px;"></i>
                 </div>
                 <div>
-                    <h3 style="font-size:16px; font-weight:800; color:#0F172A; margin:0;">Reset Password</h3>
+                    <h3 style="font-size:16px; font-weight:800; color:#0F172A; margin:0;">Password Akun</h3>
                     <p style="font-size:12px; color:#64748B; margin:2px 0 0;" x-text="'Reset password untuk ' + (activeUser.name || '')"></p>
                 </div>
             </div>
@@ -726,13 +727,14 @@
                         <label style="font-size:12px; font-weight:700; color:#334155; margin:0;">Password Baru <span style="color:#DC2626;">*</span></label>
                         <button type="button" @click="
                             const rInput = document.getElementById('reset_password_input');
-                            if (rInput) rInput.value = generateNewPassword();
+                            if (rInput) { resetPassword = generateNewPassword(); rInput.value = resetPassword; }
                         " style="background:none; border:none; color:#1B2A6B; font-size:11.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px; text-decoration:underline;">
                             🎲 Acak Password
                         </button>
                     </div>
-                    <input type="text" name="new_password" id="reset_password_input" required placeholder="Masukkan password baru..."
+                          <input type="text" name="new_password" id="reset_password_input" x-model="resetPassword" required placeholder="Password baru otomatis dibuat..."
                            style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; font-family:monospace;">
+                          <p style="font-size:11px; color:#64748B; margin:6px 0 0;">Password lama tidak dapat dilihat karena disimpan sebagai hash. Gunakan password baru ini untuk diberikan kepada user.</p>
                 </div>
 
                 <div style="display:flex; justify-content:flex-end; gap:8px;">
@@ -742,7 +744,7 @@
                     </button>
                     <button type="submit"
                             style="padding:8px 18px; background:#D97706; color:#FFFFFF; border:none; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer;">
-                        Reset Password Now
+                        Simpan Password Baru
                     </button>
                 </div>
             </form>
@@ -815,6 +817,7 @@ function pengaturanApp() {
         activeUser: {},
         editUrl: '',
         resetUrl: '',
+        resetPassword: '',
         deleteUrl: '',
         createNip: '',
         createName: '',
@@ -843,6 +846,7 @@ function pengaturanApp() {
             this.createBidang = p.bidang || '';
             this.createPos = p.pos || '';
             this.createRegu = p.regu || '';
+            this.createNoHp = p.no_hp || '';
             this.createEmail = p.email || '';
             this.pegawaiQuery = '';
             this.pegawaiOpen = false;

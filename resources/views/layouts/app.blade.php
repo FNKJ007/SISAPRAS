@@ -19,6 +19,36 @@
 
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ file_exists(public_path('css/app.css')) ? filemtime(public_path('css/app.css')) : '1' }}">
     @stack('styles')
+    <style>
+        .search-autocomplete-menu {
+            position: absolute;
+            z-index: 100000;
+            left: 0;
+            right: 0;
+            top: calc(100% + 4px);
+            display: none;
+            max-height: 220px;
+            overflow-y: auto;
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, .16);
+        }
+        .search-autocomplete-option {
+            display: block;
+            width: 100%;
+            padding: 8px 10px;
+            border: 0;
+            border-bottom: 1px solid #f1f5f9;
+            background: #fff;
+            color: #334155;
+            text-align: left;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .search-autocomplete-option:hover,
+        .search-autocomplete-option.is-active { background: #eff6ff; color: #1d4ed8; }
+    </style>
 </head>
 <body>
 
@@ -306,5 +336,80 @@
         });
     </script>
     @stack('scripts')
+    <script>
+        (() => {
+            const normalize = value => (value || '').replace(/\s+/g, ' ').trim();
+
+            const setupSearchAutocomplete = input => {
+                if (input.dataset.autocompleteReady === '1') return;
+                input.dataset.autocompleteReady = '1';
+                const wrapper = input.parentElement;
+                if (!wrapper) return;
+                if (getComputedStyle(wrapper).position === 'static') wrapper.style.position = 'relative';
+
+                const menu = document.createElement('div');
+                menu.className = 'search-autocomplete-menu';
+                wrapper.appendChild(menu);
+                let options = [];
+                let activeIndex = -1;
+
+                const collectOptions = query => {
+                    const values = new Set();
+                    document.querySelectorAll('tbody tr').forEach(row => {
+                        row.querySelectorAll('td').forEach(cell => {
+                            const value = normalize(cell.textContent);
+                            if (value.length > 1 && value.toLowerCase().startsWith(query.toLowerCase())) values.add(value);
+                        });
+                    });
+                    return [...values].filter(value => value.toLowerCase() !== query.toLowerCase()).slice(0, 8);
+                };
+
+                const render = () => {
+                    const query = normalize(input.value);
+                    options = query.length > 0 ? collectOptions(query) : [];
+                    activeIndex = -1;
+                    menu.innerHTML = '';
+                    options.forEach((value, index) => {
+                        const option = document.createElement('button');
+                        option.type = 'button';
+                        option.className = 'search-autocomplete-option';
+                        option.textContent = value;
+                        option.addEventListener('mousedown', event => event.preventDefault());
+                        option.addEventListener('click', () => {
+                            input.value = value;
+                            menu.style.display = 'none';
+                            input.dispatchEvent(new Event('change', { bubbles: true }));
+                        });
+                        menu.appendChild(option);
+                    });
+                    menu.style.display = options.length ? 'block' : 'none';
+                };
+
+                input.addEventListener('input', render);
+                input.addEventListener('focus', render);
+                input.addEventListener('keydown', event => {
+                    if (!options.length) return;
+                    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                        event.preventDefault();
+                        activeIndex = event.key === 'ArrowDown'
+                            ? (activeIndex + 1) % options.length
+                            : (activeIndex - 1 + options.length) % options.length;
+                        [...menu.children].forEach((item, index) => item.classList.toggle('is-active', index === activeIndex));
+                    } else if (event.key === 'Enter' && activeIndex >= 0) {
+                        event.preventDefault();
+                        input.value = options[activeIndex];
+                        menu.style.display = 'none';
+                    } else if (event.key === 'Escape') {
+                        menu.style.display = 'none';
+                    }
+                });
+                document.addEventListener('click', event => {
+                    if (!wrapper.contains(event.target)) menu.style.display = 'none';
+                });
+            };
+
+            document.querySelectorAll('input[name="search"]').forEach(setupSearchAutocomplete);
+        })();
+    </script>
 </body>
 </html>
