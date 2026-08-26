@@ -388,10 +388,20 @@
         $kasiNama = $userKasiPml ? $userKasiPml->name : 'Ahmad Kuswara, S.M., M.M.';
         $kasiNip = $userKasiPml ? $userKasiPml->nip : '197209212008011001';
 
-        $pksNomor = '000.4.7.2/001/PKS-Pem/Bid.SPI/2026';
-        $spkNomor = 'SPK-004/I/2026/PRA';
-        $pksTanggal = '9 Januari 2026';
-        $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' . urlencode($nomorSuratFormat);
+        // Data PKS, SPK, dan Bengkel Dinamis dari tabel pengaturan_dokumen (atau fallback jika belum diatur)
+        $tahunSurat = is_object($pengajuan) && isset($pengajuan->created_at) && $pengajuan->created_at instanceof \Carbon\Carbon
+            ? (int) $pengajuan->created_at->format('Y')
+            : (int) date('Y');
+
+        $docConfig = $pengaturanDokumen ?? \App\Models\PengaturanDokumen::getAktif($tahunSurat);
+
+        $pksNomor        = $docConfig->nomor_pks ?? ('000.4.7.2/001/PKS-Pem/Bid.SPI/' . $tahunSurat);
+        $spkNomor        = $docConfig->nomor_spk ?? ('SPK-004/I/' . $tahunSurat . '/PRA');
+        $pksTanggal      = $docConfig ? $docConfig->tanggal_pks_spk_label : ('9 Januari ' . $tahunSurat);
+        $namaBengkel     = $docConfig->nama_bengkel ?? 'CV. Pratama Motor';
+        $alamatBengkel   = $docConfig->alamat_bengkel ?? 'Jl. Soekarno Hatta No. 463, Kota Bandung';
+        $pimpinanBengkel = $docConfig->nama_pimpinan_bengkel ?? 'CV. Pratama';
+        $qrCodeUrl       = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' . urlencode($nomorSuratFormat);
     @endphp
 
     <div class="document-wrapper" id="pdf-content">
@@ -444,9 +454,9 @@
                     <div class="dest-right">
                         <div style="margin-bottom: 2px;">Soreang, &nbsp; {{ $tglSuratFormat }}</div>
                         <div>Kepada Yth.</div>
-                        <div>Pimpinan CV. Pratama Motor</div>
+                        <div>Pimpinan {{ $namaBengkel }}</div>
                         <div>di</div>
-                        <div>Jl. Soekarno Hatta No. 463, Kota Bandung</div>
+                        <div>{{ $alamatBengkel }}</div>
                     </div>
                 </div>
 
@@ -569,12 +579,12 @@
                 {{-- TTD Footer Page 2 --}}
                 <div class="lampiran-footer-ttd">
                     <div style="text-align: center; width: 320px; font-size: 12.5px;">
-                        <div style="margin-bottom: 6px;">Bandung, &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2026</div>
+                        <div style="margin-bottom: 6px;">Bandung, &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ $tahunSurat }}</div>
                         <div style="margin-bottom: 45px;">Pemeriksa,</div>
                         <div style="display: flex; align-items: center; justify-content: center; width: 220px; margin: 0 auto 4px auto; font-weight: 700;">
                             (<span style="display: inline-block; width: 190px; border-bottom: 1.5px solid #000000; margin: 0 4px;"></span>)
                         </div>
-                        <div style="font-weight: 700;">CV. Pratama</div>
+                        <div style="font-weight: 700;">{{ $pimpinanBengkel }}</div>
                     </div>
                 </div>
 
@@ -858,16 +868,16 @@
 
                     <div class="dest-right">
                         <div>Kepada Yth.</div>
-                        <div>Pimpinan CV. Pratama Motor</div>
+                        <div>Pimpinan {{ $namaBengkel }}</div>
                         <div>di</div>
-                        <div>Jl. Soekarno Hatta No. 463, Kota Bandung</div>
+                        <div>{{ $alamatBengkel }}</div>
                     </div>
                 </div>
 
                 {{-- Body Paragraph --}}
                 <div class="salutation">Dengan Hormat,</div>
                 <div class="body-p">
-                    Berdasarkan hasil pemeriksaan pihak CV. Pratama pada lampiran Surat Permohonan Pemeriksaan Kendaraan Nomor : {{ $nomorSuratPEM }} tanggal {{ $tglSuratFormat }} untuk kendaraan dengan detail sebagai berikut:
+                    Berdasarkan hasil pemeriksaan pihak {{ $pimpinanBengkel }} pada lampiran Surat Permohonan Pemeriksaan Kendaraan Nomor : {{ $nomorSuratPEM }} tanggal {{ $tglSuratFormat }} untuk kendaraan dengan detail sebagai berikut:
                 </div>
 
                 {{-- Vehicle Details Grid --}}
@@ -898,7 +908,7 @@
                     Maka kami mohon Saudara untuk menyediakan suku cadang dan melaksanakan pemeliharaan/perbaikan atas kendaraan tersebut. Adapun detail suku cadang dan pemeliharaan/perbaikan yang diperlukan sebagaimana yang tertera pada lampiran.
                 </div>
                 <div class="body-p" style="margin-top: 10px;">
-                    Demikian surat pesanan ini kami buat sebagai dasar tindak lanjut pemeliharaan/perbaikan sesuai Perjanjian Kerja Sama (PKS) Nomor: {{ $pksNomor }} dan SPK-004/2026/PRA tanggal {{ $pksTanggal }}. Atas perhatian dan kerja samanya, kami sampaikan terima kasih.
+                    Demikian surat pesanan ini kami buat sebagai dasar tindak lanjut pemeliharaan/perbaikan sesuai Perjanjian Kerja Sama (PKS) Nomor: {{ $pksNomor }} dan {{ $spkNomor }} tanggal {{ $pksTanggal }}. Atas perhatian dan kerja samanya, kami sampaikan terima kasih.
                 </div>
 
                 {{-- Signatures Block Page 1 (2 Signatures Side by Side) --}}
