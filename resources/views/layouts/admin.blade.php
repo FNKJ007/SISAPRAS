@@ -141,12 +141,6 @@
                                     Kartu Kendali Aktual
                                 </a>
                             </li>
-                            <li>
-                                <a href="{{ route('admin.pemeliharaan.alokasi-kebersihan.index') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.alokasi-kebersihan.*') ? 'active' : '' }}">
-                                    Alokasi Kebersihan Unit
-                                </a>
-                            </li>
                         </ul>
                     </div>
 
@@ -230,63 +224,17 @@
                         </ul>
                     </div>
 
-                    {{-- === APAR & Kejadian === --}}
+                    {{-- === Monitoring Kejadian (APAR) - link langsung ke website APAR eksternal === --}}
                     <div class="menu-group">
-                        <button class="menu-title"
-                                type="button" data-target="menuApar">
+                        <a href="https://apar.bandungkab.go.id/" target="_blank" rel="noopener noreferrer"
+                           class="menu-title"
+                           style="text-decoration:none;">
                             <span class="menu-title-left">
-                                <i data-lucide="shield-alert" class="menu-icon"></i>
-                                <span>APAR & Kejadian</span>
+                                <i data-lucide="activity" class="menu-icon"></i>
+                                <span>Monitoring Kejadian</span>
                             </span>
-                            <i data-lucide="chevron-down" class="chevron"></i>
-                        </button>
-                        <ul class="submenu" id="menuApar">
-                            <li>
-                                <a href="{{ route('admin.apar.monitoring-kejadian') }}"
-                                   class="{{ request()->routeIs('admin.apar.monitoring-kejadian') ? 'active' : '' }}">
-                                    Monitoring Kejadian
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-
-                    {{-- === Laporan === --}}
-                    <div class="menu-group">
-                        <button class="menu-title"
-                                type="button" data-target="menuLaporan">
-                            <span class="menu-title-left">
-                                <i data-lucide="file-bar-chart" class="menu-icon"></i>
-                                <span>Laporan</span>
-                            </span>
-                            <i data-lucide="chevron-down" class="chevron"></i>
-                        </button>
-                        <ul class="submenu" id="menuLaporan">
-                            <li>
-                                <a href="{{ route('admin.laporan.pemeliharaan') }}"
-                                   class="{{ request()->routeIs('admin.laporan.pemeliharaan') ? 'active' : '' }}">
-                                    SOP Bidang SPI
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.laporan.pemadam') }}"
-                                   class="{{ request()->routeIs('admin.laporan.pemadam') ? 'active' : '' }}">
-                                   Laporan Bulanan Infokom
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.laporan.rescue') }}"
-                                   class="{{ request()->routeIs('admin.laporan.rescue') ? 'active' : '' }}">
-                                   Laporan Bulanan Sarpras
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.laporan.command-center') }}"
-                                   class="{{ request()->routeIs('admin.laporan.command-center') ? 'active' : '' }}">
-                                    Monev Bulanan
-                                </a>
-                            </li>
-                            
-                        </ul>
+                            <i data-lucide="external-link" class="chevron" style="width:13px; height:13px; opacity:0.8;"></i>
+                        </a>
                     </div>
 
                     {{-- === Pengaturan === --}}
@@ -335,11 +283,11 @@
                         <img src="{{ asset('images/logo-damkar.png') }}"    alt="Logo Yudha Brama Jaya"  class="logo logo-right">
                     </div>
 
-                    {{-- SISAPRAS Brand di Header (Tanpa Logo) --}}
+                    {{--API Brand di Header (Tanpa Logo) --}}
                     <div class="topbar-brand">
                         <div class="topbar-brand-text">
-                            <span class="topbar-brand-title">SISAPRAS</span>
-                            <span class="topbar-brand-subtitle">Sistem Informasi Sarana Prasarana</span>
+                            <span class="topbar-brand-title">API</span>
+                            <span class="topbar-brand-subtitle">Aplikasi Pemeliharaan & Inspeksi Sarana</span>
                         </div>
                     </div>
                 </div>

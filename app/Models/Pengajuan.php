@@ -159,6 +159,14 @@ class Pengajuan extends Model
                 }
             }
         });
+
+        static::saved(function () {
+            Unit::syncStatusAll();
+        });
+
+        static::deleted(function () {
+            Unit::syncStatusAll();
+        });
     }
 
     // Accessors for Title Case and Official Master Data Formats
@@ -232,6 +240,59 @@ class Pengajuan extends Model
             return $name . ',' . $gelar;
         }
         return $name;
+    }
+
+    public function getVerifiedItemListAttribute(): array
+    {
+        $cleanItems = [];
+
+        // 1. Prioritas: Ambil item yang diverifikasi 'disetujui' jika ada
+        if (!empty($this->item_verifikasis) && is_array($this->item_verifikasis)) {
+            foreach ($this->item_verifikasis as $itemName => $vStatus) {
+                if ($vStatus === 'disetujui') {
+                    $cleanItems[] = trim($itemName);
+                }
+            }
+        }
+
+        // 2. Fallback: Relasi tabel items (PengajuanItem)
+        if (empty($cleanItems)) {
+            if ($this->relationLoaded('items') ? $this->items->isNotEmpty() : $this->items()->exists()) {
+                $cleanItems = $this->items->pluck('deskripsi_kerusakan')->filter()->toArray();
+            }
+        }
+
+        // 3. Fallback: item_list array
+        if (empty($cleanItems) && !empty($this->item_list) && is_array($this->item_list)) {
+            $cleanItems = $this->item_list;
+        }
+
+        // 4. Fallback: item_perbaikan string (dipisah koma, titik koma, baris baru)
+        if (empty($cleanItems) && !empty($this->item_perbaikan)) {
+            $cleanItems = preg_split('/[,;\r\n]+/', $this->item_perbaikan);
+        }
+
+        return array_values(array_filter(array_map('trim', $cleanItems)));
+    }
+
+    public function getPosLabelAttribute(): string
+    {
+        return $this->pos ?? ($this->unitRelasi?->pos ?? 'Pos Dinas');
+    }
+
+    public function getJenisKendaraanLabelAttribute(): string
+    {
+        return $this->jenis_kendaraan ?? ($this->unitRelasi?->merk_tipe ?? 'Unit Operasional');
+    }
+
+    public function getKodeVerifikasiAttribute($value): string
+    {
+        if (!empty($value)) {
+            return $value;
+        }
+
+        $datePart = $this->created_at ? $this->created_at->format('Ymd') : date('Ymd');
+        return 'HAR-' . $datePart . '-' . sprintf('%04d', $this->id ?? 1);
     }
 
     // 3NF Relationships

@@ -15,6 +15,8 @@ class AdminController extends Controller
      */
     public function dashboard(Request $request)
     {
+        \App\Models\Unit::syncStatusAll();
+
         $currentYear = (int) $request->query('tahun', date('Y'));
 
         // 1. KPI Stats Summary
@@ -25,9 +27,9 @@ class AdminController extends Controller
         $unitAktif        = \App\Models\Unit::whereYear('created_at', '<=', $currentYear)->where('status', 'aktif')->count();
         $unitPerbaikan    = \App\Models\Unit::whereYear('created_at', '<=', $currentYear)->where('status', 'perbaikan')->count();
 
-        $totalPeralatan   = \App\Models\Peralatan::whereYear('created_at', '<=', $currentYear)->sum('jumlah_total');
-        $jenisPeralatan   = \App\Models\Peralatan::whereYear('created_at', '<=', $currentYear)->count();
-        $peralatanBaik    = \App\Models\Peralatan::whereYear('created_at', '<=', $currentYear)->where('status', 'baik')->count();
+        $totalPeralatan   = \App\Models\Peralatan::whereYear('created_at', '<=', $currentYear)->count();
+        $jenisPeralatan   = $totalPeralatan;
+        $peralatanBaik    = $totalPeralatan;
 
         // Transaksi & Aktivitas pada tahun yang dipilih ($currentYear)
         $totalPengajuan   = \App\Models\Pengajuan::whereYear('created_at', $currentYear)->count();
@@ -177,8 +179,21 @@ class AdminController extends Controller
         $query = Pengajuan::latest();
 
         // Filter berdasarkan status
-        if ($statusFilter !== 'semua' && in_array($statusFilter, ['menunggu', 'disetujui', 'ditolak'])) {
-            $query->where('status', $statusFilter);
+        if ($statusFilter !== 'semua' && in_array($statusFilter, ['menunggu', 'disetujui', 'selesai', 'ditolak'])) {
+            if ($statusFilter === 'selesai') {
+                $query->where(function ($q) {
+                    $q->where('status', 'selesai')
+                      ->orWhere('status_pengerjaan', 'selesai');
+                });
+            } elseif ($statusFilter === 'disetujui') {
+                $query->where('status', 'disetujui')
+                      ->where(function ($q) {
+                          $q->whereNull('status_pengerjaan')
+                            ->orWhere('status_pengerjaan', '!=', 'selesai');
+                      });
+            } else {
+                $query->where('status', $statusFilter);
+            }
         }
 
         // Pencarian berdasarkan nomor_lambung, nama_pemegang, atau pos
@@ -197,7 +212,12 @@ class AdminController extends Controller
         $kpi = [
             'total'     => Pengajuan::count(),
             'menunggu'  => Pengajuan::where('status', 'menunggu')->count(),
-            'disetujui' => Pengajuan::where('status', 'disetujui')->count(),
+            'disetujui' => Pengajuan::where('status', 'disetujui')
+                ->where(fn($q) => $q->whereNull('status_pengerjaan')->orWhere('status_pengerjaan', '!=', 'selesai'))
+                ->count(),
+            'selesai'   => Pengajuan::where('status', 'selesai')
+                ->orWhere('status_pengerjaan', 'selesai')
+                ->count(),
             'ditolak'   => Pengajuan::where('status', 'ditolak')->count(),
         ];
 
@@ -205,12 +225,12 @@ class AdminController extends Controller
     }
 
     /**
-     * Memverifikasi pengajuan (Setujui / Tolak) oleh Admin + Verifikasi per item
+     * Memverifikasi pengajuan (Setujui / Selesai / Tolak) oleh Admin + Verifikasi per item
      */
     public function verifikasiPengajuan(Request $request, $id)
     {
         $request->validate([
-            'status'                => 'required|in:disetujui,ditolak,menunggu',
+            'status'                => 'required|in:disetujui,ditolak,menunggu,selesai',
             'tanggal_keberangkatan' => 'nullable|date',
             'catatan_admin'         => 'nullable|string|max:500',
             'item_verifikasis'      => 'nullable|array',
@@ -233,7 +253,9 @@ class AdminController extends Controller
             $hasDisetujui = in_array('disetujui', $itemVerifikasis, true);
             $hasDitolak   = in_array('ditolak', $itemVerifikasis, true);
 
-            if ($hasDisetujui && !$hasDitolak) {
+            if ($request->status === 'selesai') {
+                $pengajuan->status = 'selesai';
+            } elseif ($hasDisetujui && !$hasDitolak) {
                 $pengajuan->status = 'disetujui';
             } elseif ($hasDitolak && !$hasDisetujui) {
                 $pengajuan->status = 'ditolak';
@@ -247,7 +269,13 @@ class AdminController extends Controller
 
         $pengajuan->catatan_admin = $request->catatan_admin;
 
-        if ($pengajuan->status === 'disetujui' && $request->filled('tanggal_keberangkatan')) {
+        if ($pengajuan->status === 'selesai') {
+            $pengajuan->status_pengerjaan = 'selesai';
+            $pengajuan->progress_persen = 100;
+            if (empty($pengajuan->tanggal_selesai_pengerjaan)) {
+                $pengajuan->tanggal_selesai_pengerjaan = now()->format('Y-m-d');
+            }
+        } elseif ($pengajuan->status === 'disetujui' && $request->filled('tanggal_keberangkatan')) {
             $pengajuan->tanggal_keberangkatan = $request->tanggal_keberangkatan;
             
             // Otomatis isi tanggal_mulai_pengerjaan dengan tanggal keberangkatan jika belum diisi
@@ -257,20 +285,31 @@ class AdminController extends Controller
 
             // Jika tanggal keberangkatan diset tanggal hari ini atau telah lewat, otomatis ubah status ke 'proses'
             $today = now()->format('Y-m-d');
-            if ($request->tanggal_keberangkatan <= $today && $pengajuan->status_pengerjaan === 'belum_mulai') {
-                $pengajuan->status_pengerjaan = 'proses';
-                if ((int)$pengajuan->progress_persen === 0) {
-                    $pengajuan->progress_persen = 10;
+            if ($request->tanggal_keberangkatan <= $today) {
+                if ($pengajuan->status_pengerjaan === 'belum_mulai') {
+                    $pengajuan->status_pengerjaan = 'proses';
+                    if ((int)$pengajuan->progress_persen === 0) {
+                        $pengajuan->progress_persen = 10;
+                    }
                 }
+            } else {
+                // Jika tanggal keberangkatan di masa depan (misal besok), unit belum masuk bengkel (status masih belum_mulai)
+                $pengajuan->status_pengerjaan = 'belum_mulai';
+                $pengajuan->progress_persen = 0;
             }
-        } elseif ($pengajuan->status !== 'disetujui') {
+        } elseif ($pengajuan->status !== 'disetujui' && $pengajuan->status !== 'selesai') {
             $pengajuan->tanggal_keberangkatan = null;
         }
 
         $pengajuan->save();
 
+        // Sinkronisasi status unit secara langsung
+        \App\Models\Unit::syncStatusAll();
+        \App\Http\Controllers\Admin\InvoiceController::syncPengajuanToAktualInvoice($pengajuan);
+
         $statusText = match ($pengajuan->status) {
             'disetujui' => 'disetujui' . ($pengajuan->tanggal_keberangkatan ? ' (Jadwal: ' . $pengajuan->tanggal_keberangkatan->format('d/m/Y') . ')' : ''),
+            'selesai'   => 'selesai dan unit siap beroperasi',
             'ditolak'   => 'ditolak',
             default     => 'diperbarui',
         };
@@ -278,6 +317,37 @@ class AdminController extends Controller
         return redirect()
             ->route('admin.pemeliharaan.pengajuan')
             ->with('success', "Pengajuan unit {$pengajuan->nomor_lambung} berhasil {$statusText}.");
+    }
+
+    /**
+     * Selesaikan Pengajuan perbaikan saat armada unit kembali ke pos.
+     */
+    public function selesaikanPengajuan($id)
+    {
+        $pengajuan = Pengajuan::findOrFail($id);
+        $pengajuan->status = 'selesai';
+        $pengajuan->status_pengerjaan = 'selesai';
+        $pengajuan->progress_persen = 100;
+        if (empty($pengajuan->tanggal_selesai_pengerjaan)) {
+            $pengajuan->tanggal_selesai_pengerjaan = now()->format('Y-m-d');
+        }
+        $pengajuan->save();
+
+        if ($pengajuan->nomor_lambung) {
+            $unit = \App\Models\Unit::where('nomor_lambung', $pengajuan->nomor_lambung)
+                ->orWhere('id', $pengajuan->unit_id)
+                ->first();
+            if ($unit) {
+                $unit->status = 'aktif';
+                $unit->saveQuietly();
+            }
+        }
+
+        \App\Models\Unit::syncStatusAll();
+
+        return redirect()
+            ->route('admin.pemeliharaan.pengajuan')
+            ->with('success', "Pengajuan untuk unit {$pengajuan->nomor_lambung} berhasil diselesaikan. Unit telah kembali ke pos dan berstatus Siap Operasi (Ready)!");
     }
 
     public function pemeliharaanPemeriksaan()
@@ -376,12 +446,18 @@ class AdminController extends Controller
                     $item->progress_persen = 10;
                 }
                 $changed = true;
+            } elseif ($keberangkatan && $keberangkatan > $today && $item->status_pengerjaan === 'proses') {
+                $item->status_pengerjaan = 'belum_mulai';
+                $item->progress_persen = 0;
+                $changed = true;
             }
 
             if ($changed) {
                 $item->save();
             }
         }
+
+        \App\Models\Unit::syncStatusAll();
 
         // Hanya unit yang sudah disetujui yang masuk pipeline pengerjaan aktual
         $query = Pengajuan::where('status', 'disetujui')->latest();
@@ -435,6 +511,7 @@ class AdminController extends Controller
         }
 
         $pengajuan->update($validated);
+        \App\Models\Unit::syncStatusAll();
 
         return redirect()
             ->route('admin.pemeliharaan.monitoring-aktual')
@@ -460,7 +537,6 @@ class AdminController extends Controller
             ->values();
 
         $tahunFilter    = $request->query('tahun', $tahunList->first() ?? date('Y'));
-        $statusFilter   = $request->query('status', 'semua');
         $searchQuery    = $request->query('search', '');
 
         $query = \App\Models\Invoice::with('unit')
@@ -474,10 +550,6 @@ class AdminController extends Controller
             })
             ->orderBy('tanggal_invoice', 'asc')
             ->orderBy('id', 'asc');
-
-        if ($statusFilter !== 'semua' && in_array($statusFilter, ['draft', 'diajukan', 'disetujui', 'lunas'])) {
-            $query->where('status', $statusFilter);
-        }
 
         if (!empty($searchQuery)) {
             $query->where(function ($q) use ($searchQuery) {
@@ -497,13 +569,17 @@ class AdminController extends Controller
             return $invoice;
         });
 
+        $totalInvoice = $invoiceList->count();
+        $totalNilai   = (float) $invoiceList->sum('total_biaya');
+        $totalUnit    = $invoiceList->pluck('no_lambung')->filter()->unique()->count() 
+                     ?: $invoiceList->pluck('unit_id')->filter()->unique()->count();
+        $rataRata     = $totalInvoice > 0 ? ($totalNilai / $totalInvoice) : 0;
+
         $kpi = [
-            'total_invoice'  => $invoiceList->count(),
-            'total_nilai'    => $invoiceList->sum('total_biaya'),
-            'total_lunas'    => $invoiceList->where('status', 'lunas')->sum('total_biaya'),
-            'total_belum'    => $invoiceList->whereIn('status', ['draft', 'diajukan', 'disetujui'])->sum('total_biaya'),
-            'jumlah_lunas'   => $invoiceList->where('status', 'lunas')->count(),
-            'jumlah_belum'   => $invoiceList->whereIn('status', ['draft', 'diajukan', 'disetujui'])->count(),
+            'total_invoice' => $totalInvoice,
+            'total_nilai'   => $totalNilai,
+            'total_unit'    => $totalUnit,
+            'rata_rata'     => $rataRata,
         ];
 
         return view('admin.pemeliharaan.kartu-kendali-pembayaran', [
@@ -511,7 +587,6 @@ class AdminController extends Controller
             'kpi'              => $kpi,
             'tahunList'        => $tahunList,
             'tahunFilter'      => $tahunFilter,
-            'statusFilter'     => $statusFilter,
             'searchQuery'      => $searchQuery,
         ]);
     }
@@ -523,12 +598,6 @@ class AdminController extends Controller
      */
     public function pemeliharaanKartuKendaliAktual(Request $request)
     {
-        // Auto-sync pengajuan to aktual invoices
-        $pengajuans = Pengajuan::all();
-        foreach ($pengajuans as $p) {
-            InvoiceController::syncPengajuanToAktualInvoice($p);
-        }
-
         $tahunList = \App\Models\Invoice::where('kategori_monitoring', 'aktual')
             ->whereNotNull('tahun_anggaran')
             ->distinct()
@@ -538,7 +607,6 @@ class AdminController extends Controller
             ->values();
 
         $tahunFilter    = $request->query('tahun', $tahunList->first() ?? date('Y'));
-        $statusFilter   = $request->query('status', 'semua');
         $searchQuery    = $request->query('search', '');
 
         $query = \App\Models\Invoice::with('unit')
@@ -549,10 +617,6 @@ class AdminController extends Controller
             })
             ->orderBy('tanggal_invoice', 'asc')
             ->orderBy('id', 'asc');
-
-        if ($statusFilter !== 'semua' && in_array($statusFilter, ['draft', 'diajukan', 'disetujui', 'lunas'])) {
-            $query->where('status', $statusFilter);
-        }
 
         if (!empty($searchQuery)) {
             $query->where(function ($q) use ($searchQuery) {
@@ -572,13 +636,17 @@ class AdminController extends Controller
             return $invoice;
         });
 
+        $totalInvoice = $invoiceList->count();
+        $totalNilai   = (float) $invoiceList->sum('total_biaya');
+        $totalUnit    = $invoiceList->pluck('no_lambung')->filter()->unique()->count() 
+                     ?: $invoiceList->pluck('unit_id')->filter()->unique()->count();
+        $rataRata     = $totalInvoice > 0 ? ($totalNilai / $totalInvoice) : 0;
+
         $kpi = [
-            'total_invoice'  => $invoiceList->count(),
-            'total_nilai'    => $invoiceList->sum('total_biaya'),
-            'total_lunas'    => $invoiceList->where('status', 'lunas')->sum('total_biaya'),
-            'total_belum'    => $invoiceList->whereIn('status', ['draft', 'diajukan', 'disetujui'])->sum('total_biaya'),
-            'jumlah_lunas'   => $invoiceList->where('status', 'lunas')->count(),
-            'jumlah_belum'   => $invoiceList->whereIn('status', ['draft', 'diajukan', 'disetujui'])->count(),
+            'total_invoice' => $totalInvoice,
+            'total_nilai'   => $totalNilai,
+            'total_unit'    => $totalUnit,
+            'rata_rata'     => $rataRata,
         ];
 
         return view('admin.pemeliharaan.kartu-kendali-aktual', [
@@ -586,7 +654,6 @@ class AdminController extends Controller
             'kpi'              => $kpi,
             'tahunList'        => $tahunList,
             'tahunFilter'      => $tahunFilter,
-            'statusFilter'     => $statusFilter,
             'searchQuery'      => $searchQuery,
         ]);
     }
@@ -923,7 +990,7 @@ class AdminController extends Controller
         $statusFilter = $request->query('status', 'semua');
         $searchQuery  = $request->query('search', '');
 
-        $query = \App\Models\User::orderBy('id', 'asc');
+        $query = \App\Models\User::where('has_account', true)->orderBy('id', 'asc');
 
         if ($roleFilter !== 'semua') {
             $query->where('role', $roleFilter);
@@ -958,29 +1025,26 @@ class AdminController extends Controller
 
         $posList = \App\Models\Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
 
-        $existingBidangList = \App\Models\User::whereNotNull('bidang')
+        $existingBidangList = \App\Models\User::where('has_account', true)->whereNotNull('bidang')
             ->where('bidang', '!=', '')
             ->pluck('bidang')
-            ->map(fn($v) => ucwords(strtolower(trim($v))))
+            ->map(fn($v) => trim($v))
+            ->filter(fn($v) => !empty($v))
             ->unique()
             ->sort()
             ->values()
             ->toArray();
 
-        if (empty($existingBidangList)) {
-            $existingBidangList = ['Pemadam', 'Rescue', 'Command Center', 'Sekretariat', 'Sarana Prasarana'];
-        }
-
         // Hitung statistik per Bidang secara dinamis
         $bidangCounts = [];
         foreach ($existingBidangList as $b) {
-            $bidangCounts[$b] = \App\Models\User::where('bidang', 'LIKE', $b)->count();
+            $bidangCounts[$b] = \App\Models\User::where('has_account', true)->where('bidang', 'LIKE', $b)->count();
         }
 
         $kpi = [
-            'total'   => \App\Models\User::count(),
-            'admin'   => \App\Models\User::where('role', 'admin')->count(),
-            'aktif'   => \App\Models\User::where('status', 'aktif')->count(),
+            'total'   => \App\Models\User::where('has_account', true)->count(),
+            'admin'   => \App\Models\User::where('has_account', true)->where('role', 'admin')->count(),
+            'aktif'   => \App\Models\User::where('has_account', true)->where('status', 'aktif')->count(),
             'bidang'  => $bidangCounts,
         ];
 
@@ -1000,19 +1064,11 @@ class AdminController extends Controller
             ->where('jabatan', '!=', '')
             ->pluck('jabatan')
             ->map(fn($v) => trim($v))
+            ->filter(fn($v) => !empty($v))
             ->unique()
+            ->sort()
             ->values()
             ->toArray();
-
-        if (empty($existingJabatanList)) {
-            $existingJabatanList = [
-                'Komandan Regu (Danru)',
-                'Kepala Seksi (Kasi)',
-                'Kepala Bidang (Kabid)',
-                'Anggota / Petugas',
-                'Pengemudi / Driver',
-            ];
-        }
 
         $pegawaiList = \App\Models\User::orderBy('name', 'asc')->get(['id', 'name', 'nip', 'jabatan', 'bidang', 'pos', 'regu', 'email', 'role', 'status']);
         $allReguList = \App\Models\Regu::orderBy('pos', 'asc')->orderBy('nama', 'asc')->get(['id', 'nama', 'pos', 'bidang', 'danru', 'nip_danru']);

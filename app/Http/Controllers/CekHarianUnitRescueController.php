@@ -8,44 +8,33 @@ use App\Models\Pos;
 use Illuminate\Http\Request;
 
 use App\Traits\HandlesCekHarianUnit;
+use App\Traits\HandlesOfficialsData;
 
 class CekHarianUnitRescueController extends Controller
 {
-    use HandlesCekHarianUnit;
+    use HandlesCekHarianUnit, HandlesOfficialsData;
 
     /**
-     * Daftar unit/kendaraan rescue dari database Admin Data Unit.
+     * Daftar unit/kendaraan rescue dari database Admin Data Unit sesuai Pos pengguna.
      */
     protected function unitList()
     {
         $currentUser = auth()->user();
-        $allUnits = Unit::where('kategori', 'LIKE', 'rescue')->orderBy('nomor_lambung', 'asc')->get();
+        $allUnits = Unit::where('kategori', 'LIKE', 'rescue')
+            ->orWhere('peruntukan', 'LIKE', 'rescue')
+            ->orWhere('nomor_lambung', 'LIKE', 'R-%')
+            ->orderBy('nomor_lambung', 'asc')
+            ->get();
 
-        if ($currentUser) {
-            $uName = strtolower(trim($currentUser->name ?? ''));
-            if ($uName) {
-                $userUnits = $allUnits->filter(function ($u) use ($uName) {
-                    $p1 = strtolower(trim($u->pengemudi_1 ?? ''));
-                    $p2 = strtolower(trim($u->pengemudi_2 ?? ''));
-                    return ($p1 && (str_contains($p1, $uName) || str_contains($uName, $p1))) ||
-                           ($p2 && (str_contains($p2, $uName) || str_contains($uName, $p2)));
-                })->values();
+        if ($currentUser && $currentUser->pos) {
+            $userPosClean = strtolower(preg_replace('/[^a-z0-9]/', '', $currentUser->pos));
+            $posUnits = $allUnits->filter(function ($u) use ($userPosClean) {
+                $posClean = strtolower(preg_replace('/[^a-z0-9]/', '', $u->pos ?? ''));
+                return $posClean && (str_contains($posClean, $userPosClean) || str_contains($userPosClean, $posClean));
+            })->values();
 
-                if ($userUnits->isNotEmpty()) {
-                    return $userUnits;
-                }
-            }
-
-            if ($currentUser->pos) {
-                $userPosClean = strtolower(preg_replace('/[^a-z0-9]/', '', $currentUser->pos));
-                $posUnits = $allUnits->filter(function ($u) use ($userPosClean) {
-                    $posClean = strtolower(preg_replace('/[^a-z0-9]/', '', $u->pos ?? ''));
-                    return $posClean && (str_contains($posClean, $userPosClean) || str_contains($userPosClean, $posClean));
-                })->values();
-
-                if ($posUnits->isNotEmpty()) {
-                    return $posUnits;
-                }
+            if ($posUnits->isNotEmpty()) {
+                return $posUnits;
             }
         }
 
@@ -118,10 +107,19 @@ class CekHarianUnitRescueController extends Controller
      */
     public function index()
     {
+        $allUnits = Unit::where('kategori', 'LIKE', 'rescue')
+            ->orWhere('peruntukan', 'LIKE', 'rescue')
+            ->orWhere('nomor_lambung', 'LIKE', 'R-%')
+            ->orderBy('nomor_lambung', 'asc')
+            ->get();
         $unitList = $this->unitList();
         $posList  = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
+        $officials = $this->getOfficialsData('rescue');
 
-        return view('auth.unit-rescue.cek-harian-unit-rescue', compact('unitList', 'posList'));
+        return view('auth.unit-rescue.cek-harian-unit-rescue', array_merge(
+            compact('unitList', 'allUnits', 'posList'),
+            $officials
+        ));
     }
 
     /**
@@ -143,5 +141,14 @@ class CekHarianUnitRescueController extends Controller
     public function exportPdf($id)
     {
         return $this->exportCekHarianUnitPdf((int) $id, 'rescue');
+    }
+
+    /**
+     * Menampilkan halaman riwayat pengecekan unit & alat rescue untuk user.
+     */
+    public function riwayat(Request $request)
+    {
+        $data = $this->getRiwayatData($request, 'rescue');
+        return view('auth.unit-rescue.riwayat', $data);
     }
 }

@@ -1,9 +1,34 @@
 {{-- resources/views/admin/pemeliharaan/invoice/_form.blade.php --}}
 @php
     $isEdit = isset($invoice);
-    $selectedPengajuanId = $selectedPengajuanId ?? old('pengajuan_id', null);
+    $selectedPengajuanId = $selectedPengajuanId ?? old('pengajuan_id', request()->query('pengajuan_id', null));
     $isAktual = request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
     $routePrefix = $isAktual ? 'admin.pemeliharaan.monitoring-aktual' : 'admin.pemeliharaan.invoice';
+
+    // Cari pengajuan yang dipilih jika ada
+    $selectedPengajuan = null;
+    if ($selectedPengajuanId) {
+        $selectedPengajuan = (isset($pengajuans) ? $pengajuans->firstWhere('id', $selectedPengajuanId) : null) 
+            ?? \App\Models\Pengajuan::find($selectedPengajuanId);
+    }
+
+    $prefilledItems = [];
+    if (!$isEdit && !old('items') && $selectedPengajuan) {
+        $verifiedItems = $selectedPengajuan->verified_item_list;
+        if (!empty($verifiedItems)) {
+            foreach ($verifiedItems as $itName) {
+                $prefilledItems[] = [
+                    'tanggal'         => now()->format('Y-m-d'),
+                    'kode_item'       => '',
+                    'jenis_perbaikan' => ucwords(strtolower(trim($itName))),
+                    'vol'             => 1,
+                    'satuan'          => 'Pcs',
+                    'harga_satuan'    => 0,
+                    'potongan_persen' => 0,
+                ];
+            }
+        }
+    }
 
     $items = old('items', $isEdit ? $invoice->items->map(fn ($i) => [
         'tanggal' => $i->tanggal->format('Y-m-d'),
@@ -13,9 +38,9 @@
         'satuan' => $i->satuan,
         'harga_satuan' => (float) $i->harga_satuan,
         'potongan_persen' => (float) ($i->potongan_persen ?? 0),
-    ])->toArray() : [
+    ])->toArray() : (!empty($prefilledItems) ? $prefilledItems : [
         ['tanggal' => now()->format('Y-m-d'), 'kode_item' => '', 'jenis_perbaikan' => '', 'vol' => 1, 'satuan' => 'Pcs', 'harga_satuan' => 0, 'potongan_persen' => 0],
-    ]);
+    ]));
 @endphp
 
 {{-- Hidden fields for selected unit & pengajuan metadata --}}
@@ -37,12 +62,13 @@
 }
 .invoice-form-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
 }
 .invoice-col-1 { grid-column: span 1; }
 .invoice-col-2 { grid-column: span 2; }
 .invoice-col-3 { grid-column: span 3; }
+.invoice-col-4 { grid-column: span 4; }
 .invoice-col-full { grid-column: 1 / -1; }
 
 .invoice-preview-box {
@@ -73,8 +99,22 @@
 }
 .invoice-action-footer {
     display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+    .invoice-form-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .invoice-form-grid {
+        grid-template-columns: 1fr !important;
+    }
 }
 
 @media (max-width: 768px) {
@@ -82,16 +122,6 @@
         padding: 16px !important;
         border-radius: 12px !important;
         margin-bottom: 14px !important;
-    }
-    .invoice-form-grid {
-        grid-template-columns: 1fr !important;
-        gap: 14px !important;
-    }
-    .invoice-col-1,
-    .invoice-col-2,
-    .invoice-col-3,
-    .invoice-col-full {
-        grid-column: span 1 !important;
     }
     .invoice-preview-box {
         grid-template-columns: 1fr 1fr !important;
@@ -133,6 +163,8 @@
 <div class="invoice-card">
     <h6 style="font-weight:700; text-transform:uppercase; color:#64748B; margin-bottom:16px; margin-top:0; font-size:13px; letter-spacing:0.5px;">Informasi Invoice &amp; Bengkel</h6>
     
+    <input type="hidden" name="status" value="{{ old('status', $isEdit ? ($invoice->status ?? 'disetujui') : 'disetujui') }}">
+
     <div class="invoice-form-grid">
         <div class="invoice-col-1">
             <label style="font-size:12.5px; font-weight:600; color:#475569; margin-bottom:4px; display:block;">Nama Bengkel / Rekanan</label>
@@ -163,59 +195,76 @@
             @error('tahun_anggaran') <div style="color:#C0201F; font-size:11px; margin-top:4px;">{{ $message }}</div> @enderror
         </div>
 
-
-
-        <div class="invoice-col-1">
-            <label style="font-size:12.5px; font-weight:600; color:#475569; margin-bottom:4px; display:block;">Status</label>
-            <select name="status" style="padding:9px 14px; border:1px solid {{ $errors->has('status') ? '#C0201F' : '#CBD5E1' }}; border-radius:8px; font-size:13px; width:100%; outline:none; box-sizing:border-box; background:#FFFFFF;" required>
-                @foreach (['draft' => 'Draft', 'diajukan' => 'Diajukan', 'disetujui' => 'Disetujui', 'lunas' => 'Lunas'] as $value => $label)
-                    <option value="{{ $value }}" {{ old('status', $isEdit ? $invoice->status : 'disetujui') === $value ? 'selected' : '' }}>
-                        {{ $label }}
-                    </option>
-                @endforeach
-            </select>
-            @error('status') <div style="color:#C0201F; font-size:11px; margin-top:4px;">{{ $message }}</div> @enderror
-        </div>
-
-        {{-- Dropdown Pilih Unit dari Pengajuan yang Disetujui --}}
+        {{-- Dropdown Pilih Unit (Monitoring Aktual: Semua Unit Master; Monitoring Invoice: Pengajuan Disetujui) --}}
         <div class="invoice-col-full">
             <label style="font-size:12.5px; font-weight:600; color:#475569; margin-bottom:4px; display:block;">Unit Kendaraan</label>
             <select id="select_pengajuan_unit" style="padding:10px 14px; border:1px solid {{ $errors->has('unit_id') || $errors->has('no_lambung') ? '#C0201F' : '#CBD5E1' }}; border-radius:8px; font-size:13px; width:100%; outline:none; background:#FFFFFF; box-sizing:border-box;" required>
                 <option value="">-- Pilih Unit Kendaraan --</option>
                 
-                @if(isset($pengajuans) && $pengajuans->count() > 0)
-                    @foreach ($pengajuans as $p)
-                        @php
-                            $parts = explode('/', $p->nomor_lambung);
-                            $lambungCode = trim($parts[0] ?? '');
-                            $platCode = trim($parts[1] ?? '');
-                            $matched = $units->first(function($u) use ($lambungCode, $platCode, $p) {
-                                return $u->nomor_lambung === $lambungCode || $u->plat_nomor === $platCode || $u->nomor_lambung === $p->nomor_lambung;
-                            });
-                            $unitIdVal = $matched?->id ?? ($units->first()->id ?? 1);
-                            $isSelected = (string)$selectedPengajuanId === (string)$p->id || 
-                                           ($isEdit && ($invoice->no_lambung === $p->nomor_lambung || $invoice->no_lambung === $lambungCode));
-                            $posName = $p->pos_label ?: ($matched?->pos ?: 'Pos Dinas');
-                            $jenisName = $p->jenis_kendaraan_label ?: ($matched?->merk_tipe ?: 'Unit Operasional');
-                        @endphp
-                        <option value="pengajuan_{{ $p->id }}"
-                            data-type="pengajuan"
-                            data-pengajuan-id="{{ $p->id }}"
-                            data-unit-id="{{ $unitIdVal }}"
-                            data-lambung="{{ $lambungCode ?: $p->nomor_lambung }}"
-                            data-nopol="{{ $platCode ?: ($matched?->plat_nomor ?? '') }}"
-                            data-jenismobil="{{ $jenisName }}"
-                            data-lokasi="{{ $posName }}"
-                            data-kode="{{ $p->kode_verifikasi }}"
-                            data-pemegang="{{ $p->nama_pemegang ?: '-' }}"
-                            data-tanggal="{{ $p->tanggal_keberangkatan ? $p->tanggal_keberangkatan->format('Y-m-d') : now()->format('Y-m-d') }}"
-                            data-items="{{ json_encode($p->verified_item_list ?? []) }}"
-                            {{ $isSelected ? 'selected' : '' }}>
-                            {{ $p->kode_verifikasi }} — {{ $p->nomor_lambung }} [{{ $posName }}] ({{ $jenisName }})
-                        </option>
-                    @endforeach
+                @if($isAktual)
+                    {{-- Monitoring Aktual: Tampilkan semua Unit dari Master Data --}}
+                    @if(isset($units) && $units->count() > 0)
+                        @foreach ($units as $u)
+                            @php
+                                $isSelected = (string)old('unit_id', $isEdit ? $invoice->unit_id : '') === (string)$u->id || 
+                                              ($isEdit && ($invoice->no_lambung === $u->nomor_lambung));
+                                $posName = $u->pos ?: 'Pos Dinas';
+                                $jenisName = $u->merk_tipe ?: ($u->jenis_kendaraan ?: 'Unit Operasional');
+                            @endphp
+                            <option value="unit_{{ $u->id }}"
+                                data-type="unit"
+                                data-pengajuan-id=""
+                                data-unit-id="{{ $u->id }}"
+                                data-lambung="{{ $u->nomor_lambung ?? $u->nama }}"
+                                data-nopol="{{ $u->plat_nomor ?? '' }}"
+                                data-jenismobil="{{ $jenisName }}"
+                                data-lokasi="{{ $posName }}"
+                                data-kode="-"
+                                data-pemegang="{{ $u->pengemudi_1 ?? '-' }}"
+                                data-items="[]"
+                                {{ $isSelected ? 'selected' : '' }}>
+                                {{ $u->nomor_lambung }} — {{ $u->nama }} [{{ $posName }}] ({{ $jenisName }})
+                            </option>
+                        @endforeach
+                    @else
+                        <option value="" disabled>Belum ada data unit</option>
+                    @endif
                 @else
-                    <option value="" disabled>Tidak ada pengajuan yang berstatus disetujui</option>
+                    {{-- Monitoring Invoice: Berdasarkan Pengajuan yang Disetujui --}}
+                    @if(isset($pengajuans) && $pengajuans->count() > 0)
+                        @foreach ($pengajuans as $p)
+                            @php
+                                $parts = explode('/', $p->nomor_lambung);
+                                $lambungCode = trim($parts[0] ?? '');
+                                $platCode = trim($parts[1] ?? '');
+                                $matched = $units->first(function($u) use ($lambungCode, $platCode, $p) {
+                                    return $u->nomor_lambung === $lambungCode || $u->plat_nomor === $platCode || $u->nomor_lambung === $p->nomor_lambung;
+                                });
+                                $unitIdVal = $matched?->id ?? ($units->first()->id ?? 1);
+                                $isSelected = (string)$selectedPengajuanId === (string)$p->id || 
+                                               ($isEdit && ($invoice->no_lambung === $p->nomor_lambung || $invoice->no_lambung === $lambungCode));
+                                $posName = $p->pos_label ?: ($matched?->pos ?: 'Pos Dinas');
+                                $jenisName = $p->jenis_kendaraan_label ?: ($matched?->merk_tipe ?: 'Unit Operasional');
+                            @endphp
+                            <option value="pengajuan_{{ $p->id }}"
+                                data-type="pengajuan"
+                                data-pengajuan-id="{{ $p->id }}"
+                                data-unit-id="{{ $unitIdVal }}"
+                                data-lambung="{{ $lambungCode ?: $p->nomor_lambung }}"
+                                data-nopol="{{ $platCode ?: ($matched?->plat_nomor ?? '') }}"
+                                data-jenismobil="{{ $jenisName }}"
+                                data-lokasi="{{ $posName }}"
+                                data-kode="{{ $p->kode_verifikasi }}"
+                                data-pemegang="{{ $p->nama_pemegang ?: '-' }}"
+                                data-tanggal="{{ $p->tanggal_keberangkatan ? $p->tanggal_keberangkatan->format('Y-m-d') : now()->format('Y-m-d') }}"
+                                data-items="{{ json_encode($p->verified_item_list ?? []) }}"
+                                {{ $isSelected ? 'selected' : '' }}>
+                                {{ $p->kode_verifikasi }} — {{ $p->nomor_lambung }} [{{ $posName }}] ({{ $jenisName }})
+                            </option>
+                        @endforeach
+                    @else
+                        <option value="" disabled>Tidak ada pengajuan yang berstatus disetujui</option>
+                    @endif
                 @endif
             </select>
 
@@ -245,9 +294,11 @@
             <p style="font-size:12px; color:#94A3B8; margin:0;">Isi rincian barang/jasa sesuai nota invoice bengkel. Kolom Kode Item dan Pot. (%) dapat diisi jika ada.</p>
         </div>
         <div class="invoice-btn-group">
+            @if(!$isAktual)
             <button type="button" id="btn-sync-items" style="background:#EFF6FF; color:#1B2A6B; border:1px solid #BFDBFE; padding:8px 14px; border-radius:10px; font-weight:700; font-size:12px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
                 <i data-lucide="refresh-cw" style="width:14px; height:14px;"></i> Isi Ulang dari Pengajuan
             </button>
+            @endif
             <button type="button" id="btn-add-item" style="background:#1B2A6B; color:#FFFFFF; border:none; padding:8px 16px; border-radius:10px; font-weight:700; font-size:12px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(27,42,107,0.2);">
                 <i data-lucide="plus" style="width:14px; height:14px;"></i> Tambah Baris Item
             </button>
@@ -501,16 +552,18 @@
         recalcAll();
     });
 
-    syncBtn.addEventListener('click', () => {
-        const opt = unitSelector.options[unitSelector.selectedIndex];
-        if (!opt || !opt.value) {
-            alert('Pilih unit pengajuan terlebih dahulu.');
-            return;
-        }
-        if (confirm('Isi ulang tabel rincian dengan item dari pengajuan terpilih? (Data yang sudah diketik akan ditimpa)')) {
-            populateItemsFromSelected(opt, true);
-        }
-    });
+    if (syncBtn) {
+        syncBtn.addEventListener('click', () => {
+            const opt = unitSelector.options[unitSelector.selectedIndex];
+            if (!opt || !opt.value) {
+                alert('Pilih unit pengajuan terlebih dahulu.');
+                return;
+            }
+            if (confirm('Isi ulang tabel rincian dengan item dari pengajuan terpilih? (Data yang sudah diketik akan ditimpa)')) {
+                populateItemsFromSelected(opt, true);
+            }
+        });
+    }
 
     itemsBody.addEventListener('click', (e) => {
         const btn = e.target.closest('.btn-remove-item');

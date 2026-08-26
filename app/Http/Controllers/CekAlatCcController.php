@@ -8,10 +8,11 @@ use App\Models\Pos;
 use Illuminate\Http\Request;
 
 use App\Traits\HandlesCekHarianAlat;
+use App\Traits\HandlesOfficialsData;
 
 class CekAlatCcController extends Controller
 {
-    use HandlesCekHarianAlat;
+    use HandlesCekHarianAlat, HandlesOfficialsData;
 
     /**
      * Menampilkan form Cek Harian Alat Command Center.
@@ -24,6 +25,8 @@ class CekAlatCcController extends Controller
             'Regu 3',
             'Regu 4',
         ];
+        $posList = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
+        $officials = $this->getOfficialsData('command center');
 
         // Ambil data peralatan Command Center dari database Admin Data Peralatan (Urut A-Z)
         $peralatanDb = Peralatan::where('kategori', 'LIKE', '%command%')->orderBy('nama', 'asc')->get();
@@ -38,7 +41,10 @@ class CekAlatCcController extends Controller
             ];
         });
 
-        return view('auth.alat-cc.cek-alat-cc', compact('reguList', 'daftarAlat'));
+        return view('auth.alat-cc.cek-alat-cc', array_merge(
+            compact('reguList', 'posList', 'daftarAlat'),
+            $officials
+        ));
     }
 
     /**
@@ -60,5 +66,40 @@ class CekAlatCcController extends Controller
     public function exportPdf(int $id)
     {
         return $this->exportCekHarianAlatPdf($id, 'command_center');
+    }
+
+    /**
+     * Menampilkan riwayat pemeriksaan alat Command Center untuk user.
+     */
+    public function riwayat(Request $request)
+    {
+        $tab         = 'alat';
+        $searchQuery = $request->query('search', '');
+        $tanggal     = $request->query('tanggal', '');
+
+        $alatQuery = CekHarianAlat::where('kategori', 'command_center');
+
+        if (!empty($searchQuery)) {
+            $alatQuery->where(function ($q) use ($searchQuery) {
+                $q->where('pos', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_danru', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_kabid', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
+        if (!empty($tanggal)) {
+            $alatQuery->where(function ($q) use ($tanggal) {
+                $q->whereDate('tanggal_pemeriksaan', $tanggal)
+                  ->orWhereDate('created_at', $tanggal);
+            });
+        }
+
+        $cekAlatList = $alatQuery->latest('tanggal_pemeriksaan')
+            ->latest('id')
+            ->paginate(10, ['*'], 'alat_page')
+            ->withQueryString();
+
+        return view('auth.alat-cc.riwayat', compact('cekAlatList', 'tab', 'searchQuery', 'tanggal'));
     }
 }

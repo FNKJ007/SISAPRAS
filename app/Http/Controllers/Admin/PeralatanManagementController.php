@@ -14,17 +14,12 @@ class PeralatanManagementController extends Controller
     public function index(Request $request)
     {
         $kategoriFilter = $request->query('kategori', 'semua');
-        $statusFilter   = $request->query('status', 'semua');
         $searchQuery    = $request->query('search', '');
 
         $query = Peralatan::orderBy('kategori', 'asc')->orderBy('nama', 'asc');
 
         if ($kategoriFilter !== 'semua') {
             $query->where('kategori', 'LIKE', str_replace('_', ' ', $kategoriFilter));
-        }
-
-        if ($statusFilter !== 'semua' && in_array($statusFilter, ['baik', 'perlu_perhatian', 'rusak'])) {
-            $query->where('status', $statusFilter);
         }
 
         if (!empty($searchQuery)) {
@@ -40,9 +35,8 @@ class PeralatanManagementController extends Controller
             'total'          => Peralatan::count(),
             'pemadam'        => Peralatan::where('kategori', 'LIKE', 'pemadam')->count(),
             'rescue'         => Peralatan::where('kategori', 'LIKE', 'rescue')->count(),
+            'pencegahan'     => Peralatan::where('kategori', 'LIKE', 'pencegahan')->count(),
             'command_center' => Peralatan::where('kategori', 'LIKE', '%command%')->count(),
-            'baik'           => Peralatan::where('status', 'baik')->count(),
-            'rusak'          => Peralatan::where('status', 'rusak')->count(),
         ];
 
         $existingKategoriList = Peralatan::whereNotNull('kategori')
@@ -56,14 +50,13 @@ class PeralatanManagementController extends Controller
             ->toArray();
 
         if (empty($existingKategoriList)) {
-            $existingKategoriList = ['Pemadam', 'Rescue', 'Command Center'];
+            $existingKategoriList = ['Pemadam', 'Rescue', 'Pencegahan', 'Command Center'];
         }
 
         return view('admin.pemeliharaan.data-peralatan.index', compact(
             'peralatanList',
             'kpi',
             'kategoriFilter',
-            'statusFilter',
             'searchQuery',
             'existingKategoriList'
         ));
@@ -75,20 +68,14 @@ class PeralatanManagementController extends Controller
     public function store(Request $request)
     {
         $messages = [
-            'nama.required'          => 'Nama peralatan wajib diisi.',
-            'kategori.required'      => 'Kategori peralatan wajib diisi.',
-            'jumlah_total.required'  => 'Jumlah total pcs peralatan wajib diisi.',
-            'jumlah_total.integer'   => 'Jumlah total pcs peralatan harus berupa angka bulat positif.',
-            'jumlah_total.min'       => 'Jumlah total pcs peralatan minimal 0.',
-            'status.required'        => 'Status kondisi peralatan wajib diisi.',
+            'nama.required'     => 'Nama peralatan wajib diisi.',
+            'kategori.required' => 'Kategori peralatan wajib diisi.',
         ];
 
         $validated = $request->validate([
-            'nama'         => 'required|string|max:255',
-            'kategori'     => 'required|string|max:100',
-            'jumlah_total' => 'required|integer|min:0',
-            'status'       => 'required|in:baik,perlu_perhatian,rusak',
-            'catatan'      => 'nullable|string',
+            'nama'     => 'required|string|max:255',
+            'kategori' => 'required|string|max:100',
+            'catatan'  => 'nullable|string',
         ], $messages);
 
         Peralatan::create($validated);
@@ -106,20 +93,14 @@ class PeralatanManagementController extends Controller
         $peralatan = Peralatan::findOrFail($id);
 
         $messages = [
-            'nama.required'          => 'Nama peralatan wajib diisi.',
-            'kategori.required'      => 'Kategori peralatan wajib diisi.',
-            'jumlah_total.required'  => 'Jumlah total pcs peralatan wajib diisi.',
-            'jumlah_total.integer'   => 'Jumlah total pcs peralatan harus berupa angka bulat positif.',
-            'jumlah_total.min'       => 'Jumlah total pcs peralatan minimal 0.',
-            'status.required'        => 'Status kondisi peralatan wajib diisi.',
+            'nama.required'     => 'Nama peralatan wajib diisi.',
+            'kategori.required' => 'Kategori peralatan wajib diisi.',
         ];
 
         $validated = $request->validate([
-            'nama'         => 'required|string|max:255',
-            'kategori'     => 'required|string|max:100',
-            'jumlah_total' => 'required|integer|min:0',
-            'status'       => 'required|in:baik,perlu_perhatian,rusak',
-            'catatan'      => 'nullable|string',
+            'nama'     => 'required|string|max:255',
+            'kategori' => 'required|string|max:100',
+            'catatan'  => 'nullable|string',
         ], $messages);
 
         $peralatan->update($validated);

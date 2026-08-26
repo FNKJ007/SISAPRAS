@@ -370,8 +370,23 @@
         $jenisKendaraanLabel = is_object($pengajuan) && !empty($pengajuan->jenis_kendaraan) ? ucwords(strtolower(trim($pengajuan->jenis_kendaraan))) : 'Pancar';
         $pengemudiNama = is_object($pengajuan) && !empty($pengajuan->nama_pemegang) ? $pengajuan->nama_pemegang : 'Riki Rohimat';
         $penempatanPos = is_object($pengajuan) && !empty($pengajuan->pos) ? $pengajuan->pos : 'MARGAASIH (TKI)';
-        $kabidNama = is_object($pengajuan) && !empty($pengajuan->nama_kepala_bidang) ? $pengajuan->nama_kepala_bidang : 'ERPI SUWANDI, S.T., M.M.';
-        $kabidNip = is_object($pengajuan) && !empty($pengajuan->nip_kepala_bidang) ? $pengajuan->nip_kepala_bidang : '19790820 200604 1010';
+
+        // Pejabat SPI (Kepala Bidang Sarana, Prasarana & Informasi selaku KUASA PENGGUNA ANGGARAN)
+        // Diambil langsung dari data resmi master pegawai
+        $userKabidSpi = \App\Models\User::where(function($q) {
+                $q->where('jabatan', 'LIKE', '%Kepala Bidang Sarana%')
+                  ->orWhere(function($q2) {
+                      $q2->where('bidang', 'LIKE', '%Sarana%')
+                         ->where('jabatan', 'LIKE', '%Kepala Bidang%');
+                  });
+            })->first();
+        $kabidNama = $userKabidSpi ? $userKabidSpi->name : 'Erpi Suwandi, S.T., M.M.';
+        $kabidNip = $userKabidSpi ? $userKabidSpi->nip : '197908202006041010';
+
+        // Pejabat Pemeliharaan (Kasi Pemeliharaan Sarana & Prasarana selaku PPTK)
+        $userKasiPml = \App\Models\User::where('jabatan', 'LIKE', '%Pemeliharaan Sarana%')->first();
+        $kasiNama = $userKasiPml ? $userKasiPml->name : 'Ahmad Kuswara, S.M., M.M.';
+        $kasiNip = $userKasiPml ? $userKasiPml->nip : '197209212008011001';
 
         $pksNomor = '000.4.7.2/001/PKS-Pem/Bid.SPI/2026';
         $spkNomor = 'SPK-004/I/2026/PRA';
@@ -745,8 +760,28 @@
                         </thead>
                         <tbody>
                             @php
-                                $itemsList = is_array($pengajuan->item_list ?? null) ? $pengajuan->item_list : (explode("\n", $pengajuan->item_perbaikan ?? ''));
-                                $cleanItems = array_values(array_filter(array_map('trim', $itemsList)));
+                                $cleanItems = [];
+                                if (!empty($pengajuan->item_verifikasis) && is_array($pengajuan->item_verifikasis)) {
+                                    foreach ($pengajuan->item_verifikasis as $itemName => $vStatus) {
+                                        if ($vStatus === 'disetujui') {
+                                            $cleanItems[] = trim($itemName);
+                                        }
+                                    }
+                                }
+
+                                if (empty($cleanItems)) {
+                                    if (!empty($pengajuan->items) && count($pengajuan->items) > 0) {
+                                        foreach ($pengajuan->items as $it) {
+                                            $cleanItems[] = trim($it->deskripsi_kerusakan);
+                                        }
+                                    } elseif (!empty($pengajuan->item_list) && is_array($pengajuan->item_list)) {
+                                        $cleanItems = $pengajuan->item_list;
+                                    } elseif (!empty($pengajuan->item_perbaikan)) {
+                                        $cleanItems = preg_split('/[,;\n\r]+/', $pengajuan->item_perbaikan);
+                                    }
+                                }
+
+                                $cleanItems = array_values(array_filter(array_map('trim', $cleanItems)));
                                 if (empty($cleanItems)) {
                                     $cleanItems = ['Selang hisap portable'];
                                 }
@@ -957,8 +992,28 @@
                         </thead>
                         <tbody>
                             @php
-                                $itemsList = is_array($pengajuan->item_list ?? null) ? $pengajuan->item_list : (explode("\n", $pengajuan->item_perbaikan ?? ''));
-                                $cleanItems = array_values(array_filter(array_map('trim', $itemsList)));
+                                $cleanItems = [];
+                                if (!empty($pengajuan->item_verifikasis) && is_array($pengajuan->item_verifikasis)) {
+                                    foreach ($pengajuan->item_verifikasis as $itemName => $vStatus) {
+                                        if ($vStatus === 'disetujui') {
+                                            $cleanItems[] = trim($itemName);
+                                        }
+                                    }
+                                }
+
+                                if (empty($cleanItems)) {
+                                    if (!empty($pengajuan->items) && count($pengajuan->items) > 0) {
+                                        foreach ($pengajuan->items as $it) {
+                                            $cleanItems[] = trim($it->deskripsi_kerusakan);
+                                        }
+                                    } elseif (!empty($pengajuan->item_list) && is_array($pengajuan->item_list)) {
+                                        $cleanItems = $pengajuan->item_list;
+                                    } elseif (!empty($pengajuan->item_perbaikan)) {
+                                        $cleanItems = preg_split('/[,;\n\r]+/', $pengajuan->item_perbaikan);
+                                    }
+                                }
+
+                                $cleanItems = array_values(array_filter(array_map('trim', $cleanItems)));
                                 $totalRows = max(26, count($cleanItems) + 15);
                             @endphp
                             @for ($r = 0; $r < $totalRows; $r++)

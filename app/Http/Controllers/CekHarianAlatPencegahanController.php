@@ -8,10 +8,11 @@ use App\Models\Unit;
 use App\Models\Pos;
 use Illuminate\Http\Request;
 use App\Traits\HandlesCekHarianAlat;
+use App\Traits\HandlesOfficialsData;
 
 class CekHarianAlatPencegahanController extends Controller
 {
-    use HandlesCekHarianAlat;
+    use HandlesCekHarianAlat, HandlesOfficialsData;
 
     /**
      * Daftar unit/kendaraan pencegahan dari database Admin Data Unit.
@@ -32,6 +33,7 @@ class CekHarianAlatPencegahanController extends Controller
     {
         $unitList = $this->unitList();
         $posList  = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
+        $officials = $this->getOfficialsData('pencegahan');
 
         // Ambil data peralatan pencegahan dari database Admin Data Peralatan (Urut A-Z)
         $peralatanDb = Peralatan::where('kategori', 'LIKE', 'pencegahan')->orderBy('nama', 'asc')->get();
@@ -49,7 +51,10 @@ class CekHarianAlatPencegahanController extends Controller
             ];
         });
 
-        return view('auth.alat-pencegahan.cek-harian-alat', compact('unitList', 'daftarAlat', 'posList'));
+        return view('auth.alat-pencegahan.cek-harian-alat', array_merge(
+            compact('unitList', 'daftarAlat', 'posList'),
+            $officials
+        ));
     }
 
     /**

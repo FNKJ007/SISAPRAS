@@ -374,31 +374,7 @@
                     
                     {{-- Pilihan Otomatis dari Master Data Pegawai (Autocomplete) --}}
                     <div style="position:relative; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:12px; padding:12px;"
-                         x-data="{
-                             pegawaiOpen: false,
-                             pegawaiQuery: '',
-                             get filteredPegawai() {
-                                 if (!this.pegawaiQuery || this.pegawaiQuery.trim() === '') return {{ json_encode($pegawaiList) }}.slice(0, 10);
-                                 let q = this.pegawaiQuery.toLowerCase();
-                                 return {{ json_encode($pegawaiList) }}.filter(p => 
-                                     (p.name && p.name.toLowerCase().includes(q)) || 
-                                     (p.nip && p.nip.toLowerCase().includes(q)) ||
-                                     (p.jabatan && p.jabatan.toLowerCase().includes(q))
-                                 ).slice(0, 15);
-                             },
-                             selectPegawai(p) {
-                                 createNip = p.nip || '';
-                                 createName = p.name || '';
-                                 createJabatan = p.jabatan || '';
-                                 createBidang = p.bidang || '';
-                                 createPos = p.pos || '';
-                                 createRegu = p.regu || '';
-                                 createEmail = p.email || '';
-                                 this.pegawaiQuery = '';
-                                 this.pegawaiOpen = false;
-                             }
-                         }"
-                         @click.away="pegawaiOpen = false">
+                         @click.outside="pegawaiOpen = false">
                         
                         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
                             <label style="font-size:12px; font-weight:800; color:#1E3A8A; margin:0; display:inline-flex; align-items:center; gap:6px;">
@@ -417,15 +393,15 @@
                                    autocomplete="off"
                                    style="width:100%; padding:8px 32px 8px 34px; font-size:12.5px; border-radius:8px; border:1px solid #93C5FD; background:#FFFFFF; outline:none; box-sizing:border-box;">
                             <i data-lucide="search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:14px; height:14px; color:#3B82F6;"></i>
-                            <button type="button" @click="pegawaiOpen = !pegawaiOpen" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:#3B82F6; cursor:pointer;">
+                            <button type="button" @click.stop="pegawaiOpen = !pegawaiOpen" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:#3B82F6; cursor:pointer;">
                                 <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
                             </button>
                         </div>
 
                         {{-- Autocomplete Dropdown List --}}
-                        <div x-show="pegawaiOpen && filteredPegawai.length > 0"
-                             style="display:none; position:absolute; left:12px; right:12px; top:100%; margin-top:4px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:10px; box-shadow:0 10px 25px rgba(15,23,42,0.18); max-height:210px; overflow-y:auto; z-index:99999;">
-                            <template x-for="p in filteredPegawai" :key="p.id">
+                        <div x-show="pegawaiOpen && filterPegawaiList(pegawaiQuery).length > 0" x-cloak
+                             style="position:absolute; left:12px; right:12px; top:100%; margin-top:4px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:10px; box-shadow:0 10px 25px rgba(15,23,42,0.18); max-height:210px; overflow-y:auto; z-index:99999;">
+                            <template x-for="p in filterPegawaiList(pegawaiQuery)" :key="p.id">
                                 <div @click="selectPegawai(p)"
                                      style="padding:9px 12px; border-bottom:1px solid #F1F5F9; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background 0.15s;"
                                      onmouseover="this.style.background='#EFF6FF'"
@@ -492,58 +468,30 @@
                         </div>
                     </div>
 
-                    {{-- Jabatan & Bidang --}}
+                    {{-- Jabatan & Bidang (Dropdown murni dari Data Pegawai) --}}
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                        {{-- Jabatan (Input Manual + Dropdown Riwayat + Hapus) --}}
-                        <div x-data="{ open: false }" style="position:relative;">
+                        {{-- Jabatan --}}
+                        <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Jabatan</label>
-                            <div style="position:relative; display:flex; align-items:center;">
-                                <input type="text" name="jabatan" x-model="createJabatan" placeholder="Ketik atau pilih jabatan..."
-                                       style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; box-sizing:border-box;"
-                                       @focus="if(existingJabatanList.length > 0) open = true"
-                                       @click.outside="open = false">
-                                <button type="button" @click="open = !open" tabindex="-1"
-                                        style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
-                                    <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
-                                </button>
-                            </div>
-                            <div x-show="open && existingJabatanList.length > 0" x-cloak
-                                 style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
-                                <template x-for="item in existingJabatanList" :key="item">
-                                    <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
-                                         @click="createJabatan = item; open = false;"
-                                         onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                         onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                        <span x-text="item"></span>
-                                    </div>
-                                </template>
-                            </div>
+                            <select name="jabatan" x-model="createJabatan"
+                                    style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF; box-sizing:border-box;">
+                                <option value="">— Pilih Jabatan —</option>
+                                @foreach($existingJabatanList as $j)
+                                    <option value="{{ $j }}">{{ $j }}</option>
+                                @endforeach
+                            </select>
                         </div>
 
-                        {{-- Bidang (Input Manual + Dropdown Riwayat) --}}
-                        <div x-data="{ open: false }" style="position:relative;">
+                        {{-- Bidang --}}
+                        <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Bidang</label>
-                            <div style="position:relative; display:flex; align-items:center;">
-                                <input type="text" name="bidang" x-model="createBidang" placeholder="Ketik atau pilih bidang..."
-                                       style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; box-sizing:border-box;"
-                                       @focus="if(existingBidangList.length > 0) open = true"
-                                       @click.outside="open = false">
-                                <button type="button" @click="open = !open" tabindex="-1"
-                                        style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
-                                    <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
-                                </button>
-                            </div>
-                            <div x-show="open && existingBidangList.length > 0" x-cloak
-                                 style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
-                                <template x-for="item in existingBidangList" :key="item">
-                                    <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
-                                         @click="createBidang = item; open = false;"
-                                         onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                         onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                        <span x-text="item"></span>
-                                    </div>
-                                </template>
-                            </div>
+                            <select name="bidang" x-model="createBidang"
+                                    style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF; box-sizing:border-box;">
+                                <option value="">— Pilih Bidang —</option>
+                                @foreach($existingBidangList as $b)
+                                    <option value="{{ $b }}">{{ $b }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
 
@@ -663,57 +611,30 @@
                         </div>
                     </div>
 
-                    {{-- Jabatan & Bidang --}}
+                    {{-- Jabatan & Bidang (Dropdown murni dari Data Pegawai) --}}
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                        {{-- Edit: Jabatan (Input Manual + Dropdown Riwayat + Hapus) --}}
-                        <div x-data="{ open: false }" style="position:relative;">
+                        {{-- Edit: Jabatan --}}
+                        <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Jabatan</label>
-                            <div style="position:relative; display:flex; align-items:center;">
-                                <input type="text" name="jabatan" x-model="activeUser.jabatan" placeholder="Ketik atau pilih jabatan..."
-                                       style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
-                                       @focus="if(existingJabatanList.length > 0) open = true"
-                                       @click.outside="open = false">
-                                <button type="button" @click="open = !open" tabindex="-1"
-                                        style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
-                                    <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
-                                </button>
-                            </div>
-                            <div x-show="open && existingJabatanList.length > 0" x-cloak
-                                 style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
-                                <template x-for="item in existingJabatanList" :key="item">
-                                    <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
-                                         @click="activeUser.jabatan = item; open = false;"
-                                         onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                         onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                        <span x-text="item"></span>
-                                    </div>
-                                </template>
-                            </div>
+                            <select name="jabatan" x-model="activeUser.jabatan"
+                                    style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF; box-sizing:border-box;">
+                                <option value="">— Pilih Jabatan —</option>
+                                @foreach($existingJabatanList as $j)
+                                    <option value="{{ $j }}">{{ $j }}</option>
+                                @endforeach
+                            </select>
                         </div>
-                        {{-- Edit: Bidang (Input Manual + Dropdown Riwayat) --}}
-                        <div x-data="{ open: false }" style="position:relative;">
+
+                        {{-- Edit: Bidang --}}
+                        <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Bidang</label>
-                            <div style="position:relative; display:flex; align-items:center;">
-                                <input type="text" name="bidang" x-model="activeUser.bidang" placeholder="Ketik atau pilih bidang..."
-                                       style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
-                                       @focus="if(existingBidangList.length > 0) open = true"
-                                       @click.outside="open = false">
-                                <button type="button" @click="open = !open" tabindex="-1"
-                                        style="position:absolute; right:1px; top:1px; bottom:1px; width:32px; background:#F8FAFC; border:none; border-left:1px solid #CBD5E1; border-top-right-radius:7px; border-bottom-right-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748B;">
-                                    <i data-lucide="chevron-down" style="width:14px; height:14px;"></i>
-                                </button>
-                            </div>
-                            <div x-show="open && existingBidangList.length > 0" x-cloak
-                                 style="position:absolute; top:100%; left:0; right:0; max-height:170px; overflow-y:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:1000; margin-top:2px;">
-                                <template x-for="item in existingBidangList" :key="item">
-                                    <div style="padding:8px 12px; font-size:12.5px; border-bottom:1px solid #F1F5F9; cursor:pointer;"
-                                         @click="activeUser.bidang = item; open = false;"
-                                         onmouseover="this.style.background='#EFF6FF'; this.style.color='#1B2A6B';"
-                                         onmouseout="this.style.background='#FFFFFF'; this.style.color='#1E293B';">
-                                        <span x-text="item"></span>
-                                    </div>
-                                </template>
-                            </div>
+                            <select name="bidang" x-model="activeUser.bidang"
+                                    style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF; box-sizing:border-box;">
+                                <option value="">— Pilih Bidang —</option>
+                                @foreach($existingBidangList as $b)
+                                    <option value="{{ $b }}">{{ $b }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
 
@@ -866,6 +787,31 @@ function pengaturanApp() {
         editModalOpen: false,
         resetModalOpen: false,
         deleteModalOpen: false,
+        init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('generate') || urlParams.has('nip')) {
+                this.activeTab = 'users';
+                this.createNip = urlParams.get('nip') || '';
+                this.createName = urlParams.get('name') || '';
+                this.createJabatan = urlParams.get('jabatan') || '';
+                this.createBidang = urlParams.get('bidang') || '';
+                this.createPos = urlParams.get('pos') || '';
+                this.createRegu = urlParams.get('regu') || '';
+                this.createNoHp = urlParams.get('no_hp') || '';
+                const cleanNip = this.createNip.replace(/[^0-9]/g, '');
+                if (cleanNip) {
+                    this.createEmail = cleanNip + '@disdamkar.go.id';
+                }
+                this.createModalOpen = true;
+                this.$nextTick(() => {
+                    const passInput = document.getElementById('create_password_input');
+                    if (passInput) {
+                        passInput.value = this.generateNewPassword();
+                    }
+                    if (window.lucide) window.lucide.createIcons();
+                });
+            }
+        },
         activeUser: {},
         editUrl: '',
         resetUrl: '',
@@ -878,6 +824,29 @@ function pengaturanApp() {
         createPos: '',
         createRegu: '',
         createNoHp: '',
+        pegawaiList: @json($pegawaiList ?? []),
+        pegawaiOpen: false,
+        pegawaiQuery: '',
+        filterPegawaiList(query) {
+            if (!query || query.trim() === '') return this.pegawaiList.slice(0, 15);
+            let q = query.toLowerCase();
+            return this.pegawaiList.filter(p => 
+                (p.name && p.name.toLowerCase().includes(q)) || 
+                (p.nip && p.nip.toLowerCase().includes(q)) ||
+                (p.jabatan && p.jabatan.toLowerCase().includes(q))
+            ).slice(0, 15);
+        },
+        selectPegawai(p) {
+            this.createNip = p.nip || '';
+            this.createName = p.name || '';
+            this.createJabatan = p.jabatan || '';
+            this.createBidang = p.bidang || '';
+            this.createPos = p.pos || '';
+            this.createRegu = p.regu || '';
+            this.createEmail = p.email || '';
+            this.pegawaiQuery = '';
+            this.pegawaiOpen = false;
+        },
         allReguList: @json($allReguList ?? []),
         getRegusForPos(posName) {
             if (!posName || posName.trim() === '') {

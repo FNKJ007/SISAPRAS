@@ -74,11 +74,11 @@
             </div>
             <div style="display:flex; align-items:baseline; gap:8px; margin:10px 0 4px 0;">
                 <div style="font-size:32px; font-weight:800; line-height:1.1; color:#0F172A;">{{ number_format($totalPeralatan, 0, ',', '.') }}</div>
-                <span style="font-size:13px; font-weight:700; color:#64748B;">Pcs ({{ $jenisPeralatan }} Jenis)</span>
+                <span style="font-size:13px; font-weight:700; color:#64748B;">Item Terdaftar</span>
             </div>
             <div style="display:flex; align-items:center; justify-content:space-between; font-size:11.5px; font-weight:600; margin-top:8px; padding-top:10px; border-top:1px dashed #F1F5F9;">
                 <span style="color:#059669; background:#ECFDF5; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700;">
-                    ✓ 100% Kondisi Baik
+                    ✓ Master Data Aktif
                 </span>
                 <a href="{{ route('admin.pemeliharaan.data-peralatan') }}" style="color:#059669; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
                     Detail <i data-lucide="arrow-right" style="width:13px; height:13px;"></i>

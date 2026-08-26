@@ -14,13 +14,12 @@ class PengajuanController extends Controller
      */
     public function index()
     {
-        // Ambil Bidang dari Database Akun Pengguna (Generate Akun) + Fallback
+        // Ambil Bidang murni dari Master Data Pegawai (User)
         $bidangUserDb = \App\Models\User::whereNotNull('bidang')
             ->where('bidang', '!=', '')
-            ->get()
             ->pluck('bidang')
-            ->map(fn($b) => ucwords(strtolower(trim($b))))
-            ->concat(['Pemadam', 'Rescue', 'Command Center', 'Sekretariat', 'Sarana Prasarana'])
+            ->map(fn($b) => trim($b))
+            ->filter(fn($b) => !empty($b))
             ->unique()
             ->sort()
             ->values()
@@ -137,29 +136,39 @@ class PengajuanController extends Controller
                    ($pengemudi2 && (str_contains($pengemudi2, $uName) || str_contains($uName, $pengemudi2)));
         })->values();
 
-        // Opsi 2 (Ketat): Jika user tercatat sebagai pemegang unit tertentu, dropdown nomor lambung HANYA menampilkan unit miliknya
+        // 1. Tentukan Unit Default: prioritaskan unit yang dipegang khusus oleh pengguna (misal P-01)
+        $defaultUnit = null;
         if ($userUnits->isNotEmpty()) {
-            $filteredUnitList = $userUnits->toArray();
+            $defaultUnit = $userUnits->first();
         } elseif ($currentUser && $currentUser->pos) {
-            // Fallback jika belum terdaftar sebagai pengemudi: tampilkan unit di pos-nya
+            $userPosClean = strtolower(preg_replace('/[^a-z0-9]/', '', $currentUser->pos));
+            $posUnit = collect($unitList)->first(function ($u) use ($userPosClean) {
+                $posClean = strtolower(preg_replace('/[^a-z0-9]/', '', $u['pos'] ?? ''));
+                return $posClean && (str_contains($posClean, $userPosClean) || str_contains($userPosClean, $posClean));
+            });
+            $defaultUnit = $posUnit ?: ($unitList[0] ?? null);
+        } else {
+            $defaultUnit = !empty($unitList) ? $unitList[0] : null;
+        }
+
+        // 2. Dropdown Nomor Lambung: tampilkan semua unit yang ada di Pos penempatan pengguna (misal seluruh unit di Soreang)
+        $posUnitsForDropdown = $unitList;
+        if ($currentUser && $currentUser->pos) {
             $userPosClean = strtolower(preg_replace('/[^a-z0-9]/', '', $currentUser->pos));
             $posUnits = collect($unitList)->filter(function ($u) use ($userPosClean) {
                 $posClean = strtolower(preg_replace('/[^a-z0-9]/', '', $u['pos'] ?? ''));
                 return $posClean && (str_contains($posClean, $userPosClean) || str_contains($userPosClean, $posClean));
             })->values();
-            $filteredUnitList = $posUnits->isNotEmpty() ? $posUnits->toArray() : $unitList;
-        } else {
-            $filteredUnitList = $unitList;
+            if ($posUnits->isNotEmpty()) {
+                $posUnitsForDropdown = $posUnits->toArray();
+            }
         }
 
-        // Susun daftar Nomor Lambung sesuai unit yang diperbolehkan untuk user ini
+        // Susun daftar Nomor Lambung sesuai unit di Pos penempatan
         $nomorLambungList = [];
-        foreach ($filteredUnitList as $u) {
+        foreach ($posUnitsForDropdown as $u) {
             $nomorLambungList[$u['nomor_lambung']] = $u['label'];
         }
-
-        $unitList = $filteredUnitList;
-        $defaultUnit = !empty($filteredUnitList) ? $filteredUnitList[0] : null;
 
         // Cari Danru dari Master Data Regu sesuai Pos & Regu user
         $defaultDanru = null;
@@ -200,6 +209,46 @@ class PengajuanController extends Controller
             $defaultKabid = $kabidUsers->first();
         }
 
+        // Susun opsi Danru/Kasi (gabungan Data Pegawai + Data Regu) untuk dipilih user
+        $danruOptions = collect();
+        foreach ($danruUsers as $u) {
+            if (!empty($u->name)) {
+                $danruOptions->push([
+                    'name'    => $u->name,
+                    'nip'     => $u->nip ?? '',
+                    'jabatan' => $u->jabatan ?? 'Danru',
+                    'pos'     => $u->pos ?? '',
+                    'bidang'  => $u->bidang ?? '',
+                ]);
+            }
+        }
+        foreach ($allReguList as $r) {
+            if (!empty($r->danru)) {
+                $danruOptions->push([
+                    'name'    => $r->danru,
+                    'nip'     => $r->nip_danru ?? '',
+                    'jabatan' => 'Danru ' . ($r->nama ?? ''),
+                    'pos'     => $r->pos ?? '',
+                    'bidang'  => $r->bidang ?? '',
+                ]);
+            }
+        }
+        $danruOptions = $danruOptions->unique('name')->sortBy('name')->values();
+
+        // Susun opsi Kabid dari Data Pegawai
+        $kabidOptions = $kabidUsers
+            ->filter(fn($u) => !empty($u->name))
+            ->map(fn($u) => [
+                'name'    => $u->name,
+                'nip'     => $u->nip ?? '',
+                'jabatan' => $u->jabatan ?? 'Kepala Bidang',
+                'pos'     => $u->pos ?? '',
+                'bidang'  => $u->bidang ?? '',
+            ])
+            ->unique('name')
+            ->sortBy('name')
+            ->values();
+
         return view('pemeliharaan.pengajuan', compact(
             'bidangList',
             'posList',
@@ -212,6 +261,8 @@ class PengajuanController extends Controller
             'currentUser',
             'danruUsers',
             'kabidUsers',
+            'danruOptions',
+            'kabidOptions',
             'defaultUnit',
             'defaultDanru',
             'defaultKabid'
