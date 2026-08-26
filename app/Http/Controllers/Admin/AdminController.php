@@ -1025,7 +1025,7 @@ class AdminController extends Controller
 
         $posList = \App\Models\Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
 
-        $existingBidangList = \App\Models\User::where('has_account', true)->whereNotNull('bidang')
+        $existingBidangList = \App\Models\User::whereNotNull('bidang')
             ->where('bidang', '!=', '')
             ->pluck('bidang')
             ->map(fn($v) => trim($v))
@@ -1070,7 +1070,24 @@ class AdminController extends Controller
             ->values()
             ->toArray();
 
-        $pegawaiList = \App\Models\User::orderBy('name', 'asc')->get(['id', 'name', 'nip', 'jabatan', 'bidang', 'pos', 'regu', 'email', 'role', 'status']);
+        $pegawaiList = \App\Models\User::with(['bidangRelasi:id,nama', 'reguRelasi:id,nama'])
+            ->orderBy('name', 'asc')
+            ->get(['id', 'name', 'nip', 'jabatan', 'bidang', 'bidang_id', 'pos', 'regu', 'regu_id', 'no_hp', 'email', 'role', 'status'])
+            ->map(function ($pegawai) {
+                return [
+                    'id'      => $pegawai->id,
+                    'name'    => $pegawai->name,
+                    'nip'     => $pegawai->nip,
+                    'jabatan' => $pegawai->jabatan,
+                    'bidang'  => $pegawai->bidang ?: ($pegawai->bidangRelasi->nama ?? ''),
+                    'pos'     => $pegawai->pos,
+                    'regu'    => $pegawai->regu ?: ($pegawai->reguRelasi->nama ?? ''),
+                    'no_hp'   => $pegawai->no_hp,
+                    'email'   => $pegawai->email,
+                    'role'    => $pegawai->role,
+                    'status'  => $pegawai->status,
+                ];
+            });
         $allReguList = \App\Models\Regu::orderBy('pos', 'asc')->orderBy('nama', 'asc')->get(['id', 'nama', 'pos', 'bidang', 'danru', 'nip_danru']);
 
         return view('admin.pengaturan', compact(
