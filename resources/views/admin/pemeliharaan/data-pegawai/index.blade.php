@@ -214,21 +214,30 @@
                                 </td>
                                 <td style="padding:14px 16px; text-align:center;">
                                     <div style="display:inline-flex; align-items:center; gap:6px;">
-                                        {{-- Tombol Buat Akun --}}
-                                        <a href="{{ route('admin.pengaturan', [
-                                                'generate' => 1,
-                                                'nip'      => $item->nip,
-                                                'name'     => $item->name,
-                                                'jabatan'  => $item->jabatan,
-                                                'bidang'   => $item->bidang,
-                                                'pos'      => $item->pos,
-                                                'regu'     => $item->regu,
-                                                'no_hp'    => $item->no_hp,
-                                            ]) }}"
-                                           style="padding:6px 9px; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px; color:#059669; cursor:pointer; font-size:12px; transition:all 0.15s; display:inline-flex; align-items:center; justify-content:center; text-decoration:none;"
-                                           title="Buat / Generate Akun Pengguna">
-                                            <i data-lucide="user-plus" style="width:14px; height:14px; color:#059669;"></i>
-                                        </a>
+                                        @if($item->has_account)
+                                            {{-- Ikon Ceklis: Pegawai Sudah Memiliki Akun (Tombol buat akun otomatis hilang) --}}
+                                            <a href="{{ route('admin.pengaturan', ['search' => $item->nip]) }}"
+                                               style="padding:6px 9px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px; color:#059669; cursor:pointer; font-size:12px; transition:all 0.15s; display:inline-flex; align-items:center; justify-content:center; text-decoration:none;"
+                                               title="Pegawai sudah memiliki akun login (Klik untuk kelola di Pengaturan Akun)">
+                                                <i data-lucide="user-check" style="width:14px; height:14px; color:#059669;"></i>
+                                            </a>
+                                        @else
+                                            {{-- Tombol Buat Akun (Hanya tampil jika belum punya akun) --}}
+                                            <a href="{{ route('admin.pengaturan', [
+                                                    'generate' => 1,
+                                                    'nip'      => $item->nip,
+                                                    'name'     => $item->name,
+                                                    'jabatan'  => $item->jabatan,
+                                                    'bidang'   => $item->bidang,
+                                                    'pos'      => $item->pos,
+                                                    'regu'     => $item->regu,
+                                                    'no_hp'    => $item->no_hp,
+                                                ]) }}"
+                                               style="padding:6px 9px; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px; color:#059669; cursor:pointer; font-size:12px; transition:all 0.15s; display:inline-flex; align-items:center; justify-content:center; text-decoration:none;"
+                                               title="Belum Memiliki Akun — Klik untuk Buat / Generate Akun Pengguna">
+                                                <i data-lucide="user-plus" style="width:14px; height:14px; color:#059669;"></i>
+                                            </a>
+                                        @endif
 
                                         {{-- Tombol Edit --}}
                                         <button type="button"
