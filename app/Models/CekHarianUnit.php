@@ -54,6 +54,14 @@ class CekHarianUnit extends Model
     ];
 
     /**
+     * Accessor untuk kondisi_tangki (alias kondisi_tangki_air).
+     */
+    public function getKondisiTangkiAttribute()
+    {
+        return $this->attributes['kondisi_tangki_air'] ?? null;
+    }
+
+    /**
      * Relasi ke User (pemeriksa)
      */
     public function user()
