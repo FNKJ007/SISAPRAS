@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CekHarianAlat;
 use App\Models\CekHarianUnit;
 use App\Models\Pengajuan;
+use App\Models\PengaturanDokumen;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -418,7 +419,10 @@ class AdminController extends Controller
 
         $title = $typeNames[$type] ?? 'Dokumen Pemeliharaan';
 
-        return view('admin.pemeliharaan.cetak-dokumen', compact('pengajuan', 'type', 'title'));
+        // Ambil pengaturan dokumen (PKS/SPK/Bengkel) dari database
+        $pengaturanDokumen = PengaturanDokumen::getAktif((int) date('Y'));
+
+        return view('admin.pemeliharaan.cetak-dokumen', compact('pengajuan', 'type', 'title', 'pengaturanDokumen'));
     }
 
     public function pemeliharaanMonitoringAktual(Request $request)
@@ -1090,6 +1094,9 @@ class AdminController extends Controller
             });
         $allReguList = \App\Models\Regu::orderBy('pos', 'asc')->orderBy('nama', 'asc')->get(['id', 'nama', 'pos', 'bidang', 'danru', 'nip_danru']);
 
+        // Data pengaturan dokumen (PKS/SPK/Bengkel) per tahun
+        $pengaturanDokumenList = PengaturanDokumen::orderBy('tahun', 'desc')->get();
+
         return view('admin.pengaturan', compact(
             'userList',
             'kpi',
@@ -1104,7 +1111,8 @@ class AdminController extends Controller
             'allReguList',
             'existingBidangList',
             'existingReguList',
-            'existingJabatanList'
+            'existingJabatanList',
+            'pengaturanDokumenList'
         ));
     }
 
@@ -1124,5 +1132,68 @@ class AdminController extends Controller
     {
         session()->forget(['admin_viewing_as_user', 'admin_preview_as_user']);
         return redirect()->route('admin.dashboard')->with('success', 'Kembali ke mode Admin.');
+    }
+
+    /**
+     * Simpan pengaturan dokumen (PKS/SPK/Bengkel) baru
+     */
+    public function storePengaturanDokumen(Request $request)
+    {
+        $request->validate([
+            'tahun'               => 'required|integer|min:2020|max:2099|unique:pengaturan_dokumen,tahun',
+            'nomor_pks'           => 'required|string|max:255',
+            'nomor_spk'           => 'required|string|max:255',
+            'tanggal_pks_spk'     => 'required|date',
+            'nama_bengkel'        => 'required|string|max:255',
+            'alamat_bengkel'      => 'nullable|string|max:500',
+            'nama_pimpinan_bengkel' => 'nullable|string|max:255',
+        ]);
+
+        PengaturanDokumen::create($request->only([
+            'tahun', 'nomor_pks', 'nomor_spk', 'tanggal_pks_spk',
+            'nama_bengkel', 'alamat_bengkel', 'nama_pimpinan_bengkel',
+        ]));
+
+        return redirect()->route('admin.pengaturan', ['tab' => 'dokumen'])
+            ->with('success', 'Pengaturan dokumen tahun ' . $request->tahun . ' berhasil disimpan.');
+    }
+
+    /**
+     * Update pengaturan dokumen (PKS/SPK/Bengkel)
+     */
+    public function updatePengaturanDokumen(Request $request, $id)
+    {
+        $doc = PengaturanDokumen::findOrFail($id);
+
+        $request->validate([
+            'tahun'               => 'required|integer|min:2020|max:2099|unique:pengaturan_dokumen,tahun,' . $id,
+            'nomor_pks'           => 'required|string|max:255',
+            'nomor_spk'           => 'required|string|max:255',
+            'tanggal_pks_spk'     => 'required|date',
+            'nama_bengkel'        => 'required|string|max:255',
+            'alamat_bengkel'      => 'nullable|string|max:500',
+            'nama_pimpinan_bengkel' => 'nullable|string|max:255',
+        ]);
+
+        $doc->update($request->only([
+            'tahun', 'nomor_pks', 'nomor_spk', 'tanggal_pks_spk',
+            'nama_bengkel', 'alamat_bengkel', 'nama_pimpinan_bengkel',
+        ]));
+
+        return redirect()->route('admin.pengaturan', ['tab' => 'dokumen'])
+            ->with('success', 'Pengaturan dokumen tahun ' . $doc->tahun . ' berhasil diperbarui.');
+    }
+
+    /**
+     * Hapus pengaturan dokumen
+     */
+    public function destroyPengaturanDokumen($id)
+    {
+        $doc = PengaturanDokumen::findOrFail($id);
+        $tahun = $doc->tahun;
+        $doc->delete();
+
+        return redirect()->route('admin.pengaturan', ['tab' => 'dokumen'])
+            ->with('success', 'Pengaturan dokumen tahun ' . $tahun . ' berhasil dihapus.');
     }
 }

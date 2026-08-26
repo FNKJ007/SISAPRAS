@@ -286,6 +286,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/pengaturan/users/{id}', [UserManagementController::class, 'destroy'])->name('pengaturan.users.destroy');
     Route::post('/pengaturan/remove-history-option', [UserManagementController::class, 'removeHistoryOption'])->name('pengaturan.remove-history-option');
 
+    // Pengaturan Dokumen (PKS/SPK/Bengkel Kontrak)
+    Route::post('/pengaturan/dokumen', [AdminController::class, 'storePengaturanDokumen'])->name('pengaturan.dokumen.store');
+    Route::put('/pengaturan/dokumen/{id}', [AdminController::class, 'updatePengaturanDokumen'])->name('pengaturan.dokumen.update');
+    Route::delete('/pengaturan/dokumen/{id}', [AdminController::class, 'destroyPengaturanDokumen'])->name('pengaturan.dokumen.destroy');
+
     // Lihat Halaman User (switch mode)
     Route::post('/switch-to-user', [AdminController::class, 'switchToUser'])->name('switch-to-user');
     Route::post('/switch-back-to-admin', [AdminController::class, 'switchBackToAdmin'])->name('switch-back-to-admin');

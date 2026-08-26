@@ -38,6 +38,17 @@
                 </span>
             </button>
 
+            <button type="button" @click="activeTab = 'dokumen'"
+                    :class="activeTab === 'dokumen' ? 'bg-[#1B2A6B] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
+                    class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-colors duration-150 whitespace-nowrap cursor-pointer border-0">
+                <i data-lucide="file-text" class="w-4 h-4"></i>
+                <span>Pengaturan PKS &amp; SPK</span>
+                <span :class="activeTab === 'dokumen' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'"
+                      class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ml-0.5">
+                    {{ $pengaturanDokumenList->count() }}
+                </span>
+            </button>
+
             <button type="button" @click="activeTab = 'view_user'"
                     :class="activeTab === 'view_user' ? 'bg-[#1B2A6B] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
                     class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-colors duration-150 whitespace-nowrap cursor-pointer border-0">
@@ -347,6 +358,308 @@
                     <button type="submit" style="padding:10px 20px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(27,42,107,0.2);">
                         <i data-lucide="external-link" style="width: 16px; height: 16px;"></i>
                         <span>Buka Halaman User</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- ================= TAB 3: PENGATURAN DOKUMEN (PKS & SPK) ================= --}}
+    <div x-show="activeTab === 'dokumen'" x-cloak>
+        
+        {{-- Header & Button --}}
+        <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px;">
+            <div>
+                <h1 style="font-size:22px; font-weight:800; color:#0F172A; margin:0; display:flex; align-items:center; gap:8px;">
+                    <i data-lucide="file-text" style="width:24px; height:24px; color:#1B2A6B;"></i>
+                    <span>Pengaturan PKS, SPK &amp; Bengkel Rekanan</span>
+                </h1>
+                <p style="font-size:13px; color:#64748B; margin-top:4px; margin-bottom:0;">
+                    Nomor PKS, SPK, tanggal perjanjian, serta bengkel rekanan yang otomatis dicetak pada <b>Surat Pesanan</b> dan <b>Surat Permohonan Bengkel</b> sesuai tahun anggaran.
+                </p>
+            </div>
+            <div>
+                <button type="button" @click="docCreateModalOpen = true"
+                        style="padding:10px 18px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(27,42,107,0.2);">
+                    <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i>
+                    <span>Tambah Pengaturan Tahun Baru</span>
+                </button>
+            </div>
+        </div>
+
+        {{-- Info Alert Banner --}}
+        <div style="background:#EFF6FF; border:1px solid #BFDBFE; border-radius:12px; padding:14px 18px; margin-bottom:20px; display:flex; align-items:flex-start; gap:12px;">
+            <i data-lucide="info" style="width:20px; height:20px; color:#2563EB; flex-shrink:0; margin-top:2px;"></i>
+            <div style="font-size:12.5px; color:#1E40AF; line-height:1.5;">
+                <strong>Otomatis Berdasarkan Tahun Dokumen:</strong> Sistem akan otomatis menggunakan nomor PKS, SPK, dan data bengkel yang sesuai dengan tahun pengajuan dokumen dibuat. Anda dapat memperbarui data untuk tahun berjalan atau menambahkan data baru jika berganti tahun anggaran (misal 2027).
+            </div>
+        </div>
+
+        {{-- Cards Grid Per Tahun --}}
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:20px;">
+            @forelse($pengaturanDokumenList as $doc)
+                @php
+                    $isTahunIni = $doc->tahun == (int) date('Y');
+                @endphp
+                <div style="background:#FFFFFF; border:{{ $isTahunIni ? '2px solid #3B82F6' : '1px solid #E2E8F0' }}; border-radius:16px; padding:20px; box-shadow:0 4px 14px rgba(15,23,42,0.04); position:relative; display:flex; flex-direction:column; justify-content:space-between;">
+                    <div>
+                        {{-- Top Header Card --}}
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="width:42px; height:42px; border-radius:12px; background:{{ $isTahunIni ? '#EFF6FF' : '#F1F5F9' }}; color:{{ $isTahunIni ? '#1D4ED8' : '#475569' }}; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:800;">
+                                    {{ $doc->tahun }}
+                                </div>
+                                <div>
+                                    <h4 style="font-size:15px; font-weight:800; color:#0F172A; margin:0;">Tahun Anggaran {{ $doc->tahun }}</h4>
+                                    <span style="font-size:11.5px; color:#64748B;">Diperbarui: {{ $doc->updated_at->format('d M Y') }}</span>
+                                </div>
+                            </div>
+                            <div>
+                                @if($isTahunIni)
+                                    <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; background:#DCFCE7; color:#15803D; padding:4px 10px; border-radius:20px; border:1px solid #86EFAC;">
+                                        <span style="width:6px; height:6px; border-radius:50%; background:#16A34A;"></span>
+                                        Tahun Berjalan
+                                    </span>
+                                @else
+                                    <span style="font-size:11px; font-weight:600; background:#F1F5F9; color:#64748B; padding:4px 10px; border-radius:20px;">
+                                        Arsip
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Details Table / Info --}}
+                        <div style="display:flex; flex-direction:column; gap:10px; font-size:12.5px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:14px; margin-bottom:16px;">
+                            <div>
+                                <span style="color:#64748B; font-size:11px; font-weight:700; text-transform:uppercase; display:block; margin-bottom:2px;">Nomor PKS:</span>
+                                <span style="font-weight:700; color:#0F172A; font-family:monospace; font-size:12px; word-break:break-all;">{{ $doc->nomor_pks }}</span>
+                            </div>
+                            <div>
+                                <span style="color:#64748B; font-size:11px; font-weight:700; text-transform:uppercase; display:block; margin-bottom:2px;">Nomor SPK:</span>
+                                <span style="font-weight:700; color:#0F172A; font-family:monospace; font-size:12px; word-break:break-all;">{{ $doc->nomor_spk }}</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; gap:8px;">
+                                <div>
+                                    <span style="color:#64748B; font-size:11px; font-weight:700; text-transform:uppercase; display:block; margin-bottom:2px;">Tanggal PKS &amp; SPK:</span>
+                                    <span style="font-weight:700; color:#0F172A;">{{ $doc->tanggal_pks_spk_label }}</span>
+                                </div>
+                            </div>
+                            <div style="border-top:1px dashed #CBD5E1; padding-top:8px;">
+                                <span style="color:#64748B; font-size:11px; font-weight:700; text-transform:uppercase; display:block; margin-bottom:2px;">Bengkel Rekanan:</span>
+                                <span style="font-weight:700; color:#0F172A; display:block;">{{ $doc->nama_bengkel }}</span>
+                                <span style="color:#64748B; font-size:11.5px; display:block; margin-top:2px;">{{ $doc->alamat_bengkel ?? '-' }}</span>
+                            </div>
+                            <div>
+                                <span style="color:#64748B; font-size:11px; font-weight:700; text-transform:uppercase; display:block; margin-bottom:2px;">Pimpinan / TTD:</span>
+                                <span style="font-weight:600; color:#334155;">{{ $doc->nama_pimpinan_bengkel ?? '-' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Actions Button --}}
+                    <div style="display:flex; align-items:center; justify-content:flex-end; gap:8px; border-top:1px solid #F1F5F9; padding-top:14px;">
+                        <button type="button" @click="openDocEdit({{ Js::from($doc) }}, '{{ route('admin.pengaturan.dokumen.update', $doc->id) }}')"
+                                style="padding:7px 14px; background:#F8FAFC; border:1px solid #CBD5E1; color:#0F172A; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s;">
+                            <i data-lucide="edit-2" style="width:13px; height:13px; color:#2563EB;"></i>
+                            <span>Edit Data</span>
+                        </button>
+                        <button type="button" @click="openDocDelete({{ Js::from($doc) }}, '{{ route('admin.pengaturan.dokumen.destroy', $doc->id) }}')"
+                                style="padding:7px 12px; background:#FEF2F2; border:1px solid #FECACA; color:#DC2626; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s;">
+                            <i data-lucide="trash-2" style="width:13px; height:13px;"></i>
+                            <span>Hapus</span>
+                        </button>
+                    </div>
+                </div>
+            @empty
+                <div style="grid-column:1/-1; background:#FFFFFF; border:1px dashed #CBD5E1; border-radius:16px; padding:48px 24px; text-align:center;">
+                    <i data-lucide="file-x" style="width:48px; height:48px; color:#94A3B8; margin:0 auto 12px;"></i>
+                    <h3 style="font-size:16px; font-weight:700; color:#0F172A; margin:0 0 6px;">Belum Ada Pengaturan Dokumen</h3>
+                    <p style="font-size:13px; color:#64748B; margin:0 0 16px;">Tambahkan pengaturan PKS dan SPK untuk tahun anggaran saat ini.</p>
+                    <button type="button" @click="docCreateModalOpen = true"
+                            style="padding:9px 18px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">
+                        <i data-lucide="plus" style="width:16px; height:16px;"></i>
+                        <span>Tambah Data Pertama</span>
+                    </button>
+                </div>
+            @endforelse
+        </div>
+
+    </div>
+
+    {{-- ===================== MODAL: TAMBAH PENGATURAN DOKUMEN BARU ===================== --}}
+    <div x-show="docCreateModalOpen" x-cloak class="admin-modal-overlay"
+         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
+         @click.self="docCreateModalOpen = false">
+        <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:540px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
+            <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#FFFFFF; z-index:10;">
+                <div>
+                    <h3 style="font-size:16px; font-weight:800; color:#0F172A; margin:0;">Tambah Pengaturan PKS &amp; SPK</h3>
+                    <p style="font-size:12px; color:#64748B; margin:2px 0 0;">Pengaturan dokumen resmi untuk tahun anggaran baru.</p>
+                </div>
+                <button type="button" @click="docCreateModalOpen = false" style="background:none; border:none; cursor:pointer; color:#64748B;">
+                    <i data-lucide="x" style="width:20px; height:20px;"></i>
+                </button>
+            </div>
+            <form action="{{ route('admin.pengaturan.dokumen.store') }}" method="POST" style="padding:20px;">
+                @csrf
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Tahun Anggaran <span style="color:#EF4444;">*</span></label>
+                        <input type="number" name="tahun" value="{{ (int)date('Y') + 1 }}" min="2020" max="2099" required
+                               style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; font-weight:700;">
+                    </div>
+
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nomor PKS <span style="color:#EF4444;">*</span></label>
+                        <input type="text" name="nomor_pks" placeholder="Contoh: 000.4.7.2/001/PKS-Pem/Bid.SPI/{{ (int)date('Y') + 1 }}" required
+                               style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px;">
+                    </div>
+
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nomor SPK <span style="color:#EF4444;">*</span></label>
+                        <input type="text" name="nomor_spk" placeholder="Contoh: SPK-004/I/{{ (int)date('Y') + 1 }}/PRA" required
+                               style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px;">
+                    </div>
+
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Tanggal PKS &amp; SPK <span style="color:#EF4444;">*</span></label>
+                        <input type="date" name="tanggal_pks_spk" value="{{ ((int)date('Y') + 1) . '-01-09' }}" required
+                               style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px;">
+                    </div>
+
+                    <div style="border-top:1px dashed #E2E8F0; padding-top:12px; margin-top:4px;">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nama Bengkel Rekanan <span style="color:#EF4444;">*</span></label>
+                        <input type="text" name="nama_bengkel" value="CV. Pratama Motor" required
+                               style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px;">
+                    </div>
+
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Alamat Bengkel</label>
+                        <textarea name="alamat_bengkel" rows="2" placeholder="Alamat lengkap bengkel..."
+                                  style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px;">Jl. Soekarno Hatta No. 463, Kota Bandung</textarea>
+                    </div>
+
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nama Pimpinan / Tanda Tangan Bengkel</label>
+                        <input type="text" name="nama_pimpinan_bengkel" value="CV. Pratama" placeholder="Contoh: CV. Pratama"
+                               style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px;">
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px;">
+                    <button type="button" @click="docCreateModalOpen = false"
+                            style="padding:9px 16px; background:#F1F5F9; border:none; border-radius:8px; font-size:13px; font-weight:600; color:#475569; cursor:pointer;">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            style="padding:9px 18px; background:#1B2A6B; border:none; border-radius:8px; font-size:13px; font-weight:700; color:#FFFFFF; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                        <i data-lucide="check" style="width:16px; height:16px;"></i>
+                        <span>Simpan Pengaturan</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- ===================== MODAL: EDIT PENGATURAN DOKUMEN ===================== --}}
+    <div x-show="docEditModalOpen" x-cloak class="admin-modal-overlay"
+         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
+         @click.self="docEditModalOpen = false">
+        <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:540px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
+            <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#FFFFFF; z-index:10;">
+                <div>
+                    <h3 style="font-size:16px; font-weight:800; color:#0F172A; margin:0;">Edit Pengaturan PKS &amp; SPK</h3>
+                    <p style="font-size:12px; color:#64748B; margin:2px 0 0;" x-text="'Tahun Anggaran: ' + (activeDoc.tahun || '')"></p>
+                </div>
+                <button type="button" @click="docEditModalOpen = false" style="background:none; border:none; cursor:pointer; color:#64748B;">
+                    <i data-lucide="x" style="width:20px; height:20px;"></i>
+                </button>
+            </div>
+            <form :action="docEditUrl" method="POST" style="padding:20px;">
+                @csrf
+                @method('PUT')
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Tahun Anggaran <span style="color:#EF4444;">*</span></label>
+                        <input type="number" name="tahun" x-model="activeDoc.tahun" min="2020" max="2099" required
+                               style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; font-weight:700;">
+                    </div>
+
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nomor PKS <span style="color:#EF4444;">*</span></label>
+                        <input type="text" name="nomor_pks" x-model="activeDoc.nomor_pks" required
+                               style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px;">
+                    </div>
+
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nomor SPK <span style="color:#EF4444;">*</span></label>
+                        <input type="text" name="nomor_spk" x-model="activeDoc.nomor_spk" required
+                               style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px;">
+                    </div>
+
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Tanggal PKS &amp; SPK <span style="color:#EF4444;">*</span></label>
+                        <input type="date" name="tanggal_pks_spk" x-model="activeDoc.tanggal_pks_spk_input" required
+                               style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px;">
+                    </div>
+
+                    <div style="border-top:1px dashed #E2E8F0; padding-top:12px; margin-top:4px;">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nama Bengkel Rekanan <span style="color:#EF4444;">*</span></label>
+                        <input type="text" name="nama_bengkel" x-model="activeDoc.nama_bengkel" required
+                               style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px;">
+                    </div>
+
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Alamat Bengkel</label>
+                        <textarea name="alamat_bengkel" x-model="activeDoc.alamat_bengkel" rows="2"
+                                  style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px;"></textarea>
+                    </div>
+
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nama Pimpinan / Tanda Tangan Bengkel</label>
+                        <input type="text" name="nama_pimpinan_bengkel" x-model="activeDoc.nama_pimpinan_bengkel"
+                               style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px;">
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px;">
+                    <button type="button" @click="docEditModalOpen = false"
+                            style="padding:9px 16px; background:#F1F5F9; border:none; border-radius:8px; font-size:13px; font-weight:600; color:#475569; cursor:pointer;">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            style="padding:9px 18px; background:#2563EB; border:none; border-radius:8px; font-size:13px; font-weight:700; color:#FFFFFF; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                        <i data-lucide="save" style="width:16px; height:16px;"></i>
+                        <span>Simpan Perubahan</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- ===================== MODAL: KONFIRMASI HAPUS PENGATURAN DOKUMEN ===================== --}}
+    <div x-show="docDeleteModalOpen" x-cloak class="admin-modal-overlay"
+         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
+         @click.self="docDeleteModalOpen = false">
+        <div class="admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:440px; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
+            <div style="padding:24px; text-align:center;">
+                <div style="width:52px; height:52px; border-radius:50%; background:#FEE2E2; color:#DC2626; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+                    <i data-lucide="alert-triangle" style="width:26px; height:26px;"></i>
+                </div>
+                <h3 style="font-size:17px; font-weight:800; color:#0F172A; margin:0 0 8px;">Hapus Pengaturan Dokumen?</h3>
+                <p style="font-size:13px; color:#64748B; margin:0 0 20px; line-height:1.5;">
+                    Apakah Anda yakin ingin menghapus data PKS dan SPK untuk <strong style="color:#0F172A;" x-text="'Tahun Anggaran ' + (activeDoc.tahun || '')"></strong>?
+                </p>
+                <form :action="docDeleteUrl" method="POST" style="display:flex; justify-content:center; gap:10px;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="button" @click="docDeleteModalOpen = false"
+                            style="padding:9px 18px; background:#F1F5F9; border:none; border-radius:8px; font-size:13px; font-weight:600; color:#475569; cursor:pointer;">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            style="padding:9px 18px; background:#DC2626; border:none; border-radius:8px; font-size:13px; font-weight:700; color:#FFFFFF; cursor:pointer;">
+                        Ya, Hapus
                     </button>
                 </form>
             </div>
@@ -789,8 +1102,34 @@ function pengaturanApp() {
         editModalOpen: false,
         resetModalOpen: false,
         deleteModalOpen: false,
+        docCreateModalOpen: false,
+        docEditModalOpen: false,
+        docDeleteModalOpen: false,
+        activeDoc: {},
+        docEditUrl: '',
+        docDeleteUrl: '',
+        openDocEdit(doc, updateUrl) {
+            this.activeDoc = Object.assign({}, doc);
+            this.activeDoc.tanggal_pks_spk_input = doc.tanggal_pks_spk_ymd || (doc.tanggal_pks_spk ? String(doc.tanggal_pks_spk).substring(0, 10) : '');
+            this.docEditUrl = updateUrl;
+            this.docEditModalOpen = true;
+            this.$nextTick(() => {
+                if (window.lucide) window.lucide.createIcons();
+            });
+        },
+        openDocDelete(doc, deleteUrl) {
+            this.activeDoc = Object.assign({}, doc);
+            this.docDeleteUrl = deleteUrl;
+            this.docDeleteModalOpen = true;
+            this.$nextTick(() => {
+                if (window.lucide) window.lucide.createIcons();
+            });
+        },
         init() {
             const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('tab') === 'dokumen') {
+                this.activeTab = 'dokumen';
+            }
             if (urlParams.has('generate') || urlParams.has('nip')) {
                 this.activeTab = 'users';
                 this.createNip = urlParams.get('nip') || '';
