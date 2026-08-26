@@ -114,7 +114,7 @@
                         <thead>
                             <tr style="background:#F8FAFC; border-bottom:1.5px solid #E2E8F0; color:#475569; font-size:11.5px; text-transform:uppercase; letter-spacing:0.5px;">
                                 <th style="padding:14px 18px;">No</th>
-                                <th style="padding:14px 18px;">Tanggal &amp; Shift</th>
+                                <th style="padding:14px 18px;">Tanggal</th>
                                 <th style="padding:14px 18px;">Pos Damkar</th>
                                 <th style="padding:14px 18px;">Unit</th>
                                 <th style="padding:14px 18px;">Pemeriksa</th>
@@ -149,7 +149,14 @@
                                         <div style="font-size:11.5px; color:#334155;">Air: <strong>{{ \App\Models\CekHarianUnit::$levelMap[$item->level_air] ?? $item->level_air }}</strong></div>
                                     </td>
                                     <td style="padding:14px 18px;">
-                                        @if($item->kondisi_tangki === 'baik' && $item->tekanan_pompa === 'baik')
+                                        @php
+                                            $kondisiTangki = $item->kondisi_tangki_air ?? $item->kondisi_tangki;
+                                            $isTangkiPompaBaik = ($kondisiTangki === 'baik')
+                                                && ($item->tekanan_pompa === 'baik')
+                                                && ($item->kebocoran_tangki_air !== 'ada')
+                                                && ($item->selang_induk !== 'rusak');
+                                        @endphp
+                                        @if($isTangkiPompaBaik)
                                             <span style="background:#D1FAE5; color:#065F46; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; border:1px solid #A7F3D0;">Baik</span>
                                         @else
                                             <span style="background:#FEF3C7; color:#92400E; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; border:1px solid #FDE68A;">Perlu Perhatian</span>
@@ -302,8 +309,8 @@
                         <strong style="color:#0F172A;" x-text="activeUnit.unit_nama || '-'"></strong>
                     </div>
                     <div>
-                        <span style="color:#64748B; font-size:10.5px; display:block;">Shift:</span>
-                        <strong style="color:#0F172A;" x-text="shiftLabel(activeUnit.shift)"></strong>
+                        <span style="color:#64748B; font-size:10.5px; display:block;">Tanggal:</span>
+                        <strong style="color:#0F172A;" x-text="formatDate(activeUnit.created_at)"></strong>
                     </div>
                     <div>
                         <span style="color:#64748B; font-size:10.5px; display:block;">Nama Pemeriksa:</span>
@@ -580,7 +587,10 @@ function pengecekanPemadamAdmin(initialTab) {
             if (!val) return '-';
             const d = new Date(val);
             if (isNaN(d)) return val;
-            return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const dateStr = d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${dateStr} (${hours}:${minutes} WIB)`;
         }
     };
 }
