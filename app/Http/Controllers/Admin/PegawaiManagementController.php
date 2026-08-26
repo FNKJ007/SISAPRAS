@@ -102,6 +102,7 @@ class PegawaiManagementController extends Controller
             'bidang'  => 'nullable|string|max:255',
             'pos'     => 'nullable|string|max:255',
             'regu'    => 'nullable|string|max:50',
+            'no_hp'   => 'nullable|string|max:30',
         ], $messages);
 
         // Generate email unik berbasis NIP
@@ -118,6 +119,7 @@ class PegawaiManagementController extends Controller
             'bidang'      => $validated['bidang'] ?? 'Sarana Prasarana Dan Informasi',
             'pos'         => $validated['pos'] ?? 'Soreang (MAKO)',
             'regu'        => $validated['regu'] ?? null,
+            'no_hp'       => $validated['no_hp'] ?? null,
             'email'       => $uniqueEmail,
             'password'    => Hash::make(Str::random(32)),
             'role'        => 'user',
@@ -150,6 +152,7 @@ class PegawaiManagementController extends Controller
             'bidang'  => 'nullable|string|max:255',
             'pos'     => 'nullable|string|max:255',
             'regu'    => 'nullable|string|max:50',
+            'no_hp'   => 'nullable|string|max:30',
         ], $messages);
 
         $user->update([
@@ -159,6 +162,7 @@ class PegawaiManagementController extends Controller
             'bidang'  => $validated['bidang'] ?? $user->bidang,
             'pos'     => $validated['pos'] ?? $user->pos,
             'regu'    => $validated['regu'] ?? $user->regu,
+            'no_hp'   => $validated['no_hp'] ?? $user->no_hp,
         ]);
 
         return redirect()

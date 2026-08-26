@@ -53,7 +53,16 @@ class UserManagementController extends Controller
             $validated['password'] = Hash::make($validated['password']);
             $validated['has_account'] = true;
 
-            $existingUser->update($validated);
+            $existingUser->fill($validated);
+            $existingUser->has_account = true;
+            $existingUser->save();
+
+            if (!$existingUser->fresh()->has_account) {
+                return redirect()
+                    ->back()
+                    ->withInput()
+                    ->withErrors(['nip' => 'Akun gagal didaftarkan. Silakan coba lagi.']);
+            }
 
             return redirect()
                 ->route('admin.pengaturan')

@@ -19,7 +19,11 @@ trait HandlesCekHarianUnit
     protected function exportCekHarianUnitPdf(int $id, string $kategori)
     {
         try {
-            $record = CekHarianUnit::where('kategori', $kategori)->findOrFail($id);
+            $recordQuery = CekHarianUnit::where('kategori', $kategori);
+            if (!auth()->user()?->isAdmin()) {
+                $recordQuery->where('user_id', auth()->id());
+            }
+            $record = $recordQuery->findOrFail($id);
 
             // increase limits for PDF generation (ini_set jadi fallback kalau
             // set_time_limit di-disable di php.ini, sering terjadi di Herd/hosting)
@@ -248,7 +252,8 @@ trait HandlesCekHarianUnit
         $tanggal     = $request->query('tanggal', '');
 
         // ===== Hasil Cek Harian Unit Kendaraan =====
-        $unitQuery = CekHarianUnit::where(function ($q) use ($kategori) {
+        $unitQuery = CekHarianUnit::where('user_id', auth()->id())
+            ->where(function ($q) use ($kategori) {
             $q->where('kategori', $kategori);
             if ($kategori === 'pemadam') {
                 $q->orWhereNull('kategori');
@@ -278,7 +283,8 @@ trait HandlesCekHarianUnit
             ->withQueryString();
 
         // ===== Hasil Cek Harian Alat =====
-        $alatQuery = CekHarianAlat::where(function ($q) use ($kategori) {
+        $alatQuery = CekHarianAlat::where('user_id', auth()->id())
+            ->where(function ($q) use ($kategori) {
             $q->where('kategori', $kategori);
             if ($kategori === 'pemadam') {
                 $q->orWhereNull('kategori');

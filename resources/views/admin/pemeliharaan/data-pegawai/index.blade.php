@@ -391,6 +391,19 @@
                         </select>
                     </div>
 
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+                        <div>
+                            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Regu</label>
+                            <input type="text" name="regu" value="{{ old('regu') }}" placeholder="Contoh: Regu 1"
+                                   style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">No. WhatsApp / HP</label>
+                            <input type="text" name="no_hp" value="{{ old('no_hp') }}" placeholder="Contoh: 081234567890"
+                                   style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;">
+                        </div>
+                    </div>
+
                     <div style="display:flex; align-items:center; justify-content:flex-end; gap:10px;">
                         <button type="button" @click="createModalOpen = false" style="padding:9px 18px; border-radius:8px; border:1px solid #CBD5E1; background:#F8FAFC; color:#475569; font-size:13px; font-weight:600; cursor:pointer;">
                             Batal
@@ -514,6 +527,19 @@
                                 <option value="{{ $p->nama }}">{{ $p->nama }}</option>
                             @endforeach
                         </select>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+                        <div>
+                            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Regu</label>
+                            <input type="text" name="regu" x-model="activePegawai.regu" placeholder="Contoh: Regu 1"
+                                   style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">No. WhatsApp / HP</label>
+                            <input type="text" name="no_hp" x-model="activePegawai.no_hp" placeholder="Contoh: 081234567890"
+                                   style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;">
+                        </div>
                     </div>
 
                     <div style="display:flex; align-items:center; justify-content:flex-end; gap:10px;">
