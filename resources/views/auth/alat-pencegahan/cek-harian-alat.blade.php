@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 max-w-5xl mx-auto">
+<div class="daily-tool-page bg-white rounded-xl shadow-sm p-4 sm:p-6 max-w-5xl mx-auto" style="--tool-accent:#1d4ed8;--tool-soft:#eff6ff">
 
     {{-- Flash Message Success --}}
     @if(session('success'))
@@ -45,7 +45,7 @@
         @csrf
 
         {{-- Identitas Pemeriksaan: Pos Damkar, Nama Pemeriksa, Jabatan, Tanggal, Danru, Kabid --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="daily-tool-identity rounded-xl p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
                 <label for="pos" class="block text-sm font-medium mb-1">Pos Damkar <span class="text-red-500">*</span></label>
                 <select id="pos" name="pos" required
@@ -169,7 +169,7 @@
         </div>
 
         {{-- Daftar Pemeriksaan Alat --}}
-        <div class="pt-2">
+        <div class="daily-tool-list pt-5">
             <h2 class="text-base font-semibold border-b border-gray-200 pb-2 mb-4">Daftar Pemeriksaan Alat</h2>
 
             <div class="space-y-3">
@@ -179,15 +179,15 @@
                         $rusakLama = old('alat.' . $index . '.jumlah_rusak', $alat->jumlah_rusak ?? 0);
                         $nomorRusakLama = old('alat.' . $index . '.nomor_rusak');
                     @endphp
-                    <div class="border border-gray-200 rounded-xl p-4 sm:p-5"
+                    <div class="daily-tool-item border border-gray-200 rounded-xl p-4 sm:p-5"
                          x-data="{ jumlahBaik: {{ $baikLama }}, jumlahRusak: {{ $rusakLama }} }">
 
                         <div class="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
-                            <div class="flex items-center gap-3 flex-1">
-                                <span class="flex-shrink-0 w-8 h-8 rounded-md bg-red-700 text-white text-xs font-bold flex items-center justify-center">
-                                    {{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}
+                            <div class="flex items-center gap-2.5 flex-1 min-w-0">
+                                <span class="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 text-gray-500 text-[11px] font-semibold flex items-center justify-center">
+                                    {{ $index + 1 }}
                                 </span>
-                                <h3 class="font-semibold text-gray-900 text-sm sm:text-base">{{ $alat->nama }}</h3>
+                                <h3 class="font-semibold text-gray-900 text-sm sm:text-base truncate">{{ $alat->nama }}</h3>
                                 <input type="hidden" name="alat[{{ $index }}][id]" value="{{ $alat->id }}">
                             </div>
 

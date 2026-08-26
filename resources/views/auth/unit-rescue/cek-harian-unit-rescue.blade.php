@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 max-w-4xl mx-auto" id="wizardCekHarianUnit">
+<div class="daily-check-unit bg-white rounded-xl shadow-sm p-4 sm:p-6 max-w-4xl mx-auto" id="wizardCekHarianUnit">
 
     {{-- Flash Message Success --}}
     @if(session('success'))
@@ -281,21 +281,19 @@
 
         {{-- ===================== STEP 4 - PERLENGKAPAN ===================== --}}
         <div data-step-panel="3" class="hidden">
-            <p class="font-medium text-sm mb-3">Pemeriksaan Perlengkapan Kendaraan</p>
+            <div class="mb-4 p-4 rounded-xl border border-amber-100 bg-amber-50/60"><h2 class="font-bold text-base text-gray-900">Pemeriksaan Perlengkapan Kendaraan</h2><p class="text-xs text-gray-600 mt-1">Periksa setiap item satu per satu. Pilih kondisi dan tambahkan catatan bila diperlukan.</p></div>
 
-            <div class="space-y-3">
+            <div class="space-y-2.5">
                 {{-- Kondisi Kebersihan Unit (Paling Atas) --}}
-                <div class="grid grid-cols-1 sm:grid-cols-[160px_140px_1fr] gap-3 items-center">
-                    <span class="text-sm font-medium">Kondisi Kebersihan Unit <span class="text-red-500">*</span></span>
+                <div class="unit-vehicle-item rounded-xl border border-gray-200 bg-white p-3 sm:p-4"><div class="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_140px] gap-3 items-center"><label for="kebersihan_unit" class="flex items-center gap-2 text-sm font-semibold text-gray-800"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 text-gray-500 text-[11px] font-semibold flex items-center justify-center">1</span>Kondisi Kebersihan Unit <span class="text-red-500">*</span></label>
                     <select id="kebersihan_unit" name="kebersihan_unit" required
                             class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600">
                         <option value="bersih" @selected(old('kebersihan_unit', 'bersih') === 'bersih')>Bersih</option>
                         <option value="tidak_bersih" @selected(old('kebersihan_unit') === 'tidak_bersih')>Tidak Bersih</option>
                     </select>
-                    <input type="text" name="catatan_kebersihan_unit" value="{{ old('catatan_kebersihan_unit') }}"
+                    </div><input type="text" name="catatan_kebersihan_unit" value="{{ old('catatan_kebersihan_unit') }}"
                            placeholder="Catatan (jika ada)"
-                           class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600">
-                </div>
+                           class="w-full mt-2.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white"></div>
                 @error('kebersihan_unit') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 @php
                     $perlengkapan = [
@@ -354,24 +352,22 @@
                     ];
                 @endphp
                 @foreach($perlengkapan as $key => $label)
-                    <div class="grid grid-cols-1 sm:grid-cols-[160px_140px_1fr] gap-3 items-center">
-                        <span class="text-sm font-medium">{{ $label }}</span>
+                    <div class="unit-vehicle-item rounded-xl border border-gray-200 bg-white p-3 sm:p-4"><div class="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_140px] gap-3 items-center"><label class="flex items-center gap-2 text-sm font-semibold text-gray-800"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 text-gray-500 text-[11px] font-semibold flex items-center justify-center">{{ $loop->iteration + 1 }}</span>{{ $label }}</label>
                         <select name="perlengkapan[{{ $key }}][status]"
                                 class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
                             <option value="baik" selected>Baik</option>
                             <option value="rusak">Rusak</option>
                         </select>
-                        <input type="text" name="perlengkapan[{{ $key }}][catatan]"
+                        </div><input type="text" name="perlengkapan[{{ $key }}][catatan]"
                                placeholder="Catatan (jika ada)"
-                               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
-                    </div>
+                               class="w-full mt-2.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white"></div>
                 @endforeach
             </div>
         </div>
 
         {{-- ===================== STEP 4 - KONFIRMASI ===================== --}}
-        <div data-step-panel="4" class="hidden">
-            <p class="font-medium text-base mb-3">Ringkasan Pemeriksaan</p>
+        <div data-step-panel="4" class="hidden unit-confirmation-panel">
+            <div class="mb-4 flex items-start gap-3 p-4 rounded-xl border border-emerald-100 bg-emerald-50/60"><div class="w-9 h-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0"><i data-lucide="clipboard-check" class="w-5 h-5"></i></div><div><h2 class="font-bold text-base text-gray-900">Ringkasan Pemeriksaan</h2><p class="text-xs text-gray-600 mt-1">Periksa kembali seluruh bagian sebelum mengirim laporan.</p></div></div>
             <div class="border border-gray-200 rounded-xl divide-y divide-gray-200">
                 @foreach(['Identitas Pemeriksaan', 'Pemanasan & BBM', 'Perlengkapan Kendaraan'] as $ringkasan)
                     <div class="flex items-center justify-between px-4 py-3 text-sm">
@@ -381,8 +377,7 @@
                 @endforeach
             </div>
 
-            <div class="mt-4 flex items-start gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-lg px-4 py-3 font-semibold">
-                <span>✅</span>
+            <div class="mt-4 flex items-start gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-lg px-4 py-3 font-semibold unit-confirmation-notice"><span class="unit-confirmation-icon shrink-0">✅</span>
                 <span>Pastikan semua data sudah benar sebelum menyimpan pemeriksaan.</span>
             </div>
         </div>
