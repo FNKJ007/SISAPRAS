@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('units', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->enum('kategori', ['pemadam', 'rescue'])->default('pemadam');
+            $table->string('kategori', 100)->default('pemadam');
             $table->string('nomor_lambung')->nullable();
             $table->string('plat_nomor')->nullable();
             $table->string('no_rangka_mesin')->nullable();
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('pos')->nullable();
             $table->string('pengemudi_1')->nullable();
             $table->string('pengemudi_2')->nullable();
-            $table->enum('status', ['aktif', 'perbaikan', 'nonaktif'])->default('aktif');
+            $table->string('status', 50)->default('aktif');
             $table->text('catatan')->nullable();
             $table->timestamps();
         });

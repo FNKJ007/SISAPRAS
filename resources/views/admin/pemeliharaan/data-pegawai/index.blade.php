@@ -72,7 +72,8 @@
                         style="padding:7px 12px; font-size:12px; font-weight:600; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#334155; cursor:pointer;">
                     <option value="semua">Semua Pos</option>
                     @foreach($posList as $p)
-                        <option value="{{ $p->nama }}" {{ ($posFilter ?? '') === $p->nama ? 'selected' : '' }}>{{ $p->nama }}</option>
+                        @php $pName = is_string($p) ? $p : ($p->nama ?? ($p['nama'] ?? '')); @endphp
+                        <option value="{{ $pName }}" {{ ($posFilter ?? '') === $pName ? 'selected' : '' }}>{{ $pName }}</option>
                     @endforeach
                 </select>
 
@@ -395,7 +396,8 @@
                         <select name="pos" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF; box-sizing:border-box;">
                             <option value="">— Pilih Pos Penempatan —</option>
                             @foreach($posList as $p)
-                                <option value="{{ $p->nama }}" {{ old('pos') == $p->nama ? 'selected' : '' }}>{{ $p->nama }}</option>
+                                @php $pName = is_string($p) ? $p : ($p->nama ?? ($p['nama'] ?? '')); @endphp
+                                <option value="{{ $pName }}" {{ old('pos') == $pName ? 'selected' : '' }}>{{ $pName }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -533,7 +535,8 @@
                         <select name="pos" x-model="activePegawai.pos" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF; box-sizing:border-box;">
                             <option value="">— Pilih Pos Penempatan —</option>
                             @foreach($posList as $p)
-                                <option value="{{ $p->nama }}">{{ $p->nama }}</option>
+                                @php $pName = is_string($p) ? $p : ($p->nama ?? ($p['nama'] ?? '')); @endphp
+                                <option value="{{ $pName }}">{{ $pName }}</option>
                             @endforeach
                         </select>
                     </div>

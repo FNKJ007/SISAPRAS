@@ -20,7 +20,6 @@ class Unit extends Model
         'cc',
         'jenis_kendaraan',
         'peruntukan',
-        'jenis_peruntukan',
         'pos',
         'bidang_id',
         'pos_id',
@@ -49,11 +48,16 @@ class Unit extends Model
             if ($unit->peruntukan) {
                 $unit->peruntukan = ucwords(strtolower(trim($unit->peruntukan)));
             }
-            if ($unit->jenis_kendaraan || $unit->peruntukan) {
-                $parts = array_filter([$unit->jenis_kendaraan, $unit->peruntukan]);
-                $unit->jenis_peruntukan = implode('/', $parts);
-            }
         });
+    }
+
+    /**
+     * Dynamic accessor for backward compatibility (jenis_kendaraan / peruntukan).
+     */
+    public function getJenisPeruntukanAttribute(): string
+    {
+        $parts = array_filter([$this->jenis_kendaraan, $this->peruntukan]);
+        return implode('/', $parts);
     }
 
     public static array $kategoriMap = [
@@ -109,14 +113,24 @@ class Unit extends Model
      *    unit berubah status menjadi 'perbaikan' (Dalam Perbaikan).
      * 3. Jika status pengerjaan 'selesai' atau pengajuan ditolak/menunggu, status kembali 'aktif'.
      */
-    public static function syncStatusAll(): void
+    protected static bool $hasSyncedInRequest = false;
+
+    /**
+     * Sinkronisasi status armada unit secara otomatis berdasarkan data Pengajuan Pemeliharaan aktual.
+     */
+    public static function syncStatusAll(bool $force = false): void
     {
+        if (!$force && static::$hasSyncedInRequest) {
+            return;
+        }
+        static::$hasSyncedInRequest = true;
+
         $today = now()->format('Y-m-d');
 
         // 1. Sinkronisasi status_pengerjaan pada Pengajuan yang disetujui berdasarkan tanggal keberangkatan
         $approvedPengajuans = Pengajuan::where('status', 'disetujui')
             ->where('status_pengerjaan', '!=', 'selesai')
-            ->get();
+            ->get(['id', 'unit_id', 'nomor_lambung', 'status_pengerjaan', 'tanggal_keberangkatan', 'progress_persen']);
 
         foreach ($approvedPengajuans as $p) {
             $tglBerangkat = $p->tanggal_keberangkatan ? $p->tanggal_keberangkatan->format('Y-m-d') : null;
@@ -137,18 +151,16 @@ class Unit extends Model
         }
 
         // 2. Tentukan unit mana saja yang saat ini BENAR-BENAR sudah masuk bengkel (tanggal_keberangkatan <= hari ini)
-        $activeRepairPengajuans = Pengajuan::where('status', 'disetujui')
-            ->where('status_pengerjaan', '!=', 'selesai')
-            ->where(function ($q) use ($today) {
-                $q->where(function ($q2) use ($today) {
-                    $q2->whereNotNull('tanggal_keberangkatan')
-                       ->whereDate('tanggal_keberangkatan', '<=', $today);
-                })->orWhere(function ($q3) use ($today) {
-                    $q3->whereNull('tanggal_keberangkatan')
-                       ->where('status_pengerjaan', 'proses');
-                });
-            })
-            ->get();
+        $activeRepairPengajuans = $approvedPengajuans->filter(function ($p) use ($today) {
+            $tglBerangkat = $p->tanggal_keberangkatan ? $p->tanggal_keberangkatan->format('Y-m-d') : null;
+            if ($tglBerangkat && $tglBerangkat <= $today) {
+                return true;
+            }
+            if (!$tglBerangkat && $p->status_pengerjaan === 'proses') {
+                return true;
+            }
+            return false;
+        });
 
         $repairUnitIds = $activeRepairPengajuans->pluck('unit_id')->filter()->unique()->toArray();
         $repairNomorLambungs = $activeRepairPengajuans->pluck('nomor_lambung')
@@ -157,13 +169,8 @@ class Unit extends Model
             ->unique()
             ->toArray();
 
-        $units = static::all();
+        $units = static::where('status', '!=', 'nonaktif')->get(['id', 'nomor_lambung', 'status']);
         foreach ($units as $unit) {
-            // Jangan ubah status unit jika memang dinonaktifkan secara permanen (nonaktif)
-            if ($unit->status === 'nonaktif') {
-                continue;
-            }
-
             $cleanLambung = strtoupper(trim(preg_replace('/[^a-zA-Z0-9]/', '', $unit->nomor_lambung ?? '')));
             $isInRepair = in_array($unit->id, $repairUnitIds, true) 
                 || in_array($cleanLambung, $repairNomorLambungs, true);

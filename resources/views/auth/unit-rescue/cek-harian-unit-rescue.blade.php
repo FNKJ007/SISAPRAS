@@ -706,7 +706,7 @@ function comboboxDanru() {
         },
         filteredList() {
             if (!this.searchQuery || this.searchQuery.trim() === '') {
-                return this.items;
+                return [];
             }
             const q = this.searchQuery.toLowerCase();
             return this.items.filter(item => 
@@ -732,7 +732,7 @@ function comboboxKabid() {
         },
         filteredList() {
             if (!this.searchQuery || this.searchQuery.trim() === '') {
-                return this.items;
+                return [];
             }
             const q = this.searchQuery.toLowerCase();
             return this.items.filter(item => 

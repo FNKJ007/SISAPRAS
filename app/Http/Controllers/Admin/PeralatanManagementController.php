@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Peralatan;
+use App\Services\CacheService;
 use Illuminate\Http\Request;
 
 class PeralatanManagementController extends Controller
@@ -31,27 +32,37 @@ class PeralatanManagementController extends Controller
 
         $peralatanList = $query->paginate(12)->withQueryString();
 
-        $kpi = [
-            'total'          => Peralatan::count(),
-            'pemadam'        => Peralatan::where('kategori', 'LIKE', 'pemadam')->count(),
-            'rescue'         => Peralatan::where('kategori', 'LIKE', 'rescue')->count(),
-            'pencegahan'     => Peralatan::where('kategori', 'LIKE', 'pencegahan')->count(),
-            'command_center' => Peralatan::where('kategori', 'LIKE', '%command%')->count(),
-        ];
+        $kpi = CacheService::rememberStats('peralatan_kpi', function () {
+            $kpiRaw = Peralatan::selectRaw("
+                count(*) as total,
+                count(case when lower(kategori) like '%pemadam%' then 1 end) as pemadam,
+                count(case when lower(kategori) like '%rescue%' then 1 end) as rescue,
+                count(case when lower(kategori) like '%pencegahan%' then 1 end) as pencegahan,
+                count(case when lower(kategori) like '%command%' then 1 end) as command_center
+            ")->first();
 
-        $existingKategoriList = Peralatan::whereNotNull('kategori')
-            ->where('kategori', '!=', '')
-            ->get()
-            ->pluck('kategori')
-            ->map(fn($v) => ucwords(strtolower(str_replace('_', ' ', trim($v)))))
-            ->unique()
-            ->sort()
-            ->values()
-            ->toArray();
+            return [
+                'total'          => (int) ($kpiRaw->total ?? 0),
+                'pemadam'        => (int) ($kpiRaw->pemadam ?? 0),
+                'rescue'         => (int) ($kpiRaw->rescue ?? 0),
+                'pencegahan'     => (int) ($kpiRaw->pencegahan ?? 0),
+                'command_center' => (int) ($kpiRaw->command_center ?? 0),
+            ];
+        });
 
-        if (empty($existingKategoriList)) {
-            $existingKategoriList = ['Pemadam', 'Rescue', 'Pencegahan', 'Command Center'];
-        }
+        $existingKategoriList = CacheService::rememberStats('peralatan_categories', function () {
+            $list = Peralatan::whereNotNull('kategori')
+                ->where('kategori', '!=', '')
+                ->distinct()
+                ->pluck('kategori')
+                ->map(fn($v) => ucwords(strtolower(str_replace('_', ' ', trim($v)))))
+                ->unique()
+                ->sort()
+                ->values()
+                ->toArray();
+
+            return empty($list) ? ['Pemadam', 'Rescue', 'Pencegahan', 'Command Center'] : $list;
+        });
 
         return view('admin.pemeliharaan.data-peralatan.index', compact(
             'peralatanList',
@@ -79,6 +90,7 @@ class PeralatanManagementController extends Controller
         ], $messages);
 
         Peralatan::create($validated);
+        CacheService::invalidate('peralatan');
 
         return redirect()
             ->route('admin.pemeliharaan.data-peralatan')
@@ -104,6 +116,7 @@ class PeralatanManagementController extends Controller
         ], $messages);
 
         $peralatan->update($validated);
+        CacheService::invalidate('peralatan');
 
         return redirect()
             ->route('admin.pemeliharaan.data-peralatan')
@@ -118,6 +131,7 @@ class PeralatanManagementController extends Controller
         $peralatan = Peralatan::findOrFail($id);
         $nama = $peralatan->nama;
         $peralatan->delete();
+        CacheService::invalidate('peralatan');
 
         return redirect()
             ->route('admin.pemeliharaan.data-peralatan')
@@ -136,6 +150,7 @@ class PeralatanManagementController extends Controller
 
         $value = trim($request->input('value'));
         Peralatan::where('kategori', 'LIKE', $value)->update(['kategori' => null]);
+        CacheService::invalidate('peralatan');
 
         return response()->json([
             'success' => true,

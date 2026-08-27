@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             // NIP = Nomor Induk Pegawai (unik, dipakai untuk login)
             $table->string('nip')->unique()->after('name');
-            // Role: 'admin' atau 'user'
-            $table->enum('role', ['admin', 'user'])->default('user')->after('nip');
+            // Role: 'admin', 'user', 'pejabat', dll
+            $table->string('role', 50)->default('user')->after('nip');
         });
     }
 

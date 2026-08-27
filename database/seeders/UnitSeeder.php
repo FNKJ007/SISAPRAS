@@ -342,6 +342,10 @@ class UnitSeeder extends Seeder
         ];
 
         foreach ($units as $u) {
+            $parts = explode('/', $u['jenis_peruntukan'] ?? '');
+            $jenis = trim($parts[0] ?? '');
+            $peruntukan = trim($parts[1] ?? '');
+
             Unit::create([
                 'nama'            => "{$u['nomor_lambung']} - {$u['merk_tipe']}",
                 'kategori'        => $u['kategori'],
@@ -351,7 +355,8 @@ class UnitSeeder extends Seeder
                 'merk_tipe'       => $u['merk_tipe'],
                 'tahun_pembuatan' => $u['tahun_pembuatan'],
                 'cc'              => $u['cc'],
-                'jenis_peruntukan' => $u['jenis_peruntukan'],
+                'jenis_kendaraan' => $jenis ?: null,
+                'peruntukan'      => $peruntukan ?: null,
                 'pos'             => $u['pos'],
                 'pengemudi_1'     => $u['pengemudi_1'],
                 'pengemudi_2'     => $u['pengemudi_2'],

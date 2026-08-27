@@ -267,7 +267,7 @@
                 },
                 filteredList() {
                     if (!this.searchQuery || this.searchQuery.trim() === '') {
-                        return this.items;
+                        return [];
                     }
                     const q = this.searchQuery.toLowerCase();
                     return this.items.filter(item => 
@@ -305,7 +305,7 @@
                 },
                 filteredList() {
                     if (!this.searchQuery || this.searchQuery.trim() === '') {
-                        return this.items;
+                        return [];
                     }
                     const q = this.searchQuery.toLowerCase();
                     return this.items.filter(item => 

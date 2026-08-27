@@ -7,6 +7,7 @@ use App\Models\CekHarianAlat;
 use App\Models\CekHarianUnit;
 use App\Models\Pengajuan;
 use App\Models\PengaturanDokumen;
+use App\Services\CacheService;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -20,153 +21,202 @@ class AdminController extends Controller
 
         $currentYear = (int) $request->query('tahun', date('Y'));
 
-        // 1. KPI Stats Summary
-        // Asset Snapshot (Aset terdaftar hingga akhir tahun yang dipilih)
-        $totalUnit        = \App\Models\Unit::whereYear('created_at', '<=', $currentYear)->count();
-        $unitPemadam      = \App\Models\Unit::whereYear('created_at', '<=', $currentYear)->where('kategori', 'LIKE', 'pemadam')->count();
-        $unitRescue       = \App\Models\Unit::whereYear('created_at', '<=', $currentYear)->where('kategori', 'LIKE', 'rescue')->count();
-        $unitAktif        = \App\Models\Unit::whereYear('created_at', '<=', $currentYear)->where('status', 'aktif')->count();
-        $unitPerbaikan    = \App\Models\Unit::whereYear('created_at', '<=', $currentYear)->where('status', 'perbaikan')->count();
+        // Cache statistical computations and charts for 30 seconds to bypass remote cloud latency
+        $stats = \Illuminate\Support\Facades\Cache::remember("admin_dashboard_stats_{$currentYear}", 30, function () use ($currentYear) {
+            // 1. KPI Stats Summary (Consolidated in 1 query)
+            $unitKpi = \App\Models\Unit::whereYear('created_at', '<=', $currentYear)
+                ->selectRaw("
+                    count(*) as total,
+                    count(case when lower(kategori) like '%pemadam%' then 1 end) as pemadam,
+                    count(case when lower(kategori) like '%rescue%' then 1 end) as rescue,
+                    count(case when status = 'aktif' then 1 end) as aktif,
+                    count(case when status = 'perbaikan' then 1 end) as perbaikan
+                ")->first();
 
-        $totalPeralatan   = \App\Models\Peralatan::whereYear('created_at', '<=', $currentYear)->count();
-        $jenisPeralatan   = $totalPeralatan;
-        $peralatanBaik    = $totalPeralatan;
+            $totalPeralatan   = \App\Models\Peralatan::whereYear('created_at', '<=', $currentYear)->count();
 
-        // Transaksi & Aktivitas pada tahun yang dipilih ($currentYear)
-        $totalPengajuan   = \App\Models\Pengajuan::whereYear('created_at', $currentYear)->count();
-        $totalPemeriksaan = \App\Models\CekHarianUnit::whereYear('created_at', $currentYear)->count() 
-                            + \App\Models\CekHarianAlat::whereYear('created_at', $currentYear)->count();
+            // 2. Monthly Chart Datasets (Jan - Dec)
+            $monthlyInspeksiUnit = \App\Models\CekHarianUnit::whereYear('created_at', $currentYear)
+                ->selectRaw("EXTRACT(MONTH FROM created_at)::int as m, count(*) as c")
+                ->groupBy('m')
+                ->pluck('c', 'm')
+                ->toArray();
 
-        $totalInvoiceBiaya = \App\Models\Invoice::where('kategori_monitoring', 'aktual')->whereYear('tanggal_invoice', $currentYear)->sum('total_biaya');
-        $totalInvoiceCount = \App\Models\Invoice::where('kategori_monitoring', 'aktual')->whereYear('tanggal_invoice', $currentYear)->count();
+            $monthlyInspeksiAlat = \App\Models\CekHarianAlat::whereYear('created_at', $currentYear)
+                ->selectRaw("EXTRACT(MONTH FROM created_at)::int as m, count(*) as c")
+                ->groupBy('m')
+                ->pluck('c', 'm')
+                ->toArray();
 
-        // 2. Monthly Chart Datasets (Jan - Dec)
-        $chartInspeksiUnit = [];
-        $chartInspeksiAlat = [];
-        $chartPemeliharaan = [];
-        $chartBiaya        = [];
+            $monthlyPengajuan = \App\Models\Pengajuan::whereYear('created_at', $currentYear)
+                ->selectRaw("EXTRACT(MONTH FROM created_at)::int as m, count(*) as c")
+                ->groupBy('m')
+                ->pluck('c', 'm')
+                ->toArray();
 
-        for ($m = 1; $m <= 12; $m++) {
-            $unitCheck = \App\Models\CekHarianUnit::whereYear('created_at', $currentYear)->whereMonth('created_at', $m)->count();
-            $alatCheck = \App\Models\CekHarianAlat::whereYear('created_at', $currentYear)->whereMonth('created_at', $m)->count();
-            $pengajuan = \App\Models\Pengajuan::whereYear('created_at', $currentYear)->whereMonth('created_at', $m)->count();
-            $biaya     = \App\Models\Invoice::where('kategori_monitoring', 'aktual')->whereYear('tanggal_invoice', $currentYear)->whereMonth('tanggal_invoice', $m)->sum('total_biaya');
+            $monthlyBiayaStats = \App\Models\Invoice::where('kategori_monitoring', 'aktual')
+                ->whereYear('tanggal_invoice', $currentYear)
+                ->selectRaw("EXTRACT(MONTH FROM tanggal_invoice)::int as m, sum(total_biaya) as s, count(*) as c")
+                ->groupBy('m')
+                ->get();
 
-            $chartInspeksiUnit[] = $unitCheck;
-            $chartInspeksiAlat[] = $alatCheck;
-            $chartPemeliharaan[] = $pengajuan;
-            $chartBiaya[]        = (float) $biaya;
-        }
+            $monthlyBiaya = $monthlyBiayaStats->pluck('s', 'm')->toArray();
+            $totalInvoiceCount = $monthlyBiayaStats->sum('c');
+            $totalInvoiceBiaya = (float) array_sum($monthlyBiaya);
 
-        // 3. Pos Penempatan Distribution (Berdasarkan Data Pos Resmi)
-        $posDistribution = \App\Models\Pos::where('status', 'aktif')
-            ->get()
-            ->map(function ($pos) use ($currentYear) {
-                $total = \App\Models\Unit::whereYear('created_at', '<=', $currentYear)
-                    ->where('pos', 'LIKE', $pos->nama)
-                    ->count();
+            $chartInspeksiUnit = [];
+            $chartInspeksiAlat = [];
+            $chartPemeliharaan = [];
+            $chartBiaya        = [];
+
+            for ($m = 1; $m <= 12; $m++) {
+                $chartInspeksiUnit[] = (int) ($monthlyInspeksiUnit[$m] ?? 0);
+                $chartInspeksiAlat[] = (int) ($monthlyInspeksiAlat[$m] ?? 0);
+                $chartPemeliharaan[] = (int) ($monthlyPengajuan[$m] ?? 0);
+                $chartBiaya[]        = (float) ($monthlyBiaya[$m] ?? 0);
+            }
+
+            $totalPengajuan   = array_sum($chartPemeliharaan);
+            $totalPemeriksaan = array_sum($chartInspeksiUnit) + array_sum($chartInspeksiAlat);
+
+            // 3. Pos Penempatan Distribution
+            $posDistribution = \App\Models\Unit::whereYear('created_at', '<=', $currentYear)
+                ->whereNotNull('pos')
+                ->where('pos', '!=', '')
+                ->selectRaw("pos, count(*) as total")
+                ->groupBy('pos')
+                ->orderByDesc('total')
+                ->get()
+                ->map(fn($item) => (object) [
+                    'pos'   => (string) $item->pos,
+                    'total' => (int) $item->total,
+                ])
+                ->values();
+
+            // 4. Stream Aktivitas Terbaru
+            $recentPengajuans = \App\Models\Pengajuan::whereYear('created_at', $currentYear)
+                ->latest('id')
+                ->take(4)
+                ->get(['id', 'nomor_lambung', 'pos', 'created_at'])
+                ->map(function ($p) {
+                    return (object) [
+                        'icon'       => 'wrench',
+                        'color'      => '#C0201F',
+                        'bg'         => 'rgba(192,32,31,.10)',
+                        'text'       => 'Pengajuan pemeliharaan unit ' . strtoupper($p->nomor_lambung ?? $p->pos),
+                        'created_at' => $p->created_at ? $p->created_at->diffForHumans() : 'Baru saja',
+                        'raw_time'   => $p->created_at ? $p->created_at->timestamp : 0,
+                    ];
+                });
+
+            $recentCekUnits = \App\Models\CekHarianUnit::whereYear('created_at', $currentYear)
+                ->latest('id')
+                ->take(4)
+                ->get(['id', 'unit_nama', 'pos', 'kategori', 'created_at'])
+                ->map(function ($cu) {
+                    return (object) [
+                        'icon'       => 'truck',
+                        'color'      => '#1B2A6B',
+                        'bg'         => 'rgba(27,42,107,.10)',
+                        'text'       => 'Cek harian unit ' . ($cu->unit_nama ?? $cu->pos) . ' (' . ucfirst($cu->kategori ?? 'pemadam') . ')',
+                        'created_at' => $cu->created_at ? $cu->created_at->diffForHumans() : 'Baru saja',
+                        'raw_time'   => $cu->created_at ? $cu->created_at->timestamp : 0,
+                    ];
+                });
+
+            $recentCekAlats = \App\Models\CekHarianAlat::whereYear('created_at', $currentYear)
+                ->latest('id')
+                ->take(4)
+                ->get(['id', 'kategori', 'pos', 'created_at'])
+                ->map(function ($ca) {
+                    $catLabel = $ca->kategori === 'command_center' ? 'Command Center' : ucfirst($ca->kategori ?? 'pemadam');
+                    return (object) [
+                        'icon'       => $ca->kategori === 'command_center' ? 'radio-tower' : 'clipboard-check',
+                        'color'      => '#D97706',
+                        'bg'         => 'rgba(217,119,6,.10)',
+                        'text'       => 'Cek harian alat ' . $catLabel . ' (' . ($ca->pos ?? 'Utama') . ')',
+                        'created_at' => $ca->created_at ? $ca->created_at->diffForHumans() : 'Baru saja',
+                        'raw_time'   => $ca->created_at ? $ca->created_at->timestamp : 0,
+                    ];
+                });
+
+            $activities = $recentPengajuans->concat($recentCekUnits)->concat($recentCekAlats)
+                ->sortByDesc('raw_time')
+                ->take(6)
+                ->values();
+
+            return [
+                'totalUnit'         => (int) ($unitKpi->total ?? 0),
+                'unitPemadam'       => (int) ($unitKpi->pemadam ?? 0),
+                'unitRescue'        => (int) ($unitKpi->rescue ?? 0),
+                'unitAktif'         => (int) ($unitKpi->aktif ?? 0),
+                'unitPerbaikan'     => (int) ($unitKpi->perbaikan ?? 0),
+                'totalPeralatan'    => $totalPeralatan,
+                'jenisPeralatan'    => $totalPeralatan,
+                'peralatanBaik'     => $totalPeralatan,
+                'totalPengajuan'    => $totalPengajuan,
+                'totalPemeriksaan'  => $totalPemeriksaan,
+                'totalInvoiceBiaya' => $totalInvoiceBiaya,
+                'totalInvoiceCount' => $totalInvoiceCount,
+                'chartInspeksiUnit' => $chartInspeksiUnit,
+                'chartInspeksiAlat' => $chartInspeksiAlat,
+                'chartPemeliharaan' => $chartPemeliharaan,
+                'chartBiaya'        => $chartBiaya,
+                'posDistribution'   => $posDistribution,
+                'activities'        => $activities,
+            ];
+        });
+
+        // 5. Absen Pengecekan Harian Unit (Cached for 15s to guarantee high responsiveness)
+        $absenData = \Illuminate\Support\Facades\Cache::remember('admin_dashboard_absen_unit', 15, function () {
+            $todayStart = now()->startOfDay()->toDateTimeString();
+            $todayEnd   = now()->endOfDay()->toDateTimeString();
+            $todayDate  = now()->format('Y-m-d');
+
+            $todayCekUnits = \App\Models\CekHarianUnit::where(function ($q) use ($todayStart, $todayEnd, $todayDate) {
+                    $q->whereBetween('created_at', [$todayStart, $todayEnd])
+                      ->orWhere('tanggal_pemeriksaan', $todayDate);
+                })
+                ->latest('id')
+                ->get(['id', 'unit_id', 'nama_pemeriksa', 'jabatan', 'kebersihan_unit', 'created_at'])
+                ->keyBy('unit_id');
+
+            $allUnits = \App\Models\Unit::orderBy('nomor_lambung', 'asc')
+                ->get(['id', 'nomor_lambung', 'plat_nomor', 'merk_tipe', 'kategori', 'pos', 'status']);
+
+            $absenUnitList = $allUnits->map(function ($unit) use ($todayCekUnits) {
+                $cek = $todayCekUnits->get($unit->id);
                 return (object) [
-                    'pos'   => $pos->nama,
-                    'total' => $total,
+                    'unit_id'        => $unit->id,
+                    'nomor_lambung'  => $unit->nomor_lambung,
+                    'plat_nomor'     => $unit->plat_nomor,
+                    'merk_tipe'      => $unit->merk_tipe,
+                    'kategori'       => $unit->kategori,
+                    'pos'            => $unit->pos ?? '—',
+                    'status_unit'    => $unit->status,
+                    'sudah_dicek'    => $cek !== null,
+                    'nama_pemeriksa' => $cek ? $cek->nama_pemeriksa : null,
+                    'jabatan'        => $cek ? $cek->jabatan : null,
+                    'kebersihan'     => $cek ? ($cek->kebersihan_unit ?? 'bersih') : null,
+                    'waktu_cek'      => $cek ? $cek->created_at->format('H:i') : null,
                 ];
-            })
-            ->filter(fn($item) => $item->total > 0)
-            ->sortByDesc('total')
-            ->values();
+            });
 
-        // 4. Stream Aktivitas Terbaru (Filtered by $currentYear)
-        $recentPengajuans = \App\Models\Pengajuan::whereYear('created_at', $currentYear)->latest()->take(4)->get()->map(function ($p) {
-            return (object) [
-                'icon'       => 'wrench',
-                'color'      => '#C0201F',
-                'bg'         => 'rgba(192,32,31,.10)',
-                'text'       => 'Pengajuan pemeliharaan unit ' . strtoupper($p->nomor_lambung ?? $p->pos),
-                'created_at' => $p->created_at,
+            $absenSummary = [
+                'total_unit'  => $allUnits->count(),
+                'sudah_dicek' => $absenUnitList->where('sudah_dicek', true)->count(),
+                'belum_dicek' => $absenUnitList->where('sudah_dicek', false)->count(),
+            ];
+
+            return [
+                'absenUnitList' => $absenUnitList,
+                'absenSummary'  => $absenSummary,
             ];
         });
 
-        $recentCekUnits = \App\Models\CekHarianUnit::whereYear('created_at', $currentYear)->latest()->take(4)->get()->map(function ($cu) {
-            return (object) [
-                'icon'       => 'truck',
-                'color'      => '#1B2A6B',
-                'bg'         => 'rgba(27,42,107,.10)',
-                'text'       => 'Cek harian unit ' . ($cu->unit_nama ?? $cu->pos) . ' (' . ucfirst($cu->kategori ?? 'pemadam') . ')',
-                'created_at' => $cu->created_at,
-            ];
-        });
-
-        $recentCekAlats = \App\Models\CekHarianAlat::whereYear('created_at', $currentYear)->latest()->take(4)->get()->map(function ($ca) {
-            $catLabel = $ca->kategori === 'command_center' ? 'Command Center' : ucfirst($ca->kategori ?? 'pemadam');
-            return (object) [
-                'icon'       => $ca->kategori === 'command_center' ? 'radio-tower' : 'clipboard-check',
-                'color'      => '#D97706',
-                'bg'         => 'rgba(217,119,6,.10)',
-                'text'       => 'Cek harian alat ' . $catLabel . ' (' . ($ca->pos ?? 'Utama') . ')',
-                'created_at' => $ca->created_at,
-            ];
-        });
-
-        $activities = $recentPengajuans->concat($recentCekUnits)->concat($recentCekAlats)
-            ->sortByDesc('created_at')
-            ->take(6)
-            ->values();
-
-        // 5. Absen Pengecekan Harian Unit (Status Cek Hari Ini per Unit Armada)
-        $today = \Carbon\Carbon::today();
-        $todayCekUnits = \App\Models\CekHarianUnit::whereDate('created_at', $today)
-            ->orWhereDate('tanggal_pemeriksaan', $today)
-            ->latest()
-            ->get()
-            ->keyBy('unit_id');
-
-        $allUnits = \App\Models\Unit::orderBy('nomor_lambung', 'asc')->get();
-        $absenUnitList = $allUnits->map(function ($unit) use ($todayCekUnits) {
-            $cek = $todayCekUnits->get($unit->id);
-            return (object) [
-                'unit_id'        => $unit->id,
-                'nomor_lambung'  => $unit->nomor_lambung,
-                'plat_nomor'     => $unit->plat_nomor,
-                'merk_tipe'      => $unit->merk_tipe,
-                'kategori'       => $unit->kategori,
-                'pos'            => $unit->pos ?? '—',
-                'status_unit'    => $unit->status, // 'aktif' vs 'perbaikan'
-                'sudah_dicek'    => $cek !== null,
-                'nama_pemeriksa' => $cek ? $cek->nama_pemeriksa : null,
-                'jabatan'        => $cek ? $cek->jabatan : null,
-                'kebersihan'     => $cek ? ($cek->kebersihan_unit ?? 'bersih') : null,
-                'waktu_cek'      => $cek ? $cek->created_at->format('H:i') : null,
-            ];
-        });
-
-        $absenSummary = [
-            'total_unit'  => $allUnits->count(),
-            'sudah_dicek' => $absenUnitList->where('sudah_dicek', true)->count(),
-            'belum_dicek' => $absenUnitList->where('sudah_dicek', false)->count(),
-        ];
-
-        return view('admin.dashboard', compact(
-            'totalUnit',
-            'unitPemadam',
-            'unitRescue',
-            'unitAktif',
-            'unitPerbaikan',
-            'totalPeralatan',
-            'jenisPeralatan',
-            'peralatanBaik',
-            'totalPengajuan',
-            'totalPemeriksaan',
-            'totalInvoiceBiaya',
-            'totalInvoiceCount',
-            'currentYear',
-            'chartInspeksiUnit',
-            'chartInspeksiAlat',
-            'chartPemeliharaan',
-            'chartBiaya',
-            'posDistribution',
-            'activities',
-            'absenUnitList',
-            'absenSummary'
-        ));
+        return view('admin.dashboard', array_merge($stats, $absenData, [
+            'currentYear' => $currentYear,
+        ]));
     }
 
     /**
@@ -209,17 +259,21 @@ class AdminController extends Controller
 
         $pengajuanList = $query->paginate(10)->withQueryString();
 
-        // Ringkasan KPI
+        // Ringkasan KPI (1 single query)
+        $kpiRaw = Pengajuan::selectRaw("
+            count(*) as total,
+            count(case when status = 'menunggu' then 1 end) as menunggu,
+            count(case when status = 'disetujui' and (status_pengerjaan is null or status_pengerjaan != 'selesai') then 1 end) as disetujui,
+            count(case when status = 'selesai' or status_pengerjaan = 'selesai' then 1 end) as selesai,
+            count(case when status = 'ditolak' then 1 end) as ditolak
+        ")->first();
+
         $kpi = [
-            'total'     => Pengajuan::count(),
-            'menunggu'  => Pengajuan::where('status', 'menunggu')->count(),
-            'disetujui' => Pengajuan::where('status', 'disetujui')
-                ->where(fn($q) => $q->whereNull('status_pengerjaan')->orWhere('status_pengerjaan', '!=', 'selesai'))
-                ->count(),
-            'selesai'   => Pengajuan::where('status', 'selesai')
-                ->orWhere('status_pengerjaan', 'selesai')
-                ->count(),
-            'ditolak'   => Pengajuan::where('status', 'ditolak')->count(),
+            'total'     => (int) ($kpiRaw->total ?? 0),
+            'menunggu'  => (int) ($kpiRaw->menunggu ?? 0),
+            'disetujui' => (int) ($kpiRaw->disetujui ?? 0),
+            'selesai'   => (int) ($kpiRaw->selesai ?? 0),
+            'ditolak'   => (int) ($kpiRaw->ditolak ?? 0),
         ];
 
         return view('admin.pemeliharaan.pengajuan', compact('pengajuanList', 'kpi', 'statusFilter', 'searchQuery'));
@@ -307,6 +361,7 @@ class AdminController extends Controller
         // Sinkronisasi status unit secara langsung
         \App\Models\Unit::syncStatusAll();
         \App\Http\Controllers\Admin\InvoiceController::syncPengajuanToAktualInvoice($pengajuan);
+        CacheService::invalidate(['pengajuan', 'unit']);
 
         $statusText = match ($pengajuan->status) {
             'disetujui' => 'disetujui' . ($pengajuan->tanggal_keberangkatan ? ' (Jadwal: ' . $pengajuan->tanggal_keberangkatan->format('d/m/Y') . ')' : ''),
@@ -345,6 +400,7 @@ class AdminController extends Controller
         }
 
         \App\Models\Unit::syncStatusAll();
+        CacheService::invalidate(['pengajuan', 'unit']);
 
         return redirect()
             ->route('admin.pemeliharaan.pengajuan')
@@ -481,11 +537,19 @@ class AdminController extends Controller
 
         $records = $query->paginate(10)->withQueryString();
 
+        $kpiRaw = Pengajuan::where('status', 'disetujui')
+            ->selectRaw("
+                count(*) as total,
+                count(case when status_pengerjaan = 'belum_mulai' or status_pengerjaan is null then 1 end) as belum_mulai,
+                count(case when status_pengerjaan = 'proses' then 1 end) as proses,
+                count(case when status_pengerjaan = 'selesai' then 1 end) as selesai
+            ")->first();
+
         $kpi = [
-            'total'       => Pengajuan::where('status', 'disetujui')->count(),
-            'belum_mulai' => Pengajuan::where('status', 'disetujui')->where('status_pengerjaan', 'belum_mulai')->count(),
-            'proses'      => Pengajuan::where('status', 'disetujui')->where('status_pengerjaan', 'proses')->count(),
-            'selesai'     => Pengajuan::where('status', 'disetujui')->where('status_pengerjaan', 'selesai')->count(),
+            'total'       => (int) ($kpiRaw->total ?? 0),
+            'belum_mulai' => (int) ($kpiRaw->belum_mulai ?? 0),
+            'proses'      => (int) ($kpiRaw->proses ?? 0),
+            'selesai'     => (int) ($kpiRaw->selesai ?? 0),
         ];
 
         return view('admin.pemeliharaan.monitoring-aktual', compact('records', 'kpi', 'statusFilter', 'searchQuery'));
@@ -516,6 +580,7 @@ class AdminController extends Controller
 
         $pengajuan->update($validated);
         \App\Models\Unit::syncStatusAll();
+        CacheService::invalidate(['pengajuan', 'unit']);
 
         return redirect()
             ->route('admin.pemeliharaan.monitoring-aktual')
@@ -733,21 +798,23 @@ class AdminController extends Controller
             ->paginate(10, ['*'], 'alat_page')
             ->withQueryString();
 
-        // ===== Ringkasan KPI =====
-        $kpi = [
-            'total_cek_unit'   => CekHarianUnit::where(function ($q) {
+        // ===== Ringkasan KPI (Cached 5 min) =====
+        $kpi = CacheService::rememberStats('cek_pemadam_kpi', function () {
+            $unitKpi = CekHarianUnit::where(function ($q) {
                 $q->where('kategori', 'pemadam')->orWhereNull('kategori');
-            })->count(),
-            'unit_ada_rusak'   => CekHarianUnit::where(function ($q) {
+            })->selectRaw("count(*) as total, count(case when jumlah_rusak > 0 then 1 end) as rusak")->first();
+
+            $alatKpi = CekHarianAlat::where(function ($q) {
                 $q->where('kategori', 'pemadam')->orWhereNull('kategori');
-            })->where('jumlah_rusak', '>', 0)->count(),
-            'total_cek_alat'   => CekHarianAlat::where(function ($q) {
-                $q->where('kategori', 'pemadam')->orWhereNull('kategori');
-            })->count(),
-            'alat_rusak_total' => (int) CekHarianAlat::where(function ($q) {
-                $q->where('kategori', 'pemadam')->orWhereNull('kategori');
-            })->sum('total_rusak'),
-        ];
+            })->selectRaw("count(*) as total, coalesce(sum(total_rusak), 0) as rusak")->first();
+
+            return [
+                'total_cek_unit'   => (int) ($unitKpi->total ?? 0),
+                'unit_ada_rusak'   => (int) ($unitKpi->rusak ?? 0),
+                'total_cek_alat'   => (int) ($alatKpi->total ?? 0),
+                'alat_rusak_total' => (int) ($alatKpi->rusak ?? 0),
+            ];
+        });
 
         return view('admin.unit-pemadam.pengecekan', compact('cekUnitList', 'cekAlatList', 'kpi', 'tab', 'searchQuery'));
     }
@@ -807,13 +874,21 @@ class AdminController extends Controller
             ->paginate(10, ['*'], 'alat_page')
             ->withQueryString();
 
-        // ===== Ringkasan KPI =====
-        $kpi = [
-            'total_cek_unit'   => CekHarianUnit::where('kategori', 'rescue')->count(),
-            'unit_ada_rusak'   => CekHarianUnit::where('kategori', 'rescue')->where('jumlah_rusak', '>', 0)->count(),
-            'total_cek_alat'   => CekHarianAlat::where('kategori', 'rescue')->count(),
-            'alat_rusak_total' => (int) CekHarianAlat::where('kategori', 'rescue')->sum('total_rusak'),
-        ];
+        // ===== Ringkasan KPI (Cached 5 min) =====
+        $kpi = CacheService::rememberStats('cek_rescue_kpi', function () {
+            $unitKpi = CekHarianUnit::where('kategori', 'rescue')
+                ->selectRaw("count(*) as total, count(case when jumlah_rusak > 0 then 1 end) as rusak")->first();
+
+            $alatKpi = CekHarianAlat::where('kategori', 'rescue')
+                ->selectRaw("count(*) as total, coalesce(sum(total_rusak), 0) as rusak")->first();
+
+            return [
+                'total_cek_unit'   => (int) ($unitKpi->total ?? 0),
+                'unit_ada_rusak'   => (int) ($unitKpi->rusak ?? 0),
+                'total_cek_alat'   => (int) ($alatKpi->total ?? 0),
+                'alat_rusak_total' => (int) ($alatKpi->rusak ?? 0),
+            ];
+        });
 
         return view('admin.unit-rescue.pengecekan', compact('cekUnitList', 'cekAlatList', 'kpi', 'tab', 'searchQuery'));
     }
@@ -866,13 +941,21 @@ class AdminController extends Controller
             ->paginate(10, ['*'], 'alat_page')
             ->withQueryString();
 
-        // ===== Ringkasan KPI =====
-        $kpi = [
-            'total_cek_unit'   => CekHarianUnit::where('kategori', 'pencegahan')->count(),
-            'unit_ada_rusak'   => CekHarianUnit::where('kategori', 'pencegahan')->where('jumlah_rusak', '>', 0)->count(),
-            'total_cek_alat'   => CekHarianAlat::where('kategori', 'pencegahan')->count(),
-            'alat_rusak_total' => (int) CekHarianAlat::where('kategori', 'pencegahan')->sum('total_rusak'),
-        ];
+        // ===== Ringkasan KPI (Cached 5 min) =====
+        $kpi = CacheService::rememberStats('cek_pencegahan_kpi', function () {
+            $unitKpi = CekHarianUnit::where('kategori', 'pencegahan')
+                ->selectRaw("count(*) as total, count(case when jumlah_rusak > 0 then 1 end) as rusak")->first();
+
+            $alatKpi = CekHarianAlat::where('kategori', 'pencegahan')
+                ->selectRaw("count(*) as total, coalesce(sum(total_rusak), 0) as rusak")->first();
+
+            return [
+                'total_cek_unit'   => (int) ($unitKpi->total ?? 0),
+                'unit_ada_rusak'   => (int) ($unitKpi->rusak ?? 0),
+                'total_cek_alat'   => (int) ($alatKpi->total ?? 0),
+                'alat_rusak_total' => (int) ($alatKpi->rusak ?? 0),
+            ];
+        });
 
         return view('admin.unit-pencegahan.pengecekan', compact('cekUnitList', 'cekAlatList', 'kpi', 'tab', 'searchQuery'));
     }
@@ -915,31 +998,6 @@ class AdminController extends Controller
         return view('admin.placeholder', [
             'pageTitle'  => 'Riwayat',
             'breadcrumb' => ['Command Center', 'Riwayat'],
-        ]);
-    }
-
-    /* ==================== APAR & KEJADIAN ==================== */
-    public function aparDataApar()
-    {
-        return view('admin.placeholder', [
-            'pageTitle'  => 'Data APAR',
-            'breadcrumb' => ['APAR & Kejadian', 'Data APAR'],
-        ]);
-    }
-
-    public function aparMonitoring()
-    {
-        return view('admin.placeholder', [
-            'pageTitle'  => 'Monitoring',
-            'breadcrumb' => ['APAR & Kejadian', 'Monitoring'],
-        ]);
-    }
-
-    public function aparLaporanKejadian()
-    {
-        return view('admin.placeholder', [
-            'pageTitle'  => 'Laporan Kejadian',
-            'breadcrumb' => ['APAR & Kejadian', 'Laporan Kejadian'],
         ]);
     }
 
@@ -1027,52 +1085,76 @@ class AdminController extends Controller
 
         $userList = $query->paginate(12)->withQueryString();
 
-        $posList = \App\Models\Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
+        $posList = CacheService::rememberList('active_pos_objects', function () {
+            return \App\Models\Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
+        });
 
-        $existingBidangList = \App\Models\User::whereNotNull('bidang')
-            ->where('bidang', '!=', '')
-            ->pluck('bidang')
-            ->map(fn($v) => trim($v))
-            ->filter(fn($v) => !empty($v))
-            ->unique()
-            ->sort()
-            ->values()
-            ->toArray();
+        $metaData = CacheService::rememberStats('pengaturan_meta', function () {
+            $existingBidangList = \App\Models\User::whereNotNull('bidang')
+                ->where('bidang', '!=', '')
+                ->distinct()
+                ->pluck('bidang')
+                ->map(fn($v) => trim($v))
+                ->filter(fn($v) => !empty($v))
+                ->unique()
+                ->sort()
+                ->values()
+                ->toArray();
 
-        // Hitung statistik per Bidang secara dinamis
-        $bidangCounts = [];
-        foreach ($existingBidangList as $b) {
-            $bidangCounts[$b] = \App\Models\User::where('has_account', true)->where('bidang', 'LIKE', $b)->count();
-        }
+            $bidangCounts = \App\Models\User::where('has_account', true)
+                ->whereNotNull('bidang')
+                ->where('bidang', '!=', '')
+                ->selectRaw("bidang, count(*) as total")
+                ->groupBy('bidang')
+                ->pluck('total', 'bidang')
+                ->toArray();
 
-        $kpi = [
-            'total'   => \App\Models\User::where('has_account', true)->count(),
-            'admin'   => \App\Models\User::where('has_account', true)->where('role', 'admin')->count(),
-            'aktif'   => \App\Models\User::where('has_account', true)->where('status', 'aktif')->count(),
-            'bidang'  => $bidangCounts,
-        ];
+            $kpiStats = \App\Models\User::where('has_account', true)
+                ->selectRaw("
+                    count(*) as total,
+                    count(case when role = 'admin' then 1 end) as admin,
+                    count(case when status = 'aktif' then 1 end) as aktif
+                ")->first();
 
-        $existingReguList = \App\Models\Regu::distinct()
-            ->orderBy('nama', 'asc')
-            ->pluck('nama')
-            ->map(fn($v) => ucwords(strtolower(trim($v))))
-            ->unique()
-            ->values()
-            ->toArray();
+            $kpi = [
+                'total'   => (int) ($kpiStats->total ?? 0),
+                'admin'   => (int) ($kpiStats->admin ?? 0),
+                'aktif'   => (int) ($kpiStats->aktif ?? 0),
+                'bidang'  => $bidangCounts,
+            ];
 
-        if (empty($existingReguList)) {
-            $existingReguList = ['Regu 1', 'Regu 2'];
-        }
+            $existingReguList = \App\Models\Regu::distinct()
+                ->orderBy('nama', 'asc')
+                ->pluck('nama')
+                ->map(fn($v) => ucwords(strtolower(trim($v))))
+                ->unique()
+                ->values()
+                ->toArray();
 
-        $existingJabatanList = \App\Models\User::whereNotNull('jabatan')
-            ->where('jabatan', '!=', '')
-            ->pluck('jabatan')
-            ->map(fn($v) => trim($v))
-            ->filter(fn($v) => !empty($v))
-            ->unique()
-            ->sort()
-            ->values()
-            ->toArray();
+            if (empty($existingReguList)) {
+                $existingReguList = ['Regu 1', 'Regu 2'];
+            }
+
+            $existingJabatanList = \App\Models\User::whereNotNull('jabatan')
+                ->where('jabatan', '!=', '')
+                ->pluck('jabatan')
+                ->map(fn($v) => trim($v))
+                ->filter(fn($v) => !empty($v))
+                ->unique()
+                ->sort()
+                ->values()
+                ->toArray();
+
+            $allReguList = \App\Models\Regu::orderBy('pos', 'asc')->orderBy('nama', 'asc')->get(['id', 'nama', 'pos', 'bidang', 'danru', 'nip_danru']);
+
+            return compact('existingBidangList', 'kpi', 'existingReguList', 'existingJabatanList', 'allReguList');
+        });
+
+        $existingBidangList  = $metaData['existingBidangList'];
+        $kpi                 = $metaData['kpi'];
+        $existingReguList    = $metaData['existingReguList'];
+        $existingJabatanList = $metaData['existingJabatanList'];
+        $allReguList         = $metaData['allReguList'];
 
         $pegawaiList = \App\Models\User::with(['bidangRelasi:id,nama', 'reguRelasi:id,nama'])
             ->orderBy('name', 'asc')
@@ -1092,7 +1174,6 @@ class AdminController extends Controller
                     'status'  => $pegawai->status,
                 ];
             });
-        $allReguList = \App\Models\Regu::orderBy('pos', 'asc')->orderBy('nama', 'asc')->get(['id', 'nama', 'pos', 'bidang', 'danru', 'nip_danru']);
 
         // Data pengaturan dokumen (PKS/SPK/Bengkel) per tahun
         $pengaturanDokumenList = PengaturanDokumen::orderBy('tahun', 'desc')->get();

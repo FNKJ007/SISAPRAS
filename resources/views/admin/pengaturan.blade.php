@@ -161,7 +161,8 @@
                         <select name="pos" onchange="this.form.submit()" style="padding:6px 12px; font-size:12px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#1E293B; font-weight:600; width:100%;">
                             <option value="semua" @selected($posFilter === 'semua')>Semua Pos</option>
                             @foreach($posList as $p)
-                                <option value="{{ $p->nama }}" @selected($posFilter === $p->nama)>{{ $p->nama }}</option>
+                                @php $pName = is_string($p) ? $p : ($p->nama ?? ($p['nama'] ?? '')); @endphp
+                                <option value="{{ $pName }}" @selected($posFilter === $pName)>{{ $pName }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -816,7 +817,8 @@
                             <select name="pos" x-model="createPos" @change="onPosChangeCreate()" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
                                 <option value="">— Pilih Pos —</option>
                                 @foreach($posList as $p)
-                                    <option value="{{ $p->nama }}">{{ $p->nama }}</option>
+                                    @php $pName = is_string($p) ? $p : ($p->nama ?? ($p['nama'] ?? '')); @endphp
+                                    <option value="{{ $pName }}">{{ $pName }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -959,7 +961,8 @@
                             <select name="pos" x-model="activeUser.pos" @change="onPosChangeEdit()" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
                                 <option value="">— Pilih Pos —</option>
                                 @foreach($posList as $p)
-                                    <option value="{{ $p->nama }}">{{ $p->nama }}</option>
+                                    @php $pName = is_string($p) ? $p : ($p->nama ?? ($p['nama'] ?? '')); @endphp
+                                    <option value="{{ $pName }}">{{ $pName }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -1170,7 +1173,7 @@ function pengaturanApp() {
         pegawaiOpen: false,
         pegawaiQuery: '',
         filterPegawaiList(query) {
-            if (!query || query.trim() === '') return this.pegawaiList.slice(0, 15);
+            if (!query || query.trim() === '') return [];
             let q = query.toLowerCase();
             return this.pegawaiList.filter(p => 
                 (p.name && p.name.toLowerCase().includes(q)) || 

@@ -15,6 +15,39 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         [x-cloak] { display: none !important; }
+
+        /* Smooth Page Transition Animation */
+        @keyframes smoothPageFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .content-area, .dashboard-container, main {
+            animation: smoothPageFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            will-change: opacity, transform;
+        }
+
+        /* Top Progress Bar on Navigation */
+        #nprogress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            width: 0%;
+            background: linear-gradient(90deg, #C0201F, #EF4444, #F59E0B);
+            box-shadow: 0 0 10px rgba(192, 32, 31, 0.7), 0 0 5px rgba(239, 68, 68, 0.5);
+            z-index: 999999;
+            transition: width 0.25s ease, opacity 0.3s ease;
+            pointer-events: none;
+            opacity: 0;
+            border-radius: 0 4px 4px 0;
+        }
     </style>
 
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ file_exists(public_path('css/app.css')) ? filemtime(public_path('css/app.css')) : '1' }}">
@@ -409,6 +442,62 @@
             };
 
             document.querySelectorAll('input[name="search"]').forEach(setupSearchAutocomplete);
+        })();
+    </script>
+    <script>
+        // Instant Feedback & Top Progress Bar on Link Click
+        (() => {
+            const progressBar = document.createElement('div');
+            progressBar.id = 'nprogress-bar';
+            document.body.appendChild(progressBar);
+
+            let progressTimeout;
+
+            function startProgress() {
+                clearTimeout(progressTimeout);
+                progressBar.style.opacity = '1';
+                progressBar.style.width = '35%';
+                progressTimeout = setTimeout(() => {
+                    progressBar.style.width = '75%';
+                }, 100);
+            }
+
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('a');
+                if (!link) return;
+
+                const href = link.getAttribute('href');
+                if (!href || href.startsWith('#') || href.startsWith('javascript:') || link.getAttribute('target') === '_blank' || link.hasAttribute('download')) {
+                    return;
+                }
+
+                if (link.hostname === window.location.hostname) {
+                    startProgress();
+                }
+            });
+
+            // Form submit progress
+            document.addEventListener('submit', () => {
+                startProgress();
+            });
+
+            // Hover Prefetching for Instant Navigation
+            const prefetchedUrls = new Set();
+            document.addEventListener('mouseover', (e) => {
+                const link = e.target.closest('a');
+                if (!link) return;
+                const href = link.getAttribute('href');
+                if (!href || href.startsWith('#') || href.startsWith('javascript:') || link.getAttribute('target') === '_blank' || link.hasAttribute('download')) {
+                    return;
+                }
+                if (link.hostname === window.location.hostname && !prefetchedUrls.has(href)) {
+                    prefetchedUrls.add(href);
+                    const prefetchTag = document.createElement('link');
+                    prefetchTag.rel = 'prefetch';
+                    prefetchTag.href = href;
+                    document.head.appendChild(prefetchTag);
+                }
+            });
         })();
     </script>
 </body>

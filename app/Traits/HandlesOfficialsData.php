@@ -14,9 +14,13 @@ trait HandlesOfficialsData
     {
         $currentUser = auth()->user();
 
-        // 1. Ambil daftar pegawai / pejabat untuk Danru & Kabid
-        $allPegawai = User::orderBy('name', 'asc')->get();
-        $allReguList = Regu::all();
+        // 1. Ambil daftar pegawai / pejabat untuk Danru & Kabid (Cached 5 min)
+        $allPegawai = \App\Services\CacheService::rememberList('officials_pegawai', function () {
+            return User::orderBy('name', 'asc')->get(['id', 'name', 'nip', 'jabatan', 'bidang', 'pos', 'regu']);
+        });
+        $allReguList = \App\Services\CacheService::rememberList('officials_regu', function () {
+            return Regu::all(['id', 'nama', 'pos', 'bidang', 'danru', 'nip_danru']);
+        });
 
         $danruUsers = $allPegawai->filter(function ($u) {
             $j = strtolower($u->jabatan ?? '');

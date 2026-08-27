@@ -131,28 +131,36 @@ class HomeController extends Controller
 
         // 5. Hitung Kesiapan Armada (Ready vs Di Bengkel) langsung dari Database Admin Data Unit
         \App\Models\Unit::syncStatusAll();
-        $totalDbUnits = \App\Models\Unit::count();
+        
+        $unitStats = \App\Models\Unit::selectRaw("
+            count(*) as total,
+            count(case when status = 'aktif' then 1 end) as aktif,
+            count(case when status = 'perbaikan' then 1 end) as perbaikan
+        ")->first();
+
+        $totalDbUnits = (int) ($unitStats->total ?? 0);
+        $totalReady   = (int) ($unitStats->aktif ?? 0);
+        $totalBengkel = (int) ($unitStats->perbaikan ?? 0);
+        $totalMasterArmada = $totalDbUnits;
 
         if ($totalDbUnits > 0) {
-            $totalReady   = \App\Models\Unit::where('status', 'aktif')->count();
-            $totalBengkel = \App\Models\Unit::where('status', 'perbaikan')->count();
-            $totalMasterArmada = $totalDbUnits;
-
             $unitsInBengkel = \App\Models\Unit::where('status', 'perbaikan')->orderBy('nama', 'asc')->get();
+            
+            // Pre-fetch active approved pengajuans in 1 single query to prevent N+1 loop
+            $activePengajuans = Pengajuan::where('status', 'disetujui')
+                ->where('status_pengerjaan', '!=', 'selesai')
+                ->latest('id')
+                ->get();
+
             $listBengkel = [];
             foreach ($unitsInBengkel as $u) {
                 $posText = $u->pos ? " (" . ucfirst($u->pos) . ")" : "";
                 $platText = ($u->plat_nomor && $u->plat_nomor !== '—') ? " / {$u->plat_nomor}" : "";
 
-                // Ambil tanggal keberangkatan riil dari Pengajuan yang sedang disetujui/berjalan
-                $activePengajuan = Pengajuan::where(function ($q) use ($u) {
-                        $q->where('unit_id', $u->id)
-                          ->orWhere('nomor_lambung', $u->nomor_lambung);
-                    })
-                    ->where('status', 'disetujui')
-                    ->where('status_pengerjaan', '!=', 'selesai')
-                    ->latest()
-                    ->first();
+                $activePengajuan = $activePengajuans->first(function ($p) use ($u) {
+                    return $p->unit_id == $u->id || 
+                           ($p->nomor_lambung && $u->nomor_lambung && strcasecmp(trim($p->nomor_lambung), trim($u->nomor_lambung)) === 0);
+                });
 
                 $tglBerangkatStr = '-';
                 if ($activePengajuan && $activePengajuan->tanggal_keberangkatan) {

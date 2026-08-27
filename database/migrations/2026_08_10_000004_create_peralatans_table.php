@@ -14,14 +14,14 @@ return new class extends Migration
         Schema::create('peralatans', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->enum('kategori', ['pemadam', 'rescue', 'command_center'])->default('pemadam');
+            $table->string('kategori', 100)->default('pemadam');
             $table->string('kode_alat')->nullable();
             $table->integer('jumlah_total')->default(1);
             $table->integer('kondisi_baik')->default(1);
             $table->integer('kondisi_rusak')->default(0);
             $table->string('satuan')->default('unit');
             $table->string('lokasi')->nullable();
-            $table->enum('status', ['baik', 'perlu_perhatian', 'rusak'])->default('baik');
+            $table->string('status', 50)->nullable()->default('baik');
             $table->text('catatan')->nullable();
             $table->timestamps();
         });
