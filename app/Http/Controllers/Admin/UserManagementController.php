@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\CacheService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -56,6 +57,7 @@ class UserManagementController extends Controller
             $existingUser->fill($validated);
             $existingUser->has_account = true;
             $existingUser->save();
+            CacheService::invalidate('user');
 
             if (!$existingUser->fresh()->has_account) {
                 return redirect()
@@ -94,6 +96,7 @@ class UserManagementController extends Controller
         $validated['has_account'] = true;
 
         User::create($validated);
+        CacheService::invalidate('user');
 
         return redirect()
             ->route('admin.pengaturan')
@@ -137,6 +140,7 @@ class UserManagementController extends Controller
         $validated['has_account'] = true;
 
         $user->update($validated);
+        CacheService::invalidate('user');
 
         return redirect()
             ->route('admin.pengaturan')
@@ -163,6 +167,7 @@ class UserManagementController extends Controller
             'password'    => Hash::make($validated['new_password']),
             'has_account' => true,
         ]);
+        CacheService::invalidate('user');
 
         return redirect()
             ->route('admin.pengaturan')
@@ -184,6 +189,7 @@ class UserManagementController extends Controller
 
         $newStatus = $user->status === 'aktif' ? 'nonaktif' : 'aktif';
         $user->update(['status' => $newStatus]);
+        CacheService::invalidate('user');
 
         $statusText = $newStatus === 'aktif' ? 'diaktifkan' : 'dinonaktifkan';
 
@@ -210,6 +216,7 @@ class UserManagementController extends Controller
             'has_account' => false,
             'password'    => null,
         ]);
+        CacheService::invalidate('user');
 
         return redirect()
             ->route('admin.pengaturan')
@@ -236,6 +243,7 @@ class UserManagementController extends Controller
         } elseif ($type === 'regu') {
             User::where('regu', 'LIKE', $value)->update(['regu' => null]);
         }
+        CacheService::invalidate('user');
 
         return response()->json([
             'success' => true,

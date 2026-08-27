@@ -220,15 +220,26 @@
                                 {{-- Aksi --}}
                                 <td style="padding:10px; text-align:center; white-space:nowrap;">
                                     <div style="display:inline-flex; align-items:center; gap:4px;">
+                                        @php
+                                            $posJson = json_encode([
+                                                'id'       => $item->id,
+                                                'nama'     => $item->nama,
+                                                'kode_pos' => $item->kode_pos,
+                                                'wilayah'  => $item->wilayah,
+                                                'alamat'   => $item->alamat,
+                                                'telepon'  => $item->telepon,
+                                                'catatan'  => $item->catatan,
+                                            ]);
+                                        @endphp
                                         <button type="button" @click="
-                                            activePos = {{ json_encode($item) }};
+                                            activePos = {{ $posJson }};
                                             editUrl = '{{ route('admin.pemeliharaan.data-pos.update', $item->id) }}';
                                             editModalOpen = true;
                                         " style="padding:4px 9px; background:#F1F5F9; color:#334155; border:1px solid #CBD5E1; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer;">
                                             Edit
                                         </button>
                                         <button type="button" @click="
-                                            activePos = {{ json_encode($item) }};
+                                            activePos = {{ $posJson }};
                                             deleteUrl = '{{ route('admin.pemeliharaan.data-pos.destroy', $item->id) }}';
                                             deleteModalOpen = true;
                                         " style="padding:4px 9px; background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer;">

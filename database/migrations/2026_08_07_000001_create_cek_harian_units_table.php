@@ -19,12 +19,16 @@ return new class extends Migration
             $table->string('nama_pemeriksa');
             $table->string('jabatan');
             $table->string('pos')->nullable();
+            $table->string('shift')->nullable();
+            $table->date('tanggal_pemeriksaan')->nullable();
             $table->unsignedInteger('unit_id');
             $table->string('unit_nama')->nullable();
            
             // Step 2 - Pemanasan & BBM
             $table->string('bukti_pemanasan')->nullable();
             $table->string('jenis_bbm'); // solar, bensin
+            $table->string('level_bbm')->nullable();
+            $table->decimal('jumlah_bbm_liter', 8, 2)->nullable();
             $table->string('bukti_bbm')->nullable();
 
             // Step 3 - Tangki & Pompa (Nullable untuk unit Rescue yang tidak memiliki tangki/pompa)

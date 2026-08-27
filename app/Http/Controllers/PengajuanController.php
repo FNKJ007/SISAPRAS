@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Pengajuan;
 use App\Models\Pos;
 use App\Models\Unit;
+use App\Services\CacheService;
 use Illuminate\Http\Request;
 
 class PengajuanController extends Controller
@@ -14,114 +15,129 @@ class PengajuanController extends Controller
      */
     public function index()
     {
-        // Ambil Bidang murni dari Master Data Pegawai (User)
-        $bidangUserDb = \App\Models\User::whereNotNull('bidang')
-            ->where('bidang', '!=', '')
-            ->pluck('bidang')
-            ->map(fn($b) => trim($b))
-            ->filter(fn($b) => !empty($b))
-            ->unique()
-            ->sort()
-            ->values()
-            ->toArray();
+        $meta = CacheService::rememberStats('pengajuan_form_meta', function () {
+            // Ambil Bidang murni dari Master Data Pegawai (User)
+            $bidangUserDb = \App\Models\User::whereNotNull('bidang')
+                ->where('bidang', '!=', '')
+                ->pluck('bidang')
+                ->map(fn($b) => trim($b))
+                ->filter(fn($b) => !empty($b))
+                ->unique()
+                ->sort()
+                ->values()
+                ->toArray();
 
-        $bidangList = [];
-        foreach ($bidangUserDb as $b) {
-            $bidangList[$b] = $b;
-        }
-
-        // Ambil Regu murni dari Master Data Regu (Regu 1 dan Regu 2)
-        $reguDb = \App\Models\Regu::distinct()
-            ->orderBy('nama', 'asc')
-            ->pluck('nama')
-            ->map(fn($r) => ucwords(strtolower(trim($r))))
-            ->unique()
-            ->values()
-            ->toArray();
-
-        if (empty($reguDb)) {
-            $reguDb = ['Regu 1', 'Regu 2'];
-        }
-
-        $reguList = [];
-        foreach ($reguDb as $r) {
-            $reguList[$r] = $r;
-        }
-
-        // Ambil Pos dari Database Admin Data Pos
-        $posDb = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
-        $posList = [];
-        foreach ($posDb as $p) {
-            $posList[$p->nama] = $p->nama;
-        }
-
-        // Ambil Unit Kendaraan dari Database Admin Data Unit
-        $unitDb = Unit::where('status', 'aktif')->orderBy('nomor_lambung', 'asc')->get();
-        $unitList = [];
-        $nomorLambungList = [];
-        $unitDetails = [];
-        foreach ($unitDb as $u) {
-            $label = $u->nomor_lambung;
-            if ($u->plat_nomor) $label .= ' / ' . $u->plat_nomor;
-
-            $unitData = [
-                'id'              => $u->id,
-                'key'             => $u->nomor_lambung,
-                'label'           => $label,
-                'clean_label'     => $label,
-                'nomor_lambung'   => $u->nomor_lambung,
-                'plat_nomor'      => $u->plat_nomor,
-                'jenis_kendaraan' => in_array(strtoupper(trim($u->jenis_kendaraan ?? '')), ['R2', 'R3']) ? strtoupper(trim($u->jenis_kendaraan)) : ucwords(strtolower(trim($u->jenis_kendaraan ?? ''))),
-                'peruntukan'      => $u->peruntukan,
-                'pos'             => $u->pos,
-                'kategori'        => $u->kategori,
-                'pengemudi_1'     => $u->pengemudi_1 && $u->pengemudi_1 !== '—' ? $u->pengemudi_1 : '',
-                'pengemudi_2'     => $u->pengemudi_2 && $u->pengemudi_2 !== '—' ? $u->pengemudi_2 : '',
-            ];
-
-            $unitList[] = $unitData;
-            $nomorLambungList[$u->nomor_lambung] = $label;
-            $unitDetails[$u->nomor_lambung] = $unitData;
-        }
-
-        // Ambil daftar Jenis Kendaraan langsung dari Master Data Unit (Deduplikasi & Title Case)
-        $jenisKendaraanDb = Unit::whereNotNull('jenis_kendaraan')
-            ->where('jenis_kendaraan', '!=', '')
-            ->get()
-            ->pluck('jenis_kendaraan')
-            ->map(fn($v) => in_array(strtoupper(trim($v)), ['R2', 'R3']) ? strtoupper(trim($v)) : ucwords(strtolower(trim($v))))
-            ->unique()
-            ->sort()
-            ->values()
-            ->toArray();
-
-        $jenisKendaraanList = [];
-        if (!empty($jenisKendaraanDb)) {
-            foreach ($jenisKendaraanDb as $jk) {
-                $jenisKendaraanList[$jk] = $jk;
+            $bidangList = [];
+            foreach ($bidangUserDb as $b) {
+                $bidangList[$b] = $b;
             }
-        } else {
-            $jenisKendaraanList = Pengajuan::$jenisKendaraanMap;
-        }
 
-        $currentUser = auth()->user();
+            // Ambil Regu murni dari Master Data Regu (Regu 1 dan Regu 2)
+            $reguDb = \App\Models\Regu::distinct()
+                ->orderBy('nama', 'asc')
+                ->pluck('nama')
+                ->map(fn($r) => ucwords(strtolower(trim($r))))
+                ->unique()
+                ->values()
+                ->toArray();
 
-        // Ambil User Pejabat/Atasan (Danru & Kabid) dari Generate Akun
-        $officials = \App\Models\User::whereNotNull('jabatan')
-            ->where('jabatan', '!=', '')
-            ->get(['name', 'nip', 'jabatan', 'bidang', 'pos', 'regu']);
+            if (empty($reguDb)) {
+                $reguDb = ['Regu 1', 'Regu 2'];
+            }
 
-        $danruUsers = $officials->filter(function($u) {
-            $j = strtolower($u->jabatan);
-            return str_contains($j, 'danru') || str_contains($j, 'komandan') || str_contains($j, 'kasi') || str_contains($j, 'seksi');
-        })->values();
+            $reguList = [];
+            foreach ($reguDb as $r) {
+                $reguList[$r] = $r;
+            }
 
-        $kabidUsers = $officials->filter(function($u) {
-            $j = strtolower($u->jabatan);
-            return str_contains($j, 'kabid') || str_contains($j, 'bidang');
-        })->values();
+            // Ambil Pos dari Database Admin Data Pos
+            $posDb = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
+            $posList = [];
+            foreach ($posDb as $p) {
+                $posList[$p->nama] = $p->nama;
+            }
 
-        $allReguList = \App\Models\Regu::all(['id', 'nama', 'pos', 'bidang', 'danru', 'nip_danru']);
+            // Ambil Unit Kendaraan dari Database Admin Data Unit
+            $unitDb = Unit::where('status', 'aktif')->orderBy('nomor_lambung', 'asc')->get();
+            $unitList = [];
+            $nomorLambungList = [];
+            $unitDetails = [];
+            foreach ($unitDb as $u) {
+                $label = $u->nomor_lambung;
+                if ($u->plat_nomor) $label .= ' / ' . $u->plat_nomor;
+
+                $unitData = [
+                    'id'              => $u->id,
+                    'key'             => $u->nomor_lambung,
+                    'label'           => $label,
+                    'clean_label'     => $label,
+                    'nomor_lambung'   => $u->nomor_lambung,
+                    'plat_nomor'      => $u->plat_nomor,
+                    'jenis_kendaraan' => in_array(strtoupper(trim($u->jenis_kendaraan ?? '')), ['R2', 'R3']) ? strtoupper(trim($u->jenis_kendaraan)) : ucwords(strtolower(trim($u->jenis_kendaraan ?? ''))),
+                    'peruntukan'      => $u->peruntukan,
+                    'pos'             => $u->pos,
+                    'kategori'        => $u->kategori,
+                    'pengemudi_1'     => $u->pengemudi_1 && $u->pengemudi_1 !== '—' ? $u->pengemudi_1 : '',
+                    'pengemudi_2'     => $u->pengemudi_2 && $u->pengemudi_2 !== '—' ? $u->pengemudi_2 : '',
+                ];
+
+                $unitList[] = $unitData;
+                $nomorLambungList[$u->nomor_lambung] = $label;
+                $unitDetails[$u->nomor_lambung] = $unitData;
+            }
+
+            // Ambil daftar Jenis Kendaraan langsung dari Master Data Unit (Deduplikasi & Title Case)
+            $jenisKendaraanDb = Unit::whereNotNull('jenis_kendaraan')
+                ->where('jenis_kendaraan', '!=', '')
+                ->get()
+                ->pluck('jenis_kendaraan')
+                ->map(fn($v) => in_array(strtoupper(trim($v)), ['R2', 'R3']) ? strtoupper(trim($v)) : ucwords(strtolower(trim($v))))
+                ->unique()
+                ->sort()
+                ->values()
+                ->toArray();
+
+            $jenisKendaraanList = [];
+            if (!empty($jenisKendaraanDb)) {
+                foreach ($jenisKendaraanDb as $jk) {
+                    $jenisKendaraanList[$jk] = $jk;
+                }
+            } else {
+                $jenisKendaraanList = Pengajuan::$jenisKendaraanMap;
+            }
+
+            // Ambil User Pejabat/Atasan (Danru & Kabid) dari Generate Akun
+            $officials = \App\Models\User::whereNotNull('jabatan')
+                ->where('jabatan', '!=', '')
+                ->get(['name', 'nip', 'jabatan', 'bidang', 'pos', 'regu']);
+
+            $danruUsers = $officials->filter(function($u) {
+                $j = strtolower($u->jabatan);
+                return str_contains($j, 'danru') || str_contains($j, 'komandan') || str_contains($j, 'kasi') || str_contains($j, 'seksi');
+            })->values();
+
+            $kabidUsers = $officials->filter(function($u) {
+                $j = strtolower($u->jabatan);
+                return str_contains($j, 'kabid') || str_contains($j, 'bidang');
+            })->values();
+
+            $allReguList = \App\Models\Regu::all(['id', 'nama', 'pos', 'bidang', 'danru', 'nip_danru'])->toArray();
+            $danruUsers  = $danruUsers->toArray();
+            $kabidUsers  = $kabidUsers->toArray();
+
+            return compact('bidangList', 'reguList', 'posList', 'unitList', 'unitDetails', 'nomorLambungList', 'jenisKendaraanList', 'danruUsers', 'kabidUsers', 'allReguList');
+        });
+
+        $bidangList         = $meta['bidangList'];
+        $reguList           = $meta['reguList'];
+        $posList            = $meta['posList'];
+        $unitList           = $meta['unitList'];
+        $unitDetails        = $meta['unitDetails'];
+        $nomorLambungList   = $meta['nomorLambungList'];
+        $jenisKendaraanList = $meta['jenisKendaraanList'];
+        $danruUsers         = collect($meta['danruUsers'] ?? [])->map(fn($u) => (object)$u);
+        $kabidUsers         = collect($meta['kabidUsers'] ?? [])->map(fn($u) => (object)$u);
+        $allReguList        = collect($meta['allReguList'] ?? [])->map(fn($r) => (object)$r);
 
         $currentUser = auth()->user();
 
@@ -386,6 +402,7 @@ class PengajuanController extends Controller
 
         $pengajuan = Pengajuan::create($validated);
         \App\Http\Controllers\Admin\InvoiceController::syncPengajuanToAktualInvoice($pengajuan);
+        CacheService::invalidate('pengajuan');
 
         return redirect()
             ->route('pemeliharaan.pengajuan')

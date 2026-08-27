@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Pos;
 use App\Models\Regu;
 use App\Models\User;
+use App\Services\CacheService;
 use Illuminate\Http\Request;
 
 class ReguManagementController extends Controller
@@ -46,38 +47,49 @@ class ReguManagementController extends Controller
 
         $reguList = $query->paginate(15)->withQueryString();
 
-        $allRegu = Regu::all();
-        $posList = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
+        $posList = CacheService::rememberList('active_pos_objects', function () {
+            return Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get(['id', 'nama']);
+        });
 
-        $danruList = User::where(function($q) {
-                $q->where('jabatan', 'LIKE', '%Danru%')
-                  ->orWhere('jabatan', 'LIKE', '%Komandan%');
-            })
-            ->orderBy('name', 'asc')
-            ->get(['id', 'name', 'nip', 'jabatan', 'pos', 'bidang', 'regu']);
+        $danruList = CacheService::rememberList('danru_list', function () {
+            $list = User::where(function ($q) {
+                    $q->where('jabatan', 'LIKE', '%Danru%')
+                      ->orWhere('jabatan', 'LIKE', '%Komandan%');
+                })
+                ->orderBy('name', 'asc')
+                ->get(['id', 'name', 'nip', 'jabatan', 'pos', 'bidang', 'regu']);
 
-        if ($danruList->isEmpty()) {
-            $danruList = User::orderBy('name', 'asc')->get(['id', 'name', 'nip', 'jabatan', 'pos', 'bidang', 'regu']);
-        }
-
-        $allPegawai = User::orderBy('name', 'asc')->get(['id', 'name', 'nip', 'jabatan', 'pos', 'bidang', 'regu']);
+            return $list->isEmpty()
+                ? User::orderBy('name', 'asc')->get(['id', 'name', 'nip', 'jabatan', 'pos', 'bidang', 'regu'])
+                : $list;
+        });
 
         $bidangOptions = ['Pemadam', 'Rescue', 'Pencegahan', 'Command Center'];
+        
+        $kpi = CacheService::rememberStats('regu_kpi', function () {
+            $kpiRaw = Regu::selectRaw("
+                count(*) as total_regu,
+                count(case when status = 'aktif' then 1 end) as regu_aktif,
+                count(case when lower(bidang) like '%pemadam%' then 1 end) as regu_pemadam,
+                count(case when lower(bidang) like '%rescue%' then 1 end) as regu_rescue,
+                count(case when lower(bidang) like '%pencegahan%' then 1 end) as regu_pencegahan,
+                count(case when lower(bidang) like '%command%' then 1 end) as regu_cc
+            ")->first();
 
-        $kpi = [
-            'total_regu'       => $allRegu->count(),
-            'regu_aktif'       => $allRegu->where('status', 'aktif')->count(),
-            'regu_pemadam'     => $allRegu->where('bidang', 'Pemadam')->count(),
-            'regu_rescue'      => $allRegu->where('bidang', 'Rescue')->count(),
-            'regu_pencegahan'  => $allRegu->where('bidang', 'Pencegahan')->count(),
-            'regu_cc'          => $allRegu->where('bidang', 'Command Center')->count(),
-        ];
+            return [
+                'total_regu'       => (int) ($kpiRaw->total_regu ?? 0),
+                'regu_aktif'       => (int) ($kpiRaw->regu_aktif ?? 0),
+                'regu_pemadam'     => (int) ($kpiRaw->regu_pemadam ?? 0),
+                'regu_rescue'      => (int) ($kpiRaw->regu_rescue ?? 0),
+                'regu_pencegahan'  => (int) ($kpiRaw->regu_pencegahan ?? 0),
+                'regu_cc'          => (int) ($kpiRaw->regu_cc ?? 0),
+            ];
+        });
 
         return view('admin.pemeliharaan.data-regu.index', compact(
             'reguList',
             'posList',
             'danruList',
-            'allPegawai',
             'bidangOptions',
             'kpi',
             'posFilter',
@@ -110,6 +122,7 @@ class ReguManagementController extends Controller
         ], $messages);
 
         Regu::create($validated);
+        CacheService::invalidate('regu');
 
         return redirect()
             ->route('admin.pemeliharaan.data-regu')
@@ -141,6 +154,7 @@ class ReguManagementController extends Controller
         ], $messages);
 
         $regu->update($validated);
+        CacheService::invalidate('regu');
 
         return redirect()
             ->route('admin.pemeliharaan.data-regu')
@@ -155,6 +169,7 @@ class ReguManagementController extends Controller
         $regu = Regu::findOrFail($id);
         $nama = "{$regu->nama} - {$regu->pos} ({$regu->bidang})";
         $regu->delete();
+        CacheService::invalidate('regu');
 
         return redirect()
             ->route('admin.pemeliharaan.data-regu')

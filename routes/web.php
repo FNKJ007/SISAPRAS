@@ -18,8 +18,6 @@ use App\Http\Controllers\CekHarianAlatPencegahanController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\Admin\InvoiceController;
-use App\Http\Controllers\Admin\AlokasiKebersihanController;
-use App\Http\Controllers\Admin\MonitoringKejadianController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -188,10 +186,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ]);
         Route::get('/kartu-kendali-aktual',                [AdminController::class, 'pemeliharaanKartuKendaliAktual'])->name('kartu-kendali-aktual');
         Route::get('/kartu-kendali-pembayaran',                [AdminController::class, 'pemeliharaanKartuKendaliPembayaran'])->name('kartu-kendali-pembayaran');
-        
-        // Alokasi Peralatan Kebersihan Kendaraan SPI
-        Route::get('/alokasi-kebersihan', [AlokasiKebersihanController::class, 'index'])->name('alokasi-kebersihan.index');
-        Route::put('/alokasi-kebersihan/{id}', [AlokasiKebersihanController::class, 'update'])->name('alokasi-kebersihan.update');
 
         // Data Unit CRUD Routes
         Route::get('/data-unit',                    [UnitManagementController::class, 'index'])->name('data-unit');
@@ -254,18 +248,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::prefix('command-center')->name('command-center.')->group(function () {
         Route::get('/data-peralatan', [AdminController::class, 'commandCenterDataPeralatan'])->name('data-peralatan');
         Route::get('/pengecekan',     [AdminController::class, 'commandCenterPengecekan'])->name('pengecekan');
-        Route::get('/riwayat',        [AdminController::class, 'commandCenterRiwayat'])->name('riwayat');
-    });
-
-    // APAR & Kejadian
-    Route::prefix('apar')->name('apar.')->group(function () {
-        Route::get('/data-apar',        [AdminController::class, 'aparDataApar'])->name('data-apar');
-        Route::get('/laporan-kejadian', [AdminController::class, 'aparLaporanKejadian'])->name('laporan-kejadian');
-        // Monitoring Kejadian CRUD Routes
-        Route::get('/monitoring-kejadian',          [MonitoringKejadianController::class, 'index'])->name('monitoring-kejadian');
-        Route::post('/monitoring-kejadian',         [MonitoringKejadianController::class, 'store'])->name('monitoring-kejadian.store');
-        Route::put('/monitoring-kejadian/{id}',     [MonitoringKejadianController::class, 'update'])->name('monitoring-kejadian.update');
-        Route::delete('/monitoring-kejadian/{id}',  [MonitoringKejadianController::class, 'destroy'])->name('monitoring-kejadian.destroy');
     });
 
     // Laporan

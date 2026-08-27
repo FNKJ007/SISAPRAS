@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\CacheService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -41,36 +42,48 @@ class PegawaiManagementController extends Controller
 
         $pegawaiList = $query->paginate(15)->withQueryString();
 
-        $allUsers = User::all();
+        $kpi = CacheService::rememberStats('pegawai_kpi', function () {
+            $allUsers = User::select(['id', 'jabatan'])->get();
+            return [
+                'total_pegawai' => $allUsers->count(),
+                'pejabat'       => $allUsers->filter(fn($u) => preg_match('/(kepala|kabid|kasi|sekretaris|kadis|kasubag|subbag|sub\s*bagian)/i', (string) $u->jabatan))->count(),
+                'danru'         => $allUsers->filter(fn($u) => preg_match('/(danru|komandan)/i', (string) $u->jabatan))->count(),
+                'petugas'       => $allUsers->filter(fn($u) => !preg_match('/(kepala|kabid|kasi|sekretaris|kadis|kasubag|subbag|sub\s*bagian|danru|komandan)/i', (string) $u->jabatan))->count(),
+            ];
+        });
 
-        $kpi = [
-            'total_pegawai' => $allUsers->count(),
-            'pejabat'       => $allUsers->filter(fn($u) => preg_match('/(kepala|kabid|kasi|sekretaris|kadis|kasubag|subbag|sub\s*bagian)/i', (string) $u->jabatan))->count(),
-            'danru'         => $allUsers->filter(fn($u) => preg_match('/(danru|komandan)/i', (string) $u->jabatan))->count(),
-            'petugas'       => $allUsers->filter(fn($u) => !preg_match('/(kepala|kabid|kasi|sekretaris|kadis|kasubag|subbag|sub\s*bagian|danru|komandan)/i', (string) $u->jabatan))->count(),
-        ];
+        $posList = CacheService::rememberList('active_pos_objects', function () {
+            return \App\Models\Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get(['id', 'nama']);
+        });
 
-        $posList = \App\Models\Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
+        $metaData = CacheService::rememberStats('pegawai_meta', function () {
+            $existingBidangList = User::whereNotNull('bidang')
+                ->where('bidang', '!=', '')
+                ->distinct()
+                ->pluck('bidang')
+                ->map(fn($v) => trim($v))
+                ->filter(fn($v) => !empty($v))
+                ->unique()
+                ->sort()
+                ->values()
+                ->toArray();
 
-        $existingBidangList = User::whereNotNull('bidang')
-            ->where('bidang', '!=', '')
-            ->pluck('bidang')
-            ->map(fn($v) => trim($v))
-            ->filter(fn($v) => !empty($v))
-            ->unique()
-            ->sort()
-            ->values()
-            ->toArray();
+            $existingJabatanList = User::whereNotNull('jabatan')
+                ->where('jabatan', '!=', '')
+                ->distinct()
+                ->pluck('jabatan')
+                ->map(fn($v) => trim($v))
+                ->filter(fn($v) => !empty($v))
+                ->unique()
+                ->sort()
+                ->values()
+                ->toArray();
 
-        $existingJabatanList = User::whereNotNull('jabatan')
-            ->where('jabatan', '!=', '')
-            ->pluck('jabatan')
-            ->map(fn($v) => trim($v))
-            ->filter(fn($v) => !empty($v))
-            ->unique()
-            ->sort()
-            ->values()
-            ->toArray();
+            return compact('existingBidangList', 'existingJabatanList');
+        });
+
+        $existingBidangList = $metaData['existingBidangList'];
+        $existingJabatanList = $metaData['existingJabatanList'];
 
         return view('admin.pemeliharaan.data-pegawai.index', compact(
             'pegawaiList',
@@ -126,6 +139,7 @@ class PegawaiManagementController extends Controller
             'has_account' => false,
             'status'      => 'aktif',
         ]);
+        CacheService::invalidate('user');
 
         return redirect()
             ->route('admin.pemeliharaan.data-pegawai')
@@ -164,6 +178,7 @@ class PegawaiManagementController extends Controller
             'regu'    => $validated['regu'] ?? $user->regu,
             'no_hp'   => $validated['no_hp'] ?? $user->no_hp,
         ]);
+        CacheService::invalidate('user');
 
         return redirect()
             ->route('admin.pemeliharaan.data-pegawai')
@@ -178,6 +193,7 @@ class PegawaiManagementController extends Controller
         $user = User::findOrFail($id);
         $name = $user->name;
         $user->delete();
+        CacheService::invalidate('user');
 
         return redirect()
             ->route('admin.pemeliharaan.data-pegawai')

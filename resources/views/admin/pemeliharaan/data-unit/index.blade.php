@@ -85,7 +85,8 @@
                     <select name="pos" onchange="this.form.submit()" style="padding:6px 12px; font-size:12px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#1E293B; font-weight:600;">
                         <option value="semua" @selected($posFilter === 'semua')>Semua Posko</option>
                         @foreach($posList as $pos)
-                            <option value="{{ $pos->nama }}" @selected($posFilter === $pos->nama)>{{ $pos->nama }}</option>
+                            @php $pName = is_string($pos) ? $pos : ($pos->nama ?? ($pos['nama'] ?? '')); @endphp
+                            <option value="{{ $pName }}" @selected($posFilter === $pName)>{{ $pName }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -370,7 +371,8 @@
                         <select name="pos" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
                             <option value="">— Pilih Pos —</option>
                             @foreach($posList as $pos)
-                                <option value="{{ $pos->nama }}" @selected(old('pos') == $pos->nama)>{{ $pos->nama }}</option>
+                                @php $pName = is_string($pos) ? $pos : ($pos->nama ?? ($pos['nama'] ?? '')); @endphp
+                                <option value="{{ $pName }}" @selected(old('pos') == $pName)>{{ $pName }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -390,7 +392,7 @@
                              open: false,
                              search: '{{ old('pengemudi_1', '') }}',
                              get filteredPegawai() {
-                                 if (!this.search || this.search.trim() === '') return {{ json_encode($pegawaiList) }};
+                                 if (!this.search || this.search.trim() === '') return [];
                                  let q = this.search.toLowerCase();
                                  return {{ json_encode($pegawaiList) }}.filter(p => 
                                      p.name.toLowerCase().includes(q) || 
@@ -440,7 +442,7 @@
                              open: false,
                              search: '{{ old('pengemudi_2', '') }}',
                              get filteredPegawai() {
-                                 if (!this.search || this.search.trim() === '') return {{ json_encode($pegawaiList) }};
+                                 if (!this.search || this.search.trim() === '') return [];
                                  let q = this.search.toLowerCase();
                                  return {{ json_encode($pegawaiList) }}.filter(p => 
                                      p.name.toLowerCase().includes(q) || 
@@ -775,7 +777,8 @@
                                 <select name="pos" x-model="activeUnit.pos" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
                                     <option value="">— Pilih Pos —</option>
                                     @foreach($posList as $pos)
-                                        <option value="{{ $pos->nama }}" :selected="activeUnit.pos === '{{ $pos->nama }}'">{{ $pos->nama }}</option>
+                                        @php $pName = is_string($pos) ? $pos : ($pos->nama ?? ($pos['nama'] ?? '')); @endphp
+                                        <option value="{{ $pName }}" :selected="activeUnit.pos === '{{ $pName }}'">{{ $pName }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -795,7 +798,7 @@
                                  x-data="{
                                      open: false,
                                      get filteredPegawai() {
-                                         if (!activeUnit.pengemudi_1 || activeUnit.pengemudi_1.trim() === '') return {{ json_encode($pegawaiList) }};
+                                         if (!activeUnit.pengemudi_1 || activeUnit.pengemudi_1.trim() === '') return [];
                                          let q = activeUnit.pengemudi_1.toLowerCase();
                                          return {{ json_encode($pegawaiList) }}.filter(p => 
                                              p.name.toLowerCase().includes(q) || 
@@ -844,7 +847,7 @@
                                  x-data="{
                                      open: false,
                                      get filteredPegawai() {
-                                         if (!activeUnit.pengemudi_2 || activeUnit.pengemudi_2.trim() === '') return {{ json_encode($pegawaiList) }};
+                                         if (!activeUnit.pengemudi_2 || activeUnit.pengemudi_2.trim() === '') return [];
                                          let q = activeUnit.pengemudi_2.toLowerCase();
                                          return {{ json_encode($pegawaiList) }}.filter(p => 
                                              p.name.toLowerCase().includes(q) || 

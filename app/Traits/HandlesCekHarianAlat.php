@@ -59,6 +59,8 @@ trait HandlesCekHarianAlat
                 }
             }
 
+            $fotoUmumData = $this->imageToDataUri($record->foto_umum ?? null);
+
             $pdf = Pdf::loadView('pdf.cek-harian-alat', [
                 'record'        => $record,
                 'pemeriksa_nip' => $pemeriksaNip,

@@ -178,8 +178,12 @@
                 </thead>
                 <tbody style="divide-y:1px solid #F1F5F9;">
                     @forelse($absenUnitList as $unitAbsen)
+                        @php 
+                            $unitAbsen = (object) $unitAbsen; 
+                            $isSudahDicek = !empty($unitAbsen->sudah_dicek);
+                        @endphp
                         <tr style="border-bottom:1px solid #F1F5F9;"
-                            x-show="filterAbsen === 'semua' || (filterAbsen === 'sudah' && {{ $unitAbsen->sudah_dicek ? 'true' : 'false' }}) || (filterAbsen === 'belum' && {{ !$unitAbsen->sudah_dicek ? 'true' : 'false' }})"
+                            x-show="filterAbsen === 'semua' || (filterAbsen === 'sudah' && {{ $isSudahDicek ? 'true' : 'false' }}) || (filterAbsen === 'belum' && {{ !$isSudahDicek ? 'true' : 'false' }})"
                             class="hover:bg-gray-50/80 transition-colors">
                             <td style="padding:10px 16px;">
                                 <strong style="color:#0F172A; font-weight:800; font-size:12.5px;">{{ strtoupper($unitAbsen->nomor_lambung ?? '—') }}</strong>
@@ -328,12 +332,14 @@
                 <div style="padding:16px 20px; display:flex; flex-direction:column; gap:12px;">
                     @forelse($posDistribution as $posItem)
                         @php
-                            $pct = round(($posItem->total / max($totalUnit, 1)) * 100);
+                            $posName  = is_object($posItem) ? ($posItem->pos ?? '') : (is_array($posItem) ? ($posItem['pos'] ?? '') : (string) $posItem);
+                            $posTotal = is_object($posItem) ? (int) ($posItem->total ?? 0) : (is_array($posItem) ? (int) ($posItem['total'] ?? 0) : 0);
+                            $pct      = round(($posTotal / max($totalUnit, 1)) * 100);
                         @endphp
                         <div>
                             <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">
-                                <span>{{ $posItem->pos }}</span>
-                                <span>{{ $posItem->total }} Unit ({{ $pct }}%)</span>
+                                <span>{{ $posName }}</span>
+                                <span>{{ $posTotal }} Unit ({{ $pct }}%)</span>
                             </div>
                             <div style="width:100%; height:7px; background:#F1F5F9; border-radius:10px; overflow:hidden;">
                                 <div style="width:{{ $pct }}%; height:100%; background:linear-gradient(90deg, #1B2A6B, #3B82F6); border-radius:10px;"></div>
@@ -355,13 +361,25 @@
                 </div>
                 <div style="padding:4px 20px 16px 20px;">
                     @forelse($activities as $act)
+                        @php
+                            $actIcon  = is_object($act) ? ($act->icon ?? 'activity') : ($act['icon'] ?? 'activity');
+                            $actBg    = is_object($act) ? ($act->bg ?? 'rgba(27,42,107,.10)') : ($act['bg'] ?? 'rgba(27,42,107,.10)');
+                            $actColor = is_object($act) ? ($act->color ?? '#1B2A6B') : ($act['color'] ?? '#1B2A6B');
+                            $actText  = is_object($act) ? ($act->text ?? '') : ($act['text'] ?? '');
+                            $actTime  = is_object($act) ? ($act->created_at ?? '') : ($act['created_at'] ?? '');
+                            if ($actTime instanceof \Carbon\Carbon) {
+                                $actTimeStr = $actTime->diffForHumans();
+                            } else {
+                                $actTimeStr = (string) $actTime;
+                            }
+                        @endphp
                         <div style="display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid #F1F5F9;">
-                            <div style="width:32px; height:32px; border-radius:10px; background:{{ $act->bg }}; color:{{ $act->color }}; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">
-                                <i data-lucide="{{ $act->icon }}" style="width:15px; height:15px;"></i>
+                            <div style="width:32px; height:32px; border-radius:10px; background:{{ $actBg }}; color:{{ $actColor }}; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">
+                                <i data-lucide="{{ $actIcon }}" style="width:15px; height:15px;"></i>
                             </div>
                             <div style="flex:1; min-width:0;">
-                                <div style="font-size:12px; font-weight:700; color:#1E293B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $act->text }}</div>
-                                <div style="font-size:10.5px; font-weight:600; color:#64748B; margin-top:2px;">{{ $act->created_at->diffForHumans() }}</div>
+                                <div style="font-size:12px; font-weight:700; color:#1E293B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $actText }}</div>
+                                <div style="font-size:10.5px; font-weight:600; color:#64748B; margin-top:2px;">{{ $actTimeStr }}</div>
                             </div>
                         </div>
                     @empty

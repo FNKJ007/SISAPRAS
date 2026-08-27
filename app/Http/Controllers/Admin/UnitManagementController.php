@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Unit;
 use App\Models\Pos;
 use App\Models\User;
+use App\Services\CacheService;
 use Illuminate\Http\Request;
 
 class UnitManagementController extends Controller
@@ -51,7 +52,6 @@ class UnitManagementController extends Controller
                   ->orWhere('merk_tipe', 'LIKE', "%{$searchQuery}%")
                   ->orWhere('jenis_kendaraan', 'LIKE', "%{$searchQuery}%")
                   ->orWhere('peruntukan', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('jenis_peruntukan', 'LIKE', "%{$searchQuery}%")
                   ->orWhere('pengemudi_1', 'LIKE', "%{$searchQuery}%")
                   ->orWhere('pengemudi_2', 'LIKE', "%{$searchQuery}%");
             });
@@ -59,53 +59,75 @@ class UnitManagementController extends Controller
 
         $unitList = $query->paginate(15)->withQueryString();
 
-        $kpi = [
-            'total'     => Unit::count(),
-            'pemadam'   => Unit::where('kategori', 'LIKE', 'pemadam')->count(),
-            'rescue'    => Unit::where('kategori', 'LIKE', 'rescue')->count(),
-            'aktif'     => Unit::where('status', 'aktif')->count(),
-            'perbaikan' => Unit::where('status', 'perbaikan')->count(),
-        ];
+        $kpi = CacheService::rememberStats('unit_kpi', function () {
+            $kpiRaw = Unit::selectRaw("
+                count(*) as total,
+                count(case when lower(kategori) like '%pemadam%' then 1 end) as pemadam,
+                count(case when lower(kategori) like '%rescue%' then 1 end) as rescue,
+                count(case when status = 'aktif' then 1 end) as aktif,
+                count(case when status = 'perbaikan' then 1 end) as perbaikan
+            ")->first();
 
-        $posList = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
+            return [
+                'total'     => (int) ($kpiRaw->total ?? 0),
+                'pemadam'   => (int) ($kpiRaw->pemadam ?? 0),
+                'rescue'    => (int) ($kpiRaw->rescue ?? 0),
+                'aktif'     => (int) ($kpiRaw->aktif ?? 0),
+                'perbaikan' => (int) ($kpiRaw->perbaikan ?? 0),
+            ];
+        });
 
-        $defaultTypes = ['Pancar', 'Supply', 'Pompa', 'Rescue', 'R2', 'R3', 'Pick Up', 'Lainnya'];
-        $dbTypes = Unit::whereNotNull('jenis_kendaraan')
-            ->where('jenis_kendaraan', '!=', '')
-            ->where('jenis_kendaraan', '!=', 'Komando')
-            ->get()
-            ->pluck('jenis_kendaraan')
-            ->map(function ($v) {
-                $v = trim($v);
-                if (in_array(strtoupper($v), ['R2', 'R3', 'R4'])) {
-                    return strtoupper($v);
-                }
-                return ucwords(strtolower($v));
-            })
-            ->toArray();
+        $posList = CacheService::rememberList('active_pos_objects', function () {
+            return Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get(['id', 'nama']);
+        });
 
-        $existingJenisList = collect($defaultTypes)
-            ->merge($dbTypes)
-            ->filter(fn($v) => $v !== 'Komando')
-            ->unique()
-            ->values()
-            ->toArray();
+        $typeData = CacheService::rememberStats('unit_types', function () {
+            $defaultTypes = ['Pancar', 'Supply', 'Pompa', 'Rescue', 'R2', 'R3', 'Pick Up', 'Lainnya'];
+            $defaultKategori = ['Pemadam', 'Rescue', 'Pencegahan', 'Komando'];
 
-        $defaultKategori = ['Pemadam', 'Rescue', 'Pencegahan', 'Komando'];
-        $dbKategori = Unit::whereNotNull('kategori')
-            ->where('kategori', '!=', '')
-            ->get()
-            ->pluck('kategori')
-            ->map(fn($v) => ucwords(strtolower(str_replace('_', ' ', trim($v)))))
-            ->toArray();
+            $dbTypes = Unit::whereNotNull('jenis_kendaraan')
+                ->where('jenis_kendaraan', '!=', '')
+                ->where('jenis_kendaraan', '!=', 'Komando')
+                ->distinct()
+                ->pluck('jenis_kendaraan')
+                ->map(function ($v) {
+                    $v = trim($v);
+                    if (in_array(strtoupper($v), ['R2', 'R3', 'R4'])) {
+                        return strtoupper($v);
+                    }
+                    return ucwords(strtolower($v));
+                })
+                ->toArray();
 
-        $existingKategoriList = collect($defaultKategori)
-            ->merge($dbKategori)
-            ->unique()
-            ->values()
-            ->toArray();
+            $existingJenisList = collect($defaultTypes)
+                ->merge($dbTypes)
+                ->filter(fn($v) => $v !== 'Komando')
+                ->unique()
+                ->values()
+                ->toArray();
 
-        $pegawaiList = User::orderBy('name', 'asc')->get(['id', 'name', 'nip', 'jabatan', 'pos']);
+            $dbKategori = Unit::whereNotNull('kategori')
+                ->where('kategori', '!=', '')
+                ->distinct()
+                ->pluck('kategori')
+                ->map(fn($v) => ucwords(strtolower(str_replace('_', ' ', trim($v)))))
+                ->toArray();
+
+            $existingKategoriList = collect($defaultKategori)
+                ->merge($dbKategori)
+                ->unique()
+                ->values()
+                ->toArray();
+
+            return compact('existingJenisList', 'existingKategoriList');
+        });
+
+        $existingJenisList = $typeData['existingJenisList'];
+        $existingKategoriList = $typeData['existingKategoriList'];
+
+        $pegawaiList = CacheService::rememberList('pegawai_list', function () {
+            return User::orderBy('name', 'asc')->get(['id', 'name', 'nip', 'jabatan', 'pos']);
+        });
 
         return view('admin.pemeliharaan.data-unit.index', compact(
             'unitList',
@@ -169,7 +191,6 @@ class UnitManagementController extends Controller
             'cc'               => 'nullable|integer|min:50|max:30000',
             'jenis_kendaraan'  => 'nullable|string|max:100',
             'peruntukan'       => 'nullable|string|max:100',
-            'jenis_peruntukan' => 'nullable|string|max:255',
             'pos'              => 'nullable|string|max:255',
             'pengemudi_1'      => 'nullable|string|max:255',
             'pengemudi_2'      => 'nullable|string|max:255',
@@ -191,11 +212,9 @@ class UnitManagementController extends Controller
         if (empty($validated['peruntukan'])) {
             $validated['peruntukan'] = $validated['kategori'];
         }
-        if (empty($validated['jenis_peruntukan'])) {
-            $validated['jenis_peruntukan'] = trim(($validated['jenis_kendaraan'] ?? '') . ' / ' . $validated['kategori'], ' /');
-        }
 
         Unit::create($validated);
+        CacheService::invalidate('unit');
 
         return redirect()
             ->route('admin.pemeliharaan.data-unit')
@@ -232,7 +251,6 @@ class UnitManagementController extends Controller
             'cc'               => 'nullable|integer|min:50|max:30000',
             'jenis_kendaraan'  => 'nullable|string|max:100',
             'peruntukan'       => 'nullable|string|max:100',
-            'jenis_peruntukan' => 'nullable|string|max:255',
             'pos'              => 'nullable|string|max:255',
             'pengemudi_1'      => 'nullable|string|max:255',
             'pengemudi_2'      => 'nullable|string|max:255',
@@ -253,9 +271,6 @@ class UnitManagementController extends Controller
 
         if (empty($validated['peruntukan'])) {
             $validated['peruntukan'] = $validated['kategori'];
-        }
-        if (empty($validated['jenis_peruntukan'])) {
-            $validated['jenis_peruntukan'] = trim(($validated['jenis_kendaraan'] ?? '') . ' / ' . $validated['kategori'], ' /');
         }
 
         $oldStatus = $unit->status;
@@ -283,8 +298,8 @@ class UnitManagementController extends Controller
                 }
                 $p->save();
             }
-            Unit::syncStatusAll();
         }
+        CacheService::invalidate('unit');
 
         return redirect()
             ->route('admin.pemeliharaan.data-unit')
@@ -322,6 +337,7 @@ class UnitManagementController extends Controller
         }
 
         Unit::syncStatusAll();
+        CacheService::invalidate('unit');
 
         return redirect()
             ->route('admin.pemeliharaan.data-unit')
@@ -336,6 +352,7 @@ class UnitManagementController extends Controller
         $unit = Unit::findOrFail($id);
         $nama = $unit->nama;
         $unit->delete();
+        CacheService::invalidate('unit');
 
         return redirect()
             ->route('admin.pemeliharaan.data-unit')
@@ -362,6 +379,7 @@ class UnitManagementController extends Controller
         } elseif ($type === 'kategori') {
             Unit::where('kategori', 'LIKE', $value)->update(['kategori' => null]);
         }
+        CacheService::invalidate('unit');
 
         return response()->json([
             'success' => true,
@@ -376,39 +394,31 @@ class UnitManagementController extends Controller
     {
         $unit = Unit::findOrFail($id);
 
-        $unitLambungClean = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $unit->nomor_lambung ?? ''));
-        $unitPlatClean    = $unit->plat_nomor ? strtolower(preg_replace('/[^A-Za-z0-9]/', '', $unit->plat_nomor)) : '';
+        // Cari Pengajuan Perbaikan yang terkait dengan Unit ini langsung dari DB
+        $pengajuanList = \App\Models\Pengajuan::where(function ($q) use ($unit) {
+                $q->where('unit_id', $unit->id);
+                if (!empty($unit->nomor_lambung)) {
+                    $q->orWhere('nomor_lambung', 'LIKE', '%' . $unit->nomor_lambung . '%');
+                }
+                if (!empty($unit->plat_nomor)) {
+                    $q->orWhere('nomor_lambung', 'LIKE', '%' . $unit->plat_nomor . '%');
+                }
+            })
+            ->latest('id')
+            ->get();
 
-        // Cari Pengajuan Perbaikan yang terkait dengan Unit ini
-        $pengajuanList = \App\Models\Pengajuan::all()->filter(function ($p) use ($unit, $unitLambungClean, $unitPlatClean) {
-            if (!empty($p->unit_id) && $p->unit_id == $unit->id) {
-                return true;
-            }
-            $pLambungClean = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $p->nomor_lambung ?? ''));
-            if ($unitLambungClean && str_contains($pLambungClean, $unitLambungClean)) {
-                return true;
-            }
-            if ($unitPlatClean && str_contains($pLambungClean, $unitPlatClean)) {
-                return true;
-            }
-            return false;
-        })->sortByDesc('created_at')->values();
-
-        // Cari Invoice / Realisasi Pembayaran yang terkait dengan Unit ini
-        $invoiceList = \App\Models\Invoice::all()->filter(function ($inv) use ($unit, $unitLambungClean, $unitPlatClean) {
-            if (!empty($inv->unit_id) && $inv->unit_id == $unit->id) {
-                return true;
-            }
-            $invLambungClean = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $inv->no_lambung ?? ''));
-            if ($unitLambungClean && str_contains($invLambungClean, $unitLambungClean)) {
-                return true;
-            }
-            $invPolClean = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $inv->no_pol ?? ''));
-            if ($unitPlatClean && str_contains($invPolClean, $unitPlatClean)) {
-                return true;
-            }
-            return false;
-        })->sortByDesc('tanggal_invoice')->values();
+        // Cari Invoice / Realisasi Pembayaran yang terkait dengan Unit ini langsung dari DB
+        $invoiceList = \App\Models\Invoice::where(function ($q) use ($unit) {
+                $q->where('unit_id', $unit->id);
+                if (!empty($unit->nomor_lambung)) {
+                    $q->orWhere('no_lambung', 'LIKE', '%' . $unit->nomor_lambung . '%');
+                }
+                if (!empty($unit->plat_nomor)) {
+                    $q->orWhere('no_pol', 'LIKE', '%' . $unit->plat_nomor . '%');
+                }
+            })
+            ->latest('tanggal_invoice')
+            ->get();
 
         // Pisahkan menjadi Kartu Kendali Pembayaran vs Kartu Kendali Aktual
         $kendaliPembayaranList = $invoiceList->filter(fn($inv) => ($inv->kategori_monitoring ?? 'invoice') !== 'aktual')->values();
@@ -490,39 +500,31 @@ class UnitManagementController extends Controller
     {
         $unit = Unit::findOrFail($id);
 
-        $unitLambungClean = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $unit->nomor_lambung ?? ''));
-        $unitPlatClean    = $unit->plat_nomor ? strtolower(preg_replace('/[^A-Za-z0-9]/', '', $unit->plat_nomor)) : '';
+        // Cari Pengajuan Perbaikan yang terkait dengan Unit ini langsung dari DB
+        $pengajuanList = \App\Models\Pengajuan::where(function ($q) use ($unit) {
+                $q->where('unit_id', $unit->id);
+                if (!empty($unit->nomor_lambung)) {
+                    $q->orWhere('nomor_lambung', 'LIKE', '%' . $unit->nomor_lambung . '%');
+                }
+                if (!empty($unit->plat_nomor)) {
+                    $q->orWhere('nomor_lambung', 'LIKE', '%' . $unit->plat_nomor . '%');
+                }
+            })
+            ->latest('id')
+            ->get();
 
-        // Cari Pengajuan Perbaikan yang terkait dengan Unit ini
-        $pengajuanList = \App\Models\Pengajuan::all()->filter(function ($p) use ($unit, $unitLambungClean, $unitPlatClean) {
-            if (!empty($p->unit_id) && $p->unit_id == $unit->id) {
-                return true;
-            }
-            $pLambungClean = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $p->nomor_lambung ?? ''));
-            if ($unitLambungClean && str_contains($pLambungClean, $unitLambungClean)) {
-                return true;
-            }
-            if ($unitPlatClean && str_contains($pLambungClean, $unitPlatClean)) {
-                return true;
-            }
-            return false;
-        })->sortByDesc('created_at')->values();
-
-        // Cari Invoice / Realisasi Pembayaran yang terkait dengan Unit ini
-        $invoiceList = \App\Models\Invoice::all()->filter(function ($inv) use ($unit, $unitLambungClean, $unitPlatClean) {
-            if (!empty($inv->unit_id) && $inv->unit_id == $unit->id) {
-                return true;
-            }
-            $invLambungClean = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $inv->no_lambung ?? ''));
-            if ($unitLambungClean && str_contains($invLambungClean, $unitLambungClean)) {
-                return true;
-            }
-            $invPolClean = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $inv->no_pol ?? ''));
-            if ($unitPlatClean && str_contains($invPolClean, $unitPlatClean)) {
-                return true;
-            }
-            return false;
-        })->sortByDesc('tanggal_invoice')->values();
+        // Cari Invoice / Realisasi Pembayaran yang terkait dengan Unit ini langsung dari DB
+        $invoiceList = \App\Models\Invoice::where(function ($q) use ($unit) {
+                $q->where('unit_id', $unit->id);
+                if (!empty($unit->nomor_lambung)) {
+                    $q->orWhere('no_lambung', 'LIKE', '%' . $unit->nomor_lambung . '%');
+                }
+                if (!empty($unit->plat_nomor)) {
+                    $q->orWhere('no_pol', 'LIKE', '%' . $unit->plat_nomor . '%');
+                }
+            })
+            ->latest('tanggal_invoice')
+            ->get();
 
         // Pisahkan menjadi Kartu Kendali Pembayaran vs Kartu Kendali Aktual
         $kendaliPembayaranList = $invoiceList->filter(fn($inv) => ($inv->kategori_monitoring ?? 'invoice') !== 'aktual')->values();

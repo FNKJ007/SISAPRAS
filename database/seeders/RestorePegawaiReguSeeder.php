@@ -50,7 +50,7 @@ class RestorePegawaiReguSeeder extends Seeder
                 'name'       => 'Asep Deri Hermawan',
                 'nip'        => '233040022',
                 'email'      => '233040022@disdamkar.go.id',
-                'password'   => '$2y$12$NlmjDskqRzL5/pU3a5kM3.a4c4K/hF9gUu1QO7zH2Y.9S9Z9e0yKy',
+                'password'   => \Illuminate\Support\Facades\Hash::make('27Agustus'),
                 'role'       => 'admin',
                 'jabatan'    => 'Anggota / Petugas',
                 'bidang'     => 'Pemadam',

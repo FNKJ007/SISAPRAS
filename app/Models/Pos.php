@@ -17,13 +17,6 @@ class Pos extends Model
         'personil_pemadam',
         'personil_rescue',
         'personil_cc',
-        'unit_truck_pancar',
-        'unit_motor_roda3',
-        'unit_motor_roda2',
-        'unit_pompa',
-        'unit_rescue',
-        'unit_water_supply',
-        'unit_lainnya',
         'alamat',
         'wilayah',
         'telepon',
@@ -49,36 +42,57 @@ class Pos extends Model
      */
     public function getUnitTruckPancarAttribute(): int
     {
+        if (array_key_exists('unit_truck_pancar', $this->attributes)) {
+            return (int) $this->attributes['unit_truck_pancar'];
+        }
         return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'Pancar')->count();
     }
 
     public function getUnitMotorRoda3Attribute(): int
     {
+        if (array_key_exists('unit_motor_roda3', $this->attributes)) {
+            return (int) $this->attributes['unit_motor_roda3'];
+        }
         return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'R3')->count();
     }
 
     public function getUnitMotorRoda2Attribute(): int
     {
+        if (array_key_exists('unit_motor_roda2', $this->attributes)) {
+            return (int) $this->attributes['unit_motor_roda2'];
+        }
         return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'R2')->count();
     }
 
     public function getUnitPompaAttribute(): int
     {
+        if (array_key_exists('unit_pompa', $this->attributes)) {
+            return (int) $this->attributes['unit_pompa'];
+        }
         return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'Pompa')->count();
     }
 
     public function getUnitRescueAttribute(): int
     {
+        if (array_key_exists('unit_rescue', $this->attributes)) {
+            return (int) $this->attributes['unit_rescue'];
+        }
         return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'Rescue')->count();
     }
 
     public function getUnitWaterSupplyAttribute(): int
     {
+        if (array_key_exists('unit_water_supply', $this->attributes)) {
+            return (int) $this->attributes['unit_water_supply'];
+        }
         return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'Supply')->count();
     }
 
     public function getUnitLainnyaAttribute(): int
     {
+        if (array_key_exists('unit_lainnya', $this->attributes)) {
+            return (int) $this->attributes['unit_lainnya'];
+        }
         return Unit::where('pos', 'LIKE', $this->nama)
             ->where(function($q) {
                 $q->whereNotIn('jenis_kendaraan', ['Pancar', 'R3', 'R2', 'Pompa', 'Rescue', 'Supply'])
@@ -89,6 +103,9 @@ class Pos extends Model
 
     public function getUnitLainnyaListAttribute()
     {
+        if (array_key_exists('unit_lainnya_list', $this->attributes)) {
+            return $this->attributes['unit_lainnya_list'];
+        }
         return Unit::where('pos', 'LIKE', $this->nama)
             ->where(function($q) {
                 $q->whereNotIn('jenis_kendaraan', ['Pancar', 'R3', 'R2', 'Pompa', 'Rescue', 'Supply'])
@@ -102,6 +119,9 @@ class Pos extends Model
      */
     public function getTotalUnitAttribute(): int
     {
+        if (array_key_exists('total_unit', $this->attributes)) {
+            return (int) $this->attributes['total_unit'];
+        }
         return Unit::where('pos', 'LIKE', $this->nama)->count();
     }
 

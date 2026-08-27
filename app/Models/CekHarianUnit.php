@@ -21,6 +21,7 @@ class CekHarianUnit extends Model
         'unit_nama',
         'kebersihan_unit',
         'shift',
+        'tanggal_pemeriksaan',
 
         'bukti_pemanasan',
         'bukti_pencucian',
