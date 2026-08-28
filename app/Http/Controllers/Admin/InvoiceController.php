@@ -20,7 +20,7 @@ class InvoiceController extends Controller
     {
         $cleanLambung = trim(explode('/', $p->nomor_lambung)[0]);
         $unit = Unit::where('nomor_lambung', $cleanLambung)->first()
-             ?? Unit::where('nomor_lambung', 'LIKE', "%{$cleanLambung}%")->first()
+             ?? Unit::where('nomor_lambung', 'ILIKE', "%{$cleanLambung}%")->first()
              ?? Unit::first();
 
         $unitId = $unit ? $unit->id : 1;
@@ -97,10 +97,10 @@ class InvoiceController extends Controller
 
         if ($search = trim($request->get('q') ?? '')) {
             $query->where(function ($q) use ($search) {
-                $q->where('nomor_invoice', 'LIKE', "%{$search}%")
-                  ->orWhere('no_pol', 'LIKE', "%{$search}%")
-                  ->orWhere('no_lambung', 'LIKE', "%{$search}%")
-                  ->orWhere('lokasi', 'LIKE', "%{$search}%");
+                $q->where('nomor_invoice', 'ILIKE', "%{$search}%")
+                  ->orWhere('no_pol', 'ILIKE', "%{$search}%")
+                  ->orWhere('no_lambung', 'ILIKE', "%{$search}%")
+                  ->orWhere('lokasi', 'ILIKE', "%{$search}%");
             });
         }
 

@@ -237,11 +237,11 @@ class UserManagementController extends Controller
         $value = trim($request->input('value'));
 
         if ($type === 'jabatan') {
-            User::where('jabatan', 'LIKE', $value)->update(['jabatan' => null]);
+            User::where('jabatan', 'ILIKE', $value)->update(['jabatan' => null]);
         } elseif ($type === 'bidang') {
-            User::where('bidang', 'LIKE', $value)->update(['bidang' => null]);
+            User::where('bidang', 'ILIKE', $value)->update(['bidang' => null]);
         } elseif ($type === 'regu') {
-            User::where('regu', 'LIKE', $value)->update(['regu' => null]);
+            User::where('regu', 'ILIKE', $value)->update(['regu' => null]);
         }
         CacheService::invalidate('user');
 

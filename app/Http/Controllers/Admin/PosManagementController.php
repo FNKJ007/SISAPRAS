@@ -22,10 +22,10 @@ class PosManagementController extends Controller
 
         if (!empty($searchQuery)) {
             $query->where(function ($q) use ($searchQuery) {
-                $q->where('nama', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('kode_pos', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('wilayah', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('alamat', 'LIKE', "%{$searchQuery}%");
+                $q->where('nama', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('kode_pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('wilayah', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('alamat', 'ILIKE', "%{$searchQuery}%");
             });
         }
 

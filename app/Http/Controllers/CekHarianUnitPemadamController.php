@@ -20,7 +20,7 @@ class CekHarianUnitPemadamController extends Controller
     protected function unitList()
     {
         $currentUser = auth()->user();
-        $allUnits = Unit::where('kategori', 'LIKE', 'pemadam')->orderBy('nomor_lambung', 'asc')->get();
+        $allUnits = Unit::where('kategori', 'ILIKE', 'pemadam')->orderBy('nomor_lambung', 'asc')->get();
 
         if ($currentUser && $currentUser->pos) {
             $userPosClean = strtolower(preg_replace('/[^a-z0-9]/', '', $currentUser->pos));
@@ -101,7 +101,7 @@ class CekHarianUnitPemadamController extends Controller
      */
     public function index()
     {
-        $allUnits = Unit::where('kategori', 'LIKE', 'pemadam')->orderBy('nomor_lambung', 'asc')->get();
+        $allUnits = Unit::where('kategori', 'ILIKE', 'pemadam')->orderBy('nomor_lambung', 'asc')->get();
         $unitList = $this->unitList();
         $posList = Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
         $officials = $this->getOfficialsData('pemadam');

@@ -234,7 +234,7 @@ class HomeController extends Controller
 
             $queryPosUnits->where(function ($q) use ($userPos, $cleanPos) {
                 $q->where('pos', $userPos)
-                  ->orWhere('pos', 'LIKE', "%{$cleanPos}%");
+                  ->orWhere('pos', 'ILIKE', "%{$cleanPos}%");
             });
         }
 
@@ -249,10 +249,10 @@ class HomeController extends Controller
                                    ->orWhereNull('peruntukan');
                             });
                     })
-                    ->orWhere('peruntukan', 'LIKE', '%pemadam%')
-                    ->orWhere('nomor_lambung', 'LIKE', 'P-%')
-                    ->orWhere('nomor_lambung', 'LIKE', 'S-%')
-                    ->orWhere('nomor_lambung', 'LIKE', 'MP-%');
+                    ->orWhere('peruntukan', 'ILIKE', '%pemadam%')
+                    ->orWhere('nomor_lambung', 'ILIKE', 'P-%')
+                    ->orWhere('nomor_lambung', 'ILIKE', 'S-%')
+                    ->orWhere('nomor_lambung', 'ILIKE', 'MP-%');
                 })
                 ->where('nomor_lambung', 'NOT LIKE', 'PC-%')
                 ->where('peruntukan', 'NOT LIKE', '%pencegahan%')
@@ -262,14 +262,14 @@ class HomeController extends Controller
             } elseif (str_contains($userBidang, 'rescue')) {
                 $queryPosUnits->where(function ($q) {
                     $q->where('kategori', 'Rescue')
-                      ->orWhere('peruntukan', 'LIKE', '%rescue%')
-                      ->orWhere('nomor_lambung', 'LIKE', 'R-%');
+                      ->orWhere('peruntukan', 'ILIKE', '%rescue%')
+                      ->orWhere('nomor_lambung', 'ILIKE', 'R-%');
                 });
             } elseif (str_contains($userBidang, 'pencegahan')) {
                 $queryPosUnits->where(function ($q) {
                     $q->where('kategori', 'Pencegahan')
-                      ->orWhere('peruntukan', 'LIKE', '%pencegahan%')
-                      ->orWhere('nomor_lambung', 'LIKE', 'PC-%');
+                      ->orWhere('peruntukan', 'ILIKE', '%pencegahan%')
+                      ->orWhere('nomor_lambung', 'ILIKE', 'PC-%');
                 });
             }
         }

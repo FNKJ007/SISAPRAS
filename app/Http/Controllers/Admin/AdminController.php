@@ -79,58 +79,57 @@ class AdminController extends Controller
             $totalPengajuan   = array_sum($chartPemeliharaan);
             $totalPemeriksaan = array_sum($chartInspeksiUnit) + array_sum($chartInspeksiAlat);
 
-            // 3. Pos Penempatan Distribution
-            $posDistribution = \App\Models\Unit::whereYear('created_at', '<=', $currentYear)
-                ->whereNotNull('pos')
+            // 3. Pos Penempatan Distribution (Pure Array)
+            $posDistribution = \App\Models\Unit::whereNotNull('pos')
                 ->where('pos', '!=', '')
                 ->selectRaw("pos, count(*) as total")
                 ->groupBy('pos')
                 ->orderByDesc('total')
                 ->get()
-                ->map(fn($item) => (object) [
+                ->map(fn($item) => [
                     'pos'   => (string) $item->pos,
                     'total' => (int) $item->total,
                 ])
-                ->values();
+                ->values()
+                ->toArray();
 
-            // 4. Stream Aktivitas Terbaru
-            $recentPengajuans = \App\Models\Pengajuan::whereYear('created_at', $currentYear)
-                ->latest('id')
+            // 4. Stream Aktivitas Terbaru (Pure Array)
+            $recentPengajuans = \App\Models\Pengajuan::latest('id')
                 ->take(4)
                 ->get(['id', 'nomor_lambung', 'pos', 'created_at'])
                 ->map(function ($p) {
-                    return (object) [
+                    return [
                         'icon'       => 'wrench',
                         'color'      => '#C0201F',
                         'bg'         => 'rgba(192,32,31,.10)',
-                        'text'       => 'Pengajuan pemeliharaan unit ' . strtoupper($p->nomor_lambung ?? $p->pos),
+                        'text'       => 'Pengajuan pemeliharaan unit ' . strtoupper($p->nomor_lambung ?? $p->pos ?? 'Armada'),
                         'created_at' => $p->created_at ? $p->created_at->diffForHumans() : 'Baru saja',
                         'raw_time'   => $p->created_at ? $p->created_at->timestamp : 0,
                     ];
-                });
+                })
+                ->toArray();
 
-            $recentCekUnits = \App\Models\CekHarianUnit::whereYear('created_at', $currentYear)
-                ->latest('id')
+            $recentCekUnits = \App\Models\CekHarianUnit::latest('id')
                 ->take(4)
                 ->get(['id', 'unit_nama', 'pos', 'kategori', 'created_at'])
                 ->map(function ($cu) {
-                    return (object) [
+                    return [
                         'icon'       => 'truck',
                         'color'      => '#1B2A6B',
                         'bg'         => 'rgba(27,42,107,.10)',
-                        'text'       => 'Cek harian unit ' . ($cu->unit_nama ?? $cu->pos) . ' (' . ucfirst($cu->kategori ?? 'pemadam') . ')',
+                        'text'       => 'Cek harian unit ' . ($cu->unit_nama ?? $cu->pos ?? 'Armada') . ' (' . ucfirst($cu->kategori ?? 'pemadam') . ')',
                         'created_at' => $cu->created_at ? $cu->created_at->diffForHumans() : 'Baru saja',
                         'raw_time'   => $cu->created_at ? $cu->created_at->timestamp : 0,
                     ];
-                });
+                })
+                ->toArray();
 
-            $recentCekAlats = \App\Models\CekHarianAlat::whereYear('created_at', $currentYear)
-                ->latest('id')
+            $recentCekAlats = \App\Models\CekHarianAlat::latest('id')
                 ->take(4)
                 ->get(['id', 'kategori', 'pos', 'created_at'])
                 ->map(function ($ca) {
                     $catLabel = $ca->kategori === 'command_center' ? 'Command Center' : ucfirst($ca->kategori ?? 'pemadam');
-                    return (object) [
+                    return [
                         'icon'       => $ca->kategori === 'command_center' ? 'radio-tower' : 'clipboard-check',
                         'color'      => '#D97706',
                         'bg'         => 'rgba(217,119,6,.10)',
@@ -138,12 +137,14 @@ class AdminController extends Controller
                         'created_at' => $ca->created_at ? $ca->created_at->diffForHumans() : 'Baru saja',
                         'raw_time'   => $ca->created_at ? $ca->created_at->timestamp : 0,
                     ];
-                });
+                })
+                ->toArray();
 
-            $activities = $recentPengajuans->concat($recentCekUnits)->concat($recentCekAlats)
+            $activities = collect(array_merge($recentPengajuans, $recentCekUnits, $recentCekAlats))
                 ->sortByDesc('raw_time')
                 ->take(6)
-                ->values();
+                ->values()
+                ->toArray();
 
             return [
                 'totalUnit'         => (int) ($unitKpi->total ?? 0),
@@ -251,10 +252,10 @@ class AdminController extends Controller
         // Pencarian berdasarkan nomor_lambung, nama_pemegang, atau pos
         if (!empty($searchQuery)) {
             $query->where(function ($q) use ($searchQuery) {
-                $q->where('nomor_lambung', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_pemegang', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('pos', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('item_perbaikan', 'LIKE', "%{$searchQuery}%");
+                $q->where('nomor_lambung', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemegang', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('item_perbaikan', 'ILIKE', "%{$searchQuery}%");
             });
         }
 
@@ -425,10 +426,10 @@ class AdminController extends Controller
 
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
-                $q->where('nomor_lambung', 'LIKE', "%{$search}%")
-                  ->orWhere('pos', 'LIKE', "%{$search}%")
-                  ->orWhere('nama_pemegang', 'LIKE', "%{$search}%")
-                  ->orWhere('item_perbaikan', 'LIKE', "%{$search}%");
+                $q->where('nomor_lambung', 'ILIKE', "%{$search}%")
+                  ->orWhere('pos', 'ILIKE', "%{$search}%")
+                  ->orWhere('nama_pemegang', 'ILIKE', "%{$search}%")
+                  ->orWhere('item_perbaikan', 'ILIKE', "%{$search}%");
             });
         }
 
@@ -529,10 +530,10 @@ class AdminController extends Controller
 
         if (!empty($searchQuery)) {
             $query->where(function ($q) use ($searchQuery) {
-                $q->where('nomor_lambung', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('pos', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_pemegang', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('item_perbaikan', 'LIKE', "%{$searchQuery}%");
+                $q->where('nomor_lambung', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemegang', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('item_perbaikan', 'ILIKE', "%{$searchQuery}%");
             });
         }
 
@@ -623,9 +624,9 @@ class AdminController extends Controller
 
         if (!empty($searchQuery)) {
             $query->where(function ($q) use ($searchQuery) {
-                $q->where('nomor_invoice', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('no_pol', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('no_lambung', 'LIKE', "%{$searchQuery}%");
+                $q->where('nomor_invoice', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('no_pol', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('no_lambung', 'ILIKE', "%{$searchQuery}%");
             });
         }
 
@@ -690,9 +691,9 @@ class AdminController extends Controller
 
         if (!empty($searchQuery)) {
             $query->where(function ($q) use ($searchQuery) {
-                $q->where('nomor_invoice', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('no_pol', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('no_lambung', 'LIKE', "%{$searchQuery}%");
+                $q->where('nomor_invoice', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('no_pol', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('no_lambung', 'ILIKE', "%{$searchQuery}%");
             });
         }
 
@@ -773,9 +774,9 @@ class AdminController extends Controller
 
         if (!empty($searchQuery)) {
             $unitQuery->where(function ($q) use ($searchQuery) {
-                $q->where('pos', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('unit_nama', 'LIKE', "%{$searchQuery}%");
+                $q->where('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('unit_nama', 'ILIKE', "%{$searchQuery}%");
             });
         }
 
@@ -790,8 +791,8 @@ class AdminController extends Controller
 
         if (!empty($searchQuery)) {
             $alatQuery->where(function ($q) use ($searchQuery) {
-                $q->where('pos', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%");
+                $q->where('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'ILIKE', "%{$searchQuery}%");
             });
         }
 
@@ -851,9 +852,9 @@ class AdminController extends Controller
 
         if (!empty($searchQuery)) {
             $unitQuery->where(function ($q) use ($searchQuery) {
-                $q->where('pos', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('unit_nama', 'LIKE', "%{$searchQuery}%");
+                $q->where('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('unit_nama', 'ILIKE', "%{$searchQuery}%");
             });
         }
 
@@ -866,8 +867,8 @@ class AdminController extends Controller
 
         if (!empty($searchQuery)) {
             $alatQuery->where(function ($q) use ($searchQuery) {
-                $q->where('pos', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%");
+                $q->where('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'ILIKE', "%{$searchQuery}%");
             });
         }
 
@@ -918,9 +919,9 @@ class AdminController extends Controller
 
         if (!empty($searchQuery)) {
             $unitQuery->where(function ($q) use ($searchQuery) {
-                $q->where('pos', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('unit_nama', 'LIKE', "%{$searchQuery}%");
+                $q->where('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('unit_nama', 'ILIKE', "%{$searchQuery}%");
             });
         }
 
@@ -933,8 +934,8 @@ class AdminController extends Controller
 
         if (!empty($searchQuery)) {
             $alatQuery->where(function ($q) use ($searchQuery) {
-                $q->where('pos', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%");
+                $q->where('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'ILIKE', "%{$searchQuery}%");
             });
         }
 
@@ -978,8 +979,8 @@ class AdminController extends Controller
 
         if (!empty($searchQuery)) {
             $query->where(function ($q) use ($searchQuery) {
-                $q->where('pos', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%");
+                $q->where('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'ILIKE', "%{$searchQuery}%");
             });
         }
 
@@ -1060,15 +1061,15 @@ class AdminController extends Controller
         }
 
         if ($posFilter !== 'semua') {
-            $query->where('pos', 'LIKE', $posFilter);
+            $query->where('pos', 'ILIKE', $posFilter);
         }
 
         if ($reguFilter !== 'semua') {
-            $query->where('regu', 'LIKE', $reguFilter);
+            $query->where('regu', 'ILIKE', $reguFilter);
         }
 
         if ($bidangFilter !== 'semua') {
-            $query->where('bidang', 'LIKE', $bidangFilter);
+            $query->where('bidang', 'ILIKE', $bidangFilter);
         }
 
         if ($statusFilter !== 'semua') {
@@ -1077,10 +1078,10 @@ class AdminController extends Controller
 
         if (!empty($searchQuery)) {
             $query->where(function ($q) use ($searchQuery) {
-                $q->where('name', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nip', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('email', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('jabatan', 'LIKE', "%{$searchQuery}%");
+                $q->where('name', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nip', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('email', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('jabatan', 'ILIKE', "%{$searchQuery}%");
             });
         }
 

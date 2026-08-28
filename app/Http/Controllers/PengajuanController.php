@@ -321,8 +321,8 @@ class PengajuanController extends Controller
         ], $messages);
 
         // Normalisasi Unit dari Master Unit
-        $unitMatch = Unit::where('nomor_lambung', 'LIKE', $validated['nomor_lambung'])
-            ->orWhereRaw("REPLACE(REPLACE(nomor_lambung, '-', ''), ' ', '') LIKE ?", [str_replace(['-', ' '], '', $validated['nomor_lambung'])])
+        $unitMatch = Unit::where('nomor_lambung', 'ILIKE', $validated['nomor_lambung'])
+            ->orWhereRaw("REPLACE(REPLACE(nomor_lambung, '-', ''), ' ', '') ILIKE ?", [str_replace(['-', ' '], '', $validated['nomor_lambung'])])
             ->first();
         if ($unitMatch) {
             $validated['nomor_lambung']   = $unitMatch->nomor_lambung;
@@ -338,8 +338,8 @@ class PengajuanController extends Controller
         }
 
         // Normalisasi Pos dari Master Pos
-        $posMatch = Pos::where('nama', 'LIKE', $validated['pos'])
-            ->orWhereRaw("LOWER(REPLACE(REPLACE(REPLACE(nama, ' ', ''), '(', ''), ')', '')) LIKE ?", [strtolower(preg_replace('/[^a-z0-9]/', '', $validated['pos']))])
+        $posMatch = Pos::where('nama', 'ILIKE', $validated['pos'])
+            ->orWhereRaw("LOWER(REPLACE(REPLACE(REPLACE(nama, ' ', ''), '(', ''), ')', '')) ILIKE ?", [strtolower(preg_replace('/[^a-z0-9]/', '', $validated['pos']))])
             ->first();
         if ($posMatch) {
             $validated['pos'] = $posMatch->nama;

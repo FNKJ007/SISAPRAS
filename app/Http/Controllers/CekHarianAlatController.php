@@ -20,7 +20,7 @@ class CekHarianAlatController extends Controller
      */
     protected function unitList()
     {
-        return Unit::where('kategori', 'LIKE', 'pemadam')->orderBy('nomor_lambung', 'asc')->get();
+        return Unit::where('kategori', 'ILIKE', 'pemadam')->orderBy('nomor_lambung', 'asc')->get();
     }
 
     /**
@@ -33,7 +33,7 @@ class CekHarianAlatController extends Controller
         $officials = $this->getOfficialsData('pemadam');
 
         // Ambil data peralatan pemadam langsung dari Panel Admin Data Peralatan (Urut A-Z)
-        $peralatanDb = Peralatan::where('kategori', 'LIKE', 'pemadam')->orderBy('nama', 'asc')->get();
+        $peralatanDb = Peralatan::where('kategori', 'ILIKE', 'pemadam')->orderBy('nama', 'asc')->get();
 
         $daftarAlat = $peralatanDb->map(function ($item) {
             return (object) [

@@ -29,7 +29,7 @@ class CekAlatCcController extends Controller
         $officials = $this->getOfficialsData('command center');
 
         // Ambil data peralatan Command Center dari database Admin Data Peralatan (Urut A-Z)
-        $peralatanDb = Peralatan::where('kategori', 'LIKE', '%command%')->orderBy('nama', 'asc')->get();
+        $peralatanDb = Peralatan::where('kategori', 'ILIKE', '%command%')->orderBy('nama', 'asc')->get();
 
         $daftarAlat = $peralatanDb->map(function ($item) {
             return (object) [
@@ -82,10 +82,10 @@ class CekAlatCcController extends Controller
 
         if (!empty($searchQuery)) {
             $alatQuery->where(function ($q) use ($searchQuery) {
-                $q->where('pos', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_danru', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_kabid', 'LIKE', "%{$searchQuery}%");
+                $q->where('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_danru', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_kabid', 'ILIKE', "%{$searchQuery}%");
             });
         }
 

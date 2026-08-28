@@ -38,7 +38,7 @@ trait HandlesCekHarianAlat
             $danruNip = '';
             if (!empty($record->nama_danru)) {
                 $danruNip = \App\Models\User::where('name', $record->nama_danru)->value('nip')
-                    ?? \App\Models\User::where('name', 'LIKE', '%' . $record->nama_danru . '%')->value('nip') ?? '';
+                    ?? \App\Models\User::where('name', 'ILIKE', '%' . $record->nama_danru . '%')->value('nip') ?? '';
             }
 
             $kabidNip = '';
@@ -50,7 +50,7 @@ trait HandlesCekHarianAlat
             };
             if (!empty($record->nama_kabid)) {
                 $kabidUser = \App\Models\User::where('name', $record->nama_kabid)->first()
-                    ?? \App\Models\User::where('name', 'LIKE', '%' . $record->nama_kabid . '%')->first();
+                    ?? \App\Models\User::where('name', 'ILIKE', '%' . $record->nama_kabid . '%')->first();
                 if ($kabidUser) {
                     $kabidNip = $kabidUser->nip ?? '';
                     if (!empty($kabidUser->jabatan)) {

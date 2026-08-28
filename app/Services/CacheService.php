@@ -5,7 +5,7 @@ namespace App\Services;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Centralized cache management service for SISAPRAS.
+ * Centralized cache management service for API (Aplikasi Pemeliharaan & Inspeksi Sarana).
  * 
  * Provides tagged cache keys and bulk invalidation when data changes.
  * Uses file cache driver (no Redis needed) — safe for production.

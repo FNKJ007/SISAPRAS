@@ -20,9 +20,9 @@ class CekHarianUnitRescueController extends Controller
     protected function unitList()
     {
         $currentUser = auth()->user();
-        $allUnits = Unit::where('kategori', 'LIKE', 'rescue')
-            ->orWhere('peruntukan', 'LIKE', 'rescue')
-            ->orWhere('nomor_lambung', 'LIKE', 'R-%')
+        $allUnits = Unit::where('kategori', 'ILIKE', 'rescue')
+            ->orWhere('peruntukan', 'ILIKE', 'rescue')
+            ->orWhere('nomor_lambung', 'ILIKE', 'R-%')
             ->orderBy('nomor_lambung', 'asc')
             ->get();
 
@@ -105,9 +105,9 @@ class CekHarianUnitRescueController extends Controller
      */
     public function index()
     {
-        $allUnits = Unit::where('kategori', 'LIKE', 'rescue')
-            ->orWhere('peruntukan', 'LIKE', 'rescue')
-            ->orWhere('nomor_lambung', 'LIKE', 'R-%')
+        $allUnits = Unit::where('kategori', 'ILIKE', 'rescue')
+            ->orWhere('peruntukan', 'ILIKE', 'rescue')
+            ->orWhere('nomor_lambung', 'ILIKE', 'R-%')
             ->orderBy('nomor_lambung', 'asc')
             ->get();
         $unitList = $this->unitList();

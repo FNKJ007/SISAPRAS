@@ -19,9 +19,9 @@ class CekHarianUnitPencegahanController extends Controller
     protected function unitList()
     {
         $currentUser = auth()->user();
-        $allUnits = Unit::where('kategori', 'LIKE', 'pencegahan')
-            ->orWhere('peruntukan', 'LIKE', 'pencegahan')
-            ->orWhere('nomor_lambung', 'LIKE', 'PC-%')
+        $allUnits = Unit::where('kategori', 'ILIKE', 'pencegahan')
+            ->orWhere('peruntukan', 'ILIKE', 'pencegahan')
+            ->orWhere('nomor_lambung', 'ILIKE', 'PC-%')
             ->orderBy('nomor_lambung', 'asc')
             ->get();
 
@@ -104,9 +104,9 @@ class CekHarianUnitPencegahanController extends Controller
      */
     public function index()
     {
-        $allUnits = Unit::where('kategori', 'LIKE', 'pencegahan')
-            ->orWhere('peruntukan', 'LIKE', 'pencegahan')
-            ->orWhere('nomor_lambung', 'LIKE', 'PC-%')
+        $allUnits = Unit::where('kategori', 'ILIKE', 'pencegahan')
+            ->orWhere('peruntukan', 'ILIKE', 'pencegahan')
+            ->orWhere('nomor_lambung', 'ILIKE', 'PC-%')
             ->orderBy('nomor_lambung', 'asc')
             ->get();
         $unitList           = $this->unitList();
