@@ -26,7 +26,7 @@ class UnitManagementController extends Controller
         $query = Unit::orderBy('id', 'asc');
 
         if ($kategoriFilter !== 'semua') {
-            $query->where('kategori', 'LIKE', $kategoriFilter);
+            $query->where('kategori', 'ILIKE', $kategoriFilter);
         }
 
         if ($statusFilter !== 'semua' && in_array($statusFilter, ['aktif', 'perbaikan', 'nonaktif'])) {
@@ -37,23 +37,23 @@ class UnitManagementController extends Controller
             $aliases = $this->posAliases($posFilter);
             $query->where(function ($q) use ($aliases) {
                 foreach ($aliases as $alias) {
-                    $q->orWhereRaw('UPPER(pos) LIKE ?', ['%' . strtoupper($alias) . '%']);
+                    $q->orWhere('pos', 'ILIKE', '%' . $alias . '%');
                 }
             });
         }
 
         if (!empty($searchQuery)) {
             $query->where(function ($q) use ($searchQuery) {
-                $q->where('nama', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nomor_lambung', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('plat_nomor', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('no_rangka_mesin', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('pos', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('merk_tipe', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('jenis_kendaraan', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('peruntukan', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('pengemudi_1', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('pengemudi_2', 'LIKE', "%{$searchQuery}%");
+                $q->where('nama', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nomor_lambung', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('plat_nomor', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('no_rangka_mesin', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('merk_tipe', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('jenis_kendaraan', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('peruntukan', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('pengemudi_1', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('pengemudi_2', 'ILIKE', "%{$searchQuery}%");
             });
         }
 
@@ -373,11 +373,11 @@ class UnitManagementController extends Controller
         $value = trim($request->input('value'));
 
         if ($type === 'jenis_kendaraan') {
-            Unit::where('jenis_kendaraan', 'LIKE', $value)->update(['jenis_kendaraan' => null]);
+            Unit::where('jenis_kendaraan', 'ILIKE', $value)->update(['jenis_kendaraan' => null]);
         } elseif ($type === 'peruntukan') {
-            Unit::where('peruntukan', 'LIKE', $value)->update(['peruntukan' => null]);
+            Unit::where('peruntukan', 'ILIKE', $value)->update(['peruntukan' => null]);
         } elseif ($type === 'kategori') {
-            Unit::where('kategori', 'LIKE', $value)->update(['kategori' => null]);
+            Unit::where('kategori', 'ILIKE', $value)->update(['kategori' => null]);
         }
         CacheService::invalidate('unit');
 
@@ -398,10 +398,10 @@ class UnitManagementController extends Controller
         $pengajuanList = \App\Models\Pengajuan::where(function ($q) use ($unit) {
                 $q->where('unit_id', $unit->id);
                 if (!empty($unit->nomor_lambung)) {
-                    $q->orWhere('nomor_lambung', 'LIKE', '%' . $unit->nomor_lambung . '%');
+                    $q->orWhere('nomor_lambung', 'ILIKE', '%' . $unit->nomor_lambung . '%');
                 }
                 if (!empty($unit->plat_nomor)) {
-                    $q->orWhere('nomor_lambung', 'LIKE', '%' . $unit->plat_nomor . '%');
+                    $q->orWhere('nomor_lambung', 'ILIKE', '%' . $unit->plat_nomor . '%');
                 }
             })
             ->latest('id')
@@ -411,10 +411,10 @@ class UnitManagementController extends Controller
         $invoiceList = \App\Models\Invoice::where(function ($q) use ($unit) {
                 $q->where('unit_id', $unit->id);
                 if (!empty($unit->nomor_lambung)) {
-                    $q->orWhere('no_lambung', 'LIKE', '%' . $unit->nomor_lambung . '%');
+                    $q->orWhere('no_lambung', 'ILIKE', '%' . $unit->nomor_lambung . '%');
                 }
                 if (!empty($unit->plat_nomor)) {
-                    $q->orWhere('no_pol', 'LIKE', '%' . $unit->plat_nomor . '%');
+                    $q->orWhere('no_pol', 'ILIKE', '%' . $unit->plat_nomor . '%');
                 }
             })
             ->latest('tanggal_invoice')
@@ -504,10 +504,10 @@ class UnitManagementController extends Controller
         $pengajuanList = \App\Models\Pengajuan::where(function ($q) use ($unit) {
                 $q->where('unit_id', $unit->id);
                 if (!empty($unit->nomor_lambung)) {
-                    $q->orWhere('nomor_lambung', 'LIKE', '%' . $unit->nomor_lambung . '%');
+                    $q->orWhere('nomor_lambung', 'ILIKE', '%' . $unit->nomor_lambung . '%');
                 }
                 if (!empty($unit->plat_nomor)) {
-                    $q->orWhere('nomor_lambung', 'LIKE', '%' . $unit->plat_nomor . '%');
+                    $q->orWhere('nomor_lambung', 'ILIKE', '%' . $unit->plat_nomor . '%');
                 }
             })
             ->latest('id')
@@ -517,10 +517,10 @@ class UnitManagementController extends Controller
         $invoiceList = \App\Models\Invoice::where(function ($q) use ($unit) {
                 $q->where('unit_id', $unit->id);
                 if (!empty($unit->nomor_lambung)) {
-                    $q->orWhere('no_lambung', 'LIKE', '%' . $unit->nomor_lambung . '%');
+                    $q->orWhere('no_lambung', 'ILIKE', '%' . $unit->nomor_lambung . '%');
                 }
                 if (!empty($unit->plat_nomor)) {
-                    $q->orWhere('no_pol', 'LIKE', '%' . $unit->plat_nomor . '%');
+                    $q->orWhere('no_pol', 'ILIKE', '%' . $unit->plat_nomor . '%');
                 }
             })
             ->latest('tanggal_invoice')

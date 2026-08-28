@@ -60,7 +60,7 @@ trait HandlesCekHarianUnit
             $danruNip = '';
             if (!empty($record->nama_danru)) {
                 $danruNip = \App\Models\User::where('name', $record->nama_danru)->value('nip')
-                    ?? \App\Models\User::where('name', 'LIKE', '%' . $record->nama_danru . '%')->value('nip') ?? '';
+                    ?? \App\Models\User::where('name', 'ILIKE', '%' . $record->nama_danru . '%')->value('nip') ?? '';
             }
 
             $kabidNip = '';
@@ -71,7 +71,7 @@ trait HandlesCekHarianUnit
             };
             if (!empty($record->nama_kabid)) {
                 $kabidUser = \App\Models\User::where('name', $record->nama_kabid)->first()
-                    ?? \App\Models\User::where('name', 'LIKE', '%' . $record->nama_kabid . '%')->first();
+                    ?? \App\Models\User::where('name', 'ILIKE', '%' . $record->nama_kabid . '%')->first();
                 if ($kabidUser) {
                     $kabidNip = $kabidUser->nip ?? '';
                     if (!empty($kabidUser->jabatan)) {
@@ -262,11 +262,11 @@ trait HandlesCekHarianUnit
 
         if (!empty($searchQuery)) {
             $unitQuery->where(function ($q) use ($searchQuery) {
-                $q->where('pos', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_danru', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_kabid', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('unit_nama', 'LIKE', "%{$searchQuery}%");
+                $q->where('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_danru', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_kabid', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('unit_nama', 'ILIKE', "%{$searchQuery}%");
             });
         }
 
@@ -293,11 +293,11 @@ trait HandlesCekHarianUnit
 
         if (!empty($searchQuery)) {
             $alatQuery->where(function ($q) use ($searchQuery) {
-                $q->where('pos', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_pemeriksa', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_danru', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_kabid', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('unit_nama', 'LIKE', "%{$searchQuery}%");
+                $q->where('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_danru', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_kabid', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('unit_nama', 'ILIKE', "%{$searchQuery}%");
             });
         }
 

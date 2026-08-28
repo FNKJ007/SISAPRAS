@@ -54,7 +54,7 @@ class Regu extends Model
 
         $query = User::where('status', 'aktif')->where('regu', $this->nama);
         if (!empty($this->pos)) {
-            $query->where('pos', 'LIKE', "%{$this->pos}%");
+            $query->where('pos', 'ILIKE', "%{$this->pos}%");
         }
         return $query->count();
     }

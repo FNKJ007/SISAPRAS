@@ -23,20 +23,20 @@ class PegawaiManagementController extends Controller
         $query = User::orderBy('name', 'asc');
 
         if ($bidangFilter !== 'semua') {
-            $query->where('bidang', 'LIKE', $bidangFilter);
+            $query->where('bidang', 'ILIKE', $bidangFilter);
         }
 
         if ($posFilter !== 'semua') {
-            $query->where('pos', 'LIKE', $posFilter);
+            $query->where('pos', 'ILIKE', $posFilter);
         }
 
         if (!empty($searchQuery)) {
             $query->where(function ($q) use ($searchQuery) {
-                $q->where('name', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nip', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('jabatan', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('bidang', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('pos', 'LIKE', "%{$searchQuery}%");
+                $q->where('name', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nip', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('jabatan', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('bidang', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('pos', 'ILIKE', "%{$searchQuery}%");
             });
         }
 

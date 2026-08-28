@@ -37,11 +37,11 @@ class ReguManagementController extends Controller
 
         if (!empty($searchQuery)) {
             $query->where(function ($q) use ($searchQuery) {
-                $q->where('nama', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('pos', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('bidang', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('danru', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('nip_danru', 'LIKE', "%{$searchQuery}%");
+                $q->where('nama', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('bidang', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('danru', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nip_danru', 'ILIKE', "%{$searchQuery}%");
             });
         }
 
@@ -53,8 +53,8 @@ class ReguManagementController extends Controller
 
         $danruList = CacheService::rememberList('danru_list', function () {
             $list = User::where(function ($q) {
-                    $q->where('jabatan', 'LIKE', '%Danru%')
-                      ->orWhere('jabatan', 'LIKE', '%Komandan%');
+                    $q->where('jabatan', 'ILIKE', '%Danru%')
+                      ->orWhere('jabatan', 'ILIKE', '%Komandan%');
                 })
                 ->orderBy('name', 'asc')
                 ->get(['id', 'name', 'nip', 'jabatan', 'pos', 'bidang', 'regu']);

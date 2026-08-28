@@ -332,9 +332,17 @@
                 <div style="padding:16px 20px; display:flex; flex-direction:column; gap:12px;">
                     @forelse($posDistribution as $posItem)
                         @php
-                            $posName  = is_object($posItem) ? ($posItem->pos ?? '') : (is_array($posItem) ? ($posItem['pos'] ?? '') : (string) $posItem);
-                            $posTotal = is_object($posItem) ? (int) ($posItem->total ?? 0) : (is_array($posItem) ? (int) ($posItem['total'] ?? 0) : 0);
-                            $pct      = round(($posTotal / max($totalUnit, 1)) * 100);
+                            if (is_array($posItem)) {
+                                $posName  = $posItem['pos'] ?? '—';
+                                $posTotal = (int) ($posItem['total'] ?? 0);
+                            } elseif (is_object($posItem)) {
+                                $posName  = $posItem->pos ?? '—';
+                                $posTotal = (int) ($posItem->total ?? 0);
+                            } else {
+                                $posName  = (string) $posItem;
+                                $posTotal = 0;
+                            }
+                            $pct = round(($posTotal / max($totalUnit, 1)) * 100);
                         @endphp
                         <div>
                             <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">
@@ -362,11 +370,11 @@
                 <div style="padding:4px 20px 16px 20px;">
                     @forelse($activities as $act)
                         @php
-                            $actIcon  = is_object($act) ? ($act->icon ?? 'activity') : ($act['icon'] ?? 'activity');
-                            $actBg    = is_object($act) ? ($act->bg ?? 'rgba(27,42,107,.10)') : ($act['bg'] ?? 'rgba(27,42,107,.10)');
-                            $actColor = is_object($act) ? ($act->color ?? '#1B2A6B') : ($act['color'] ?? '#1B2A6B');
-                            $actText  = is_object($act) ? ($act->text ?? '') : ($act['text'] ?? '');
-                            $actTime  = is_object($act) ? ($act->created_at ?? '') : ($act['created_at'] ?? '');
+                            $actIcon  = is_array($act) ? ($act['icon'] ?? 'activity') : ($act->icon ?? 'activity');
+                            $actBg    = is_array($act) ? ($act['bg'] ?? 'rgba(27,42,107,.10)') : ($act->bg ?? 'rgba(27,42,107,.10)');
+                            $actColor = is_array($act) ? ($act['color'] ?? '#1B2A6B') : ($act->color ?? '#1B2A6B');
+                            $actText  = is_array($act) ? ($act['text'] ?? 'Aktivitas') : ($act->text ?? 'Aktivitas');
+                            $actTime  = is_array($act) ? ($act['created_at'] ?? 'Baru saja') : ($act->created_at ?? 'Baru saja');
                             if ($actTime instanceof \Carbon\Carbon) {
                                 $actTimeStr = $actTime->diffForHumans();
                             } else {

@@ -19,9 +19,9 @@ class CekHarianAlatPencegahanController extends Controller
      */
     protected function unitList()
     {
-        return Unit::where('kategori', 'LIKE', 'pencegahan')
-            ->orWhere('peruntukan', 'LIKE', 'pencegahan')
-            ->orWhere('nomor_lambung', 'LIKE', 'PC-%')
+        return Unit::where('kategori', 'ILIKE', 'pencegahan')
+            ->orWhere('peruntukan', 'ILIKE', 'pencegahan')
+            ->orWhere('nomor_lambung', 'ILIKE', 'PC-%')
             ->orderBy('nomor_lambung', 'asc')
             ->get();
     }
@@ -36,7 +36,7 @@ class CekHarianAlatPencegahanController extends Controller
         $officials = $this->getOfficialsData('pencegahan');
 
         // Ambil data peralatan pencegahan dari database Admin Data Peralatan (Urut A-Z)
-        $peralatanDb = Peralatan::where('kategori', 'LIKE', 'pencegahan')->orderBy('nama', 'asc')->get();
+        $peralatanDb = Peralatan::where('kategori', 'ILIKE', 'pencegahan')->orderBy('nama', 'asc')->get();
         if ($peralatanDb->isEmpty()) {
             $peralatanDb = Peralatan::orderBy('nama', 'asc')->take(10)->get();
         }

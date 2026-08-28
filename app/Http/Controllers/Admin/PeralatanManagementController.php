@@ -20,13 +20,13 @@ class PeralatanManagementController extends Controller
         $query = Peralatan::orderBy('kategori', 'asc')->orderBy('nama', 'asc');
 
         if ($kategoriFilter !== 'semua') {
-            $query->where('kategori', 'LIKE', str_replace('_', ' ', $kategoriFilter));
+            $query->where('kategori', 'ILIKE', str_replace('_', ' ', $kategoriFilter));
         }
 
         if (!empty($searchQuery)) {
             $query->where(function ($q) use ($searchQuery) {
-                $q->where('nama', 'LIKE', "%{$searchQuery}%")
-                  ->orWhere('catatan', 'LIKE', "%{$searchQuery}%");
+                $q->where('nama', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('catatan', 'ILIKE', "%{$searchQuery}%");
             });
         }
 
@@ -149,7 +149,7 @@ class PeralatanManagementController extends Controller
         ]);
 
         $value = trim($request->input('value'));
-        Peralatan::where('kategori', 'LIKE', $value)->update(['kategori' => null]);
+        Peralatan::where('kategori', 'ILIKE', $value)->update(['kategori' => null]);
         CacheService::invalidate('peralatan');
 
         return response()->json([

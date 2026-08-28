@@ -45,7 +45,7 @@ class Pos extends Model
         if (array_key_exists('unit_truck_pancar', $this->attributes)) {
             return (int) $this->attributes['unit_truck_pancar'];
         }
-        return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'Pancar')->count();
+        return Unit::where('pos', 'ILIKE', $this->nama)->where('jenis_kendaraan', 'ILIKE', 'Pancar')->count();
     }
 
     public function getUnitMotorRoda3Attribute(): int
@@ -53,7 +53,7 @@ class Pos extends Model
         if (array_key_exists('unit_motor_roda3', $this->attributes)) {
             return (int) $this->attributes['unit_motor_roda3'];
         }
-        return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'R3')->count();
+        return Unit::where('pos', 'ILIKE', $this->nama)->where('jenis_kendaraan', 'ILIKE', 'R3')->count();
     }
 
     public function getUnitMotorRoda2Attribute(): int
@@ -61,7 +61,7 @@ class Pos extends Model
         if (array_key_exists('unit_motor_roda2', $this->attributes)) {
             return (int) $this->attributes['unit_motor_roda2'];
         }
-        return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'R2')->count();
+        return Unit::where('pos', 'ILIKE', $this->nama)->where('jenis_kendaraan', 'ILIKE', 'R2')->count();
     }
 
     public function getUnitPompaAttribute(): int
@@ -69,7 +69,7 @@ class Pos extends Model
         if (array_key_exists('unit_pompa', $this->attributes)) {
             return (int) $this->attributes['unit_pompa'];
         }
-        return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'Pompa')->count();
+        return Unit::where('pos', 'ILIKE', $this->nama)->where('jenis_kendaraan', 'ILIKE', 'Pompa')->count();
     }
 
     public function getUnitRescueAttribute(): int
@@ -77,7 +77,7 @@ class Pos extends Model
         if (array_key_exists('unit_rescue', $this->attributes)) {
             return (int) $this->attributes['unit_rescue'];
         }
-        return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'Rescue')->count();
+        return Unit::where('pos', 'ILIKE', $this->nama)->where('jenis_kendaraan', 'ILIKE', 'Rescue')->count();
     }
 
     public function getUnitWaterSupplyAttribute(): int
@@ -85,7 +85,7 @@ class Pos extends Model
         if (array_key_exists('unit_water_supply', $this->attributes)) {
             return (int) $this->attributes['unit_water_supply'];
         }
-        return Unit::where('pos', 'LIKE', $this->nama)->where('jenis_kendaraan', 'LIKE', 'Supply')->count();
+        return Unit::where('pos', 'ILIKE', $this->nama)->where('jenis_kendaraan', 'ILIKE', 'Supply')->count();
     }
 
     public function getUnitLainnyaAttribute(): int
@@ -93,7 +93,7 @@ class Pos extends Model
         if (array_key_exists('unit_lainnya', $this->attributes)) {
             return (int) $this->attributes['unit_lainnya'];
         }
-        return Unit::where('pos', 'LIKE', $this->nama)
+        return Unit::where('pos', 'ILIKE', $this->nama)
             ->where(function($q) {
                 $q->whereNotIn('jenis_kendaraan', ['Pancar', 'R3', 'R2', 'Pompa', 'Rescue', 'Supply'])
                   ->orWhereNull('jenis_kendaraan');
@@ -106,7 +106,7 @@ class Pos extends Model
         if (array_key_exists('unit_lainnya_list', $this->attributes)) {
             return $this->attributes['unit_lainnya_list'];
         }
-        return Unit::where('pos', 'LIKE', $this->nama)
+        return Unit::where('pos', 'ILIKE', $this->nama)
             ->where(function($q) {
                 $q->whereNotIn('jenis_kendaraan', ['Pancar', 'R3', 'R2', 'Pompa', 'Rescue', 'Supply'])
                   ->orWhereNull('jenis_kendaraan');
@@ -122,7 +122,7 @@ class Pos extends Model
         if (array_key_exists('total_unit', $this->attributes)) {
             return (int) $this->attributes['total_unit'];
         }
-        return Unit::where('pos', 'LIKE', $this->nama)->count();
+        return Unit::where('pos', 'ILIKE', $this->nama)->count();
     }
 
     // 3NF Relationships
