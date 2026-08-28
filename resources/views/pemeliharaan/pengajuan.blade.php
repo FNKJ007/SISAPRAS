@@ -53,16 +53,16 @@
                 <label for="pos">Pos</label>
                 <select name="pos" id="pos" required>
                     <option value="" disabled {{ !old('pos') && !($currentUser->pos ?? false) ? 'selected' : '' }}></option>
-                    @foreach ($posList as $value => $label)
+                    @foreach ($posList as $key => $item)
                         @php
+                            $posName = is_string($item) ? $item : ($item->nama ?? ($item['nama'] ?? (is_string($key) ? $key : '')));
                             $userPosClean = strtolower(str_replace(' ', '', $currentUser->pos ?? ''));
-                            $valPosClean = strtolower(str_replace(' ', '', $value));
-                            $labelPosClean = strtolower(str_replace(' ', '', $label));
-                            $isUserPos = $userPosClean && ($valPosClean === $userPosClean || $labelPosClean === $userPosClean);
-                            $isSelected = old('pos') ? (old('pos') == $value) : $isUserPos;
+                            $valPosClean = strtolower(str_replace(' ', '', $posName));
+                            $isUserPos = $userPosClean && $valPosClean === $userPosClean;
+                            $isSelected = old('pos') ? (old('pos') == $posName) : $isUserPos;
                         @endphp
-                        <option value="{{ $value }}" {{ $isSelected ? 'selected' : '' }}>
-                            {{ $label }}
+                        <option value="{{ $posName }}" {{ $isSelected ? 'selected' : '' }}>
+                            {{ $posName }}
                         </option>
                     @endforeach
                 </select>

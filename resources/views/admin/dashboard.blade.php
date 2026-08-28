@@ -179,36 +179,36 @@
                 <tbody style="divide-y:1px solid #F1F5F9;">
                     @forelse($absenUnitList as $unitAbsen)
                         @php 
-                            $unitAbsen = (object) $unitAbsen; 
-                            $isSudahDicek = !empty($unitAbsen->sudah_dicek);
+                            $uObj = is_array($unitAbsen) ? (object)$unitAbsen : (is_object($unitAbsen) ? $unitAbsen : (object)[]);
+                            $isSudahDicek = !empty($uObj->sudah_dicek);
                         @endphp
                         <tr style="border-bottom:1px solid #F1F5F9;"
                             x-show="filterAbsen === 'semua' || (filterAbsen === 'sudah' && {{ $isSudahDicek ? 'true' : 'false' }}) || (filterAbsen === 'belum' && {{ !$isSudahDicek ? 'true' : 'false' }})"
                             class="hover:bg-gray-50/80 transition-colors">
                             <td style="padding:10px 16px;">
-                                <strong style="color:#0F172A; font-weight:800; font-size:12.5px;">{{ strtoupper($unitAbsen->nomor_lambung ?? '—') }}</strong>
-                                <div style="font-size:11px; color:#64748B;">{{ !empty($unitAbsen->plat_nomor) ? $unitAbsen->plat_nomor . ' • ' : '' }}{{ $unitAbsen->merk_tipe ?? '' }}</div>
+                                <strong style="color:#0F172A; font-weight:800; font-size:12.5px;">{{ strtoupper($uObj->nomor_lambung ?? '—') }}</strong>
+                                <div style="font-size:11px; color:#64748B;">{{ !empty($uObj->plat_nomor) ? $uObj->plat_nomor . ' • ' : '' }}{{ $uObj->merk_tipe ?? '' }}</div>
                             </td>
                             <td style="padding:10px 16px; font-weight:600; color:#334155;">
                                 <span style="display:inline-flex; align-items:center; gap:4px;">
                                     <i data-lucide="map-pin" style="width:13px; height:13px; color:#94A3B8;"></i>
-                                    {{ $unitAbsen->pos }}
+                                    {{ $uObj->pos ?? '—' }}
                                 </span>
                             </td>
                             <td style="padding:10px 16px;">
                                 @php
-                                    $catBadge = match(strtolower($unitAbsen->kategori ?? '')) {
+                                    $catBadge = match(strtolower($uObj->kategori ?? '')) {
                                         'rescue' => 'background:#FEF3C7; color:#92400E;',
                                         'pencegahan' => 'background:#E0E7FF; color:#3730A3;',
                                         default => 'background:#FEE2E2; color:#991B1B;',
                                     };
                                 @endphp
                                 <span style="padding:3px 8px; border-radius:6px; font-size:10.5px; font-weight:700; text-transform:uppercase; {{ $catBadge }}">
-                                    {{ $unitAbsen->kategori ?? 'PEMADAM' }}
+                                    {{ $uObj->kategori ?? 'PEMADAM' }}
                                 </span>
                             </td>
                             <td style="padding:10px 16px;">
-                                @if($unitAbsen->sudah_dicek)
+                                @if($uObj->sudah_dicek ?? false)
                                     <span style="display:inline-flex; align-items:center; gap:5px; background:#D1FAE5; color:#065F46; padding:3px 9px; border-radius:12px; font-size:11px; font-weight:800;">
                                         <span style="width:6px; height:6px; border-radius:50%; background:#059669;"></span>
                                         Sudah Dicek
@@ -221,16 +221,16 @@
                                 @endif
                             </td>
                             <td style="padding:10px 16px;">
-                                @if($unitAbsen->sudah_dicek)
-                                    <span style="font-weight:700; color:#1E293B;">{{ $unitAbsen->nama_pemeriksa }}</span>
-                                    <div style="font-size:10.5px; color:#64748B;">{{ $unitAbsen->jabatan }}</div>
+                                @if($uObj->sudah_dicek ?? false)
+                                    <span style="font-weight:700; color:#1E293B;">{{ $uObj->nama_pemeriksa ?? '—' }}</span>
+                                    <div style="font-size:10.5px; color:#64748B;">{{ $uObj->jabatan ?? '—' }}</div>
                                 @else
                                     <span style="color:#94A3B8; font-style:italic;">—</span>
                                 @endif
                             </td>
                             <td style="padding:10px 16px;">
-                                @if($unitAbsen->sudah_dicek)
-                                    @if($unitAbsen->kebersihan === 'tidak_bersih')
+                                @if($uObj->sudah_dicek ?? false)
+                                    @if(($uObj->kebersihan ?? '') === 'tidak_bersih')
                                         <span style="color:#DC2626; font-weight:700; font-size:11px;">⚠️ Tidak Bersih</span>
                                     @else
                                         <span style="color:#059669; font-weight:700; font-size:11px;">✨ Bersih</span>
@@ -240,8 +240,8 @@
                                 @endif
                             </td>
                             <td style="padding:10px 16px; text-align:right;">
-                                @if($unitAbsen->sudah_dicek && $unitAbsen->waktu_cek)
-                                    <span style="font-weight:700; color:#475569;">{{ $unitAbsen->waktu_cek }} WIB</span>
+                                @if(($uObj->sudah_dicek ?? false) && !empty($uObj->waktu_cek))
+                                    <span style="font-weight:700; color:#475569;">{{ $uObj->waktu_cek }} WIB</span>
                                 @else
                                     <span style="color:#94A3B8;">—</span>
                                 @endif
