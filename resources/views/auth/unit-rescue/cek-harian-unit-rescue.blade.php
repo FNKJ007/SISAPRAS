@@ -76,7 +76,8 @@
                             class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
                         <option value="" selected disabled>Pilih Pos Damkar</option>
                         @foreach($posList ?? [] as $p)
-                            <option value="{{ $p->nama }}" @selected(old('pos', auth()->user()->pos ?? '') == $p->nama)>{{ $p->nama }}</option>
+                            @php $pName = is_string($p) ? $p : ($p->nama ?? ($p['nama'] ?? '')); @endphp
+                            <option value="{{ $pName }}" @selected(old('pos', auth()->user()->pos ?? '') == $pName)>{{ $pName }}</option>
                         @endforeach
                     </select>
                     @error('pos') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror

@@ -186,7 +186,7 @@ class AdminController extends Controller
 
             $absenUnitList = $allUnits->map(function ($unit) use ($todayCekUnits) {
                 $cek = $todayCekUnits->get($unit->id);
-                return (object) [
+                return [
                     'unit_id'        => $unit->id,
                     'nomor_lambung'  => $unit->nomor_lambung,
                     'plat_nomor'     => $unit->plat_nomor,
@@ -200,12 +200,13 @@ class AdminController extends Controller
                     'kebersihan'     => $cek ? ($cek->kebersihan_unit ?? 'bersih') : null,
                     'waktu_cek'      => $cek ? $cek->created_at->format('H:i') : null,
                 ];
-            });
+            })->values()->toArray();
 
+            $sudahCount = count(array_filter($absenUnitList, fn($u) => !empty($u['sudah_dicek'])));
             $absenSummary = [
-                'total_unit'  => $allUnits->count(),
-                'sudah_dicek' => $absenUnitList->where('sudah_dicek', true)->count(),
-                'belum_dicek' => $absenUnitList->where('sudah_dicek', false)->count(),
+                'total_unit'  => count($absenUnitList),
+                'sudah_dicek' => $sudahCount,
+                'belum_dicek' => count($absenUnitList) - $sudahCount,
             ];
 
             return [
@@ -1086,7 +1087,7 @@ class AdminController extends Controller
         $userList = $query->paginate(12)->withQueryString();
 
         $posList = CacheService::rememberList('active_pos_objects', function () {
-            return \App\Models\Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get();
+            return \App\Models\Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get(['id', 'nama']);
         });
 
         $metaData = CacheService::rememberStats('pengaturan_meta', function () {
@@ -1145,7 +1146,7 @@ class AdminController extends Controller
                 ->values()
                 ->toArray();
 
-            $allReguList = \App\Models\Regu::orderBy('pos', 'asc')->orderBy('nama', 'asc')->get(['id', 'nama', 'pos', 'bidang', 'danru', 'nip_danru']);
+            $allReguList = \App\Models\Regu::orderBy('pos', 'asc')->orderBy('nama', 'asc')->get(['id', 'nama', 'pos', 'bidang', 'danru', 'nip_danru'])->toArray();
 
             return compact('existingBidangList', 'kpi', 'existingReguList', 'existingJabatanList', 'allReguList');
         });
