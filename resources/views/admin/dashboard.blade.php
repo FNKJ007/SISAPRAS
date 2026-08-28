@@ -187,7 +187,7 @@
                             class="hover:bg-gray-50/80 transition-colors">
                             <td style="padding:10px 16px;">
                                 <strong style="color:#0F172A; font-weight:800; font-size:12.5px;">{{ strtoupper($unitAbsen->nomor_lambung ?? '—') }}</strong>
-                                <div style="font-size:11px; color:#64748B;">{{ $unitAbsen->plat_nomor ? $unitAbsen->plat_nomor . ' • ' : '' }}{{ $unitAbsen->merk_tipe ?? '' }}</div>
+                                <div style="font-size:11px; color:#64748B;">{{ !empty($unitAbsen->plat_nomor) ? $unitAbsen->plat_nomor . ' • ' : '' }}{{ $unitAbsen->merk_tipe ?? '' }}</div>
                             </td>
                             <td style="padding:10px 16px; font-weight:600; color:#334155;">
                                 <span style="display:inline-flex; align-items:center; gap:4px;">

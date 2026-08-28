@@ -168,7 +168,7 @@ class AdminController extends Controller
         });
 
         // 5. Absen Pengecekan Harian Unit (Cached for 15s to guarantee high responsiveness)
-        $absenData = \Illuminate\Support\Facades\Cache::remember('admin_dashboard_absen_unit', 15, function () {
+        $absenData = \Illuminate\Support\Facades\Cache::remember('admin_dashboard_absen_unit_v2', 15, function () {
             $todayStart = now()->startOfDay()->toDateTimeString();
             $todayEnd   = now()->endOfDay()->toDateTimeString();
             $todayDate  = now()->format('Y-m-d');
