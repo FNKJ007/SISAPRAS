@@ -13,14 +13,14 @@
         .kop-title { text-align: center; font-size: 15px; font-weight: bold; line-height: 1.15; }
         .report-title { text-align: center; font-size: 12px; font-weight: bold; padding: 6px 0 10px; }
         .meta { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-        .meta td { height: 15px; padding: 1px 3px; vertical-align: top; }
+        .meta td { height: 15px; padding: 1px 3px; vertical-align: top; word-wrap: break-word; overflow-wrap: anywhere; }
         .meta .group { font-weight: bold; padding-left: 0; padding-top: 3px; }
         .meta .key { width: 10%; }
-        .meta .value { width: 25%; border-bottom: 1px dotted #777; }
+        .meta .value { width: 25%; border-bottom: 1px dotted #777; word-wrap: break-word; overflow-wrap: anywhere; }
         .meta .key-right { width: 12%; }
-        .meta .value-right { width: 28%; border-bottom: 1px dotted #777; }
+        .meta .value-right { width: 28%; border-bottom: 1px dotted #777; word-wrap: break-word; overflow-wrap: anywhere; }
         table.inspection { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .inspection th, .inspection td { border: 1px solid #555; padding: 2px 3px; vertical-align: top; line-height: 1.15; }
+        .inspection th, .inspection td { border: 1px solid #555; padding: 2px 3px; vertical-align: top; line-height: 1.15; word-wrap: break-word; overflow-wrap: anywhere; white-space: normal; }
         .inspection th { background: #bfbfbf; text-align: center; font-weight: bold; vertical-align: middle; height: 27px; }
         .inspection .no { width: 4%; text-align: center; }
         .inspection .item { width: 27%; }

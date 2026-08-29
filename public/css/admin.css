@@ -28,6 +28,10 @@ body {
     color: #2D3748;
 }
 
+body.admin-modal-open {
+    overflow: hidden !important;
+}
+
 .app-wrapper {
     display: flex;
     height: 100vh;

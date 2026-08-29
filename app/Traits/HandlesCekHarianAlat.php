@@ -45,7 +45,7 @@ trait HandlesCekHarianAlat
             $kabidLabel = match($kategori) {
                 'rescue'         => 'Kepala Bidang Penyelamatan',
                 'pencegahan'     => 'Kepala Bidang Pencegahan Kebakaran',
-                'command_center' => 'Kepala Bidang Sarana, Prasarana Dan Informasi',
+                'command_center' => 'Kepala Bidang Sarana Dan Informasi',
                 default          => 'Kepala Bidang Pemadaman',
             };
             if (!empty($record->nama_kabid)) {

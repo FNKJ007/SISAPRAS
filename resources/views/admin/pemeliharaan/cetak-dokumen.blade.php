@@ -371,20 +371,20 @@
         $pengemudiNama = is_object($pengajuan) && !empty($pengajuan->nama_pemegang) ? $pengajuan->nama_pemegang : 'Riki Rohimat';
         $penempatanPos = is_object($pengajuan) && !empty($pengajuan->pos) ? $pengajuan->pos : 'MARGAASIH (TKI)';
 
-        // Pejabat SPI (Kepala Bidang Sarana, Prasarana & Informasi selaku KUASA PENGGUNA ANGGARAN)
+        // Pejabat SPI (Kepala Bidang SPI selaku KUASA PENGGUNA ANGGARAN)
         // Diambil langsung dari data resmi master pegawai
         $userKabidSpi = \App\Models\User::where(function($q) {
-                $q->where('jabatan', 'LIKE', '%Kepala Bidang Sarana%')
+                $q->where('jabatan', 'LIKE', '%Kepala Bidang SPI%')
                   ->orWhere(function($q2) {
-                      $q2->where('bidang', 'LIKE', '%Sarana%')
+                      $q2->where('bidang', 'LIKE', '%SPI%')
                          ->where('jabatan', 'LIKE', '%Kepala Bidang%');
                   });
             })->first();
         $kabidNama = $userKabidSpi ? $userKabidSpi->name : 'Erpi Suwandi, S.T., M.M.';
         $kabidNip = $userKabidSpi ? $userKabidSpi->nip : '197908202006041010';
 
-        // Pejabat Pemeliharaan (Kasi Pemeliharaan Sarana & Prasarana selaku PPTK)
-        $userKasiPml = \App\Models\User::where('jabatan', 'LIKE', '%Pemeliharaan Sarana%')->first();
+        // Pejabat Pemeliharaan (Kasi Pemeliharaan selaku PPTK)
+        $userKasiPml = \App\Models\User::where('jabatan', 'LIKE', '%Pemeliharaan%')->first();
         $kasiNama = $userKasiPml ? $userKasiPml->name : 'Ahmad Kuswara, S.M., M.M.';
         $kasiNip = $userKasiPml ? $userKasiPml->nip : '197209212008011001';
 
@@ -497,8 +497,8 @@
                 {{-- TTD Block Page 1 --}}
                 <div class="ttd-container-p1">
                     <div class="ttd-box">
-                        <div style="font-weight:700;">KEPALA BIDANG SARANA, PRASARANA</div>
-                        <div style="font-weight:700;">DAN INFORMASI selaku</div>
+                        <div style="font-weight:700;">KEPALA BIDANG SPI</div>
+                        <div style="font-weight:700;">selaku</div>
                         <div style="font-weight:700;">KUASA PENGGUNA ANGGARAN</div>
                         <div class="ttd-space"></div>
                         <div style="font-weight:700; text-decoration:underline;">{{ $kabidNama }}</div>
@@ -643,7 +643,7 @@
                     <div class="dest-right">
                         <div style="margin-bottom: 2px;">Soreang, &nbsp; {{ $tglSuratFormat }}</div>
                         <div>Kepada Yth.</div>
-                        <div>Kepala Bidang Sarana, Prasarana dan Informasi</div>
+                        <div>Kepala Bidang SPI</div>
                         <div>di</div>
                         <div style="text-indent: 15px;">Tempat</div>
                     </div>
@@ -922,7 +922,7 @@
                     <div style="display: flex; justify-content: space-between; padding: 0 10px; align-items: flex-start;">
                         {{-- Left TTD: Kabid SPI --}}
                         <div style="text-align: center; width: 310px; font-size: 12px; line-height: 1.3;">
-                            <div style="font-weight:700;">KEPALA BIDANG SARANA, PRASARANA</div>
+                            <div style="font-weight:700;">KEPALA BIDANG SPI</div>
                             <div style="font-weight:700;">DAN INFORMASI selaku</div>
                             <div style="font-weight:700;">KUASA PENGGUNA ANGGARAN</div>
                             <div style="height: 60px;"></div>
@@ -934,7 +934,7 @@
                         {{-- Right TTD: Kasi Pemeliharaan --}}
                         <div style="text-align: center; width: 310px; font-size: 12px; line-height: 1.3;">
                             <div style="font-weight:700;">KEPALA SEKSI PEMELIHARAAN SARANA</div>
-                            <div style="font-weight:700;">DAN PRASARANA selaku</div>
+                            <div style="font-weight:700;">SPI selaku</div>
                             <div style="font-weight:700;">PEJABAT PELAKSANA TEKNIS KEGIATAN</div>
                             <div style="height: 60px;"></div>
                             <div style="font-weight:700; text-decoration:underline;">{{ $kasiNama }}</div>

@@ -113,7 +113,7 @@
                         'rescue'             => '#2563EB',
                         'command center'     => '#D97706',
                         'sekretariat'        => '#0891B2',
-                        'sarana prasarana'   => '#4F46E5',
+                        'informasi'          => '#4F46E5',
                         default              => $colorPalette[$loop->index % count($colorPalette)],
                     };
                 @endphp

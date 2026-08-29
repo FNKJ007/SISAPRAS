@@ -129,7 +129,7 @@ class PegawaiManagementController extends Controller
             'name'        => $validated['name'],
             'nip'         => $validated['nip'],
             'jabatan'     => $validated['jabatan'],
-            'bidang'      => $validated['bidang'] ?? 'Sarana Prasarana Dan Informasi',
+            'bidang'      => $validated['bidang'] ?? 'Sarana Dan Informasi',
             'pos'         => $validated['pos'] ?? 'Soreang (MAKO)',
             'regu'        => $validated['regu'] ?? null,
             'no_hp'       => $validated['no_hp'] ?? null,

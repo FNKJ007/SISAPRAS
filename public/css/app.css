@@ -29,6 +29,10 @@ body {
     color: #2D3748;
 }
 
+body.modal-open {
+    overflow: hidden !important;
+}
+
 .daily-tool-page {
     --tool-accent: #1d4ed8;
     --tool-soft: #eff6ff;

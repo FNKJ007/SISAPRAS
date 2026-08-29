@@ -90,7 +90,7 @@
                 <div style="flex:1; padding:0 12px;">
                     <div style="font-size:12px; font-weight:700; letter-spacing:0.5px; color:#0F172A; text-transform:uppercase;">PEMERINTAH KABUPATEN BANDUNG</div>
                     <div style="font-size:15px; font-weight:800; color:#C0201F; text-transform:uppercase; margin:2px 0;">DINAS PEMADAM KEBAKARAN DAN PENYELAMATAN</div>
-                    <div style="font-size:10.5px; color:#475569; font-weight:500;">Bidang Sarana, Prasarana dan Informasi — Seksi Pemeliharaan Sarana dan Prasarana</div>
+                    <div style="font-size:10.5px; color:#475569; font-weight:500;">Bidang SPI — Seksi Pemeliharaan</div>
                 </div>
                 <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Damkar" style="height:55px; width:auto;" onerror="this.style.display='none'">
             </div>
@@ -155,7 +155,7 @@
             <div class="ttd-box" style="margin-top:24px; display:flex; justify-content:flex-end; page-break-inside:avoid; break-inside:avoid;">
                 <div style="text-align:center; min-width:240px; font-size:11px; color:#334155;">
                     <div>Soreang, {{ now()->translatedFormat('d F Y') }}</div>
-                    <div style="font-weight:700; color:#0F172A; margin-top:3px; margin-bottom:50px;">Kepala Seksi Pemeliharaan Sarana dan Prasarana</div>
+                    <div style="font-weight:700; color:#0F172A; margin-top:3px; margin-bottom:50px;">Kepala Seksi Pemeliharaan</div>
                     <div style="font-weight:700; color:#0F172A; text-decoration:underline;">( .................................................... )</div>
                     <div style="font-size:10px; color:#64748B; margin-top:2px;">NIP. ....................................................</div>
                 </div>

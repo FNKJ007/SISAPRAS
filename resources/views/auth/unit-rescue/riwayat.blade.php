@@ -18,7 +18,7 @@
         this.selectedUnit = null;
         this.selectedAlat = null;
     }
-}" x-init="$watch('activeTab', () => $nextTick(() => { if (window.lucide) lucide.createIcons(); }))">
+}" x-effect="document.body.classList.toggle('modal-open', selectedUnit !== null || selectedAlat !== null)" x-init="$watch('activeTab', () => $nextTick(() => { if (window.lucide) lucide.createIcons(); }))">
 
     {{-- Header Page --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-5">
@@ -435,20 +435,23 @@
 
     {{-- ===================== MODAL DETAIL UNIT ===================== --}}
     <div x-show="selectedUnit !== null" x-cloak
-         class="fixed inset-0 z-50 overflow-y-auto bg-black/50 flex items-center justify-center p-3 sm:p-4">
+         class="fixed inset-0 z-50 overflow-hidden bg-black/50 flex items-center justify-center p-3 sm:p-4">
         <div @click.away="closeModals()"
-             class="bg-white rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+             class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl relative max-h-[90vh] flex flex-col">
             <button type="button" @click="closeModals()"
-                    class="absolute top-3.5 right-3.5 text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
+                    class="absolute top-3.5 right-3.5 text-gray-400 hover:text-gray-600 p-1 cursor-pointer z-10">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
 
             <template x-if="selectedUnit">
-                <div>
+                <div class="flex flex-col h-full">
+                    {{-- HEADER (tidak scroll) --}}
+                    <div class="flex-shrink-0 p-4 sm:p-6 border-b border-gray-200">
+
                     <h3 class="text-base sm:text-lg font-extrabold text-blue-950 mb-1 pr-6" x-text="'Detail Pengecekan: ' + selectedUnit.unit_nama"></h3>
                     <p class="text-xs text-gray-500 mb-3.5" x-text="'Tanggal: ' + selectedUnit.tanggal_pemeriksaan + ' | Pos: ' + (selectedUnit.pos || '-')"></p>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-4 text-xs bg-gray-50 p-3 sm:p-3.5 rounded-xl border border-gray-200">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs bg-gray-50 p-3 sm:p-3.5 rounded-xl border border-gray-200">
                         <div><strong class="text-gray-500">Pemeriksa:</strong> <span class="font-bold text-gray-900" x-text="selectedUnit.nama_pemeriksa"></span></div>
                         <div><strong class="text-gray-500">Jabatan:</strong> <span class="text-gray-800" x-text="selectedUnit.jabatan"></span></div>
                         <div><strong class="text-gray-500">Danru:</strong> <span class="text-gray-800" x-text="selectedUnit.nama_danru || '-'"></span></div>
@@ -457,7 +460,7 @@
                         <div><strong class="text-gray-500">Kondisi Rusak:</strong> <span class="font-bold text-red-600" x-text="(selectedUnit.jumlah_rusak || 0) + ' item'"></span></div>
                     </div>
 
-                    <div x-show="selectedUnit.bukti_pemanasan || selectedUnit.bukti_bbm || selectedUnit.bukti_pencucian || (selectedUnit.dokumentasi_tangki_pompa && selectedUnit.dokumentasi_tangki_pompa.length)" class="mb-4">
+                    <div x-show="selectedUnit.bukti_pemanasan || selectedUnit.bukti_bbm || selectedUnit.bukti_pencucian || (selectedUnit.dokumentasi_tangki_pompa && selectedUnit.dokumentasi_tangki_pompa.length)" class="mt-4">
                         <h4 class="font-bold text-xs uppercase tracking-wider text-gray-700 mb-2">Bukti Pengecekan</h4>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             <template x-for="photo in [
@@ -478,22 +481,27 @@
                             </template>
                         </div>
                     </div>
-
-                    <h4 class="font-bold text-xs uppercase tracking-wider text-gray-700 mb-2">Item Perlengkapan yang Rusak / Catatan</h4>
-                    <div class="space-y-1.5 max-h-56 overflow-y-auto border border-gray-200 rounded-xl p-3 bg-white">
-                        <template x-for="(val, key) in (selectedUnit.perlengkapan || {})" :key="key">
-                            <div class="flex items-center justify-between text-xs py-1.5 border-b border-gray-100 last:border-b-0 gap-2">
-                                <span class="font-medium text-gray-700" x-text="val.label || key"></span>
-                                <div class="flex items-center gap-1.5 flex-shrink-0">
-                                    <span :class="val.status === 'rusak' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'"
-                                          class="px-2 py-0.5 rounded text-[10px] font-bold uppercase" x-text="val.status || 'baik'"></span>
-                                    <span class="text-gray-400 text-[10px]" x-show="val.catatan" x-text="'(' + val.catatan + ')'"></span>
-                                </div>
-                            </div>
-                        </template>
                     </div>
 
-                    <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 mt-4 pt-3 border-t border-gray-200">
+                    {{-- MIDDLE (scrollable) --}}
+                    <div class="flex-1 overflow-y-auto p-4 sm:p-6">
+                        <h4 class="font-bold text-xs uppercase tracking-wider text-gray-700 mb-2">Item Perlengkapan yang Rusak / Catatan</h4>
+                        <div class="space-y-1.5 border border-gray-200 rounded-xl p-3 bg-white">
+                            <template x-for="(val, key) in (selectedUnit.perlengkapan || {})" :key="key">
+                                <div class="flex items-center justify-between text-xs py-1.5 border-b border-gray-100 last:border-b-0 gap-2">
+                                    <span class="font-medium text-gray-700" x-text="val.label || key"></span>
+                                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                                        <span :class="val.status === 'rusak' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'"
+                                              class="px-2 py-0.5 rounded text-[10px] font-bold uppercase" x-text="val.status || 'baik'"></span>
+                                        <span class="text-gray-400 text-[10px]" x-show="val.catatan" x-text="'(' + val.catatan + ')'"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    {{-- FOOTER (tidak scroll) --}}
+                    <div class="flex-shrink-0 flex flex-col-reverse sm:flex-row justify-end gap-2 p-4 sm:p-6 border-t border-gray-200">
                         <button type="button" @click="closeModals()"
                                 class="w-full sm:w-auto px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition cursor-pointer text-center">
                             Tutup
@@ -511,42 +519,49 @@
 
     {{-- ===================== MODAL DETAIL ALAT ===================== --}}
     <div x-show="selectedAlat !== null" x-cloak
-         class="fixed inset-0 z-50 overflow-y-auto bg-black/50 flex items-center justify-center p-3 sm:p-4">
+         class="fixed inset-0 z-50 overflow-hidden bg-black/50 flex items-center justify-center p-3 sm:p-4">
         <div @click.away="closeModals()"
-             class="bg-white rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+             class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl relative max-h-[90vh] flex flex-col">
             <button type="button" @click="closeModals()"
-                    class="absolute top-3.5 right-3.5 text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
+                    class="absolute top-3.5 right-3.5 text-gray-400 hover:text-gray-600 p-1 cursor-pointer z-10">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
 
             <template x-if="selectedAlat">
-                <div>
-                    <h3 class="text-base sm:text-lg font-extrabold text-blue-950 mb-1 pr-6" x-text="'Detail Pengecekan Alat: ' + (selectedAlat.unit_nama || 'Peralatan')"></h3>
-                    <p class="text-xs text-gray-500 mb-3.5" x-text="'Tanggal: ' + selectedAlat.tanggal_pemeriksaan + ' | Pos: ' + (selectedAlat.pos || '-')"></p>
+                <div class="flex flex-col h-full">
+                    {{-- HEADER (tidak scroll) --}}
+                    <div class="flex-shrink-0 p-4 sm:p-6 border-b border-gray-200">
+                        <h3 class="text-base sm:text-lg font-extrabold text-blue-950 mb-1 pr-6" x-text="'Detail Pengecekan Alat: ' + (selectedAlat.unit_nama || 'Peralatan')"></h3>
+                        <p class="text-xs text-gray-500 mb-3.5" x-text="'Tanggal: ' + selectedAlat.tanggal_pemeriksaan + ' | Pos: ' + (selectedAlat.pos || '-')"></p>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-4 text-xs bg-gray-50 p-3 sm:p-3.5 rounded-xl border border-gray-200">
-                        <div><strong class="text-gray-500">Pemeriksa:</strong> <span class="font-bold text-gray-900" x-text="selectedAlat.nama_pemeriksa"></span></div>
-                        <div><strong class="text-gray-500">Jabatan:</strong> <span class="text-gray-800" x-text="selectedAlat.jabatan"></span></div>
-                        <div><strong class="text-gray-500">Danru:</strong> <span class="text-gray-800" x-text="selectedAlat.nama_danru || '-'"></span></div>
-                        <div><strong class="text-gray-500">Kepala Bidang:</strong> <span class="text-gray-800" x-text="selectedAlat.nama_kabid || '-'"></span></div>
-                        <div><strong class="text-gray-500">Total Baik:</strong> <span class="font-bold text-emerald-600" x-text="(selectedAlat.total_alat_baik || 0) + ' Unit'"></span></div>
-                        <div><strong class="text-gray-500">Total Rusak:</strong> <span class="font-bold text-red-600" x-text="(selectedAlat.total_alat_rusak || 0) + ' Unit'"></span></div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs bg-gray-50 p-3 sm:p-3.5 rounded-xl border border-gray-200">
+                            <div><strong class="text-gray-500">Pemeriksa:</strong> <span class="font-bold text-gray-900" x-text="selectedAlat.nama_pemeriksa"></span></div>
+                            <div><strong class="text-gray-500">Jabatan:</strong> <span class="text-gray-800" x-text="selectedAlat.jabatan"></span></div>
+                            <div><strong class="text-gray-500">Danru:</strong> <span class="text-gray-800" x-text="selectedAlat.nama_danru || '-'"></span></div>
+                            <div><strong class="text-gray-500">Kepala Bidang:</strong> <span class="text-gray-800" x-text="selectedAlat.nama_kabid || '-'"></span></div>
+                            <div><strong class="text-gray-500">Total Baik:</strong> <span class="font-bold text-emerald-600" x-text="(selectedAlat.total_alat_baik || 0) + ' Unit'"></span></div>
+                            <div><strong class="text-gray-500">Total Rusak:</strong> <span class="font-bold text-red-600" x-text="(selectedAlat.total_alat_rusak || 0) + ' Unit'"></span></div>
+                        </div>
                     </div>
 
-                    <h4 class="font-bold text-xs uppercase tracking-wider text-gray-700 mb-2">Daftar Peralatan yang Diperiksa</h4>
-                    <div class="space-y-1.5 max-h-56 overflow-y-auto border border-gray-200 rounded-xl p-3 bg-white">
-                        <template x-for="(item, idx) in (selectedAlat.alat || [])" :key="idx">
-                            <div class="flex items-center justify-between text-xs py-1.5 border-b border-gray-100 last:border-b-0 gap-2">
-                                <span class="font-medium text-gray-800" x-text="item.nama || ('Alat #' + item.id)"></span>
-                                <div class="flex items-center gap-1.5 flex-shrink-0">
-                                    <span class="text-emerald-700 font-bold" x-text="item.jumlah_baik + ' Baik'"></span>
-                                    <span class="text-red-700 font-bold" x-show="item.jumlah_rusak > 0" x-text="item.jumlah_rusak + ' Rusak'"></span>
+                    {{-- MIDDLE (scrollable) --}}
+                    <div class="flex-1 overflow-y-auto p-4 sm:p-6">
+                        <h4 class="font-bold text-xs uppercase tracking-wider text-gray-700 mb-2">Daftar Peralatan yang Diperiksa</h4>
+                        <div class="space-y-1.5 border border-gray-200 rounded-xl p-3 bg-white">
+                            <template x-for="(item, idx) in (selectedAlat.alat || [])" :key="idx">
+                                <div class="flex items-center justify-between text-xs py-1.5 border-b border-gray-100 last:border-b-0 gap-2">
+                                    <span class="font-medium text-gray-800" x-text="item.nama || ('Alat #' + item.id)"></span>
+                                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                                        <span class="text-emerald-700 font-bold" x-text="item.jumlah_baik + ' Baik'"></span>
+                                        <span class="text-red-700 font-bold" x-show="item.jumlah_rusak > 0" x-text="item.jumlah_rusak + ' Rusak'"></span>
+                                    </div>
                                 </div>
-                            </div>
-                        </template>
+                            </template>
+                        </div>
                     </div>
 
-                    <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 mt-4 pt-3 border-t border-gray-200">
+                    {{-- FOOTER (tidak scroll) --}}
+                    <div class="flex-shrink-0 flex flex-col-reverse sm:flex-row justify-end gap-2 p-4 sm:p-6 border-t border-gray-200">
                         <button type="button" @click="closeModals()"
                                 class="w-full sm:w-auto px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition cursor-pointer text-center">
                             Tutup

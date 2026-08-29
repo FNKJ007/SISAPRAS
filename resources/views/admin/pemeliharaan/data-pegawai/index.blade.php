@@ -183,9 +183,9 @@
                                         <span style="display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#FEF3C7; color:#D97706;">
                                             Pencegahan
                                         </span>
-                                    @elseif(str_contains($bLower, 'sarana') || str_contains($bLower, 'spi'))
+                                    @elseif(str_contains($bLower, 'informasi') || str_contains($bLower, 'spi'))
                                         <span style="display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#E0E7FF; color:#4F46E5;">
-                                            Sarana Prasarana
+                                            SPI
                                         </span>
                                     @elseif(str_contains($bLower, 'sekretariat'))
                                         <span style="display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#CFFAFE; color:#0891B2;">
@@ -366,7 +366,7 @@
                         </div>
                         <div style="position:relative; display:flex; align-items:center;">
                             <input type="text" name="bidang" x-model="createBidang"
-                                   placeholder="Contoh: Sarana Prasarana Dan Informasi / Pemadam / Rescue" required
+                                   placeholder="Contoh: SPI / Pemadam / Rescue" required
                                    style="width:100%; padding:9px 36px 9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;"
                                    @focus="open = true"
                                    @input="open = true">

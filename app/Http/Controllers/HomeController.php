@@ -215,7 +215,7 @@ class HomeController extends Controller
         $userPos = $user ? trim((string) $user->pos) : '';
         $userBidang = strtolower(trim((string) ($user->bidang ?? '')));
         $isAdminSimulasi = $user && $user->isAdmin() && session('admin_viewing_as_user');
-        $isSpi = str_contains($userBidang, 'sarana prasarana') || str_contains($userBidang, 'spi');
+        $isSpi = str_contains($userBidang, 'informasi') || str_contains($userBidang, 'spi');
         $showAllBidang = ($user && $user->isAdmin() && !$isAdminSimulasi) || $isSpi;
 
         $today = Carbon::today();
