@@ -277,20 +277,47 @@
     var labelBox = document.getElementById('fotoUmumLabel');
     var errEl = document.getElementById('err_foto_umum');
 
+    var MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    var ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+    function validateFile(file) {
+        if (!file) return { valid: false, error: 'File tidak ditemukan.' };
+        if (ALLOWED_TYPES.indexOf(file.type) === -1) {
+            return { valid: false, error: 'Format file "' + file.name + '" tidak didukung. Gunakan format JPG, PNG, atau WebP.' };
+        }
+        if (file.size > MAX_SIZE) {
+            var sizeMB = (file.size / 1024 / 1024).toFixed(1);
+            return { valid: false, error: 'Foto "' + file.name + '" terlalu besar (' + sizeMB + ' MB). Maksimal 10 MB.' };
+        }
+        return { valid: true, error: null };
+    }
+
+    function showFileError(msg) {
+        if (labelBox) labelBox.classList.add('border-red-500', 'bg-red-50/50');
+        if (labelBox) labelBox.classList.remove('border-emerald-500', 'bg-emerald-50/50');
+        if (errEl) { errEl.textContent = msg; errEl.classList.remove('hidden'); }
+        if (labelText) labelText.textContent = '+ Tambahkan Foto';
+        if (previewEl) { previewEl.innerHTML = ''; previewEl.classList.add('hidden'); }
+    }
+
+    function clearFileError() {
+        if (errEl) errEl.classList.add('hidden');
+        if (labelBox) labelBox.classList.remove('border-red-500', 'bg-red-50/50');
+    }
+
     if (form && input) {
         form.addEventListener('submit', function (e) {
             if (!input.files || input.files.length === 0) {
                 e.preventDefault();
-                if (labelBox) {
-                    labelBox.classList.add('border-red-500', 'bg-red-50/50');
-                }
-                if (errEl) {
-                    errEl.textContent = 'Foto dokumentasi pemeriksaan alat wajib dilampirkan.';
-                    errEl.classList.remove('hidden');
-                }
-                if (labelBox) {
-                    labelBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
+                showFileError('Foto dokumentasi pemeriksaan alat wajib dilampirkan.');
+                if (labelBox) labelBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+            var result = validateFile(input.files[0]);
+            if (!result.valid) {
+                e.preventDefault();
+                showFileError(result.error);
+                if (labelBox) labelBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return false;
             }
         });
@@ -307,12 +334,21 @@
                 return;
             }
 
-            if (errEl) errEl.classList.add('hidden');
-            labelBox.classList.remove('border-red-500', 'bg-red-50/50');
-            labelBox.classList.add('border-emerald-500', 'bg-emerald-50/50');
-            labelText.textContent = '✓ ' + input.files[0].name;
+            var file = input.files[0];
+            var result = validateFile(file);
+            if (!result.valid) {
+                showFileError(result.error);
+                input.value = '';
+                return;
+            }
 
-            if (previewEl && input.files[0].type.startsWith('image/')) {
+            clearFileError();
+            labelBox.classList.add('border-emerald-500', 'bg-emerald-50/50');
+            var sizeMB = (file.size / 1024 / 1024).toFixed(1);
+            var sizeText = file.size >= 1024 * 1024 ? sizeMB + ' MB' : (file.size / 1024).toFixed(1) + ' KB';
+            labelText.textContent = '✓ ' + file.name;
+
+            if (previewEl && file.type.startsWith('image/')) {
                 previewEl.classList.remove('hidden');
                 var reader = new FileReader();
                 reader.onload = function (e) {
@@ -321,13 +357,13 @@
                     item.innerHTML = `
                         <img src="${e.target.result}" alt="Preview" class="w-12 h-12 object-cover rounded-md border border-emerald-200">
                         <div>
-                            <span class="block text-xs font-bold text-emerald-900 truncate max-w-[160px]">${input.files[0].name}</span>
-                            <span class="block text-[10px] text-emerald-700 font-semibold">${(input.files[0].size / 1024).toFixed(1)} KB · Foto Terpilih ✓</span>
+                            <span class="block text-xs font-bold text-emerald-900 truncate max-w-[160px]">${file.name}</span>
+                            <span class="block text-[10px] text-emerald-700 font-semibold">${sizeText} · Foto Terpilih ✓</span>
                         </div>
                     `;
                     previewEl.appendChild(item);
                 };
-                reader.readAsDataURL(input.files[0]);
+                reader.readAsDataURL(file);
             }
         });
     }
