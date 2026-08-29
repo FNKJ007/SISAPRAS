@@ -105,7 +105,7 @@
         </form>
     </div>
 
-    {{-- Tabel Data Pos Damkar Sesuai Sarana Prasarana Unit --}}
+    {{-- Tabel Data Pos Damkar --}}
     <div style="background:#FFFFFF; border-radius:16px; border:1px solid #E2E8F0; box-shadow:0px 18px 40px rgba(112,144,176,0.08); overflow:hidden;">
         @if($posList->isEmpty())
             <div style="padding:56px 20px; text-align:center; background:#FFFFFF; display:flex; flex-direction:column; align-items:center; justify-content:center;">

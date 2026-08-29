@@ -12,15 +12,15 @@
         .header h1 { font-size: 15px; margin: 0 0 2px; color: #065f46; }
         .header p { font-size: 10px; margin: 0; color: #6b7280; }
 
-        table.info { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
-        table.info td { padding: 4px 6px; vertical-align: top; font-size: 10.5px; }
+        table.info { width: 100%; border-collapse: collapse; margin-bottom: 14px; table-layout: fixed; }
+        table.info td { padding: 4px 6px; vertical-align: top; font-size: 10.5px; word-wrap: break-word; overflow-wrap: anywhere; }
         table.info td.label { width: 150px; color: #6b7280; }
-        table.info td.value { font-weight: bold; }
+        table.info td.value { font-weight: bold; word-wrap: break-word; overflow-wrap: anywhere; }
 
         h2.section { font-size: 12px; background: #ecfdf5; color: #065f46; padding: 6px 8px; border-left: 3px solid #059669; margin: 16px 0 8px; }
 
-        table.data { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-        table.data th, table.data td { border: 1px solid #d1d5db; padding: 5px 7px; font-size: 10px; text-align: left; }
+        table.data { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; }
+        table.data th, table.data td { border: 1px solid #d1d5db; padding: 5px 7px; font-size: 10px; text-align: left; word-wrap: break-word; overflow-wrap: anywhere; white-space: normal; }
         table.data th { background: #f3f4f6; color: #374151; }
         table.data td.center { text-align: center; }
         table.data td.rusak-count { color: #dc2626; font-weight: bold; }
@@ -127,7 +127,7 @@
         $kabidLabel = $kabid_label ?? ($kabidUser->jabatan ?? match($record->kategori) {
             'rescue'         => 'Kepala Bidang Penyelamatan',
             'pencegahan'     => 'Kepala Bidang Pencegahan Kebakaran',
-            'command_center' => 'Kepala Bidang Sarana, Prasarana Dan Informasi',
+            'command_center' => 'Kepala Bidang SPI',
             default          => 'Kepala Bidang Pemadaman',
         });
     @endphp

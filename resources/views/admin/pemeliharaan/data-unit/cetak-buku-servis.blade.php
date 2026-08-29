@@ -294,7 +294,7 @@
             <div class="kop-text">
                 <h4>Pemerintah Kabupaten Bandung</h4>
                 <h2>Dinas Pemadam Kebakaran dan Penyelamatan</h2>
-                <h5>Bidang Sarana Prasarana dan Informasi</h5>
+                <h5>Bidang SPI</h5>
                 <p>Jl. Raya Soreang - Banjaran No. 129, Soreang, Kabupaten Bandung, Jawa Barat 40911 | Telp: (022) 5891113</p>
             </div>
             <img src="{{ asset('images/logo-damkar.png') }}" class="kop-logo" alt="Logo Damkar">
@@ -500,7 +500,7 @@
             <div class="sig-box">
                 <div class="sig-title">
                     Soreang, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}<br>
-                    <strong>Kepala Bidang Sarana Prasarana &amp; Informasi</strong>
+                    <strong>Kepala Bidang SPI</strong>
                 </div>
                 <div style="height:55px;"></div>
                 <div>

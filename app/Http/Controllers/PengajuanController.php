@@ -380,8 +380,8 @@ class PengajuanController extends Controller
 
         // Normalisasi Bidang
         $cleanB = strtolower(trim($validated['bidang']));
-        if ($cleanB === 'spi' || str_contains($cleanB, 'sarana')) {
-            $validated['bidang'] = 'Sarana Prasarana Dan Informasi';
+        if ($cleanB === 'spi' || str_contains($cleanB, 'sarana') || str_contains($cleanB, 'informasi')) {
+            $validated['bidang'] = 'Sarana Dan Informasi';
         } elseif ($cleanB === 'cc' || str_contains($cleanB, 'command')) {
             $validated['bidang'] = 'Command Center';
         } else {

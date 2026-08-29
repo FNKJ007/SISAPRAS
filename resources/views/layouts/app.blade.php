@@ -128,7 +128,7 @@
 
                     @php
                         $userBidang = strtolower(auth()->user()->bidang ?? '');
-                        $isSpi = str_contains($userBidang, 'sarana prasarana') || str_contains($userBidang, 'spi');
+                        $isSpi = str_contains($userBidang, 'informasi') || str_contains($userBidang, 'spi');
                         $isAdminSimulasi = auth()->user()->isAdmin() && session('admin_viewing_as_user');
                         $noBidang = empty(trim(auth()->user()->bidang ?? ''));
                         $showAll = $isSpi || $isAdminSimulasi || $noBidang;

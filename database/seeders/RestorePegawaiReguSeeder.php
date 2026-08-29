@@ -91,8 +91,8 @@ class RestorePegawaiReguSeeder extends Seeder
                 }
 
                 $bidang = trim($u['bidang'] ?? '');
-                if (strtolower($bidang) === 'spi' || str_contains(strtolower($bidang), 'sarana')) {
-                    $bidangClean = 'Sarana Prasarana Dan Informasi';
+                if (strtolower($bidang) === 'spi' || str_contains(strtolower($bidang), 'sarana') || str_contains(strtolower($bidang), 'informasi')) {
+                    $bidangClean = 'Sarana Dan Informasi';
                 } elseif (str_contains(strtolower($bidang), 'command')) {
                     $bidangClean = 'Command Center';
                 } elseif (str_contains(strtolower($bidang), 'pencegahan')) {

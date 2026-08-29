@@ -106,8 +106,8 @@ class Pengajuan extends Model
             // Auto-clean bidang
             if (!empty($pengajuan->bidang)) {
                 $cleanB = strtolower(trim($pengajuan->bidang));
-                if ($cleanB === 'spi' || str_contains($cleanB, 'sarana')) {
-                    $pengajuan->bidang = 'Sarana Prasarana Dan Informasi';
+                if ($cleanB === 'spi' || str_contains($cleanB, 'sarana') || str_contains($cleanB, 'informasi')) {
+                    $pengajuan->bidang = 'Sarana Dan Informasi';
                 } elseif ($cleanB === 'cc' || str_contains($cleanB, 'command')) {
                     $pengajuan->bidang = 'Command Center';
                 } else {
@@ -200,8 +200,8 @@ class Pengajuan extends Model
     {
         if (!$value) return $value;
         $clean = strtolower(trim($value));
-        if ($clean === 'spi' || str_contains($clean, 'sarana')) {
-            return 'Sarana Prasarana Dan Informasi';
+        if ($clean === 'spi' || str_contains($clean, 'sarana') || str_contains($clean, 'informasi')) {
+            return 'Sarana Dan Informasi';
         }
         if ($clean === 'cc' || str_contains($clean, 'command')) {
             return 'Command Center';

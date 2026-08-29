@@ -37,8 +37,8 @@ class BidangMiddleware
 
         $userBidang = strtolower(trim((string) $user->bidang));
 
-        // 3. Izinkan jika bidang user mengandung 'sarana prasarana' atau 'spi' (SPI memonitor semua bidang)
-        if (str_contains($userBidang, 'sarana prasarana') || str_contains($userBidang, 'spi')) {
+        // 3. Izinkan jika bidang user mengandung 'sarana', 'informasi', atau 'spi' (bidang ini memonitor semua bidang)
+        if (str_contains($userBidang, 'sarana') || str_contains($userBidang, 'informasi') || str_contains($userBidang, 'spi')) {
             return $next($request);
         }
 

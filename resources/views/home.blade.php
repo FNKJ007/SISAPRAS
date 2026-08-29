@@ -300,7 +300,7 @@
         <div>
             <div class="flex items-center gap-2 mb-1">
                 <span class="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>
-                <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Kalender Pemeliharaan Sarana Prasarana</h1>
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Kalender Pemeliharaan</h1>
             </div>
             <p class="text-gray-500 text-sm">
                 Jadwal &amp; status verifikasi pengajuan unit operasional secara real-time.
