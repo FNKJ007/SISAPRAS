@@ -260,10 +260,11 @@
     </div>
 
     {{-- MODAL VERIFIKASI ADMIN ULTRA-SIMPEL & BERSIH (LOCKED DEAD-CENTER ON MOBILE) --}}
+    <template x-teleport="body">
     <div x-show="modalOpen"
          x-cloak
          class="admin-modal-overlay"
-         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
+         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:999999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.72);"
          @click.self="closeModal()">
 
         <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:540px; max-height:88vh; overflow-y:auto; overflow-x:hidden; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto; text-align:left;" @click.stop>
@@ -424,6 +425,7 @@
             </div>
         </div>
     </div>
+    </template>
 
 </div>
 

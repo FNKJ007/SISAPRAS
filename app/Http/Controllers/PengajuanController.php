@@ -152,17 +152,38 @@ class PengajuanController extends Controller
                    ($pengemudi2 && (str_contains($pengemudi2, $uName) || str_contains($uName, $pengemudi2)));
         })->values();
 
-        // 1. Tentukan Unit Default: prioritaskan unit yang dipegang khusus oleh pengguna (misal P-01)
+        // 1. Tentukan Unit Default: prioritaskan unit yang dipegang khusus oleh pengguna
         $defaultUnit = null;
         if ($userUnits->isNotEmpty()) {
             $defaultUnit = $userUnits->first();
         } elseif ($currentUser && $currentUser->pos) {
             $userPosClean = strtolower(preg_replace('/[^a-z0-9]/', '', $currentUser->pos));
-            $posUnit = collect($unitList)->first(function ($u) use ($userPosClean) {
+            $userBidangClean = strtolower(trim($currentUser->bidang ?? ''));
+
+            // Prioritaskan unit yang cocok dengan Pos DAN Bidang pengguna (misal Pemadam di Soreang)
+            $posBidangUnit = collect($unitList)->first(function ($u) use ($userPosClean, $userBidangClean) {
                 $posClean = strtolower(preg_replace('/[^a-z0-9]/', '', $u['pos'] ?? ''));
-                return $posClean && (str_contains($posClean, $userPosClean) || str_contains($userPosClean, $posClean));
+                $matchPos = $posClean && (str_contains($posClean, $userPosClean) || str_contains($userPosClean, $posClean));
+                if (!$matchPos) return false;
+
+                if ($userBidangClean) {
+                    $uKategori = strtolower(trim($u['kategori'] ?? ''));
+                    $uPeruntukan = strtolower(trim($u['peruntukan'] ?? ''));
+                    return ($uKategori && (str_contains($uKategori, $userBidangClean) || str_contains($userBidangClean, $uKategori))) ||
+                           ($uPeruntukan && (str_contains($uPeruntukan, $userBidangClean) || str_contains($userBidangClean, $uPeruntukan)));
+                }
+                return true;
             });
-            $defaultUnit = $posUnit ?: ($unitList[0] ?? null);
+
+            if ($posBidangUnit) {
+                $defaultUnit = $posBidangUnit;
+            } else {
+                $posUnit = collect($unitList)->first(function ($u) use ($userPosClean) {
+                    $posClean = strtolower(preg_replace('/[^a-z0-9]/', '', $u['pos'] ?? ''));
+                    return $posClean && (str_contains($posClean, $userPosClean) || str_contains($userPosClean, $posClean));
+                });
+                $defaultUnit = $posUnit ?: ($unitList[0] ?? null);
+            }
         } else {
             $defaultUnit = !empty($unitList) ? $unitList[0] : null;
         }

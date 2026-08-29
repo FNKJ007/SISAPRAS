@@ -95,8 +95,9 @@ trait HandlesCekHarianAlat
             'tanggal_pemeriksaan.required' => 'Tanggal pemeriksaan wajib diisi.',
             'alat.required'                => 'Daftar peralatan yang diperiksa wajib diisi.',
             'foto_umum.required'           => 'Foto dokumentasi pemeriksaan alat wajib dilampirkan.',
-            'foto_umum.uploaded'           => 'File foto dokumentasi gagal diunggah. Ukuran foto terlalu besar (Maks 10MB).',
+            'foto_umum.uploaded'           => 'File foto dokumentasi gagal diunggah (pastikan ukuran < 10MB dan konfigurasi server sesuai).',
             'foto_umum.image'              => 'File foto dokumentasi harus berupa gambar (JPG/PNG/WebP).',
+            'foto_umum.mimes'              => 'Format foto dokumentasi harus berupa JPG, PNG, atau WebP.',
             'foto_umum.max'                => 'Ukuran foto dokumentasi tidak boleh lebih dari 10 MB.',
         ];
 

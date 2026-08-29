@@ -145,153 +145,155 @@
     </div>
 
     {{-- ===================== MODAL DETAIL SIMPEL & TANPA SCROLL KANAN-KIRI ===================== --}}
-    <div x-show="modalOpen"
-         x-cloak
-         class="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4"
-         style="background-color: rgba(15, 23, 42, 0.65);"
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         @click.self="closeModal()">
-
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] overflow-y-auto overflow-x-hidden border border-gray-100 custom-scrollbar m-auto"
+    <template x-teleport="body">
+        <div x-show="modalOpen"
+             x-cloak
+             class="fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-4"
+             style="background-color: rgba(15, 23, 42, 0.72);"
              x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 scale-95 translate-y-2"
-             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
              x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100 scale-100"
-             x-transition:leave-end="opacity-0 scale-95"
-             @click.stop>
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click.self="closeModal()">
 
-            {{-- Header Modal --}}
-            <div class="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-red-50 text-red-700 flex items-center justify-center flex-shrink-0">
-                        <i data-lucide="calendar" class="w-4.5 h-4.5"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-gray-900 text-sm sm:text-base leading-tight">Detail Pengajuan</h3>
-                        <p class="text-[11px] font-semibold text-red-700 mt-0.5" x-text="selectedDate"></p>
-                    </div>
-                </div>
-                <button type="button" @click="closeModal()"
-                        class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
-                    <i data-lucide="x" class="w-4.5 h-4.5"></i>
-                </button>
-            </div>
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] overflow-y-auto overflow-x-hidden border border-gray-100 custom-scrollbar m-auto"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95"
+                 @click.stop>
 
-            {{-- Body List Events --}}
-            <div class="p-4 sm:p-5 space-y-3">
-                <template x-for="(event, idx) in selectedEvents" :key="idx">
-                    <div class="border border-slate-200 rounded-xl p-3.5 sm:p-4 bg-white shadow-xs space-y-3">
-                        
-                        {{-- Header Unit & Status Badge --}}
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
-                            <div class="flex items-center gap-2 min-w-0">
-                                <i data-lucide="truck" class="w-4 h-4 text-slate-700 flex-shrink-0"></i>
-                                <h4 class="font-bold text-slate-900 text-xs sm:text-sm truncate" x-text="event.unit_nama"></h4>
-                            </div>
-
-                            <span class="inline-flex items-center gap-1.5 text-[10.5px] font-extrabold px-2.5 py-1 rounded-full w-fit shadow-2xs"
-                                  :class="{
-                                      'bg-amber-50 text-amber-900 border border-amber-300': event.status_kalender === 'menunggu',
-                                      'bg-blue-50 text-blue-900 border border-blue-300': event.status_kalender === 'disetujui_ke_bengkel',
-                                      'bg-orange-50 text-orange-950 border border-orange-300': event.status_kalender === 'dalam_perbaikan',
-                                      'bg-emerald-50 text-emerald-900 border border-emerald-300': event.status_kalender === 'selesai',
-                                      'bg-red-50 text-red-900 border border-red-300': event.status_kalender === 'ditolak'
-                                  }">
-                                <span class="w-1.5 h-1.5 rounded-full"
-                                      :class="{
-                                          'bg-amber-500': event.status_kalender === 'menunggu',
-                                          'bg-blue-600': event.status_kalender === 'disetujui_ke_bengkel',
-                                          'bg-orange-500': event.status_kalender === 'dalam_perbaikan',
-                                          'bg-emerald-500': event.status_kalender === 'selesai',
-                                          'bg-red-600': event.status_kalender === 'ditolak'
-                                      }"></span>
-                                <span x-text="event.status_label"></span>
-                            </span>
+                {{-- Header Modal --}}
+                <div class="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-red-50 text-red-700 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="calendar" class="w-4.5 h-4.5"></i>
                         </div>
-
-                        {{-- Jadwal Keberangkatan Bengkel (Belum Berangkat / Masa Depan) --}}
-                        <template x-if="event.tanggal_keberangkatan && event.status_kalender === 'disetujui_ke_bengkel'">
-                            <div class="bg-blue-50/70 border border-blue-200 rounded-lg p-2.5 flex items-center gap-2 text-xs font-semibold text-blue-900">
-                                <span class="text-base">🚛</span>
-                                <div>
-                                    <span class="text-[10px] font-bold text-blue-700 block uppercase">Jadwal Ke Bengkel</span>
-                                    <span class="font-bold text-blue-900" x-text="event.tanggal_keberangkatan"></span>
-                                </div>
-                            </div>
-                        </template>
-
-                        {{-- Sedang Dalam Perbaikan di Bengkel --}}
-                        <template x-if="event.status_kalender === 'dalam_perbaikan'">
-                            <div class="bg-orange-50/80 border border-orange-200 rounded-lg p-2.5 flex items-center gap-2 text-xs font-semibold text-orange-950">
-                                <span class="text-base">⚙️</span>
-                                <div>
-                                    <span class="text-[10px] font-bold text-orange-700 block uppercase">Proses Perbaikan</span>
-                                    <span class="font-bold text-orange-950">Unit Sedang Dikerjakan di Bengkel</span>
-                                    <span class="text-[10.5px] font-normal text-orange-800 block" x-show="event.tanggal_keberangkatan" x-text="'Masuk Bengkel: ' + event.tanggal_keberangkatan"></span>
-                                </div>
-                            </div>
-                        </template>
-
-                        {{-- Sudah Selesai Perbaikan & Kembali ke Pos --}}
-                        <template x-if="event.status_kalender === 'selesai'">
-                            <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 flex items-center gap-2 text-xs font-semibold text-emerald-900">
-                                <span class="text-base">✅</span>
-                                <div>
-                                    <span class="text-[10px] font-bold text-emerald-700 block uppercase">Status Pemeliharaan</span>
-                                    <span class="font-bold text-emerald-900">Selesai &amp; Unit Kembali Siap Operasi</span>
-                                    <span class="text-[10.5px] font-normal text-emerald-800 block" x-show="event.tanggal_selesai" x-text="'Tanggal Selesai: ' + event.tanggal_selesai"></span>
-                                </div>
-                            </div>
-                        </template>
-
-                        {{-- Item Perbaikan & Badges --}}
                         <div>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Item Perbaikan</span>
+                            <h3 class="font-bold text-gray-900 text-sm sm:text-base leading-tight">Detail Pengajuan</h3>
+                            <p class="text-[11px] font-semibold text-red-700 mt-0.5" x-text="selectedDate"></p>
+                        </div>
+                    </div>
+                    <button type="button" @click="closeModal()"
+                            class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+                        <i data-lucide="x" class="w-4.5 h-4.5"></i>
+                    </button>
+                </div>
+
+                {{-- Body List Events --}}
+                <div class="p-4 sm:p-5 space-y-3">
+                    <template x-for="(event, idx) in selectedEvents" :key="idx">
+                        <div class="border border-slate-200 rounded-xl p-3.5 sm:p-4 bg-white shadow-xs space-y-3">
                             
-                            {{-- Jika Ada Rincian Verifikasi Per Item --}}
-                            <template x-if="event.item_verifikasis && event.item_verifikasis.length > 0">
-                                <div class="flex flex-wrap gap-1.5">
-                                    <template x-for="(it, i) in event.item_verifikasis" :key="i">
-                                        <span class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-md border"
-                                              :class="it.status === 'disetujui' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-red-50 text-red-800 border-red-200'">
-                                            <span x-text="it.status === 'disetujui' ? '✓' : '✕'"></span>
-                                            <span x-text="it.nama"></span>
-                                            <span class="text-[10px] font-normal" x-text="'(' + (it.status === 'disetujui' ? 'Disetujui' : 'Ditolak') + ')'"></span>
-                                        </span>
-                                    </template>
+                            {{-- Header Unit & Status Badge --}}
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <i data-lucide="truck" class="w-4 h-4 text-slate-700 flex-shrink-0"></i>
+                                    <h4 class="font-bold text-slate-900 text-xs sm:text-sm truncate" x-text="event.unit_nama"></h4>
+                                </div>
+
+                                <span class="inline-flex items-center gap-1.5 text-[10.5px] font-extrabold px-2.5 py-1 rounded-full w-fit shadow-2xs"
+                                      :class="{
+                                          'bg-amber-50 text-amber-900 border border-amber-300': event.status_kalender === 'menunggu',
+                                          'bg-blue-50 text-blue-900 border border-blue-300': event.status_kalender === 'disetujui_ke_bengkel',
+                                          'bg-orange-50 text-orange-950 border border-orange-300': event.status_kalender === 'dalam_perbaikan',
+                                          'bg-emerald-50 text-emerald-900 border border-emerald-300': event.status_kalender === 'selesai',
+                                          'bg-red-50 text-red-900 border border-red-300': event.status_kalender === 'ditolak'
+                                      }">
+                                    <span class="w-1.5 h-1.5 rounded-full"
+                                          :class="{
+                                              'bg-amber-500': event.status_kalender === 'menunggu',
+                                              'bg-blue-600': event.status_kalender === 'disetujui_ke_bengkel',
+                                              'bg-orange-500': event.status_kalender === 'dalam_perbaikan',
+                                              'bg-emerald-500': event.status_kalender === 'selesai',
+                                              'bg-red-600': event.status_kalender === 'ditolak'
+                                          }"></span>
+                                    <span x-text="event.status_label"></span>
+                                </span>
+                            </div>
+
+                            {{-- Jadwal Keberangkatan Bengkel (Belum Berangkat / Masa Depan) --}}
+                            <template x-if="event.tanggal_keberangkatan && event.status_kalender === 'disetujui_ke_bengkel'">
+                                <div class="bg-blue-50/70 border border-blue-200 rounded-lg p-2.5 flex items-center gap-2 text-xs font-semibold text-blue-900">
+                                    <span class="text-base">🚛</span>
+                                    <div>
+                                        <span class="text-[10px] font-bold text-blue-700 block uppercase">Jadwal Ke Bengkel</span>
+                                        <span class="font-bold text-blue-900" x-text="event.tanggal_keberangkatan"></span>
+                                    </div>
                                 </div>
                             </template>
 
-                            {{-- Jika Tidak Ada Rincian Per Item --}}
-                            <template x-if="!event.item_verifikasis || event.item_verifikasis.length === 0">
-                                <p class="text-xs font-bold text-slate-800" x-text="event.item_perbaikan || '-'"></p>
+                            {{-- Sedang Dalam Perbaikan di Bengkel --}}
+                            <template x-if="event.status_kalender === 'dalam_perbaikan'">
+                                <div class="bg-orange-50/80 border border-orange-200 rounded-lg p-2.5 flex items-center gap-2 text-xs font-semibold text-orange-950">
+                                    <span class="text-base">⚙️</span>
+                                    <div>
+                                        <span class="text-[10px] font-bold text-orange-700 block uppercase">Proses Perbaikan</span>
+                                        <span class="font-bold text-orange-950">Unit Sedang Dikerjakan di Bengkel</span>
+                                        <span class="text-[10.5px] font-normal text-orange-800 block" x-show="event.tanggal_keberangkatan" x-text="'Masuk Bengkel: ' + event.tanggal_keberangkatan"></span>
+                                    </div>
+                                </div>
                             </template>
-                        </div>
 
-                        {{-- Catatan Admin --}}
-                        <template x-if="event.catatan_admin">
-                            <div class="bg-slate-50 border border-slate-200/80 rounded-lg p-2.5 text-xs text-slate-700">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Catatan Admin</span>
-                                <p class="italic text-slate-800" x-text="event.catatan_admin"></p>
+                            {{-- Sudah Selesai Perbaikan & Kembali ke Pos --}}
+                            <template x-if="event.status_kalender === 'selesai'">
+                                <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 flex items-center gap-2 text-xs font-semibold text-emerald-900">
+                                    <span class="text-base">✅</span>
+                                    <div>
+                                        <span class="text-[10px] font-bold text-emerald-700 block uppercase">Status Pemeliharaan</span>
+                                        <span class="font-bold text-emerald-900">Selesai &amp; Unit Kembali Siap Operasi</span>
+                                        <span class="text-[10.5px] font-normal text-emerald-800 block" x-show="event.tanggal_selesai" x-text="'Tanggal Selesai: ' + event.tanggal_selesai"></span>
+                                    </div>
+                                </div>
+                            </template>
+
+                            {{-- Item Perbaikan & Badges --}}
+                            <div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Item Perbaikan</span>
+                                
+                                {{-- Jika Ada Rincian Verifikasi Per Item --}}
+                                <template x-if="event.item_verifikasis && event.item_verifikasis.length > 0">
+                                    <div class="flex flex-wrap gap-1.5">
+                                        <template x-for="(it, i) in event.item_verifikasis" :key="i">
+                                            <span class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-md border"
+                                                  :class="it.status === 'disetujui' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-red-50 text-red-800 border-red-200'">
+                                                <span x-text="it.status === 'disetujui' ? '✓' : '✕'"></span>
+                                                <span x-text="it.nama"></span>
+                                                <span class="text-[10px] font-normal" x-text="'(' + (it.status === 'disetujui' ? 'Disetujui' : 'Ditolak') + ')'"></span>
+                                            </span>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                {{-- Jika Tidak Ada Rincian Per Item --}}
+                                <template x-if="!event.item_verifikasis || event.item_verifikasis.length === 0">
+                                    <p class="text-xs font-bold text-slate-800" x-text="event.item_perbaikan || '-'"></p>
+                                </template>
                             </div>
-                        </template>
 
-                    </div>
-                </template>
-            </div>
+                            {{-- Catatan Admin --}}
+                            <template x-if="event.catatan_admin">
+                                <div class="bg-slate-50 border border-slate-200/80 rounded-lg p-2.5 text-xs text-slate-700">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Catatan Admin</span>
+                                    <p class="italic text-slate-800" x-text="event.catatan_admin"></p>
+                                </div>
+                            </template>
 
-            {{-- Footer --}}
-            <div class="px-4 py-2.5 border-t border-gray-100 bg-gray-50/80 rounded-b-2xl text-center">
-                <p class="text-[10.5px] text-gray-400 font-medium">Tekan <kbd class="px-1 py-0.5 bg-white border border-gray-200 rounded text-gray-600 font-bold">Esc</kbd> atau klik luar untuk menutup</p>
+                        </div>
+                    </template>
+                </div>
+
+                {{-- Footer --}}
+                <div class="px-4 py-2.5 border-t border-gray-100 bg-gray-50/80 rounded-b-2xl text-center">
+                    <p class="text-[10.5px] text-gray-400 font-medium">Tekan <kbd class="px-1 py-0.5 bg-white border border-gray-200 rounded text-gray-600 font-bold">Esc</kbd> atau klik luar untuk menutup</p>
+                </div>
             </div>
         </div>
-    </div>
+    </template>
 
     {{-- Header Banner --}}
     <div class="mt-6 pt-8 flex items-start justify-between flex-wrap gap-4 mb-6 pb-5 border-b border-gray-100">    
@@ -489,13 +491,11 @@
             modalOpen: false,
             selectedDate: '',
             selectedEvents: [],
-            _scrollY: 0,
 
             openModal(tanggal, events) {
                 this.selectedDate = tanggal;
                 this.selectedEvents = events;
                 this.modalOpen = true;
-                this.lockScroll();
                 this.$nextTick(() => {
                     if (window.lucide) lucide.createIcons();
                 });
@@ -503,31 +503,6 @@
 
             closeModal() {
                 this.modalOpen = false;
-                this.unlockScroll();
-            },
-
-            lockScroll() {
-                this._scrollY = window.scrollY || window.pageYOffset || 0;
-                document.body.style.position = 'fixed';
-                document.body.style.top = `-${this._scrollY}px`;
-                document.body.style.left = '0';
-                document.body.style.right = '0';
-                document.body.style.width = '100%';
-                document.body.style.overflow = 'hidden';
-            },
-
-            unlockScroll() {
-                document.body.style.position = '';
-                document.body.style.top = '';
-                document.body.style.left = '';
-                document.body.style.right = '';
-                document.body.style.width = '';
-                document.body.style.overflow = '';
-                window.scrollTo(0, this._scrollY);
-            },
-
-            init() {
-                window.addEventListener('beforeunload', () => this.unlockScroll());
             }
         };
     }

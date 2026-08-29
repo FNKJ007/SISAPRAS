@@ -469,6 +469,21 @@
         wizard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
+    var MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    var ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+    function validateSingleFile(file, fieldName) {
+        if (!file) return { valid: false, error: (fieldName || 'File') + ' tidak ditemukan.' };
+        if (ALLOWED_TYPES.indexOf(file.type) === -1) {
+            return { valid: false, error: 'Format "' + file.name + '" tidak didukung. Gunakan format JPG, PNG, atau WebP.' };
+        }
+        if (file.size > MAX_SIZE) {
+            var sizeMB = (file.size / 1024 / 1024).toFixed(1);
+            return { valid: false, error: 'File "' + file.name + '" terlalu besar (' + sizeMB + ' MB). Maksimal 10 MB.' };
+        }
+        return { valid: true, error: null };
+    }
+
     function validateCurrentStep() {
         var panel = wizard.querySelector('[data-step-panel="' + currentStep + '"]');
         var requiredFields = panel.querySelectorAll('input[required]:not([type="file"]), select[required], textarea[required]');
@@ -513,6 +528,17 @@
                     errPemanasan.textContent = 'Foto bukti pemanasan kendaraan wajib dilampirkan.';
                     errPemanasan.classList.remove('hidden');
                 }
+            } else {
+                var resPem = validateSingleFile(inputPemanasan.files[0], 'Foto bukti pemanasan');
+                if (!resPem.valid) {
+                    isValid = false;
+                    if (!firstInvalid) firstInvalid = labelPemanasan;
+                    if (labelPemanasan) labelPemanasan.classList.add('border-red-500', 'bg-red-50/50');
+                    if (errPemanasan) {
+                        errPemanasan.textContent = resPem.error;
+                        errPemanasan.classList.remove('hidden');
+                    }
+                }
             }
 
             if (!inputBbm || !inputBbm.files || inputBbm.files.length === 0) {
@@ -523,6 +549,17 @@
                     errBbm.textContent = 'Bukti foto level BBM wajib dilampirkan.';
                     errBbm.classList.remove('hidden');
                 }
+            } else {
+                var resBbm = validateSingleFile(inputBbm.files[0], 'Bukti foto BBM');
+                if (!resBbm.valid) {
+                    isValid = false;
+                    if (!firstInvalid) firstInvalid = labelBbm;
+                    if (labelBbm) labelBbm.classList.add('border-red-500', 'bg-red-50/50');
+                    if (errBbm) {
+                        errBbm.textContent = resBbm.error;
+                        errBbm.classList.remove('hidden');
+                    }
+                }
             }
 
             if (!inputPencucian || !inputPencucian.files || inputPencucian.files.length === 0) {
@@ -532,6 +569,17 @@
                 if (errPencucian) {
                     errPencucian.textContent = 'Foto kegiatan pasukan membersihkan unit wajib dilampirkan.';
                     errPencucian.classList.remove('hidden');
+                }
+            } else {
+                var resCuci = validateSingleFile(inputPencucian.files[0], 'Foto pembersihan unit');
+                if (!resCuci.valid) {
+                    isValid = false;
+                    if (!firstInvalid) firstInvalid = labelPencucian;
+                    if (labelPencucian) labelPencucian.classList.add('border-red-500', 'bg-red-50/50');
+                    if (errPencucian) {
+                        errPencucian.textContent = resCuci.error;
+                        errPencucian.classList.remove('hidden');
+                    }
                 }
             }
 
@@ -579,6 +627,23 @@
                 return;
             }
 
+            // Validasi semua file yang dipilih
+            for (var f = 0; f < input.files.length; f++) {
+                var res = validateSingleFile(input.files[f]);
+                if (!res.valid) {
+                    if (errEl) {
+                        errEl.textContent = res.error;
+                        errEl.classList.remove('hidden');
+                    }
+                    labelEl.parentElement.classList.add('border-red-500', 'bg-red-50/50');
+                    labelEl.parentElement.classList.remove('border-emerald-500', 'bg-emerald-50/50');
+                    labelEl.textContent = placeholder;
+                    if (previewEl) previewEl.classList.add('hidden');
+                    input.value = '';
+                    return;
+                }
+            }
+
             if (errEl) errEl.classList.add('hidden');
             labelEl.parentElement.classList.remove('border-red-500', 'bg-red-50/50');
             labelEl.parentElement.classList.add('border-emerald-500', 'bg-emerald-50/50');
@@ -593,6 +658,8 @@
                 previewEl.classList.remove('hidden');
                 Array.from(input.files).forEach(function (file) {
                     if (file.type.startsWith('image/')) {
+                        var sizeMB = (file.size / 1024 / 1024).toFixed(1);
+                        var sizeText = file.size >= 1024 * 1024 ? sizeMB + ' MB' : (file.size / 1024).toFixed(1) + ' KB';
                         var reader = new FileReader();
                         reader.onload = function (e) {
                             var item = document.createElement('div');
@@ -601,7 +668,7 @@
                                 <img src="${e.target.result}" alt="Preview" class="w-12 h-12 object-cover rounded-md border border-emerald-200">
                                 <div>
                                     <span class="block text-xs font-bold text-emerald-900 truncate max-w-[160px]">${file.name}</span>
-                                    <span class="block text-[10px] text-emerald-700 font-semibold">${(file.size / 1024).toFixed(1)} KB · Foto Terpilih ✓</span>
+                                    <span class="block text-[10px] text-emerald-700 font-semibold">${sizeText} · Foto Terpilih ✓</span>
                                 </div>
                             `;
                             previewEl.appendChild(item);
