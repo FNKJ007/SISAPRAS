@@ -112,14 +112,24 @@ class ReguManagementController extends Controller
         ];
 
         $validated = $request->validate([
-            'nama'      => 'required|string|max:100',
-            'pos'       => 'required|string|max:255',
-            'bidang'    => 'required|string|max:100',
-            'danru'     => 'nullable|string|max:255',
-            'nip_danru' => 'nullable|string|max:100',
-            'status'    => 'required|in:aktif,nonaktif',
-            'catatan'   => 'nullable|string',
+            'nama'           => 'required|string|max:100',
+            'pos'            => 'required|string|max:255',
+            'bidang'         => 'required|string|max:100',
+            'danru'          => 'nullable|string|max:255',
+            'nip_danru'      => 'nullable|string|max:100',
+            'danru_user_id'  => 'nullable|integer',
+            'status'         => 'required|in:aktif,nonaktif',
+            'catatan'        => 'nullable|string',
         ], $messages);
+
+        // Auto-resolve danru_user_id from NIP if not provided
+        if (empty($validated['danru_user_id']) && !empty($validated['nip_danru'])) {
+            $cleanNip = preg_replace('/\s+/', '', trim($validated['nip_danru']));
+            $danruUser = User::whereRaw("REPLACE(nip, ' ', '') = ?", [$cleanNip])->first();
+            if ($danruUser) {
+                $validated['danru_user_id'] = $danruUser->id;
+            }
+        }
 
         Regu::create($validated);
         CacheService::invalidate('regu');
@@ -144,14 +154,24 @@ class ReguManagementController extends Controller
         ];
 
         $validated = $request->validate([
-            'nama'      => 'required|string|max:100',
-            'pos'       => 'required|string|max:255',
-            'bidang'    => 'required|string|max:100',
-            'danru'     => 'nullable|string|max:255',
-            'nip_danru' => 'nullable|string|max:100',
-            'status'    => 'required|in:aktif,nonaktif',
-            'catatan'   => 'nullable|string',
+            'nama'           => 'required|string|max:100',
+            'pos'            => 'required|string|max:255',
+            'bidang'         => 'required|string|max:100',
+            'danru'          => 'nullable|string|max:255',
+            'nip_danru'      => 'nullable|string|max:100',
+            'danru_user_id'  => 'nullable|integer',
+            'status'         => 'required|in:aktif,nonaktif',
+            'catatan'        => 'nullable|string',
         ], $messages);
+
+        // Auto-resolve danru_user_id from NIP if not provided
+        if (empty($validated['danru_user_id']) && !empty($validated['nip_danru'])) {
+            $cleanNip = preg_replace('/\s+/', '', trim($validated['nip_danru']));
+            $danruUser = User::whereRaw("REPLACE(nip, ' ', '') = ?", [$cleanNip])->first();
+            if ($danruUser) {
+                $validated['danru_user_id'] = $danruUser->id;
+            }
+        }
 
         $regu->update($validated);
         CacheService::invalidate('regu');

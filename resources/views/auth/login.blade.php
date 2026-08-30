@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRAHMA — Berkala Rawat Armada, Alat, dan Sarana DAMKAR</title>
+    <title>BRAMA — Berkala Rawat Armada, Alat, dan Sarana DAMKAR</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/jpeg" href="{{ asset('images/fav_icon.jpeg') }}">
@@ -23,10 +23,6 @@
 </head>
 <body>
 
-    <!-- Background Atmosphere Ambient Glows -->
-    <div class="login-bg-glow-1"></div>
-    <div class="login-bg-glow-2"></div>
-
     <div class="login-container">
 
         <!-- SISI KIRI: HERO BRAND PANEL (Merah Damkar Gradient) -->
@@ -38,13 +34,12 @@
                     <div class="hero-inst-divider"></div>
                     <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Damkar" class="hero-inst-logo" onerror="this.style.display='none'">
                 </div>
-                <span class="hero-brand-tag">Kab. Bandung</span>
             </div>
 
             <!-- Konten Tengah: Logo BRAMA & Deskripsi -->
             <div class="hero-content">
-                <img src="{{ asset('images/brama.png') }}" alt="Logo BRAHMA" class="hero-brama-logo" onerror="this.style.display='none'">
-                <h1 class="hero-title-hidden" style="display:none;">BRAHMA</h1>
+                <img src="{{ asset('images/brama.png') }}" alt="Logo BRAMA" class="hero-brama-logo" onerror="this.style.display='none'">
+                <h1 class="hero-title-hidden" style="display:none;">BRAMA</h1>
                 <p class="hero-subtitle">Berkala Rawat Armada, Alat, dan Sarana DAMKAR</p>
             </div>
 
@@ -57,10 +52,6 @@
         <!-- SISI KANAN: FORM LOGIN CONTAINER -->
         <div class="login-form-wrapper">
             <div class="form-header">
-                <div class="form-header-badge">
-                    <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #C0201F;"></i>
-                    <span>Sistem Otentikasi</span>
-                </div>
                 <h2 class="form-header-title">Selamat Datang</h2>
                 <p class="form-header-sub">Masukkan NIP dan Password Anda untuk masuk ke sistem.</p>
             </div>

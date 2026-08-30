@@ -96,24 +96,30 @@
                                     <div style="font-weight:700; color:#0F172A;">{{ $item->tanggal_pemeriksaan->format('d/m/Y') }}</div>
                                     <div style="font-size:11px; color:#94A3B8;">{{ $item->created_at->format('H:i') }} WIB</div>
                                 </td>
-                                <td style="padding:14px 18px; white-space:nowrap;">
-                                    <span style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700;">
-                                        👥 {{ $item->pos ?? '—' }}
-                                    </span>
+                                <td style="padding:14px 18px; white-space:nowrap; font-weight:600; color:#334155;">
+                                    <span style="color:#64748B; margin-right:4px;">👥</span>{{ $item->pos ?? '—' }}
                                 </td>
                                 <td style="padding:14px 18px;">
                                     <div style="font-weight:600; color:#1E293B;">{{ $item->nama_pemeriksa }}</div>
                                     <div style="font-size:11px; color:#94A3B8;">{{ $item->jabatan }}</div>
                                 </td>
-                                <td style="padding:14px 18px;">
-                                    <span style="background:#D1FAE5; color:#065F46; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700;">
-                                        {{ $item->total_baik }}
+                                <td style="padding:14px 18px; white-space:nowrap;">
+                                    <span style="display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#059669; font-size:12px;">
+                                        <span style="width:7px; height:7px; border-radius:50%; background:#10B981; display:inline-block;"></span>
+                                        {{ $item->total_baik }} Baik
                                     </span>
                                 </td>
-                                <td style="padding:14px 18px;">
-                                    <span style="background:#FEE2E2; color:#991B1B; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700;">
-                                        {{ $item->total_rusak }}
-                                    </span>
+                                <td style="padding:14px 18px; white-space:nowrap;">
+                                    @if($item->total_rusak > 0)
+                                        <span style="display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#DC2626; font-size:12px;">
+                                            <span style="width:7px; height:7px; border-radius:50%; background:#EF4444; display:inline-block;"></span>
+                                            {{ $item->total_rusak }} Rusak
+                                        </span>
+                                    @else
+                                        <span style="color:#64748B; font-weight:600; font-size:12px;">
+                                            0 Rusak
+                                        </span>
+                                    @endif
                                 </td>
                                 <td style="padding:14px 18px; text-align:center; white-space:nowrap;">
                                     <button type="button" @click="openAlatModal({{ json_encode($item) }})"

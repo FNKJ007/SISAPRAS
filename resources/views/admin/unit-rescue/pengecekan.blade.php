@@ -131,10 +131,8 @@
                                         <div style="font-weight:600; color:#1E293B;">{{ $item->created_at->format('d/m/Y') }}</div>
                                         <div style="font-size:11px; color:#94A3B8;">{{ $item->created_at->format('H:i') }} WIB</div>
                                     </td>
-                                    <td style="padding:14px 18px; white-space:nowrap;">
-                                        <span style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700;">
-                                            📍 {{ $item->pos ?? '—' }}
-                                        </span>
+                                    <td style="padding:14px 18px; white-space:nowrap; font-weight:600; color:#334155;">
+                                        <span style="color:#64748B; margin-right:4px;">📍</span>{{ $item->pos ?? '—' }}
                                     </td>
                                     <td style="padding:14px 18px;">
                                         <div style="font-weight:700; color:#0F172A;">{{ $item->unit_nama ?? '—' }}</div>
@@ -143,17 +141,19 @@
                                         <div style="font-weight:600; color:#1E293B;">{{ $item->nama_pemeriksa }}</div>
                                         <div style="font-size:11px; color:#94A3B8;">{{ $item->jabatan }}</div>
                                     </td>
-                                    <td style="padding:14px 18px;">
-                                        <span style="background:#EFF6FF; color:#1D4ED8; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; border:1px solid #BFDBFE;">{{ ucfirst($item->jenis_bbm) }}</span>
+                                    <td style="padding:14px 18px; white-space:nowrap;">
+                                        <div style="font-size:12px; color:#334155; font-weight:500;">BBM: <strong style="color:#0F172A;">{{ ucfirst($item->jenis_bbm) }}</strong></div>
                                     </td>
-                                    <td style="padding:14px 18px;">
-                                        @if($item->jumlah_rusak > 0)
-                                            <span style="background:#FEE2E2; color:#991B1B; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700;">
-                                                {{ $item->jumlah_rusak }}
+                                    <td style="padding:14px 18px; white-space:nowrap;">
+                                        @if(($item->jumlah_rusak ?? 0) > 0)
+                                            <span style="display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#DC2626; font-size:12px;">
+                                                <span style="width:7px; height:7px; border-radius:50%; background:#EF4444; display:inline-block;"></span>
+                                                {{ $item->jumlah_rusak }} Rusak
                                             </span>
                                         @else
-                                            <span style="background:#D1FAE5; color:#065F46; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700;">
-                                                0
+                                            <span style="display:inline-flex; align-items:center; gap:5px; font-weight:600; color:#059669; font-size:12px;">
+                                                <span style="width:7px; height:7px; border-radius:50%; background:#10B981; display:inline-block;"></span>
+                                                Lengkap (0)
                                             </span>
                                         @endif
                                     </td>
@@ -220,28 +220,28 @@
                                         <div style="font-weight:600; color:#1E293B;">{{ \Illuminate\Support\Carbon::parse($item->tanggal_pemeriksaan)->format('d/m/Y') }}</div>
                                         <div style="font-size:11px; color:#94A3B8;">{{ $item->created_at->format('H:i') }} WIB</div>
                                     </td>
-                                    <td style="padding:14px 18px; white-space:nowrap;">
-                                        <span style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700;">
-                                            📍 {{ $item->pos ?? '—' }}
-                                        </span>
+                                    <td style="padding:14px 18px; white-space:nowrap; font-weight:600; color:#334155;">
+                                        <span style="color:#64748B; margin-right:4px;">📍</span>{{ $item->pos ?? '—' }}
                                     </td>
                                     <td style="padding:14px 18px;">
                                         <div style="font-weight:600; color:#1E293B;">{{ $item->nama_pemeriksa }}</div>
                                         <div style="font-size:11px; color:#94A3B8;">{{ $item->jabatan }}</div>
                                     </td>
-                                    <td style="padding:14px 18px;">
-                                        <span style="background:#D1FAE5; color:#065F46; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; border:1px solid #A7F3D0;">
-                                            {{ $item->total_baik }}
+                                    <td style="padding:14px 18px; white-space:nowrap;">
+                                        <span style="display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#059669; font-size:12px;">
+                                            <span style="width:7px; height:7px; border-radius:50%; background:#10B981; display:inline-block;"></span>
+                                            {{ $item->total_baik }} Baik
                                         </span>
                                     </td>
-                                    <td style="padding:14px 18px;">
+                                    <td style="padding:14px 18px; white-space:nowrap;">
                                         @if($item->total_rusak > 0)
-                                            <span style="background:#FEE2E2; color:#991B1B; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; border:1px solid #FCA5A5;">
-                                                {{ $item->total_rusak }}
+                                            <span style="display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#DC2626; font-size:12px;">
+                                                <span style="width:7px; height:7px; border-radius:50%; background:#EF4444; display:inline-block;"></span>
+                                                {{ $item->total_rusak }} Rusak
                                             </span>
                                         @else
-                                            <span style="background:#D1FAE5; color:#065F46; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; border:1px solid #A7F3D0;">
-                                                0
+                                            <span style="color:#64748B; font-weight:600; font-size:12px;">
+                                                0 Rusak
                                             </span>
                                         @endif
                                     </td>
@@ -322,28 +322,46 @@
                     {{-- Foto Pemanasan & Foto BBM --}}
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;">
                         <template x-if="activeUnit.bukti_pemanasan">
-                            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:10px;">
+                            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:10px;"
+                                 x-data="{ imgError: false }" x-effect="if(activeUnit) imgError = false">
                                 <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
                                     <i data-lucide="image" style="width:14px; height:14px; color:#1B2A6B;"></i> Bukti Pemanasan
                                 </div>
-                                <a :href="'/storage/' + activeUnit.bukti_pemanasan" target="_blank" title="Klik untuk lihat ukuran penuh">
-                                    <img :src="'/storage/' + activeUnit.bukti_pemanasan" alt="Bukti Pemanasan"
-                                         style="width:100%; height:120px; object-fit:cover; border-radius:8px; border:1px solid #CBD5E1; transition:transform 0.2s;"
-                                         onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                                </a>
+                                <div x-show="!imgError">
+                                    <a :href="'/storage/' + activeUnit.bukti_pemanasan" target="_blank" title="Klik untuk lihat ukuran penuh">
+                                        <img :src="'/storage/' + activeUnit.bukti_pemanasan" alt="Bukti Pemanasan"
+                                             x-on:error="imgError = true"
+                                             style="width:100%; height:120px; object-fit:cover; border-radius:8px; border:1px solid #CBD5E1; transition:transform 0.2s;"
+                                             onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                                    </a>
+                                </div>
+                                <div x-show="imgError" style="height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#F1F5F9; border-radius:8px; border:1px dashed #CBD5E1; color:#94A3B8; text-align:center; padding:10px;">
+                                    <i data-lucide="image-off" style="width:22px; height:22px; color:#94A3B8; margin-bottom:4px;"></i>
+                                    <span style="font-size:11px; font-weight:600; color:#64748B;">Foto tidak ada di server ini</span>
+                                    <span style="font-size:9.5px; color:#94A3B8;">(File tersimpan di perangkat pengunggah)</span>
+                                </div>
                             </div>
                         </template>
 
                         <template x-if="activeUnit.bukti_bbm">
-                            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:10px;">
+                            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:10px;"
+                                 x-data="{ imgError: false }" x-effect="if(activeUnit) imgError = false">
                                 <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
                                     <i data-lucide="image" style="width:14px; height:14px; color:#1B2A6B;"></i> Bukti Level BBM
                                 </div>
-                                <a :href="'/storage/' + activeUnit.bukti_bbm" target="_blank" title="Klik untuk lihat ukuran penuh">
-                                    <img :src="'/storage/' + activeUnit.bukti_bbm" alt="Bukti Level BBM"
-                                         style="width:100%; height:120px; object-fit:cover; border-radius:8px; border:1px solid #CBD5E1; transition:transform 0.2s;"
-                                         onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                                </a>
+                                <div x-show="!imgError">
+                                    <a :href="'/storage/' + activeUnit.bukti_bbm" target="_blank" title="Klik untuk lihat ukuran penuh">
+                                        <img :src="'/storage/' + activeUnit.bukti_bbm" alt="Bukti Level BBM"
+                                             x-on:error="imgError = true"
+                                             style="width:100%; height:120px; object-fit:cover; border-radius:8px; border:1px solid #CBD5E1; transition:transform 0.2s;"
+                                             onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                                    </a>
+                                </div>
+                                <div x-show="imgError" style="height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#F1F5F9; border-radius:8px; border:1px dashed #CBD5E1; color:#94A3B8; text-align:center; padding:10px;">
+                                    <i data-lucide="image-off" style="width:22px; height:22px; color:#94A3B8; margin-bottom:4px;"></i>
+                                    <span style="font-size:11px; font-weight:600; color:#64748B;">Foto tidak ada di server ini</span>
+                                    <span style="font-size:9.5px; color:#94A3B8;">(File tersimpan di perangkat pengunggah)</span>
+                                </div>
                             </div>
                         </template>
                     </div>

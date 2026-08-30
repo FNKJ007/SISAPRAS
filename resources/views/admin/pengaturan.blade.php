@@ -791,9 +791,9 @@
                             <select name="jabatan" x-model="createJabatan"
                                     style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF; box-sizing:border-box;">
                                 <option value="">— Pilih Jabatan —</option>
-                                @foreach($existingJabatanList as $j)
-                                    <option value="{{ $j }}">{{ $j }}</option>
-                                @endforeach
+                                <template x-for="j in existingJabatanList" :key="j">
+                                    <option :value="j" x-text="j" :selected="createJabatan === j"></option>
+                                </template>
                             </select>
                         </div>
 
@@ -803,9 +803,9 @@
                             <select name="bidang" x-model="createBidang" @change="onBidangChangeCreate()"
                                     style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF; box-sizing:border-box;">
                                 <option value="">— Pilih Bidang —</option>
-                                @foreach($existingBidangList as $b)
-                                    <option value="{{ $b }}">{{ $b }}</option>
-                                @endforeach
+                                <template x-for="b in existingBidangList" :key="b">
+                                    <option :value="b" x-text="b" :selected="createBidang === b"></option>
+                                </template>
                             </select>
                         </div>
                     </div>
@@ -935,9 +935,9 @@
                             <select name="jabatan" x-model="activeUser.jabatan"
                                     style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF; box-sizing:border-box;">
                                 <option value="">— Pilih Jabatan —</option>
-                                @foreach($existingJabatanList as $j)
-                                    <option value="{{ $j }}">{{ $j }}</option>
-                                @endforeach
+                                <template x-for="j in existingJabatanList" :key="j">
+                                    <option :value="j" x-text="j" :selected="activeUser.jabatan === j"></option>
+                                </template>
                             </select>
                         </div>
 
@@ -947,9 +947,9 @@
                             <select name="bidang" x-model="activeUser.bidang" @change="onBidangChangeEdit()"
                                     style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF; box-sizing:border-box;">
                                 <option value="">— Pilih Bidang —</option>
-                                @foreach($existingBidangList as $b)
-                                    <option value="{{ $b }}">{{ $b }}</option>
-                                @endforeach
+                                <template x-for="b in existingBidangList" :key="b">
+                                    <option :value="b" x-text="b" :selected="activeUser.bidang === b"></option>
+                                </template>
                             </select>
                         </div>
                     </div>
@@ -1184,12 +1184,18 @@ function pengaturanApp() {
         selectPegawai(p) {
             this.createNip = p.nip || '';
             this.createName = p.name || '';
+            if (p.jabatan && !this.existingJabatanList.includes(p.jabatan)) {
+                this.existingJabatanList.push(p.jabatan);
+            }
             this.createJabatan = p.jabatan || '';
+            if (p.bidang && !this.existingBidangList.includes(p.bidang)) {
+                this.existingBidangList.push(p.bidang);
+            }
             this.createBidang = p.bidang || '';
             this.createPos = p.pos || '';
             this.createRegu = p.regu || '';
             this.createNoHp = p.no_hp || '';
-            this.createEmail = p.email || '';
+            this.createEmail = '';
             this.pegawaiQuery = '';
             this.pegawaiOpen = false;
         },

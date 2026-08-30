@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard') — BRAHMA | Berkala Rawat Armada, Alat, dan Sarana DAMKAR</title>
+    <title>@yield('title', 'Dashboard') — BRAMA | Berkala Rawat Armada, Alat, dan Sarana DAMKAR</title>
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -94,7 +94,7 @@
 
             <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Buka/tutup sidebar" aria-expanded="true">
                 <i data-lucide="menu" class="icon-bars"></i>
-                <span class="menu-label">Menu</span>
+                <span class="menu-label">BRAMA</span>
             </button>
 
             <nav class="sidebar-menu">
@@ -329,22 +329,21 @@
             @endif
 
             <header class="topbar" style="display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 12px;">
+                {{-- Area Kiri: Tombol Menu (Mobile) & Brand Logo + Subtitle --}}
+                <div class="topbar-left" style="display: flex; align-items: center; min-width: 0;">
                     <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Buka menu">
                         <i data-lucide="menu" class="icon-bars"></i>
                     </button>
 
-                    {{-- API Brand di Header (Dengan Logo) --}}
-                        <div class="topbar-brand">
-                            <div class="topbar-brand-text flex items-center gap-2">
-                                <!-- Enlarged logo aligned to the left -->
-                                <img src="{{ asset('images/brama.png') }}" alt="BRAHMA" class="inline-block" style="height:46px; max-width:none; width:auto; background:none; margin-right:8px; align-self:flex-start;">
-                                <span class="topbar-brand-subtitle">Berkala Rawat Armada, Alat, dan Sarana DAMKAR</span>
-                            </div>
+                    <div class="topbar-brand">
+                        <div class="topbar-brand-text">
+                            <img src="{{ asset('images/brama.png') }}" alt="BRAMA" class="topbar-logo-img">
+                            <span class="topbar-brand-subtitle">Berkala Rawat Armada, Alat, dan Sarana DAMKAR</span>
                         </div>
+                    </div>
                 </div>
 
-                {{-- Area User Info di Topbar --}}
+                {{-- Area Kanan: Info User --}}
                 <div class="user-card-topbar">
                     <i data-lucide="user"></i>
                     <span>{{ auth()->user()->name ?? 'User' }}</span>
