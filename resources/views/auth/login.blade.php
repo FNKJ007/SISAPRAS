@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BRAHMA — Berkala Rawat Armada, Alat, dan Sarana DAMKAR</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/fav_icon.jpeg') }}">
+    <link rel="shortcut icon" type="image/jpeg" href="{{ asset('images/fav_icon.jpeg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/fav_icon.jpeg') }}">
+
     <!-- Google Fonts Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +19,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <!-- Custom Login Stylesheet -->
-    <link rel="stylesheet" href="{{ asset('css/login.css') }}?v={{ file_exists(public_path('css/login.css')) ? filemtime(public_path('css/login.css')) : '4' }}">
+    <link rel="stylesheet" href="{{ asset('css/login.css') }}?v={{ file_exists(public_path('css/login.css')) ? filemtime(public_path('css/login.css')) : '5' }}">
 </head>
 <body>
 
@@ -26,24 +31,36 @@
 
         <!-- SISI KIRI: HERO BRAND PANEL (Merah Damkar Gradient) -->
         <div class="login-hero">
+            <!-- Header Institusi: Logo Kabupaten Bandung & Logo Damkar -->
             <div class="hero-brand">
-                <span class="hero-brand-tag">Yudha Brama Jaya</span>
+                <div class="hero-institutional-logos">
+                    <img src="{{ asset('images/logo-kabupaten.png') }}" alt="Logo Kabupaten Bandung" class="hero-inst-logo" onerror="this.style.display='none'">
+                    <div class="hero-inst-divider"></div>
+                    <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Damkar" class="hero-inst-logo" onerror="this.style.display='none'">
+                </div>
+                <span class="hero-brand-tag">Kab. Bandung</span>
             </div>
 
+            <!-- Konten Tengah: Logo BRAMA & Deskripsi -->
             <div class="hero-content">
-                <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Damkar" class="hero-logo-img">
-                <h1 class="hero-title">BRAHMA</h1>
+                <img src="{{ asset('images/brama.png') }}" alt="Logo BRAHMA" class="hero-brama-logo" onerror="this.style.display='none'">
+                <h1 class="hero-title-hidden" style="display:none;">BRAHMA</h1>
                 <p class="hero-subtitle">Berkala Rawat Armada, Alat, dan Sarana DAMKAR</p>
             </div>
 
+            <!-- Footer Panel -->
             <div class="hero-footer">
-                &copy; {{ date('Y') }} Dinas Pemadam Kebakaran. All rights reserved.
+                &copy; {{ date('Y') }} Dinas Pemadam Kebakaran dan Penyelamatan.
             </div>
         </div>
 
         <!-- SISI KANAN: FORM LOGIN CONTAINER -->
         <div class="login-form-wrapper">
             <div class="form-header">
+                <div class="form-header-badge">
+                    <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #C0201F;"></i>
+                    <span>Sistem Otentikasi</span>
+                </div>
                 <h2 class="form-header-title">Selamat Datang</h2>
                 <p class="form-header-sub">Masukkan NIP dan Password Anda untuk masuk ke sistem.</p>
             </div>
