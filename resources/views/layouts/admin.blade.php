@@ -313,15 +313,13 @@
                         <i data-lucide="menu" class="icon-bars"></i>
                     </button>
 
-                    <div class="topbar-logos">
-                        <img src="{{ asset('images/logo-kabupaten.png') }}" alt="Logo Instansi"         class="logo logo-left">
-                        <img src="{{ asset('images/logo-damkar.png') }}"    alt="Logo Yudha Brama Jaya"  class="logo logo-right">
-                    </div>
+                    <!-- Removed old logos; using unified brand logo below -->
 
                     {{--API Brand di Header (Tanpa Logo) --}}
                         <div class="topbar-brand">
                             <div class="topbar-brand-text flex items-center gap-2">
-                                <img src="{{ asset('images/brama.png') }}" alt="BRAHMA" class="h-12 inline-block" style="max-height:48px; max-width:auto; background:none;">
+                                <!-- Enlarged logo aligned to the left -->
+                                <img src="{{ asset('images/brama.png') }}" alt="BRAHMA" class="h-14 inline-block" style="max-height:46px; max-width:auto; background:none; margin-right:8px; align-self:flex-start;">
                                 <span class="topbar-brand-subtitle">Berkala Rawat Armada, Alat, dan Sarana DAMKAR</span>
                             </div>
                         </div>

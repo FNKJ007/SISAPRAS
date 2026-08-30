@@ -86,13 +86,13 @@
 
             {{-- Kop Surat Resmi Pemkab / Damkar --}}
             <div class="kop-surat" style="display:flex; align-items:center; justify-content:space-between; border-bottom:3px double #0F172A; padding-bottom:12px; margin-bottom:18px; text-align:center; page-break-inside:avoid; break-inside:avoid;">
-                <img src="{{ asset('images/logo-kabupaten.png') }}" alt="Logo Pemkab" style="height:55px; width:auto;" onerror="this.style.display='none'">
+                <img src="{{ asset('images/brama.png') }}" alt="BRAHMA" style="height:55px; width:auto;" onerror="this.style.display='none'">
                 <div style="flex:1; padding:0 12px;">
                     <div style="font-size:12px; font-weight:700; letter-spacing:0.5px; color:#0F172A; text-transform:uppercase;">PEMERINTAH KABUPATEN BANDUNG</div>
                     <div style="font-size:15px; font-weight:800; color:#C0201F; text-transform:uppercase; margin:2px 0;">DINAS PEMADAM KEBAKARAN DAN PENYELAMATAN</div>
                     <div style="font-size:10.5px; color:#475569; font-weight:500;">Bidang SPI — Seksi Pemeliharaan</div>
                 </div>
-                <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Damkar" style="height:55px; width:auto;" onerror="this.style.display='none'">
+                <img src="{{ asset('images/brama.png') }}" alt="BRAHMA" style="height:55px; width:auto;" onerror="this.style.display='none'">
             </div>
 
             {{-- Judul Dokumen --}}

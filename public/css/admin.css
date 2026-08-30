@@ -505,9 +505,6 @@ body.admin-modal-open {
 .topbar-brand {
     display: flex;
     align-items: center;
-    padding-left: 12px;
-    border-left: 1px solid rgba(255, 255, 255, 0.25);
-    margin-left: 4px;
 }
 
 .topbar-brand-text {
@@ -799,9 +796,8 @@ body.admin-modal-open {
     }
 
     .topbar-brand {
-        padding-left: 8px;
-        margin-left: 2px;
-        border-left: 1px solid rgba(255, 255, 255, 0.25);
+        display: flex;
+        align-items: center;
     }
 
     .topbar-brand-text {
