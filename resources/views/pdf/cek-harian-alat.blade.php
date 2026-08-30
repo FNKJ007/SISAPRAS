@@ -103,7 +103,11 @@
 
     @if(!empty($foto_umum_data))
     <h2 class="section">Foto Dokumentasi</h2>
-    <div style="margin-bottom:10px;"><img src="{{ $foto_umum_data }}" style="max-width:60%; height:auto; border:1px solid #ddd; padding:4px;"></div>
+    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+        @foreach($foto_umum_data as $foto)
+        <div style="margin-bottom:10px;"><img src="{{ $foto }}" style="max-width:180px; height:auto; border:1px solid #ddd; padding:4px;"></div>
+        @endforeach
+    </div>
     @endif
 
     <div class="summary-box {{ ($record->total_rusak ?? 0) > 0 ? '' : 'ok' }}">

@@ -455,16 +455,20 @@
                     </template>
 
                     {{-- Preview Foto Umum Alat --}}
-                    <template x-if="activeAlat.foto_umum">
-                        <div style="margin-top:10px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:10px; max-width:240px;">
+                    <template x-if="fotoUmumList(activeAlat).length > 0">
+                        <div style="margin-top:10px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:10px;">
                             <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
                                 <i data-lucide="image" style="width:14px; height:14px; color:#1B2A6B;"></i> Dokumentasi Foto Umum
                             </div>
-                            <a :href="'/storage/' + activeAlat.foto_umum" target="_blank" title="Klik untuk lihat ukuran penuh">
-                                <img :src="'/storage/' + activeAlat.foto_umum" alt="Foto Umum Dokumentasi Alat"
-                                     style="width:100%; height:130px; object-fit:cover; border-radius:8px; border:1px solid #CBD5E1; transition:transform 0.2s;"
-                                     onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                            </a>
+                            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                                <template x-for="(foto, fi) in fotoUmumList(activeAlat)" :key="fi">
+                                    <a :href="'/storage/' + foto" target="_blank" title="Klik untuk lihat ukuran penuh" style="width:calc(50% - 4px); min-width:110px;">
+                                        <img :src="'/storage/' + foto" alt="Foto Umum Dokumentasi Alat"
+                                             style="width:100%; height:110px; object-fit:cover; border-radius:8px; border:1px solid #CBD5E1; transition:transform 0.2s;"
+                                             onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                                    </a>
+                                </template>
+                            </div>
                         </div>
                     </template>
                 </div>
@@ -534,6 +538,20 @@ function pengecekanRescueAdmin(initialTab) {
             const d = new Date(val);
             if (isNaN(d)) return val;
             return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        },
+
+        fotoUmumList(item) {
+            if (!item || !item.foto_umum) return [];
+            if (Array.isArray(item.foto_umum)) return item.foto_umum;
+            if (typeof item.foto_umum === 'string') {
+                try {
+                    const parsed = JSON.parse(item.foto_umum);
+                    return Array.isArray(parsed) ? parsed : [item.foto_umum];
+                } catch (e) {
+                    return [item.foto_umum];
+                }
+            }
+            return [];
         }
     };
 }

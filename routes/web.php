@@ -242,12 +242,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Unit Pencegahan
     Route::prefix('unit-pencegahan')->name('unit-pencegahan.')->group(function () {
         Route::get('/pengecekan',  [AdminController::class, 'unitPencegahanPengecekan'])->name('pengecekan');
+        Route::get('/cek-harian-unit/{id}/export-pdf', [CekHarianUnitPencegahanController::class, 'exportPdf'])->name('cek-harian-unit.export-pdf');
+        Route::get('/cek-harian-alat/{id}/export-pdf', [CekHarianAlatPencegahanController::class, 'exportPdf'])->name('cek-harian-alat.export-pdf');
     });
 
     // Command Center
     Route::prefix('command-center')->name('command-center.')->group(function () {
         Route::get('/data-peralatan', [AdminController::class, 'commandCenterDataPeralatan'])->name('data-peralatan');
         Route::get('/pengecekan',     [AdminController::class, 'commandCenterPengecekan'])->name('pengecekan');
+        Route::get('/cek-alat-cc/{id}/export-pdf', [CekAlatCcController::class, 'exportPdf'])->name('cek-alat-cc.export-pdf');
     });
 
     // Laporan

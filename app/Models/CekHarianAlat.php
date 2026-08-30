@@ -29,6 +29,7 @@ class CekHarianAlat extends Model
 
     protected $casts = [
         'alat'                 => 'array',
+        'foto_umum'            => 'array',
         'tanggal_pemeriksaan'  => 'date',
     ];
 

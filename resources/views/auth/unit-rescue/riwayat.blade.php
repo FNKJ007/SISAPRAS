@@ -437,14 +437,14 @@
     <div x-show="selectedUnit !== null" x-cloak
          class="fixed inset-0 z-50 overflow-hidden bg-black/50 flex items-center justify-center p-3 sm:p-4">
         <div @click.away="closeModals()"
-             class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl relative max-h-[90vh] flex flex-col">
+             class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl relative max-h-[90vh] flex flex-col overflow-hidden">
             <button type="button" @click="closeModals()"
                     class="absolute top-3.5 right-3.5 text-gray-400 hover:text-gray-600 p-1 cursor-pointer z-10">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
 
             <template x-if="selectedUnit">
-                <div class="flex flex-col h-full">
+                <div class="flex flex-col h-full min-h-0">
                     {{-- HEADER (tidak scroll) --}}
                     <div class="flex-shrink-0 p-4 sm:p-6 border-b border-gray-200">
 
@@ -484,9 +484,9 @@
                     </div>
 
                     {{-- MIDDLE (scrollable) --}}
-                    <div class="flex-1 overflow-y-auto p-4 sm:p-6">
+                    <div class="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6">
                         <h4 class="font-bold text-xs uppercase tracking-wider text-gray-700 mb-2">Item Perlengkapan yang Rusak / Catatan</h4>
-                        <div class="space-y-1.5 border border-gray-200 rounded-xl p-3 bg-white">
+                        <div class="space-y-1.5 border border-gray-200 rounded-xl p-3 bg-white max-h-60 overflow-y-auto">
                             <template x-for="(val, key) in (selectedUnit.perlengkapan || {})" :key="key">
                                 <div class="flex items-center justify-between text-xs py-1.5 border-b border-gray-100 last:border-b-0 gap-2">
                                     <span class="font-medium text-gray-700" x-text="val.label || key"></span>
@@ -521,14 +521,14 @@
     <div x-show="selectedAlat !== null" x-cloak
          class="fixed inset-0 z-50 overflow-hidden bg-black/50 flex items-center justify-center p-3 sm:p-4">
         <div @click.away="closeModals()"
-             class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl relative max-h-[90vh] flex flex-col">
+             class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl relative max-h-[90vh] flex flex-col overflow-hidden">
             <button type="button" @click="closeModals()"
                     class="absolute top-3.5 right-3.5 text-gray-400 hover:text-gray-600 p-1 cursor-pointer z-10">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
 
             <template x-if="selectedAlat">
-                <div class="flex flex-col h-full">
+                <div class="flex flex-col h-full min-h-0">
                     {{-- HEADER (tidak scroll) --}}
                     <div class="flex-shrink-0 p-4 sm:p-6 border-b border-gray-200">
                         <h3 class="text-base sm:text-lg font-extrabold text-blue-950 mb-1 pr-6" x-text="'Detail Pengecekan Alat: ' + (selectedAlat.unit_nama || 'Peralatan')"></h3>

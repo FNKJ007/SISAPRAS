@@ -2,19 +2,7 @@
 @section('title', 'Pengecekan Command Center — Admin')
 
 @section('content')
-<div class="admin-pengecekan-container" x-data="{
-    activeAlat: null,
-    alatModalOpen: false,
-    openAlatModal(item) {
-        this.activeAlat = item;
-        this.alatModalOpen = true;
-    },
-    formatDate(dateStr) {
-        if (!dateStr) return '-';
-        const d = new Date(dateStr);
-        return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    }
-}">
+<div class="admin-pengecekan-container" x-data="pengecekanCommandCenterAdmin()">
 
     {{-- Page Header --}}
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
@@ -150,30 +138,39 @@
 
             <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#FFFFFF; z-index:10;">
                 <h3 style="font-size:15.5px; font-weight:800; color:#0F172A; margin:0;">Detail Cek Harian Alat Command Center</h3>
-                <button type="button" @click="alatModalOpen = false" style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:4px;">
-                    <i data-lucide="x" style="width:18px; height:18px;"></i>
-                </button>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <a :href="`/admin/command-center/cek-alat-cc/${activeAlat.id}/export-pdf`" target="_blank"
+                       style="display:inline-flex; align-items:center; gap:8px; padding:6px 10px; background:#059669; color:#FFFFFF; border-radius:8px; font-size:12px; font-weight:700; text-decoration:none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" style="width:14px;height:14px;">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v8.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V4a1 1 0 011-1zM4 15a1 1 0 011 1v1h10v-1a1 1 0 112 0v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        <span style="font-size:12px;">Unduh PDF</span>
+                    </a>
+                    <button type="button" @click="alatModalOpen = false" style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:4px;">
+                        <i data-lucide="x" style="width:18px; height:18px;"></i>
+                    </button>
+                </div>
             </div>
 
-            <div style="padding:18px 20px; font-size:12.5px;" x-if="activeAlat">
+            <div style="padding:18px 20px; font-size:12.5px;">
 
                 {{-- Identitas --}}
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; background:#F8FAFC; padding:14px; border-radius:10px; border:1px solid #E2E8F0;">
                     <div>
                         <span style="color:#64748B; font-size:10.5px; display:block;">Regu:</span>
-                        <strong style="color:#1D4ED8; font-weight:800;" x-text="activeAlat ? (activeAlat.pos || '-') : '-'"></strong>
+                        <strong style="color:#1D4ED8; font-weight:800;" x-text="activeAlat.pos || '-'"></strong>
                     </div>
                     <div>
                         <span style="color:#64748B; font-size:10.5px; display:block;">Tanggal Pemeriksaan:</span>
-                        <strong style="color:#0F172A;" x-text="activeAlat ? formatDate(activeAlat.tanggal_pemeriksaan) : '-'"></strong>
+                        <strong style="color:#0F172A;" x-text="formatDate(activeAlat.tanggal_pemeriksaan)"></strong>
                     </div>
                     <div>
                         <span style="color:#64748B; font-size:10.5px; display:block;">Nama Pemeriksa:</span>
-                        <strong style="color:#0F172A;" x-text="activeAlat ? activeAlat.nama_pemeriksa : '-'"></strong>
+                        <strong style="color:#0F172A;" x-text="activeAlat.nama_pemeriksa || '-'"></strong>
                     </div>
                     <div>
                         <span style="color:#64748B; font-size:10.5px; display:block;">Jabatan:</span>
-                        <strong style="color:#0F172A;" x-text="activeAlat ? activeAlat.jabatan : '-'"></strong>
+                        <strong style="color:#0F172A;" x-text="activeAlat.jabatan || '-'"></strong>
                     </div>
                 </div>
 
@@ -181,21 +178,21 @@
                 <div style="margin-bottom:14px;">
                     <div style="font-size:12px; font-weight:800; color:#0F172A; margin-bottom:8px; border-bottom:1px solid #E2E8F0; padding-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
                         <span>Daftar Alat Command Center</span>
-                        <span style="font-size:10.5px; color:#64748B; font-weight:600;" x-text="activeAlat ? (activeAlat.alat || []).length + ' item' : '0 item'"></span>
+                        <span style="font-size:10.5px; color:#64748B; font-weight:600;" x-text="(activeAlat.alat || []).length + ' item'"></span>
                     </div>
                     <div style="display:flex; flex-direction:column; gap:6px; max-height:300px; overflow-y:auto; padding-right:4px;">
-                        <template x-for="(alat, idx) in (activeAlat ? (activeAlat.alat || []) : [])" :key="idx">
-                            <div style="padding:8px 12px; border-radius:8px; border:1px solid #E2E8F0; background:#F8FAFC;">
-                                <div style="display:grid; grid-template-columns: 1fr 70px 70px; gap:8px; align-items:center;">
-                                    <span style="font-weight:700; color:#1E293B; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" :title="alat.nama" x-text="alat.nama"></span>
-                                    
-                                    <span style="display:inline-flex; align-items:center; justify-content:center; background:#D1FAE5; color:#065F46; padding:3px 8px; border-radius:20px; font-size:10.5px; font-weight:700; text-align:center; width:70px;" x-text="'Baik: ' + alat.jumlah_baik"></span>
+                        <template x-for="(alat, idx) in (activeAlat.alat || [])" :key="idx">
+                            <div style="padding:8px 12px; border-radius:8px; border:1px solid #E2E8F0; background:#F8FAFC; min-width:0;">
+                                <div style="font-weight:700; color:#1E293B; font-size:12px; word-break:break-word; margin-bottom:6px;" x-text="alat.nama"></div>
 
-                                    <span style="display:inline-flex; align-items:center; justify-content:center; background:#FEE2E2; color:#991B1B; padding:3px 8px; border-radius:20px; font-size:10.5px; font-weight:700; text-align:center; width:70px;" x-text="'Rusak: ' + alat.jumlah_rusak"></span>
+                                <div style="display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+                                    <span style="display:inline-flex; align-items:center; justify-content:center; background:#D1FAE5; color:#065F46; padding:3px 10px; border-radius:20px; font-size:10.5px; font-weight:700; white-space:nowrap;" x-text="'Baik: ' + alat.jumlah_baik"></span>
+
+                                    <span style="display:inline-flex; align-items:center; justify-content:center; background:#FEE2E2; color:#991B1B; padding:3px 10px; border-radius:20px; font-size:10.5px; font-weight:700; white-space:nowrap;" x-text="'Rusak: ' + alat.jumlah_rusak"></span>
                                 </div>
 
                                 <template x-if="alat.jumlah_rusak > 0 && alat.nomor_rusak">
-                                    <div style="font-size:11px; color:#DC2626; margin-top:4px; font-style:italic;" x-text="'Keterangan: ' + alat.nomor_rusak"></div>
+                                    <div style="font-size:11px; color:#DC2626; margin-top:6px; font-style:italic; word-break:break-word;" x-text="'Keterangan: ' + alat.nomor_rusak"></div>
                                 </template>
                             </div>
                         </template>
@@ -204,27 +201,31 @@
 
                 {{-- Catatan & Foto --}}
                 <div>
-                    <div style="font-size:12px; font-weight:800; color:#0F172A; margin-bottom:8px; border-bottom:1px solid #E2E8F0; padding-bottom:6px;">Catatan &amp; Dokumentasi</div>
-                    <template x-if="activeAlat && activeAlat.catatan_umum">
+                    <div style="font-size:12px; font-weight:800; color:#0F172A; margin-bottom:8px; border-bottom:1px solid #E2E8F0; padding-bottom:6px;">Catatan & Dokumentasi</div>
+                    <template x-if="activeAlat.catatan_umum">
                         <div style="background:#F8FAFC; border:1px solid #E2E8F0; padding:8px 10px; border-radius:8px; color:#334155; margin-bottom:8px;">
                             <span x-text="activeAlat.catatan_umum"></span>
                         </div>
                     </template>
-                    <template x-if="!activeAlat || !activeAlat.catatan_umum">
+                    <template x-if="!activeAlat.catatan_umum">
                         <div style="color:#94A3B8; font-style:italic; margin-bottom:8px;">Tidak ada catatan.</div>
                     </template>
                     
                     {{-- Preview Foto Umum Alat --}}
-                    <template x-if="activeAlat && activeAlat.foto_umum">
-                        <div style="margin-top:10px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:10px; max-width:240px;">
+                    <template x-if="fotoUmumList(activeAlat).length > 0">
+                        <div style="margin-top:10px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:10px;">
                             <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
                                 <i data-lucide="image" style="width:14px; height:14px; color:#1B2A6B;"></i> Dokumentasi Foto Umum
                             </div>
-                            <a :href="'/storage/' + activeAlat.foto_umum" target="_blank" title="Klik untuk lihat ukuran penuh">
-                                <img :src="'/storage/' + activeAlat.foto_umum" alt="Foto Dokumentasi Alat Command Center"
-                                     style="width:100%; height:130px; object-fit:cover; border-radius:8px; border:1px solid #CBD5E1; transition:transform 0.2s;"
-                                     onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                            </a>
+                            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                                <template x-for="(foto, fi) in fotoUmumList(activeAlat)" :key="fi">
+                                    <a :href="'/storage/' + foto" target="_blank" title="Klik untuk lihat ukuran penuh" style="width:calc(50% - 4px); min-width:110px;">
+                                        <img :src="'/storage/' + foto" alt="Foto Dokumentasi Alat Command Center"
+                                             style="width:100%; height:110px; object-fit:cover; border-radius:8px; border:1px solid #CBD5E1; transition:transform 0.2s;"
+                                             onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                                    </a>
+                                </template>
+                            </div>
                         </div>
                     </template>
                 </div>
@@ -234,4 +235,42 @@
     </div>
 
 </div>
+
+@push('scripts')
+<script>
+function pengecekanCommandCenterAdmin() {
+    return {
+        activeAlat: {},
+        alatModalOpen: false,
+
+        openAlatModal(item) {
+            this.activeAlat = item;
+            this.alatModalOpen = true;
+            this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+        },
+
+        formatDate(val) {
+            if (!val) return '-';
+            const d = new Date(val);
+            if (isNaN(d)) return val;
+            return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        },
+
+        fotoUmumList(item) {
+            if (!item || !item.foto_umum) return [];
+            if (Array.isArray(item.foto_umum)) return item.foto_umum;
+            if (typeof item.foto_umum === 'string') {
+                try {
+                    const parsed = JSON.parse(item.foto_umum);
+                    return Array.isArray(parsed) ? parsed : [item.foto_umum];
+                } catch (e) {
+                    return [item.foto_umum];
+                }
+            }
+            return [];
+        }
+    };
+}
+</script>
+@endpush
 @endsection

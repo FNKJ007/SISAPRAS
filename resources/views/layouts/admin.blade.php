@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard Admin') — API | Aplikasi Pemeliharaan & Inspeksi Sarana</title>
+    <title>@yield('title', 'Dashboard Admin') — BRAHMA | Berkala Rawat Armada, Alat, dan Sarana DAMKAR</title>
     <meta name="description" content="Admin Panel Sistem Informasi Dinas Pemadam Kebakaran">
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -319,12 +319,12 @@
                     </div>
 
                     {{--API Brand di Header (Tanpa Logo) --}}
-                    <div class="topbar-brand">
-                        <div class="topbar-brand-text">
-                            <span class="topbar-brand-title">API</span>
-                            <span class="topbar-brand-subtitle">Aplikasi Pemeliharaan & Inspeksi Sarana</span>
+                        <div class="topbar-brand">
+                            <div class="topbar-brand-text flex items-center gap-2">
+                                <img src="{{ asset('images/brama.png') }}" alt="BRAHMA" class="h-12 inline-block" style="max-height:48px; max-width:auto; background:none;">
+                                <span class="topbar-brand-subtitle">Berkala Rawat Armada, Alat, dan Sarana DAMKAR</span>
+                            </div>
                         </div>
-                    </div>
                 </div>
 
                 {{-- Area User Info di Topbar --}}

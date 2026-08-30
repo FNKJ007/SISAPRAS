@@ -228,14 +228,14 @@
     <div x-show="selectedAlat !== null" x-cloak
          class="fixed inset-0 z-50 overflow-hidden bg-black/50 flex items-center justify-center p-3 sm:p-4">
         <div @click.away="closeModals()"
-             class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl relative max-h-[90vh] flex flex-col">
+             class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl relative max-h-[90vh] flex flex-col overflow-hidden">
             <button type="button" @click="closeModals()"
                     class="absolute top-3.5 right-3.5 text-gray-400 hover:text-gray-600 p-1 cursor-pointer z-10">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
 
             <template x-if="selectedAlat">
-                <div class="flex flex-col h-full">
+                <div class="flex flex-col min-h-0 max-h-[90vh]">
                     {{-- HEADER (tidak scroll) --}}
                     <div class="flex-shrink-0 p-4 sm:p-6 border-b border-gray-200">
                         <h3 class="text-base sm:text-lg font-extrabold text-blue-950 mb-1 pr-6" x-text="'Detail Pengecekan Alat Command Center'"></h3>
@@ -252,15 +252,15 @@
                     </div>
 
                     {{-- MIDDLE (scrollable) --}}
-                    <div class="flex-1 overflow-y-auto p-4 sm:p-6">
+                    <div class="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6">
                         <h4 class="font-bold text-xs uppercase tracking-wider text-gray-700 mb-2">Daftar Peralatan yang Diperiksa</h4>
-                        <div class="space-y-1.5 border border-gray-200 rounded-xl p-3 bg-white">
+                        <div class="space-y-1.5 border border-gray-200 rounded-xl p-3 bg-white max-h-[40vh] overflow-y-auto">
                             <template x-for="(item, idx) in (selectedAlat.alat || [])" :key="idx">
-                                <div class="flex items-center justify-between text-xs py-1.5 border-b border-gray-100 last:border-b-0 gap-2">
-                                    <span class="font-medium text-gray-800" x-text="item.nama || ('Alat #' + item.id)"></span>
+                                <div class="flex items-start justify-between text-xs py-1.5 border-b border-gray-100 last:border-b-0 gap-2">
+                                    <span class="font-medium text-gray-800 break-words min-w-0 flex-1" x-text="item.nama || ('Alat #' + item.id)"></span>
                                     <div class="flex items-center gap-1.5 flex-shrink-0">
-                                        <span class="text-emerald-700 font-bold" x-text="item.jumlah_baik + ' Baik'"></span>
-                                        <span class="text-red-700 font-bold" x-show="item.jumlah_rusak > 0" x-text="item.jumlah_rusak + ' Rusak'"></span>
+                                        <span class="text-emerald-700 font-bold whitespace-nowrap" x-text="item.jumlah_baik + ' Baik'"></span>
+                                        <span class="text-red-700 font-bold whitespace-nowrap" x-show="item.jumlah_rusak > 0" x-text="item.jumlah_rusak + ' Rusak'"></span>
                                     </div>
                                 </div>
                             </template>
