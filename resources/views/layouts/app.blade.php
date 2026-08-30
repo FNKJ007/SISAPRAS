@@ -7,6 +7,11 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/fav_icon.jpeg') }}">
+    <link rel="shortcut icon" type="image/jpeg" href="{{ asset('images/fav_icon.jpeg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/fav_icon.jpeg') }}">
+
     {{-- Google Font & Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
