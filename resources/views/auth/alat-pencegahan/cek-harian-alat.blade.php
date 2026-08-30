@@ -246,13 +246,14 @@
                            class="flex flex-col items-center justify-center h-[110px] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer text-center hover:border-blue-500 transition-colors">
                         <span class="text-blue-600 text-lg leading-none">📷</span>
                         <span class="text-xs text-blue-700 font-medium mt-1" id="fotoUmumText">+ Tambahkan Foto <span class="text-red-500">*</span></span>
-                        <span class="text-[11px] text-gray-400">JPG, PNG, WEBP maks. 10MB</span>
+                        <span class="text-[11px] text-gray-400">JPG, PNG, WEBP maks. 10MB · Maksimal 3 foto</span>
                     </label>
-                    <input id="foto_umum" type="file" name="foto_umum"
-                           accept="image/*" class="hidden">
+                    <input id="foto_umum" type="file" name="foto_umum[]"
+                           accept="image/*" multiple class="hidden">
                     <p id="err_foto_umum" class="text-xs text-red-600 font-medium mt-1.5 hidden"></p>
                     <div id="fotoUmumPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
                     @error('foto_umum') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    @error('foto_umum.*') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
             </div>
         </div>
@@ -278,6 +279,7 @@
     var errEl = document.getElementById('err_foto_umum');
 
     var MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    var MAX_FILES = 3;
     var ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
     function validateFile(file) {
@@ -296,13 +298,78 @@
         if (labelBox) labelBox.classList.add('border-red-500', 'bg-red-50/50');
         if (labelBox) labelBox.classList.remove('border-emerald-500', 'bg-emerald-50/50');
         if (errEl) { errEl.textContent = msg; errEl.classList.remove('hidden'); }
-        if (labelText) labelText.textContent = '+ Tambahkan Foto';
-        if (previewEl) { previewEl.innerHTML = ''; previewEl.classList.add('hidden'); }
     }
 
     function clearFileError() {
         if (errEl) errEl.classList.add('hidden');
         if (labelBox) labelBox.classList.remove('border-red-500', 'bg-red-50/50');
+    }
+
+    function updateLabel() {
+        var count = input.files.length;
+        if (count === 0) {
+            labelText.textContent = '+ Tambahkan Foto';
+            labelBox.classList.remove('border-emerald-500', 'bg-emerald-50/50', 'border-red-500', 'bg-red-50/50');
+            if (previewEl) previewEl.classList.add('hidden');
+        } else {
+            labelText.textContent = '✓ ' + count + ' foto terpilih (maks. 3)';
+            labelBox.classList.add('border-emerald-500', 'bg-emerald-50/50');
+            labelBox.classList.remove('border-red-500', 'bg-red-50/50');
+        }
+    }
+
+    function renderPreviews() {
+        if (!previewEl) return;
+        previewEl.innerHTML = '';
+
+        if (input.files.length === 0) {
+            previewEl.classList.add('hidden');
+            return;
+        }
+
+        previewEl.classList.remove('hidden');
+        Array.from(input.files).forEach(function (file, index) {
+            var sizeMB = (file.size / 1024 / 1024).toFixed(1);
+            var sizeText = file.size >= 1024 * 1024 ? sizeMB + ' MB' : (file.size / 1024).toFixed(1) + ' KB';
+
+            var item = document.createElement('div');
+            item.className = 'relative border border-emerald-300 rounded-lg p-1.5 bg-emerald-50/30 flex items-center gap-2.5 shadow-2xs';
+            item.innerHTML = `
+                <img src="" alt="Preview" class="w-12 h-12 object-cover rounded-md border border-emerald-200">
+                <div class="min-w-0">
+                    <span class="block text-xs font-bold text-emerald-900 truncate max-w-[140px]">${file.name}</span>
+                    <span class="block text-[10px] text-emerald-700 font-semibold">${sizeText}</span>
+                </div>
+                <button type="button" data-remove-index="${index}" title="Hapus foto"
+                        class="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center hover:bg-red-600 transition-colors shadow">×</button>
+            `;
+            previewEl.appendChild(item);
+
+            var img = item.querySelector('img');
+            var reader = new FileReader();
+            reader.onload = function (e) { img.src = e.target.result; };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function removeFile(index) {
+        var dt = new DataTransfer();
+        Array.from(input.files).forEach(function (file, i) {
+            if (i !== index) dt.items.add(file);
+        });
+        input.files = dt.files;
+        clearFileError();
+        updateLabel();
+        renderPreviews();
+    }
+
+    if (previewEl) {
+        previewEl.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-remove-index]');
+            if (btn) {
+                removeFile(parseInt(btn.getAttribute('data-remove-index'), 10));
+            }
+        });
     }
 
     if (form && input) {
@@ -313,58 +380,43 @@
                 if (labelBox) labelBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return false;
             }
-            var result = validateFile(input.files[0]);
-            if (!result.valid) {
-                e.preventDefault();
-                showFileError(result.error);
-                if (labelBox) labelBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                return false;
+            for (var i = 0; i < input.files.length; i++) {
+                var result = validateFile(input.files[i]);
+                if (!result.valid) {
+                    e.preventDefault();
+                    showFileError(result.error);
+                    if (labelBox) labelBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return false;
+                }
             }
         });
     }
 
     if (input && labelText) {
         input.addEventListener('change', function () {
-            if (previewEl) previewEl.innerHTML = '';
-
-            if (input.files.length === 0) {
-                labelText.textContent = '+ Tambahkan Foto';
-                labelBox.classList.remove('border-emerald-500', 'bg-emerald-50/50', 'border-red-500', 'bg-red-50/50');
-                if (previewEl) previewEl.classList.add('hidden');
-                return;
-            }
-
-            var file = input.files[0];
-            var result = validateFile(file);
-            if (!result.valid) {
-                showFileError(result.error);
-                input.value = '';
-                return;
-            }
-
             clearFileError();
-            labelBox.classList.add('border-emerald-500', 'bg-emerald-50/50');
-            var sizeMB = (file.size / 1024 / 1024).toFixed(1);
-            var sizeText = file.size >= 1024 * 1024 ? sizeMB + ' MB' : (file.size / 1024).toFixed(1) + ' KB';
-            labelText.textContent = '✓ ' + file.name;
 
-            if (previewEl && file.type.startsWith('image/')) {
-                previewEl.classList.remove('hidden');
-                var reader = new FileReader();
-                reader.onload = function (e) {
-                    var item = document.createElement('div');
-                    item.className = 'relative border border-emerald-300 rounded-lg p-1.5 bg-emerald-50/30 flex items-center gap-2.5 shadow-2xs';
-                    item.innerHTML = `
-                        <img src="${e.target.result}" alt="Preview" class="w-12 h-12 object-cover rounded-md border border-emerald-200">
-                        <div>
-                            <span class="block text-xs font-bold text-emerald-900 truncate max-w-[160px]">${file.name}</span>
-                            <span class="block text-[10px] text-emerald-700 font-semibold">${sizeText} · Foto Terpilih ✓</span>
-                        </div>
-                    `;
-                    previewEl.appendChild(item);
-                };
-                reader.readAsDataURL(file);
+            if (input.files.length > MAX_FILES) {
+                showFileError('Maksimal 3 foto yang dapat diunggah. Anda memilih ' + input.files.length + ' foto.');
+                input.value = '';
+                updateLabel();
+                renderPreviews();
+                return;
             }
+
+            for (var i = 0; i < input.files.length; i++) {
+                var result = validateFile(input.files[i]);
+                if (!result.valid) {
+                    showFileError(result.error);
+                    input.value = '';
+                    updateLabel();
+                    renderPreviews();
+                    return;
+                }
+            }
+
+            updateLabel();
+            renderPreviews();
         });
     }
 

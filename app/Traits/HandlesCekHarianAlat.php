@@ -59,7 +59,11 @@ trait HandlesCekHarianAlat
                 }
             }
 
-            $fotoUmumData = $this->imageToDataUri($record->foto_umum ?? null);
+            $fotoUmumData = collect($record->foto_umum ?? [])
+                ->map(fn ($path) => $this->imageToDataUri($path))
+                ->filter()
+                ->values()
+                ->all();
 
             $pdf = Pdf::loadView('pdf.cek-harian-alat', [
                 'record'        => $record,
@@ -95,10 +99,12 @@ trait HandlesCekHarianAlat
             'tanggal_pemeriksaan.required' => 'Tanggal pemeriksaan wajib diisi.',
             'alat.required'                => 'Daftar peralatan yang diperiksa wajib diisi.',
             'foto_umum.required'           => 'Foto dokumentasi pemeriksaan alat wajib dilampirkan.',
-            'foto_umum.uploaded'           => 'File foto dokumentasi gagal diunggah (pastikan ukuran < 10MB dan konfigurasi server sesuai).',
-            'foto_umum.image'              => 'File foto dokumentasi harus berupa gambar (JPG/PNG/WebP).',
-            'foto_umum.mimes'              => 'Format foto dokumentasi harus berupa JPG, PNG, atau WebP.',
-            'foto_umum.max'                => 'Ukuran foto dokumentasi tidak boleh lebih dari 10 MB.',
+            'foto_umum.array'              => 'Foto dokumentasi harus berupa daftar file.',
+            'foto_umum.max'                => 'Foto dokumentasi maksimal 3 foto.',
+            'foto_umum.*.uploaded'         => 'File foto dokumentasi gagal diunggah (pastikan ukuran < 10MB dan konfigurasi server sesuai).',
+            'foto_umum.*.image'            => 'File foto dokumentasi harus berupa gambar (JPG/PNG/WebP).',
+            'foto_umum.*.mimes'            => 'Format foto dokumentasi harus berupa JPG, PNG, atau WebP.',
+            'foto_umum.*.max'              => 'Ukuran foto dokumentasi tidak boleh lebih dari 10 MB.',
         ];
 
         $validated = $request->validate([
@@ -117,7 +123,8 @@ trait HandlesCekHarianAlat
             'alat.*.nomor_rusak'  => 'nullable|string|max:500',
 
             'catatan_umum'        => 'nullable|string',
-            'foto_umum'           => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+            'foto_umum'           => 'required|array|max:3',
+            'foto_umum.*'         => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240',
         ], $messages);
 
         $unitId = $validated['unit_id'] ?? null;
@@ -131,9 +138,11 @@ trait HandlesCekHarianAlat
             $unitNama = $unitObj ? "{$unitObj->nomor_lambung} ({$unitObj->plat_nomor})" : ("Unit #" . $unitId);
         }
 
-        $fotoPath = null;
+        $fotoPaths = [];
         if ($request->hasFile('foto_umum')) {
-            $fotoPath = $request->file('foto_umum')->store('cek-harian-alat', 'public');
+            foreach ($request->file('foto_umum') as $foto) {
+                $fotoPaths[] = $foto->store('cek-harian-alat', 'public');
+            }
         }
 
         $processedAlat = [];
@@ -174,7 +183,7 @@ trait HandlesCekHarianAlat
             'total_baik'          => $totalBaik,
             'total_rusak'         => $totalRusak,
             'catatan_umum'        => $validated['catatan_umum'] ?? null,
-            'foto_umum'           => $fotoPath,
+            'foto_umum'           => $fotoPaths,
         ]);
     }
 }

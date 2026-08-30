@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard') — API | Aplikasi Pemeliharaan & Inspeksi Sarana</title>
+    <title>@yield('title', 'Dashboard') — BRAHMA | Berkala Rawat Armada, Alat, dan Sarana DAMKAR</title>
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -331,14 +331,14 @@
 
                     <div class="topbar-logos">
                         <img src="{{ asset('images/logo-kabupaten.png') }}" alt="Logo Instansi" class="logo logo-left">
-                        <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Yudha Brama Jaya" class="logo logo-right">
+                        <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Damkar" class="logo logo-right">
                     </div>
 
                     {{-- API Brand di Header (Tanpa Logo) --}}
                     <div class="topbar-brand">
-                        <div class="topbar-brand-text">
-                            <span class="topbar-brand-title">API</span>
-                            <span class="topbar-brand-subtitle">Aplikasi Pemeliharaan & Inspeksi Sarana</span>
+                        <div class="topbar-brand-text flex items-center gap-2">
+                        <img src="{{ asset('images/brama.png') }}" alt="BRAHMA" class="h-12 inline-block" style="max-height:48px; max-width:auto; background:none;">
+                            <span class="topbar-brand-subtitle">Berkala Rawat Armada, Alat, dan Sarana DAMKAR</span>
                         </div>
                     </div>
                 </div>

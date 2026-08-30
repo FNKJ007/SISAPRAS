@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API — Aplikasi Pemeliharaan & Inspeksi Sarana</title>
+    <title>BRAHMA — Berkala Rawat Armada, Alat, dan Sarana DAMKAR</title>
 
     <!-- Google Fonts Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,8 +32,8 @@
 
             <div class="hero-content">
                 <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Damkar" class="hero-logo-img">
-                <h1 class="hero-title">API</h1>
-                <p class="hero-subtitle">Aplikasi Pemeliharaan & Inspeksi Sarana</p>
+                <h1 class="hero-title">BRAHMA</h1>
+                <p class="hero-subtitle">Berkala Rawat Armada, Alat, dan Sarana DAMKAR</p>
             </div>
 
             <div class="hero-footer">
