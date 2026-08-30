@@ -414,7 +414,7 @@
                 
                 {{-- Kop Surat Resmi --}}
                 <div class="kop-container">
-                    <img src="{{ asset('images/logo-kabupaten.png') }}" class="kop-logo" alt="Logo Pemkab Bandung">
+                    <img src="{{ asset('images/brama.png') }}" class="kop-logo" alt="BRAHMA">
                     <div class="kop-center">
                         <div class="h1-line">Pemerintah Kabupaten Bandung</div>
                         <div class="h2-line">Dinas Pemadam Kebakaran dan Penyelamatan</div>
@@ -829,7 +829,7 @@
                 
                 {{-- Kop Surat Resmi --}}
                 <div class="kop-container">
-                    <img src="{{ asset('images/logo-kabupaten.png') }}" class="kop-logo" alt="Logo Pemkab Bandung">
+                    <img src="{{ asset('images/brama.png') }}" class="kop-logo" alt="BRAHMA">
                     <div class="kop-center">
                         <div class="h1-line">Pemerintah Kabupaten Bandung</div>
                         <div class="h2-line">Dinas Pemadam Kebakaran dan Penyelamatan</div>
