@@ -24,8 +24,10 @@ class InvoiceController extends Controller
              ?? Unit::first();
 
         $unitId = $unit ? $unit->id : 1;
-        $kodeVerif = $p->kode_verifikasi ?? ('HAR-' . $p->created_at->format('Ymd') . '-' . sprintf('%04d', $p->id));
-        $nomorInvoice = 'INV-AKTUAL/' . $kodeVerif;
+        $kodeVerif = $p->kode_verifikasi ?? ('HAR-' . ($p->created_at ? $p->created_at->format('Ymd') : date('Ymd')) . '-' . sprintf('%04d', $p->id));
+        $nomorInvoice = str_starts_with($kodeVerif, 'HAR-')
+            ? 'INV-AKT-' . substr($kodeVerif, 4)
+            : 'INV-AKT-' . $kodeVerif;
 
         $inv = Invoice::firstOrCreate(
             [
@@ -315,8 +317,12 @@ class InvoiceController extends Controller
     public function show(Invoice $invoice)
     {
         $invoice->load('unit', 'items', 'creator');
+        $pejabatKasi = \App\Models\User::where('jabatan', 'ILIKE', '%pemeliharaan sarana%')
+            ->orWhere('jabatan', 'ILIKE', '%seksi pemeliharaan%')
+            ->orWhere('jabatan', 'ILIKE', '%pemeliharaan%')
+            ->first();
 
-        return view('admin.pemeliharaan.invoice.show', compact('invoice'));
+        return view('admin.pemeliharaan.invoice.show', compact('invoice', 'pejabatKasi'));
     }
 
     public function edit(Invoice $invoice)
@@ -473,8 +479,8 @@ class InvoiceController extends Controller
             'lokasi'          => ['nullable', 'string', 'max:100'],
             'kode_rekening'   => ['nullable', 'string', 'max:100'],
             'tahun_anggaran'  => ['required', 'digits:4'],
-            'potongan'        => ['nullable', 'numeric', 'min:0'],
-            'pajak'           => ['nullable', 'numeric', 'min:0'],
+            'potongan'        => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'pajak'           => ['nullable', 'numeric', 'min:0', 'max:100'],
             'biaya_lain'      => ['nullable', 'numeric', 'min:0'],
             'status'          => ['nullable', Rule::in(['draft', 'diajukan', 'disetujui', 'lunas'])],
             'catatan'         => ['nullable', 'string'],

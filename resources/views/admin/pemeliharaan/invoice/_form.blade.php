@@ -360,23 +360,38 @@
                     <td></td>
                 </tr>
                 <tr style="background:#FFFFFF;">
-                    <td colspan="6" style="padding:6px 14px; font-size:12.5px; text-align:right; font-weight:600; color:#64748B;">Potongan / Diskon Tambahan (Rp):</td>
+                    <td colspan="6" style="padding:6px 14px; font-size:12.5px; text-align:right; font-weight:600; color:#64748B;">Potongan / Diskon Tambahan (%):</td>
                     <td colspan="2" style="padding:6px 14px; text-align:right;">
-                        <input type="number" step="0.01" min="0" name="potongan" id="input-potongan" style="padding:6px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12.5px; width:160px; text-align:right; outline:none;" value="{{ old('potongan', $isEdit ? (float)$invoice->potongan : 0) }}">
+                        <div style="display:inline-flex; align-items:center; justify-content:flex-end; gap:8px;">
+                            <div style="position:relative; display:inline-block;">
+                                <input type="number" step="0.01" min="0" max="100" name="potongan" id="input-potongan" style="padding:6px 26px 6px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12.5px; width:90px; text-align:right; outline:none; box-sizing:border-box;" value="{{ old('potongan', $isEdit ? (float)$invoice->potongan : 0) }}">
+                                <span style="position:absolute; right:8px; top:50%; transform:translateY(-50%); font-size:12px; font-weight:700; color:#64748B; pointer-events:none;">%</span>
+                            </div>
+                            <span id="potongan-nominal-preview" style="font-size:12px; font-weight:700; color:#DC2626; min-width:85px; text-align:right;">Rp 0</span>
+                        </div>
                     </td>
                     <td></td>
                 </tr>
                 <tr style="background:#FFFFFF;">
-                    <td colspan="6" style="padding:6px 14px; font-size:12.5px; text-align:right; font-weight:600; color:#64748B;">Pajak / PPN (Rp):</td>
+                    <td colspan="6" style="padding:6px 14px; font-size:12.5px; text-align:right; font-weight:600; color:#64748B;">Pajak / PPN (%):</td>
                     <td colspan="2" style="padding:6px 14px; text-align:right;">
-                        <input type="number" step="0.01" min="0" name="pajak" id="input-pajak" style="padding:6px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12.5px; width:160px; text-align:right; outline:none;" value="{{ old('pajak', $isEdit ? (float)$invoice->pajak : 0) }}">
+                        <div style="display:inline-flex; align-items:center; justify-content:flex-end; gap:8px;">
+                            <div style="position:relative; display:inline-block;">
+                                <input type="number" step="0.01" min="0" max="100" name="pajak" id="input-pajak" style="padding:6px 26px 6px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12.5px; width:90px; text-align:right; outline:none; box-sizing:border-box;" value="{{ old('pajak', $isEdit ? (float)$invoice->pajak : 0) }}">
+                                <span style="position:absolute; right:8px; top:50%; transform:translateY(-50%); font-size:12px; font-weight:700; color:#64748B; pointer-events:none;">%</span>
+                            </div>
+                            <span id="pajak-nominal-preview" style="font-size:12px; font-weight:700; color:#0F172A; min-width:85px; text-align:right;">Rp 0</span>
+                        </div>
                     </td>
                     <td></td>
                 </tr>
                 <tr style="background:#FFFFFF;">
                     <td colspan="6" style="padding:6px 14px; font-size:12.5px; text-align:right; font-weight:600; color:#64748B;">Biaya Lainnya (Rp):</td>
                     <td colspan="2" style="padding:6px 14px; text-align:right;">
-                        <input type="number" step="0.01" min="0" name="biaya_lain" id="input-biaya-lain" style="padding:6px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12.5px; width:160px; text-align:right; outline:none;" value="{{ old('biaya_lain', $isEdit ? (float)$invoice->biaya_lain : 0) }}">
+                        <div style="display:inline-flex; align-items:center; justify-content:flex-end; gap:8px;">
+                            <input type="number" step="0.01" min="0" name="biaya_lain" id="input-biaya-lain" style="padding:6px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12.5px; width:90px; text-align:right; outline:none; box-sizing:border-box;" value="{{ old('biaya_lain', $isEdit ? (float)$invoice->biaya_lain : 0) }}">
+                            <span id="biaya-lain-preview" style="font-size:12px; font-weight:700; color:#0F172A; min-width:85px; text-align:right;">Rp 0</span>
+                        </div>
                     </td>
                     <td></td>
                 </tr>
@@ -449,11 +464,23 @@
         const subtotalEl = document.getElementById('subtotal-items');
         if (subtotalEl) subtotalEl.textContent = formatRupiah(subtotal);
 
-        const pot = parseFloat(document.getElementById('input-potongan').value) || 0;
-        const pajak = parseFloat(document.getElementById('input-pajak').value) || 0;
-        const biaya = parseFloat(document.getElementById('input-biaya-lain').value) || 0;
+        const potPersen = parseFloat(document.getElementById('input-potongan').value) || 0;
+        const potNominal = subtotal * (potPersen / 100);
+        const potPreview = document.getElementById('potongan-nominal-preview');
+        if (potPreview) potPreview.textContent = (potNominal > 0 ? '- ' : '') + formatRupiah(potNominal);
 
-        const grand = Math.max(0, subtotal - pot + pajak + biaya);
+        const dpp = Math.max(0, subtotal - potNominal);
+
+        const pajakPersen = parseFloat(document.getElementById('input-pajak').value) || 0;
+        const pajakNominal = dpp * (pajakPersen / 100);
+        const pajakPreview = document.getElementById('pajak-nominal-preview');
+        if (pajakPreview) pajakPreview.textContent = (pajakNominal > 0 ? '+ ' : '') + formatRupiah(pajakNominal);
+
+        const biaya = parseFloat(document.getElementById('input-biaya-lain').value) || 0;
+        const biayaPreview = document.getElementById('biaya-lain-preview');
+        if (biayaPreview) biayaPreview.textContent = (biaya > 0 ? '+ ' : '') + formatRupiah(biaya);
+
+        const grand = Math.max(0, dpp + pajakNominal + biaya);
         grandTotalEl.textContent = formatRupiah(grand);
         updateRowNumbers();
     }

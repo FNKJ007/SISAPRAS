@@ -256,15 +256,9 @@
 
                                     {{-- Jabatan & Bidang --}}
                                     <td style="padding:12px 16px;">
-                                        <div style="font-weight:700; color:#334155; font-size:12.5px;">{{ $item->jabatan ?: 'Petugas Operasional' }}</div>
-                                        <div style="margin-top:3px;">
-                                            @if(strtolower($item->bidang) === 'pemadam')
-                                                <span style="background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; padding:2px 8px; border-radius:12px; font-size:10.5px; font-weight:700;">Pemadam</span>
-                                            @elseif(strtolower($item->bidang) === 'rescue')
-                                                <span style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; padding:2px 8px; border-radius:12px; font-size:10.5px; font-weight:700;">Rescue</span>
-                                            @else
-                                                <span style="background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; padding:2px 8px; border-radius:12px; font-size:10.5px; font-weight:700;">{{ $item->bidang ?: 'Umum' }}</span>
-                                            @endif
+                                        <div style="font-weight:700; color:#0F172A; font-size:13px;">{{ $item->jabatan ?: '—' }}</div>
+                                        <div style="font-size:11.5px; color:#64748B; margin-top:2px; font-weight:500;">
+                                            {{ $item->bidang ?: '—' }}
                                         </div>
                                     </td>
 

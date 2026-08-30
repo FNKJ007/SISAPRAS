@@ -40,11 +40,10 @@
         .evidence-grid td { width: 25%; padding: 3px; text-align: center; vertical-align: top; }
         .evidence-grid img { width: 100%; height: 105px; object-fit: contain; border: 1px solid #777; padding: 2px; }
         .evidence-label { font-size: 7px; font-weight: bold; margin-bottom: 3px; }
-        .signatures { width: 100%; margin-top: 12px; border-collapse: collapse; }
+        .signatures { width: 100%; margin-top: 32px; border-collapse: collapse; page-break-inside: avoid; }
         .signatures td { width: 33.33%; text-align: center; vertical-align: top; height: 75px; }
         .signature-line { padding-top: 48px; border-bottom: 1px solid #111; display: inline-block; min-width: 145px; }
         .signature-name { font-weight: bold; text-decoration: underline; margin-top: 3px; }
-        .footer { text-align: right; color: #666; font-size: 7px; margin-top: 4px; }
     </style>
 </head>
 <body>
@@ -128,30 +127,8 @@
         </tbody>
     </table>
 
-    @if($bukti_pemanasan_data || $bukti_bbm_data || $bukti_pencucian_data || count($dok_tangki_data ?? []) > 0)
-        <div class="evidence">
-            <div class="evidence-title">BUKTI PENGECEKAN / DOKUMENTASI FOTO</div>
-            <table class="evidence-grid">
-                <tr>
-                    @if($bukti_pemanasan_data)
-                        <td><div class="evidence-label">Bukti Pemanasan</div><img src="{{ $bukti_pemanasan_data }}"></td>
-                    @endif
-                    @if($bukti_bbm_data)
-                        <td><div class="evidence-label">Bukti Level BBM</div><img src="{{ $bukti_bbm_data }}"></td>
-                    @endif
-                    @if($bukti_pencucian_data)
-                        <td><div class="evidence-label">Bukti Pembersihan Unit</div><img src="{{ $bukti_pencucian_data }}"></td>
-                    @endif
-                    @foreach($dok_tangki_data ?? [] as $index => $image)
-                        <td><div class="evidence-label">Tangki &amp; Pompa {{ $index + 1 }}</div><img src="{{ $image }}"></td>
-                        @if(($index + 1) % 4 === 0 && !$loop->last)</tr><tr>@endif
-                    @endforeach
-                </tr>
-            </table>
-        </div>
-    @endif
-
     <table class="legend"><tr><td>R</td><td>Rusak</td><td>RR</td><td>Rusak Ringan</td><td>RS</td><td>Rusak Sedang</td></tr><tr><td>TF</td><td>Tidak Berfungsi</td><td>T</td><td colspan="3">Tambahan</td></tr></table>
+    
     <table class="signatures">
         <tr>
             <td>
@@ -174,6 +151,43 @@
             </td>
         </tr>
     </table>
-    <div class="footer">Dokumen ini dihasilkan otomatis oleh sistem.</div>
+
+    {{-- Bukti Pengecekan / Dokumentasi Foto dipindahkan ke paling bawah di halaman baru --}}
+    @if($bukti_pemanasan_data || $bukti_bbm_data || $bukti_pencucian_data || count($dok_tangki_data ?? []) > 0)
+        <div class="evidence" style="page-break-before: always;">
+            <table class="kop"><tr><td style="width: 13%; text-align: center;">@if($logo_data)<img class="logo" src="{{ $logo_data }}">@endif</td><td class="kop-title">Dinas Pemadam Kebakaran dan Penyelamatan<br>Kabupaten Bandung</td><td style="width: 13%;"></td></tr></table>
+            <div class="report-title">BUKTI PENGECEKAN / DOKUMENTASI FOTO — {{ $unit->nomor_lambung ?? $record->unit_nama ?? '-' }} ({{ $unit->plat_nomor ?? '-' }})</div>
+
+            <table class="evidence-grid" style="margin-top: 10px;">
+                <tr>
+                    @php $colCount = 0; @endphp
+                    @if($bukti_pemanasan_data)
+                        @php $colCount++; @endphp
+                        <td><div class="evidence-label">Bukti Pemanasan</div><img src="{{ $bukti_pemanasan_data }}"></td>
+                    @endif
+                    @if($bukti_bbm_data)
+                        @php $colCount++; @endphp
+                        <td><div class="evidence-label">Bukti Level BBM</div><img src="{{ $bukti_bbm_data }}"></td>
+                    @endif
+                    @if($bukti_pencucian_data)
+                        @php $colCount++; @endphp
+                        <td><div class="evidence-label">Bukti Pembersihan Unit</div><img src="{{ $bukti_pencucian_data }}"></td>
+                    @endif
+                    @foreach($dok_tangki_data ?? [] as $index => $image)
+                        @if($colCount > 0 && $colCount % 4 === 0)
+                            </tr><tr>
+                        @endif
+                        @php $colCount++; @endphp
+                        <td><div class="evidence-label">Tangki &amp; Pompa {{ $index + 1 }}</div><img src="{{ $image }}"></td>
+                    @endforeach
+                    @if($colCount % 4 !== 0)
+                        @for($i = 0; $i < (4 - ($colCount % 4)); $i++)
+                            <td></td>
+                        @endfor
+                    @endif
+                </tr>
+            </table>
+        </div>
+    @endif
 </body>
 </html>

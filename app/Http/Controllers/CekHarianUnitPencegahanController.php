@@ -14,16 +14,13 @@ class CekHarianUnitPencegahanController extends Controller
     use HandlesCekHarianUnit, HandlesOfficialsData;
 
     /**
-     * Daftar unit/kendaraan pencegahan dari database Admin Data Unit sesuai Pos pengguna.
+     * Daftar unit/kendaraan dari database Admin Data Unit sesuai Pos pengguna.
+     * Menampilkan SEMUA unit yang ada di pos pengguna (tidak difilter per kategori).
      */
     protected function unitList()
     {
         $currentUser = auth()->user();
-        $allUnits = Unit::where('kategori', 'ILIKE', 'pencegahan')
-            ->orWhere('peruntukan', 'ILIKE', 'pencegahan')
-            ->orWhere('nomor_lambung', 'ILIKE', 'PC-%')
-            ->orderBy('nomor_lambung', 'asc')
-            ->get();
+        $allUnits = Unit::where('status', 'aktif')->orderBy('nomor_lambung', 'asc')->get();
 
         if ($currentUser && $currentUser->pos) {
             $userPosClean = strtolower(preg_replace('/[^a-z0-9]/', '', $currentUser->pos));

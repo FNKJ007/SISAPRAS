@@ -214,7 +214,7 @@ class UserManagementController extends Controller
         $name = $user->name;
         $user->update([
             'has_account' => false,
-            'password'    => null,
+            'password'    => Hash::make('DISABLED_' . \Illuminate\Support\Str::random(32)),
         ]);
         CacheService::invalidate('user');
 

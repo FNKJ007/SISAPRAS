@@ -34,7 +34,7 @@
             <div class="form-group has-caret">
                 <label for="bidang">Bidang</label>
                 <select name="bidang" id="bidang" required>
-                    <option value="" disabled {{ !old('bidang') && !($currentUser->bidang ?? false) ? 'selected' : '' }}></option>
+                    <option value="" disabled {{ !old('bidang') && !($currentUser->bidang ?? false) ? 'selected' : '' }}>— Pilih Bidang —</option>
                     @foreach ($bidangList as $value => $label)
                         @php
                             $userBidang = strtolower($currentUser->bidang ?? '');
@@ -52,7 +52,7 @@
             <div class="form-group has-caret">
                 <label for="pos">Pos</label>
                 <select name="pos" id="pos" required>
-                    <option value="" disabled {{ !old('pos') && !($currentUser->pos ?? false) ? 'selected' : '' }}></option>
+                    <option value="" disabled {{ !old('pos') && !($currentUser->pos ?? false) ? 'selected' : '' }}>— Pilih Pos Damkar —</option>
                     @foreach ($posList as $key => $item)
                         @php
                             $posName = is_string($item) ? $item : ($item->nama ?? ($item['nama'] ?? (is_string($key) ? $key : '')));
@@ -72,19 +72,10 @@
             <div class="form-group has-caret">
                 <label for="regu">Regu</label>
                 <select name="regu" id="regu" required>
-                    <option value="" disabled {{ !old('regu') && !($currentUser->regu ?? false) ? 'selected' : '' }}></option>
-                    @foreach ($reguList as $value => $label)
-                        @php
-                            $userRegu = strtolower(str_replace(' ', '', $currentUser->regu ?? ''));
-                            $valRegu = strtolower(str_replace(' ', '', $value));
-                            $labelRegu = strtolower(str_replace(' ', '', $label));
-                            $isUserRegu = $userRegu && ($valRegu === $userRegu || $labelRegu === $userRegu);
-                            $isSelected = old('regu') ? (old('regu') == $value) : $isUserRegu;
-                        @endphp
-                        <option value="{{ $value }}" {{ $isSelected ? 'selected' : '' }}>
-                            {{ $label }}
-                        </option>
-                    @endforeach
+                    <option value="" disabled {{ !old('regu') && !($currentUser->regu ?? false) ? 'selected' : '' }}>— Pilih Regu Sesuai Pos —</option>
+                    @if(!empty($currentUser->regu))
+                        <option value="{{ $currentUser->regu }}" selected>{{ $currentUser->regu }}</option>
+                    @endif
                 </select>
             </div>
 
@@ -92,7 +83,7 @@
             <div class="form-group has-caret">
                 <label for="jenis_kendaraan">Jenis Kendaraan</label>
                 <select name="jenis_kendaraan" id="jenis_kendaraan" required>
-                    <option value="" disabled {{ !old('jenis_kendaraan') && !($defaultUnit['jenis_kendaraan'] ?? false) ? 'selected' : '' }}></option>
+                    <option value="" disabled {{ !old('jenis_kendaraan') && !($defaultUnit['jenis_kendaraan'] ?? false) ? 'selected' : '' }}>— Pilih Jenis Kendaraan —</option>
                     @foreach ($jenisKendaraanList as $value => $label)
                         @php
                             $isDefaultJenis = isset($defaultUnit['jenis_kendaraan']) && (
@@ -112,7 +103,7 @@
             <div class="form-group has-caret">
                 <label for="nomor_lambung">Nomor Lambung</label>
                 <select name="nomor_lambung" id="nomor_lambung" required>
-                    <option value="" disabled {{ !old('nomor_lambung') && !($defaultUnit['key'] ?? false) ? 'selected' : '' }}></option>
+                    <option value="" disabled {{ !old('nomor_lambung') && !($defaultUnit['key'] ?? false) ? 'selected' : '' }}>— Pilih No. Lambung —</option>
                     @foreach ($nomorLambungList as $value => $label)
                         @php
                             $isDefaultLambung = isset($defaultUnit['key']) && $defaultUnit['key'] === $value;
@@ -349,28 +340,103 @@
             const nipDanruInput = document.getElementById('nip_komandan_regu');
             const nipKabidInput = document.getElementById('nip_kepala_bidang');
 
-            let isSyncing = false;
+            const userReguDefault = @json(old('regu', $currentUser->regu ?? ''));
+            const userBidangDefault = @json(old('bidang', $currentUser->bidang ?? ''));
 
             function normalizeKey(str) {
                 return (str || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
             }
 
+            // Filter opsi Regu berdasarkan Pos yang dipilih dari Master Data Regu
+            function filterReguOptions(preserveSelected = true) {
+                if (!reguSelect) return;
+                const currentVal = reguSelect.value;
+                const selectedPosText = posSelect && posSelect.selectedIndex >= 0 ? posSelect.options[posSelect.selectedIndex].text : (posSelect ? posSelect.value : '');
+                const selectedPosKey = normalizeKey(selectedPosText);
+                const userReguKey = normalizeKey(userReguDefault);
+                const currentValKey = normalizeKey(currentVal);
+
+                reguSelect.innerHTML = '';
+
+                const placeholderOpt = document.createElement('option');
+                placeholderOpt.value = '';
+                placeholderOpt.disabled = true;
+                placeholderOpt.textContent = '— Pilih Regu Sesuai Pos —';
+                reguSelect.appendChild(placeholderOpt);
+
+                // Filter regu yang terdaftar di pos ini dari Master Data Regu
+                let matchingRegus = allReguList.filter(r => {
+                    const rPosKey = normalizeKey(r.pos || '');
+                    return !selectedPosKey || rPosKey === selectedPosKey || rPosKey.includes(selectedPosKey) || selectedPosKey.includes(rPosKey);
+                });
+
+                let selectedOptValue = null;
+
+                if (matchingRegus.length > 0) {
+                    matchingRegus.forEach(r => {
+                        const opt = document.createElement('option');
+                        opt.value = r.nama;
+                        let label = r.nama;
+                        if (r.bidang) label += ' (' + r.bidang + ')';
+                        if (r.danru) label += ' — Danru: ' + r.danru;
+                        opt.textContent = label;
+
+                        const rKey = normalizeKey(r.nama);
+                        // Prioritas 1: Sesuai nilai yang sudah dipilih sebelumnya jika masih valid di pos ini
+                        // Prioritas 2: Sesuai data Regu dari akun pengguna yang sedang login
+                        if (preserveSelected && currentValKey && (rKey === currentValKey || rKey.includes(currentValKey) || currentValKey.includes(rKey))) {
+                            opt.selected = true;
+                            selectedOptValue = r.nama;
+                        } else if (!selectedOptValue && userReguKey && (rKey === userReguKey || rKey.includes(userReguKey) || userReguKey.includes(rKey))) {
+                            opt.selected = true;
+                            selectedOptValue = r.nama;
+                        }
+
+                        reguSelect.appendChild(opt);
+                    });
+                } else {
+                    // Fallback opsi standar jika data belum diisi di Master Data
+                    ['Regu 1', 'Regu 2', 'Regu 3', 'Regu 4'].forEach(nama => {
+                        const opt = document.createElement('option');
+                        opt.value = nama;
+                        opt.textContent = nama;
+                        const nKey = normalizeKey(nama);
+
+                        if (preserveSelected && currentValKey && (nKey === currentValKey || nKey.includes(currentValKey) || currentValKey.includes(nKey))) {
+                            opt.selected = true;
+                            selectedOptValue = nama;
+                        } else if (!selectedOptValue && userReguKey && (nKey === userReguKey || nKey.includes(userReguKey) || userReguKey.includes(nKey))) {
+                            opt.selected = true;
+                            selectedOptValue = nama;
+                        }
+
+                        reguSelect.appendChild(opt);
+                    });
+                }
+
+                if (selectedOptValue) {
+                    reguSelect.value = selectedOptValue;
+                } else {
+                    placeholderOpt.selected = true;
+                    reguSelect.value = '';
+                }
+
+                updateOfficialsFromProfile();
+            }
+
             // Auto-match pejabat (Danru & Kabid) berdasarkan Pos/Regu/Bidang dari Master Data
             function updateOfficialsFromProfile() {
                 const selectedPos = posSelect && posSelect.selectedIndex >= 0 ? normalizeKey(posSelect.options[posSelect.selectedIndex].text) : '';
-                const selectedRegu = reguSelect && reguSelect.selectedIndex >= 0 ? normalizeKey(reguSelect.options[reguSelect.selectedIndex].text) : '';
+                const selectedRegu = reguSelect && reguSelect.selectedIndex >= 0 ? normalizeKey(reguSelect.options[reguSelect.selectedIndex].value || reguSelect.options[reguSelect.selectedIndex].text) : '';
                 const selectedBidang = bidangSelect && bidangSelect.selectedIndex >= 0 ? bidangSelect.options[bidangSelect.selectedIndex].text.trim().toLowerCase() : '';
 
-                // 1. Cari Danru dari Master Data Regu, lalu cocokkan ke input Danru
-                if (allReguList.length > 0) {
+                // 1. Cari Danru dari Master Data Regu sesuai Pos & Regu yang dipilih
+                if (allReguList.length > 0 && selectedPos && selectedRegu) {
                     let matchedRegu = allReguList.find(r => {
                         const rPos = normalizeKey(r.pos || '');
                         const rRegu = normalizeKey(r.nama || '');
-                        const rBidang = (r.bidang || '').trim().toLowerCase();
-                        const matchBidang = !selectedBidang || !rBidang || rBidang.includes(selectedBidang) || selectedBidang.includes(rBidang);
                         return (rPos && selectedPos && (rPos.includes(selectedPos) || selectedPos.includes(rPos))) &&
-                               (rRegu && selectedRegu && rRegu === selectedRegu) &&
-                               matchBidang;
+                               (rRegu && selectedRegu && rRegu === selectedRegu);
                     });
 
                     if (matchedRegu && matchedRegu.danru) {
@@ -380,20 +446,13 @@
                         if (nipDanruInput) {
                             nipDanruInput.value = matchedRegu.nip_danru || '';
                         }
-                    } else if (danruUsers.length > 0) {
-                        let fallbackDanru = danruUsers.find(u => {
-                            const uPos = normalizeKey(u.pos || '');
-                            return uPos && selectedPos && (uPos.includes(selectedPos) || selectedPos.includes(uPos));
-                        }) || danruUsers[0];
-
-                        if (fallbackDanru) {
-                            if (window.danruComp) {
-                                window.danruComp.searchQuery = fallbackDanru.name;
-                            }
-                            if (nipDanruInput) {
-                                nipDanruInput.value = fallbackDanru.nip || '';
-                            }
-                        }
+                    }
+                } else if (!selectedRegu) {
+                    if (window.danruComp && !userReguDefault) {
+                        window.danruComp.searchQuery = '';
+                    }
+                    if (nipDanruInput && !userReguDefault) {
+                        nipDanruInput.value = '';
                     }
                 }
 
@@ -416,10 +475,6 @@
                     }
                 }
             }
-
-            if (posSelect) posSelect.addEventListener('change', updateOfficialsFromProfile);
-            if (reguSelect) reguSelect.addEventListener('change', updateOfficialsFromProfile);
-            if (bidangSelect) bidangSelect.addEventListener('change', updateOfficialsFromProfile);
 
             // Filter opsi Nomor Lambung berdasarkan Pos yang dipilih
             function filterNomorLambung(preserveSelected = true) {
@@ -461,13 +516,15 @@
                 });
 
                 if (!hasMatched) {
-                    if (matchingUnits.length > 0) {
-                        const targetUnit = (defaultUnitKey && matchingUnits.find(u => u.key === defaultUnitKey)) || matchingUnits[0];
+                    if (defaultUnitKey && matchingUnits.length > 0) {
+                        // Hanya auto-select jika user adalah pengemudi yang punya unit default
+                        const targetUnit = matchingUnits.find(u => u.key === defaultUnitKey) || matchingUnits[0];
                         if (targetUnit) {
                             lambungSelect.value = targetUnit.key;
                             syncUnitDetails();
                         }
                     } else {
+                        // User bukan pengemudi -> biarkan kosong (placeholder)
                         placeholderOpt.selected = true;
                         lambungSelect.value = '';
                     }
@@ -510,8 +567,8 @@
                     }
                 }
 
-                // 3. Auto-select Bidang
-                if (bidangSelect && (data.kategori || data.bidang)) {
+                // 3. Auto-select Bidang (Hanya jika pengguna belum memiliki Bidang di profil akunnya)
+                if (bidangSelect && !userBidangDefault && (data.kategori || data.bidang)) {
                     const targetBidang = (data.kategori || data.bidang || '').trim().toLowerCase();
                     if (targetBidang) {
                         for (let i = 0; i < bidangSelect.options.length; i++) {
@@ -533,12 +590,27 @@
                 isSyncing = false;
             }
 
-            // Event: Saat Pos diganti -> filter nomor lambung yang sesuai
+            // Event: Saat Pos diganti -> filter nomor lambung & regu yang sesuai
             if (posSelect) {
                 posSelect.addEventListener('change', function () {
                     if (!isSyncing) {
+                        filterReguOptions(false);
                         filterNomorLambung(false);
                     }
+                    updateOfficialsFromProfile();
+                });
+            }
+
+            // Event: Saat Regu diganti -> sinkronkan Danru
+            if (reguSelect) {
+                reguSelect.addEventListener('change', function () {
+                    updateOfficialsFromProfile();
+                });
+            }
+
+            // Event: Saat Bidang diganti -> update Kabid & filter regu
+            if (bidangSelect) {
+                bidangSelect.addEventListener('change', function () {
                     updateOfficialsFromProfile();
                 });
             }
@@ -560,9 +632,10 @@
             }
 
             // Inisialisasi awal saat load
-            updateOfficialsFromProfile();
+            filterReguOptions(true);
             filterNomorLambung(true);
             syncUnitDetails();
+            updateOfficialsFromProfile();
         });
     </script>
 @endsection
