@@ -800,7 +800,7 @@
                         {{-- Bidang --}}
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Bidang</label>
-                            <select name="bidang" x-model="createBidang"
+                            <select name="bidang" x-model="createBidang" @change="onBidangChangeCreate()"
                                     style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF; box-sizing:border-box;">
                                 <option value="">— Pilih Bidang —</option>
                                 @foreach($existingBidangList as $b)
@@ -810,7 +810,7 @@
                         </div>
                     </div>
 
-                    {{-- Pos & Regu (Regu Sesuai Pos) --}}
+                    {{-- Pos & Regu (Regu Sesuai Pos & Bidang) --}}
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pos Penempatan</label>
@@ -830,7 +830,7 @@
                             <select name="regu" x-model="createRegu" @change="onReguChangeCreate()" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
                                 <option value="">— Pilih Regu Sesuai Pos —</option>
                                 <template x-for="r in getRegusForPos(createPos)" :key="r.id">
-                                    <option :value="r.nama" x-text="r.nama + ' — ' + r.bidang + (r.danru ? ' (Danru: ' + r.danru + ')' : '')"></option>
+                                    <option :value="r.nama" x-text="r.nama + (r.bidang ? ' — ' + r.bidang : '') + (r.danru ? ' (Danru: ' + r.danru + ')' : '')"></option>
                                 </template>
                                 <template x-if="getRegusForPos(createPos).length === 0">
                                     <optgroup label="Pilihan Standar">
@@ -944,7 +944,7 @@
                         {{-- Edit: Bidang --}}
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Bidang</label>
-                            <select name="bidang" x-model="activeUser.bidang"
+                            <select name="bidang" x-model="activeUser.bidang" @change="onBidangChangeEdit()"
                                     style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF; box-sizing:border-box;">
                                 <option value="">— Pilih Bidang —</option>
                                 @foreach($existingBidangList as $b)
@@ -954,7 +954,7 @@
                         </div>
                     </div>
 
-                    {{-- Pos & Regu (Regu Sesuai Pos) --}}
+                    {{-- Pos & Regu (Regu Sesuai Pos & Bidang) --}}
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                         <div>
                             <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Pos Penempatan</label>
@@ -974,7 +974,7 @@
                             <select name="regu" x-model="activeUser.regu" @change="onReguChangeEdit()" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
                                 <option value="">— Pilih Regu Sesuai Pos —</option>
                                 <template x-for="r in getRegusForPos(activeUser.pos)" :key="r.id">
-                                    <option :value="r.nama" x-text="r.nama + ' — ' + r.bidang + (r.danru ? ' (Danru: ' + r.danru + ')' : '')"></option>
+                                    <option :value="r.nama" x-text="r.nama + (r.bidang ? ' — ' + r.bidang : '') + (r.danru ? ' (Danru: ' + r.danru + ')' : '')"></option>
                                 </template>
                                 <template x-if="getRegusForPos(activeUser.pos).length === 0">
                                     <optgroup label="Pilihan Standar">
@@ -1205,15 +1205,18 @@ function pengaturanApp() {
             });
             return matched;
         },
+        onBidangChangeCreate() {
+            // Tetap pertahankan pilihan regu user
+        },
+        onBidangChangeEdit() {
+            // Tetap pertahankan pilihan regu user
+        },
         onPosChangeCreate() {
             if (!this.createPos) return;
             let regus = this.getRegusForPos(this.createPos);
             if (regus.length > 0) {
                 if (!this.createRegu || !regus.some(r => r.nama.toLowerCase() === this.createRegu.toLowerCase())) {
                     this.createRegu = regus[0].nama;
-                    if (!this.createBidang || this.createBidang === 'Pemadam' || this.createBidang === 'Rescue') {
-                        this.createBidang = regus[0].bidang;
-                    }
                 }
             }
         },
@@ -1223,25 +1226,14 @@ function pengaturanApp() {
             if (regus.length > 0) {
                 if (!this.activeUser.regu || !regus.some(r => r.nama.toLowerCase() === this.activeUser.regu.toLowerCase())) {
                     this.activeUser.regu = regus[0].nama;
-                    if (!this.activeUser.bidang || this.activeUser.bidang === 'Pemadam' || this.activeUser.bidang === 'Rescue') {
-                        this.activeUser.bidang = regus[0].bidang;
-                    }
                 }
             }
         },
         onReguChangeCreate() {
-            let regus = this.getRegusForPos(this.createPos);
-            let found = regus.find(r => r.nama === this.createRegu);
-            if (found && found.bidang && (!this.createBidang || this.createBidang === 'Pemadam' || this.createBidang === 'Rescue')) {
-                this.createBidang = found.bidang;
-            }
+            // Tidak pernah menimpa bidang yang sudah dipilih user / pegawai
         },
         onReguChangeEdit() {
-            let regus = this.getRegusForPos(this.activeUser.pos);
-            let found = regus.find(r => r.nama === this.activeUser.regu);
-            if (found && found.bidang && (!this.activeUser.bidang || this.activeUser.bidang === 'Pemadam' || this.activeUser.bidang === 'Rescue')) {
-                this.activeUser.bidang = found.bidang;
-            }
+            // Tidak pernah menimpa bidang yang sudah dipilih user / pegawai
         },
         generatedPass: 'Damkar' + Math.floor(1000 + Math.random() * 9000) + '!',
         showPassCreate: false,

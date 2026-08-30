@@ -20,14 +20,14 @@
         .meta .key-right { width: 12%; }
         .meta .value-right { width: 28%; border-bottom: 1px dotted #777; word-wrap: break-word; overflow-wrap: anywhere; }
         table.inspection { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .inspection th, .inspection td { border: 1px solid #555; padding: 2px 3px; vertical-align: top; line-height: 1.15; word-wrap: break-word; overflow-wrap: anywhere; white-space: normal; }
-        .inspection th { background: #bfbfbf; text-align: center; font-weight: bold; vertical-align: middle; height: 27px; }
+        .inspection th, .inspection td { border: 1px solid #555; padding: 2px 3px; vertical-align: top; line-height: 1.15; word-wrap: break-word; word-break: break-word; overflow-wrap: anywhere; white-space: normal; }
+        .inspection th { background: #bfbfbf; text-align: center; font-weight: bold; vertical-align: middle; height: 27px; font-size: 7.5px; }
         .inspection .no { width: 4%; text-align: center; }
-        .inspection .item { width: 27%; }
-        .inspection .standard { width: 27%; }
+        .inspection .item { width: 25%; }
+        .inspection .standard { width: 25%; }
         .inspection .condition { width: 3.6%; text-align: center; padding: 1px; }
-        .inspection .action { width: 12%; }
-        .inspection .result { width: 12%; }
+        .inspection .action { width: 16%; font-size: 7.5px; word-break: break-all; }
+        .inspection .result { width: 12%; font-size: 7.5px; text-align: center; word-break: break-all; }
         .inspection .category td { font-weight: bold; background: #f2f2f2; padding: 3px; }
         .inspection .category .no { font-size: 9px; vertical-align: middle; }
         .check { font-weight: bold; font-size: 10px; text-align: center; }
@@ -122,7 +122,7 @@
                     $isPerluPerhatian = in_array($status, ['perlu_perhatian', 'perlu perhatian']);
                     $note = trim($item['catatan'] ?? '');
                 @endphp
-                <tr><td class="no"></td><td>- {{ $item['label'] ?? '-' }}</td><td class="muted">{{ $isRusak || $isPerluPerhatian ? 'Perlu tindak lanjut sesuai hasil pemeriksaan.' : 'Berfungsi baik dan sesuai standar.' }}</td><td class="condition check">{{ $isRusak ? 'X' : '' }}</td><td class="condition check">{{ $isPerluPerhatian ? 'X' : '' }}</td><td class="condition"></td><td class="condition"></td><td class="condition"></td><td class="action">{{ $isRusak || $isPerluPerhatian ? ($note ?: 'Perlu pemeriksaan/perbaikan') : '-' }}</td><td class="result">-</td></tr>
+                <tr><td class="no"></td><td>- {{ $item['label'] ?? '-' }}</td><td class="muted">{{ $isRusak || $isPerluPerhatian ? 'Perlu tindak lanjut sesuai hasil pemeriksaan.' : 'Berfungsi baik dan sesuai standar.' }}</td><td class="condition check">{{ $isRusak ? 'X' : '' }}</td><td class="condition check">{{ $isPerluPerhatian ? 'X' : '' }}</td><td class="condition"></td><td class="condition"></td><td class="condition"></td><td class="action">{{ $isRusak || $isPerluPerhatian ? str_replace('/', ' / ', ($note ?: 'Perlu pemeriksaan / perbaikan')) : '-' }}</td><td class="result">-</td></tr>
             @endforeach
         @endforeach
         </tbody>

@@ -366,8 +366,11 @@
                     let matchedRegu = allReguList.find(r => {
                         const rPos = normalizeKey(r.pos || '');
                         const rRegu = normalizeKey(r.nama || '');
+                        const rBidang = (r.bidang || '').trim().toLowerCase();
+                        const matchBidang = !selectedBidang || !rBidang || rBidang.includes(selectedBidang) || selectedBidang.includes(rBidang);
                         return (rPos && selectedPos && (rPos.includes(selectedPos) || selectedPos.includes(rPos))) &&
-                               (rRegu && selectedRegu && rRegu === selectedRegu);
+                               (rRegu && selectedRegu && rRegu === selectedRegu) &&
+                               matchBidang;
                     });
 
                     if (matchedRegu && matchedRegu.danru) {
