@@ -414,13 +414,14 @@
                 
                 {{-- Kop Surat Resmi --}}
                 <div class="kop-container">
-                    <img src="{{ asset('images/brama.png') }}" class="kop-logo" alt="BRAHMA">
+                    <img src="{{ asset('images/logo-kabupaten.png') }}" class="kop-logo" alt="Logo Pemkab">
                     <div class="kop-center">
                         <div class="h1-line">Pemerintah Kabupaten Bandung</div>
                         <div class="h2-line">Dinas Pemadam Kebakaran dan Penyelamatan</div>
                         <div class="address-line">Jl. Raya Soreang Km.17 Bandung Telp. (022) 5891113 Soreang 40911</div>
                         <div class="contact-line">Email: <a href="mailto:disdamkar@bandungkab.go.id">disdamkar@bandungkab.go.id</a> Website: <a href="https://disdamkar.bandungkab.go.id" target="_blank">disdamkar.bandungkab.go.id</a></div>
                     </div>
+                    <img src="{{ asset('images/logo-damkar.png') }}" class="kop-logo" alt="Logo Damkar">
                 </div>
                 <div class="kop-divider"></div>
 
@@ -829,13 +830,14 @@
                 
                 {{-- Kop Surat Resmi --}}
                 <div class="kop-container">
-                    <img src="{{ asset('images/brama.png') }}" class="kop-logo" alt="BRAHMA">
+                    <img src="{{ asset('images/logo-kabupaten.png') }}" class="kop-logo" alt="Logo Pemkab">
                     <div class="kop-center">
                         <div class="h1-line">Pemerintah Kabupaten Bandung</div>
                         <div class="h2-line">Dinas Pemadam Kebakaran dan Penyelamatan</div>
                         <div class="address-line">Jl. Raya Soreang Km.17 Bandung Telp. (022) 5891113 Soreang 40911</div>
                         <div class="contact-line">Email: <a href="mailto:disdamkar@bandungkab.go.id">disdamkar@bandungkab.go.id</a> Website: <a href="https://disdamkar.bandungkab.go.id" target="_blank">disdamkar.bandungkab.go.id</a></div>
                     </div>
+                    <img src="{{ asset('images/logo-damkar.png') }}" class="kop-logo" alt="Logo Damkar">
                 </div>
                 <div class="kop-divider"></div>
 

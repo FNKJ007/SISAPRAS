@@ -145,42 +145,18 @@
                                     {{ $reguList->firstItem() + $index }}
                                 </td>
                                 <td style="padding:14px 16px;">
-                                    <span style="font-weight:800; color:#0F172A; display:inline-flex; align-items:center; gap:6px;">
-                                        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#1B2A6B;"></span>
-                                        <span>{{ $item->nama }}</span>
+                                    <span style="font-weight:700; color:#0F172A;">
+                                        {{ $item->nama }}
                                     </span>
                                     @if($item->catatan)
                                         <div style="font-size:11px; color:#64748B; margin-top:2px;">{{ Str::limit($item->catatan, 35) }}</div>
                                     @endif
                                 </td>
-                                <td style="padding:14px 16px;">
-                                    <span style="display:inline-flex; align-items:center; gap:5px; padding:4px 10px; background:#F1F5F9; border-radius:8px; font-weight:700; color:#334155; font-size:12px;">
-                                        <i data-lucide="map-pin" style="width:13px; height:13px; color:#64748B;"></i>
-                                        <span>{{ $item->pos ?: '—' }}</span>
-                                    </span>
+                                <td style="padding:14px 16px; font-weight:600; color:#334155; font-size:12px;">
+                                    {{ $item->pos ?: '—' }}
                                 </td>
-                                <td style="padding:14px 16px;">
-                                    @if($item->bidang === 'Pemadam')
-                                        <span style="padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; background:#FEE2E2; color:#991B1B; display:inline-flex; align-items:center; gap:4px;">
-                                            <i data-lucide="flame" style="width:12px; height:12px;"></i>
-                                            <span>Pemadam</span>
-                                        </span>
-                                    @elseif($item->bidang === 'Rescue')
-                                        <span style="padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; background:#DBEAFE; color:#1E40AF; display:inline-flex; align-items:center; gap:4px;">
-                                            <i data-lucide="life-buoy" style="width:12px; height:12px;"></i>
-                                            <span>Rescue</span>
-                                        </span>
-                                    @elseif($item->bidang === 'Pencegahan')
-                                        <span style="padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; background:#E0E7FF; color:#3730A3; display:inline-flex; align-items:center; gap:4px;">
-                                            <i data-lucide="shield" style="width:12px; height:12px;"></i>
-                                            <span>Pencegahan</span>
-                                        </span>
-                                    @else
-                                        <span style="padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; background:#F1F5F9; color:#475569; display:inline-flex; align-items:center; gap:4px;">
-                                            <i data-lucide="radio-tower" style="width:12px; height:12px;"></i>
-                                            <span>{{ $item->bidang ?: 'Umum' }}</span>
-                                        </span>
-                                    @endif
+                                <td style="padding:14px 16px; font-weight:600; color:#475569; font-size:12.5px;">
+                                    {{ $item->bidang ?: '—' }}
                                 </td>
                                 <td style="padding:14px 16px;">
                                     <div style="font-weight:700; color:#0F172A;">{{ $item->danru ?: 'Belum Ditentukan' }}</div>

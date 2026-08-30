@@ -23,10 +23,6 @@
 </head>
 <body>
 
-    <!-- Background Atmosphere Ambient Glows -->
-    <div class="login-bg-glow-1"></div>
-    <div class="login-bg-glow-2"></div>
-
     <div class="login-container">
 
         <!-- SISI KIRI: HERO BRAND PANEL (Merah Damkar Gradient) -->
@@ -38,7 +34,6 @@
                     <div class="hero-inst-divider"></div>
                     <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Damkar" class="hero-inst-logo" onerror="this.style.display='none'">
                 </div>
-                <span class="hero-brand-tag">Kab. Bandung</span>
             </div>
 
             <!-- Konten Tengah: Logo BRAMA & Deskripsi -->
@@ -57,10 +52,6 @@
         <!-- SISI KANAN: FORM LOGIN CONTAINER -->
         <div class="login-form-wrapper">
             <div class="form-header">
-                <div class="form-header-badge">
-                    <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #C0201F;"></i>
-                    <span>Sistem Otentikasi</span>
-                </div>
                 <h2 class="form-header-title">Selamat Datang</h2>
                 <p class="form-header-sub">Masukkan NIP dan Password Anda untuk masuk ke sistem.</p>
             </div>

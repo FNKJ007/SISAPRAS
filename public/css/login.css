@@ -106,7 +106,7 @@ body {
     right: 32px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 12px;
     z-index: 2;
 }
@@ -115,13 +115,6 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    background: rgba(255, 255, 255, 0.14);
-    padding: 5px 12px;
-    border-radius: 14px;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
 }
 
 .hero-inst-logo {
@@ -133,26 +126,13 @@ body {
 }
 
 .hero-inst-logo:hover {
-    transform: scale(1.1);
+    transform: scale(1.08);
 }
 
 .hero-inst-divider {
-    width: 1px;
+    width: 1.5px;
     height: 24px;
-    background: rgba(255, 255, 255, 0.35);
-}
-
-.hero-brand-tag {
-    background: rgba(255, 255, 255, 0.18);
-    backdrop-filter: blur(6px);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    padding: 5px 12px;
-    border-radius: 30px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    color: #FFFFFF;
+    background: rgba(255, 255, 255, 0.4);
 }
 
 .hero-content {
@@ -390,7 +370,7 @@ body {
     }
 
     .hero-institutional-logos {
-        padding: 4px 8px;
+        padding: 0;
         gap: 8px;
     }
 
@@ -400,11 +380,6 @@ body {
 
     .hero-inst-divider {
         height: 16px;
-    }
-
-    .hero-brand-tag {
-        font-size: 9px;
-        padding: 3px 8px;
     }
 
     .hero-content {

@@ -163,28 +163,8 @@
                                 </td>
 
                                 {{-- Kategori --}}
-                                <td style="padding:12px 14px;">
-                                    @if(strtolower($item->kategori) === 'pemadam')
-                                        <span style="background:#FEE2E2; color:#991B1B; border:1px solid #FECACA; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
-                                            <span style="width:6px; height:6px; border-radius:50%; background:#DC2626;"></span> Pemadam
-                                        </span>
-                                    @elseif(strtolower($item->kategori) === 'rescue')
-                                        <span style="background:#DBEAFE; color:#1E40AF; border:1px solid #BFDBFE; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
-                                            <span style="width:6px; height:6px; border-radius:50%; background:#2563EB;"></span> Rescue
-                                        </span>
-                                    @elseif(strtolower($item->kategori) === 'pencegahan')
-                                        <span style="background:#D1FAE5; color:#065F46; border:1px solid #A7F3D0; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
-                                            <span style="width:6px; height:6px; border-radius:50%; background:#059669;"></span> Pencegahan
-                                        </span>
-                                    @elseif(strtolower($item->kategori) === 'komando')
-                                        <span style="background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
-                                            <span style="width:6px; height:6px; border-radius:50%; background:#D97706;"></span> Komando
-                                        </span>
-                                    @else
-                                        <span style="background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
-                                            <span style="width:6px; height:6px; border-radius:50%; background:#64748B;"></span> {{ $item->kategori ?: 'Operasional' }}
-                                        </span>
-                                    @endif
+                                <td style="padding:12px 14px; font-weight:600; color:#334155;">
+                                    {{ $item->kategori ?: '—' }}
                                 </td>
 
                                 {{-- Penempatan (Pos) --}}

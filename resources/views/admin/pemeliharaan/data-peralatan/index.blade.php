@@ -130,16 +130,8 @@
                                 <td style="padding:12px 16px;">
                                     <div style="font-weight:700; color:#0F172A; word-break:break-word;">{{ $item->nama }}</div>
                                 </td>
-                                <td style="padding:12px 16px;">
-                                    @if(strtolower($item->kategori) === 'pemadam')
-                                        <span style="background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">Pemadam</span>
-                                    @elseif(strtolower($item->kategori) === 'rescue')
-                                        <span style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">Rescue</span>
-                                    @elseif(strtolower($item->kategori) === 'pencegahan')
-                                        <span style="background:#ECFDF5; color:#047857; border:1px solid #A7F3D0; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">Pencegahan</span>
-                                    @else
-                                        <span style="background:#F3E8FF; color:#6B21A8; border:1px solid #D8B4FE; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">{{ $item->kategori ?: 'Command Center' }}</span>
-                                    @endif
+                                <td style="padding:12px 16px; font-weight:600; color:#334155;">
+                                    {{ $item->kategori ?: '—' }}
                                 </td>
                                 <td style="padding:12px 16px; color:#64748B; font-size:12px; line-height:1.4; word-break:break-word;">
                                     {{ $item->catatan ?? '—' }}

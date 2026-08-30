@@ -148,60 +148,14 @@
                                     @endif
                                 </td>
                                 <td style="padding:14px 16px;">
-                                    @php
-                                        $jabatanLower = strtolower($item->jabatan ?? '');
-                                        $isPetinggi = preg_match('/(kepala|kabid|kasi|sekretaris|kadis)/i', $jabatanLower);
-                                        $isDanru = preg_match('/(danru|komandan)/i', $jabatanLower);
-                                    @endphp
-                                    @if($isPetinggi)
-                                        <span style="display:inline-flex; align-items:center; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; background:#FEF3C7; color:#92400E;">
-                                            {{ $item->jabatan ?: 'Pejabat' }}
-                                        </span>
-                                    @elseif($isDanru)
-                                        <span style="display:inline-flex; align-items:center; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; background:#DBEAFE; color:#1E40AF;">
-                                            {{ $item->jabatan ?: 'Danru' }}
-                                        </span>
-                                    @else
-                                        <span style="font-weight:600; color:#334155;">
-                                            {{ $item->jabatan ?: 'Petugas' }}
-                                        </span>
-                                    @endif
+                                    <span style="font-weight:600; color:#1E293B;">
+                                        {{ $item->jabatan ?: '—' }}
+                                    </span>
                                 </td>
                                 <td style="padding:14px 16px;">
-                                    @php
-                                        $bLower = strtolower($item->bidang ?? '');
-                                    @endphp
-                                    @if(str_contains($bLower, 'pemadam'))
-                                        <span style="display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#FEE2E2; color:#DC2626;">
-                                            Pemadam
-                                        </span>
-                                    @elseif(str_contains($bLower, 'rescue') || str_contains($bLower, 'penyelamatan'))
-                                        <span style="display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#DBEAFE; color:#2563EB;">
-                                            Rescue
-                                        </span>
-                                    @elseif(str_contains($bLower, 'pencegah'))
-                                        <span style="display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#FEF3C7; color:#D97706;">
-                                            Pencegahan
-                                        </span>
-                                    @elseif(str_contains($bLower, 'informasi') || str_contains($bLower, 'spi'))
-                                        <span style="display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#E0E7FF; color:#4F46E5;">
-                                            SPI
-                                        </span>
-                                    @elseif(str_contains($bLower, 'sekretariat'))
-                                        <span style="display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#CFFAFE; color:#0891B2;">
-                                            Sekretariat
-                                        </span>
-                                    @elseif(str_contains($bLower, 'command') || str_contains($bLower, 'cc'))
-                                        <span style="display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:700; background:#D1FAE5; color:#059669;">
-                                            Command Center
-                                        </span>
-                                    @elseif($item->bidang)
-                                        <span style="display:inline-block; padding:3px 8px; border-radius:6px; background:#F1F5F9; font-weight:700; color:#475569; font-size:11.5px;">
-                                            {{ $item->bidang }}
-                                        </span>
-                                    @else
-                                        <span style="color:#94A3B8; font-style:italic;">—</span>
-                                    @endif
+                                    <span style="font-weight:600; color:#475569;">
+                                        {{ $item->bidang ?: '—' }}
+                                    </span>
                                 </td>
                                 <td style="padding:14px 16px;">
                                     @if($item->pos)
