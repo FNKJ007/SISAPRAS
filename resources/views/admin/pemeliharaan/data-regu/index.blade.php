@@ -13,6 +13,7 @@
     createBidang: 'Pemadam',
     createDanruName: '',
     createDanruNip: '',
+    createDanruUserId: '',
     editUrl: '',
     deleteUrl: ''
 }">
@@ -228,6 +229,7 @@
                 <form method="POST" action="{{ route('admin.pemeliharaan.data-regu.store') }}" style="padding:24px;">
                     @csrf
                     <input type="hidden" name="status" value="aktif">
+                    <input type="hidden" name="danru_user_id" x-model="createDanruUserId">
 
                     {{-- Nama Regu --}}
                     <div style="margin-bottom:14px;">
@@ -278,6 +280,7 @@
                                  this.search = d.name;
                                  createDanruName = d.name;
                                  createDanruNip = d.nip || '';
+                                 createDanruUserId = d.id || '';
                                  if (d.pos) {
                                      createPos = d.pos;
                                  }
@@ -385,6 +388,7 @@
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="status" value="aktif">
+                    <input type="hidden" name="danru_user_id" x-model="activeRegu.danru_user_id">
 
                     {{-- Nama Regu --}}
                     <div style="margin-bottom:14px;">
@@ -433,6 +437,7 @@
                              select(d) {
                                  activeRegu.danru = d.name;
                                  activeRegu.nip_danru = d.nip || '';
+                                 activeRegu.danru_user_id = d.id || '';
                                  if (d.pos) {
                                      activeRegu.pos = d.pos;
                                  }

@@ -105,12 +105,13 @@ class PegawaiManagementController extends Controller
         $messages = [
             'name.required'    => 'Nama lengkap pegawai wajib diisi.',
             'nip.required'     => 'NIP pegawai wajib diisi.',
+            'nip.unique'       => 'NIP ini sudah terdaftar di data pegawai lain. Silakan gunakan NIP yang berbeda.',
             'jabatan.required' => 'Jabatan pegawai wajib diisi.',
         ];
 
         $validated = $request->validate([
             'name'    => 'required|string|max:255',
-            'nip'     => 'required|string|max:50',
+            'nip'     => 'required|string|max:50|unique:users,nip',
             'jabatan' => 'required|string|max:255',
             'bidang'  => 'nullable|string|max:255',
             'pos'     => 'nullable|string|max:255',
@@ -156,12 +157,13 @@ class PegawaiManagementController extends Controller
         $messages = [
             'name.required'    => 'Nama lengkap pegawai wajib diisi.',
             'nip.required'     => 'NIP pegawai wajib diisi.',
+            'nip.unique'       => 'NIP ini sudah terdaftar di data pegawai lain. Silakan gunakan NIP yang berbeda.',
             'jabatan.required' => 'Jabatan pegawai wajib diisi.',
         ];
 
         $validated = $request->validate([
             'name'    => 'required|string|max:255',
-            'nip'     => 'required|string|max:50',
+            'nip'     => 'required|string|max:50|unique:users,nip,' . $id,
             'jabatan' => 'required|string|max:255',
             'bidang'  => 'nullable|string|max:255',
             'pos'     => 'nullable|string|max:255',

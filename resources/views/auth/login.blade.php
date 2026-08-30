@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRAHMA — Berkala Rawat Armada, Alat, dan Sarana DAMKAR</title>
+    <title>BRAMA — Berkala Rawat Armada, Alat, dan Sarana DAMKAR</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/jpeg" href="{{ asset('images/fav_icon.jpeg') }}">
@@ -38,8 +38,8 @@
 
             <!-- Konten Tengah: Logo BRAMA & Deskripsi -->
             <div class="hero-content">
-                <img src="{{ asset('images/brama.png') }}" alt="Logo BRAHMA" class="hero-brama-logo" onerror="this.style.display='none'">
-                <h1 class="hero-title-hidden" style="display:none;">BRAHMA</h1>
+                <img src="{{ asset('images/brama.png') }}" alt="Logo BRAMA" class="hero-brama-logo" onerror="this.style.display='none'">
+                <h1 class="hero-title-hidden" style="display:none;">BRAMA</h1>
                 <p class="hero-subtitle">Berkala Rawat Armada, Alat, dan Sarana DAMKAR</p>
             </div>
 

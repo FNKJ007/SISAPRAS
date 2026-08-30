@@ -25,7 +25,7 @@ class CacheService
     const DOMAIN_KEYS = [
         'unit'       => ['unit_kpi', 'unit_list', 'unit_types', 'admin_dashboard_stats_', 'admin_dashboard_absen_unit', 'pos_kpi', 'pos_unit_dist'],
         'pos'        => ['pos_kpi', 'pos_list', 'active_pos_objects', 'pos_unit_dist', 'admin_dashboard_stats_'],
-        'user'       => ['user_kpi', 'user_list', 'pegawai_list', 'danru_list', 'officials_pegawai', 'admin_dashboard_stats_'],
+        'user'       => ['user_kpi', 'user_list', 'pegawai_list', 'danru_list', 'officials_pegawai', 'admin_dashboard_stats_', 'pengaturan_meta'],
         'peralatan'  => ['peralatan_kpi', 'peralatan_list', 'admin_dashboard_stats_'],
         'regu'       => ['regu_list', 'regu_kpi', 'officials_regu', 'danru_list'],
         'bidang'     => ['bidang_list', 'bidang_kpi', 'pengaturan_meta'],
@@ -69,7 +69,7 @@ class CacheService
     /**
      * Remember a value in cache with the standard TTL for stats.
      */
-    public static function rememberStats(string $key, \Closure $callback, int $ttl = null)
+    public static function rememberStats(string $key, \Closure $callback, ?int $ttl = null)
     {
         try {
             $cached = Cache::get($key);
@@ -93,7 +93,7 @@ class CacheService
      * Remember a list in cache safely converting Eloquent Collections to pure arrays
      * to prevent __PHP_Incomplete_Class errors across PHP processes and CLI workers.
      */
-    public static function rememberList(string $key, \Closure $callback, int $ttl = null)
+    public static function rememberList(string $key, \Closure $callback, ?int $ttl = null)
     {
         try {
             $cached = Cache::get($key);

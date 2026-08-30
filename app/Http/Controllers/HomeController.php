@@ -37,11 +37,31 @@ class HomeController extends Controller
         $tanggalAwal  = $currentDate->copy()->startOfMonth();
         $tanggalAkhir = $currentDate->copy()->endOfMonth();
 
-        $dbPengajuan = Pengajuan::where(function ($query) use ($tanggalAwal, $tanggalAkhir) {
+        $user = auth()->user();
+        $userPos = $user ? trim((string) $user->pos) : '';
+        $isAdminSimulasi = $user && $user->isAdmin() && session('admin_viewing_as_user');
+        $isAdmin = $user && $user->isAdmin() && !$isAdminSimulasi;
+
+        $dbPengajuanQuery = Pengajuan::where(function ($query) use ($tanggalAwal, $tanggalAkhir) {
             $query->whereBetween('tanggal_keberangkatan', [$tanggalAwal->format('Y-m-d'), $tanggalAkhir->format('Y-m-d')])
                   ->orWhereBetween('tanggal_selesai_pengerjaan', [$tanggalAwal->format('Y-m-d'), $tanggalAkhir->format('Y-m-d')])
                   ->orWhereBetween('created_at', [$tanggalAwal->copy()->startOfDay(), $tanggalAkhir->copy()->endOfDay()]);
-        })->latest()->get();
+        });
+
+        // Filter Kalender: Hanya menampilkan pengajuan untuk unit yang berada di Pos akun pengguna masing-masing
+        if (!$isAdmin && !empty($userPos)) {
+            $cleanPos = trim(explode('(', $userPos)[0]);
+            $dbPengajuanQuery->where(function ($q) use ($userPos, $cleanPos) {
+                $q->where('pos', $userPos)
+                  ->orWhereRaw("LOWER(pos) LIKE ?", ['%' . strtolower($cleanPos) . '%'])
+                  ->orWhereHas('unitRelasi', function ($uQuery) use ($userPos, $cleanPos) {
+                      $uQuery->where('pos', $userPos)
+                             ->orWhereRaw("LOWER(pos) LIKE ?", ['%' . strtolower($cleanPos) . '%']);
+                  });
+            });
+        }
+
+        $dbPengajuan = $dbPengajuanQuery->latest()->get();
 
         $todayStr = now()->format('Y-m-d');
 
@@ -132,7 +152,16 @@ class HomeController extends Controller
         // 5. Hitung Kesiapan Armada (Ready vs Di Bengkel) langsung dari Database Admin Data Unit
         \App\Models\Unit::syncStatusAll();
         
-        $unitStats = \App\Models\Unit::selectRaw("
+        $unitStatsQuery = \App\Models\Unit::query();
+        if (!$isAdmin && !empty($userPos)) {
+            $cleanPos = trim(explode('(', $userPos)[0]);
+            $unitStatsQuery->where(function ($q) use ($userPos, $cleanPos) {
+                $q->where('pos', $userPos)
+                  ->orWhereRaw("LOWER(pos) LIKE ?", ['%' . strtolower($cleanPos) . '%']);
+            });
+        }
+
+        $unitStats = $unitStatsQuery->selectRaw("
             count(*) as total,
             count(case when status = 'aktif' then 1 end) as aktif,
             count(case when status = 'perbaikan' then 1 end) as perbaikan
@@ -144,13 +173,31 @@ class HomeController extends Controller
         $totalMasterArmada = $totalDbUnits;
 
         if ($totalDbUnits > 0) {
-            $unitsInBengkel = \App\Models\Unit::where('status', 'perbaikan')->orderBy('nama', 'asc')->get();
+            $unitsInBengkelQuery = \App\Models\Unit::where('status', 'perbaikan');
+            if (!$isAdmin && !empty($userPos)) {
+                $cleanPos = trim(explode('(', $userPos)[0]);
+                $unitsInBengkelQuery->where(function ($q) use ($userPos, $cleanPos) {
+                    $q->where('pos', $userPos)
+                      ->orWhereRaw("LOWER(pos) LIKE ?", ['%' . strtolower($cleanPos) . '%']);
+                });
+            }
+            $unitsInBengkel = $unitsInBengkelQuery->orderBy('nama', 'asc')->get();
             
             // Pre-fetch active approved pengajuans in 1 single query to prevent N+1 loop
-            $activePengajuans = Pengajuan::where('status', 'disetujui')
-                ->where('status_pengerjaan', '!=', 'selesai')
-                ->latest('id')
-                ->get();
+            $activePengajuansQuery = Pengajuan::where('status', 'disetujui')
+                ->where('status_pengerjaan', '!=', 'selesai');
+            if (!$isAdmin && !empty($userPos)) {
+                $cleanPos = trim(explode('(', $userPos)[0]);
+                $activePengajuansQuery->where(function ($q) use ($userPos, $cleanPos) {
+                    $q->where('pos', $userPos)
+                      ->orWhereRaw("LOWER(pos) LIKE ?", ['%' . strtolower($cleanPos) . '%'])
+                      ->orWhereHas('unitRelasi', function ($uQuery) use ($userPos, $cleanPos) {
+                          $uQuery->where('pos', $userPos)
+                                 ->orWhereRaw("LOWER(pos) LIKE ?", ['%' . strtolower($cleanPos) . '%']);
+                      });
+                });
+            }
+            $activePengajuans = $activePengajuansQuery->latest('id')->get();
 
             $listBengkel = [];
             foreach ($unitsInBengkel as $u) {

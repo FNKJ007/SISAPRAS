@@ -49,7 +49,7 @@ class UserManagementController extends Controller
 
             $validated['nip'] = trim($validated['nip']);
             if (empty($validated['email'])) {
-                $validated['email'] = null;
+                $validated['email'] = !empty($existingUser->email) ? $existingUser->email : null;
             }
             $validated['password'] = Hash::make($validated['password']);
             $validated['has_account'] = true;
