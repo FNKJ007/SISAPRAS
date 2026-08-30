@@ -48,9 +48,6 @@ trait HandlesOfficialsData
                 $defaultDanruName = $matchedRegu->danru;
             }
         }
-        if (empty($defaultDanruName) && $danruUsers->isNotEmpty()) {
-            $defaultDanruName = $danruUsers->first()->name ?? '';
-        }
 
         // 3. Tentukan Default Kabid sesuai Bidang pengguna / target bidang
         $defaultKabidName = '';

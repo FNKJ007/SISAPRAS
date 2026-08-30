@@ -249,7 +249,7 @@
                         <span class="text-[11px] text-gray-400">JPG, PNG maks. 10MB · Maksimal 3 foto</span>
                     </label>
                     <input id="foto_umum" type="file" name="foto_umum[]"
-                           accept="image/jpeg,image/png,image/webp" multiple class="hidden">
+                           accept="image/*" multiple class="hidden">
                     <p id="err_foto_umum" class="text-xs text-red-600 font-medium mt-1.5 hidden"></p>
                     <div id="fotoUmumPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
                     @error('foto_umum') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror

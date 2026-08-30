@@ -60,16 +60,22 @@ class Invoice extends Model
 
     /**
      * Hitung ulang subtotal & total_biaya dari item, lalu simpan.
+     * Potongan & Pajak dihitung berbasis persen (%).
      */
     public function recalculateTotals(): void
     {
-        $subtotal  = (float) $this->items()->sum('total_biaya');
-        $potongan  = (float) ($this->potongan ?? 0);
-        $pajak     = (float) ($this->pajak ?? 0);
-        $biayaLain = (float) ($this->biaya_lain ?? 0);
+        $subtotal        = (float) $this->items()->sum('total_biaya');
+        $potonganPersen  = (float) ($this->potongan ?? 0);
+        $potonganNominal = $subtotal * ($potonganPersen / 100);
+        $dpp             = max(0, $subtotal - $potonganNominal);
 
-        $this->subtotal = $subtotal;
-        $this->total_biaya = max(0, $subtotal - $potongan + $pajak + $biayaLain);
+        $pajakPersen     = (float) ($this->pajak ?? 0);
+        $pajakNominal    = $dpp * ($pajakPersen / 100);
+
+        $biayaLain       = (float) ($this->biaya_lain ?? 0);
+
+        $this->subtotal    = $subtotal;
+        $this->total_biaya = max(0, $dpp + $pajakNominal + $biayaLain);
         $this->save();
     }
 

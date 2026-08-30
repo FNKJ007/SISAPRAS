@@ -257,16 +257,15 @@ class HomeController extends Controller
             'list_bengkel'  => $listBengkel,
         ];
 
-        // 5b. Status Pemeriksaan Unit Hari Ini Berdasarkan Pos & Bidang Pengguna yang Login
+        // 5b. Status Pemeriksaan Unit Hari Ini Berdasarkan Pos Penempatan Pengguna
         $user = auth()->user();
         $userPos = $user ? trim((string) $user->pos) : '';
-        $userBidang = strtolower(trim((string) ($user->bidang ?? '')));
         $isAdminSimulasi = $user && $user->isAdmin() && session('admin_viewing_as_user');
-        $isSpi = str_contains($userBidang, 'informasi') || str_contains($userBidang, 'spi');
-        $showAllBidang = ($user && $user->isAdmin() && !$isAdminSimulasi) || $isSpi;
+        $isAdmin = $user && $user->isAdmin() && !$isAdminSimulasi;
 
         $today = Carbon::today();
 
+        // Ambil semua ID unit yang sudah dilakukan pengecekan hari ini (oleh siapa pun)
         $todayChecks = \App\Models\CekHarianUnit::whereDate('created_at', $today)
             ->orWhereDate('tanggal_pemeriksaan', $today)
             ->pluck('unit_id')
@@ -274,8 +273,8 @@ class HomeController extends Controller
 
         $queryPosUnits = \App\Models\Unit::query();
 
-        // 1. Filter berdasarkan Pos Penempatan Pengguna
-        if (!empty($userPos)) {
+        // Menampilkan SEMUA unit yang ada di Pos penempatan pengguna (tanpa dibatasi bidang)
+        if (!$isAdmin && !empty($userPos)) {
             $cleanPos = explode('(', $userPos)[0];
             $cleanPos = trim($cleanPos);
 
@@ -283,42 +282,6 @@ class HomeController extends Controller
                 $q->where('pos', $userPos)
                   ->orWhere('pos', 'ILIKE', "%{$cleanPos}%");
             });
-        }
-
-        // 2. Filter berdasarkan Bidang Pengguna (Pemadam, Rescue, Pencegahan)
-        if (!$showAllBidang && !empty($userBidang)) {
-            if (str_contains($userBidang, 'pemadam')) {
-                $queryPosUnits->where(function ($q) {
-                    $q->where(function ($sub) {
-                        $sub->where('kategori', 'Pemadam')
-                            ->where(function ($s2) {
-                                $s2->where('peruntukan', 'NOT LIKE', '%pencegahan%')
-                                   ->orWhereNull('peruntukan');
-                            });
-                    })
-                    ->orWhere('peruntukan', 'ILIKE', '%pemadam%')
-                    ->orWhere('nomor_lambung', 'ILIKE', 'P-%')
-                    ->orWhere('nomor_lambung', 'ILIKE', 'S-%')
-                    ->orWhere('nomor_lambung', 'ILIKE', 'MP-%');
-                })
-                ->where('nomor_lambung', 'NOT LIKE', 'PC-%')
-                ->where('peruntukan', 'NOT LIKE', '%pencegahan%')
-                ->where('peruntukan', 'NOT LIKE', '%rescue%')
-                ->where('kategori', '!=', 'Rescue')
-                ->where('kategori', '!=', 'Komando');
-            } elseif (str_contains($userBidang, 'rescue')) {
-                $queryPosUnits->where(function ($q) {
-                    $q->where('kategori', 'Rescue')
-                      ->orWhere('peruntukan', 'ILIKE', '%rescue%')
-                      ->orWhere('nomor_lambung', 'ILIKE', 'R-%');
-                });
-            } elseif (str_contains($userBidang, 'pencegahan')) {
-                $queryPosUnits->where(function ($q) {
-                    $q->where('kategori', 'Pencegahan')
-                      ->orWhere('peruntukan', 'ILIKE', '%pencegahan%')
-                      ->orWhere('nomor_lambung', 'ILIKE', 'PC-%');
-                });
-            }
         }
 
         $posUnits = $queryPosUnits->orderBy('nomor_lambung', 'asc')->get();

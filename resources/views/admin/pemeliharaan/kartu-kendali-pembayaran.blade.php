@@ -151,11 +151,11 @@
 
             {{-- Block Tanda Tangan Resmi (Dilindungi dari page-break terpotong) --}}
             <div class="ttd-box" style="margin-top:24px; display:flex; justify-content:flex-end; page-break-inside:avoid; break-inside:avoid;">
-                <div style="text-align:center; min-width:240px; font-size:11px; color:#334155;">
+                <div style="text-align:center; min-width:260px; font-size:11px; color:#334155;">
                     <div>Soreang, {{ now()->translatedFormat('d F Y') }}</div>
-                    <div style="font-weight:700; color:#0F172A; margin-top:3px; margin-bottom:50px;">Kepala Seksi Pemeliharaan</div>
-                    <div style="font-weight:700; color:#0F172A; text-decoration:underline;">( .................................................... )</div>
-                    <div style="font-size:10px; color:#64748B; margin-top:2px;">NIP. ....................................................</div>
+                    <div style="font-weight:700; color:#0F172A; margin-top:3px; margin-bottom:50px;">Kepala Seksi Pemeliharaan Sarana Dan Prasarana</div>
+                    <div style="font-weight:700; color:#0F172A; text-decoration:underline;">{{ $pejabatKasi->name ?? 'Ahmad Kuswara, S.M., M.M.' }}</div>
+                    <div style="font-size:10px; color:#64748B; margin-top:2px;">NIP. {{ $pejabatKasi->nip ?? '197209212008011001' }}</div>
                 </div>
             </div>
 

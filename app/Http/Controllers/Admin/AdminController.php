@@ -653,12 +653,18 @@ class AdminController extends Controller
             'rata_rata'     => $rataRata,
         ];
 
+        $pejabatKasi = \App\Models\User::where('jabatan', 'ILIKE', '%pemeliharaan sarana%')
+            ->orWhere('jabatan', 'ILIKE', '%seksi pemeliharaan%')
+            ->orWhere('jabatan', 'ILIKE', '%pemeliharaan%')
+            ->first();
+
         return view('admin.pemeliharaan.kartu-kendali-pembayaran', [
             'kartuKendaliRows' => $kartuKendaliRows,
             'kpi'              => $kpi,
             'tahunList'        => $tahunList,
             'tahunFilter'      => $tahunFilter,
             'searchQuery'      => $searchQuery,
+            'pejabatKasi'      => $pejabatKasi,
         ]);
     }
 
@@ -720,12 +726,18 @@ class AdminController extends Controller
             'rata_rata'     => $rataRata,
         ];
 
+        $pejabatKasi = \App\Models\User::where('jabatan', 'ILIKE', '%pemeliharaan sarana%')
+            ->orWhere('jabatan', 'ILIKE', '%seksi pemeliharaan%')
+            ->orWhere('jabatan', 'ILIKE', '%pemeliharaan%')
+            ->first();
+
         return view('admin.pemeliharaan.kartu-kendali-aktual', [
             'kartuKendaliRows' => $kartuKendaliRows,
             'kpi'              => $kpi,
             'tahunList'        => $tahunList,
             'tahunFilter'      => $tahunFilter,
             'searchQuery'      => $searchQuery,
+            'pejabatKasi'      => $pejabatKasi,
         ]);
     }
 
