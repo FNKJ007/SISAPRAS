@@ -231,13 +231,29 @@
             btn.disabled = true;
         }
 
-        const element = document.getElementById('kartu-kendali-print-area');
+        const source = document.getElementById('kartu-kendali-print-area');
         const filename = 'Kartu_Kendali_Aktual_{{ $tahunFilter }}.pdf';
+
+        // Clone ke container terisolasi di body agar layout sidebar/topbar
+        // tidak menggeser posisi elemen saat html2canvas memaksa windowWidth.
+        const clone = source.cloneNode(true);
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'fixed';
+        wrapper.style.top = '0';
+        wrapper.style.left = '0';
+        wrapper.style.zIndex = '-1';
+        wrapper.style.width = '794px';
+        wrapper.style.background = '#FFFFFF';
+        clone.style.maxWidth = '794px';
+        clone.style.margin = '0';
+        wrapper.appendChild(clone);
+        document.body.appendChild(wrapper);
+
         const opt = {
             margin:       [8, 8, 10, 8],
             filename:     filename,
             image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, logging: false, windowWidth: 794, scrollY: 0 },
+            html2canvas:  { scale: 2, useCORS: true, logging: false, windowWidth: 794, width: 794, x: 0, y: 0, scrollX: 0, scrollY: 0 },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak:    { 
                 mode: ['avoid-all', 'css', 'legacy'],
@@ -245,13 +261,15 @@
             }
         };
 
-        html2pdf().set(opt).from(element).save().then(() => {
+        html2pdf().set(opt).from(clone).save().then(() => {
+            wrapper.remove();
             if (btn) {
                 btn.innerHTML = originalContent;
                 btn.disabled = false;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
             }
         }).catch(err => {
+            wrapper.remove();
             console.error('Error creating PDF:', err);
             if (btn) {
                 btn.innerHTML = originalContent;
