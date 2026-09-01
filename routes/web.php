@@ -37,7 +37,7 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // ===== API Autocomplete Pegawai / Petugas =====
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'prevent-back-history'])->group(function () {
     Route::get('/api/pegawai/search', function (\Illuminate\Http\Request $request) {
         $q = $request->query('q', '');
         $users = \App\Models\User::where(function ($query) use ($q) {
@@ -58,7 +58,7 @@ Route::middleware(['auth'])->group(function () {
 // =====================================================================
 //  USER ROUTES — Wajib Login (middleware: auth)
 // =====================================================================
-Route::middleware(['auth', 'user'])->group(function () {
+Route::middleware(['auth', 'user', 'prevent-back-history'])->group(function () {
 
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/home/index', [HomeController::class, 'index'])->name('home.index');
@@ -150,7 +150,7 @@ Route::middleware(['auth', 'user'])->group(function () {
 // =====================================================================
 //  ADMIN PANEL — Wajib Login & Admin (middleware: auth, admin)
 // =====================================================================
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin', 'prevent-back-history'])->prefix('admin')->name('admin.')->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
