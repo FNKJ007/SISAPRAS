@@ -265,11 +265,14 @@ class HomeController extends Controller
 
         $today = Carbon::today();
 
-        // Ambil semua ID unit yang sudah dilakukan pengecekan hari ini (oleh siapa pun)
-        $todayChecks = \App\Models\CekHarianUnit::whereDate('created_at', $today)
-            ->orWhereDate('tanggal_pemeriksaan', $today)
-            ->pluck('unit_id')
-            ->toArray();
+        // Ambil data pengecekan unit hari ini beserta nama pemeriksa
+        $todayChecks = \App\Models\CekHarianUnit::where(function ($q) use ($today) {
+                $q->whereDate('created_at', $today)
+                  ->orWhereDate('tanggal_pemeriksaan', $today);
+            })
+            ->latest('id')
+            ->get()
+            ->keyBy('unit_id');
 
         $queryPosUnits = \App\Models\Unit::query();
 
@@ -287,16 +290,21 @@ class HomeController extends Controller
         $posUnits = $queryPosUnits->orderBy('nomor_lambung', 'asc')->get();
 
         $userUnitStatus = $posUnits->map(function ($u) use ($todayChecks) {
+            $cek = $todayChecks->get($u->id);
             return (object) [
-                'id'            => $u->id,
-                'nomor_lambung' => $u->nomor_lambung ?? $u->nama,
-                'plat_nomor'    => $u->plat_nomor,
-                'merk_tipe'     => $u->merk_tipe,
-                'pos'           => $u->pos,
-                'pengemudi_1'   => $u->pengemudi_1,
-                'pengemudi_2'   => $u->pengemudi_2,
-                'status_armada' => $u->status === 'perbaikan' ? 'Dalam Perbaikan' : 'Siap Tempur / Operasi',
-                'sudah_dicek'   => in_array($u->id, $todayChecks),
+                'id'                => $u->id,
+                'nomor_lambung'     => $u->nomor_lambung ?? $u->nama,
+                'plat_nomor'        => $u->plat_nomor,
+                'merk_tipe'         => $u->merk_tipe,
+                'pos'               => $u->pos,
+                'pengemudi_1'       => $u->pengemudi_1,
+                'pengemudi_2'       => $u->pengemudi_2,
+                'status_armada'     => $u->status === 'perbaikan' ? 'Dalam Perbaikan' : 'Siap Tempur / Operasi',
+                'sudah_dicek'       => $cek !== null,
+                'nama_pemeriksa'    => $cek ? $cek->nama_pemeriksa : null,
+                'jabatan_pemeriksa' => $cek ? $cek->jabatan : null,
+                'waktu_cek'         => $cek && $cek->created_at ? $cek->created_at->format('H:i') : null,
+                'cek_id'            => $cek ? $cek->id : null,
             ];
         })->sort(function ($a, $b) {
             // 1. Prioritas Utama: Belum Dicek (false/0) di atas, Sudah Dicek (true/1) di bawah
@@ -305,6 +313,55 @@ class HomeController extends Controller
             }
             // 2. Prioritas Kedua: Urutan alfabetis & angka natural berdasarkan nomor lambung
             return strnatcasecmp($a->nomor_lambung, $b->nomor_lambung);
+        })->values();
+
+        // 5c. Status Pemeriksaan Peralatan Hari Ini Berdasarkan Pos Penempatan Pengguna
+        $queryAlatChecks = \App\Models\CekHarianAlat::where(function ($q) use ($today) {
+            $q->whereDate('created_at', $today)
+              ->orWhereDate('tanggal_pemeriksaan', $today);
+        });
+
+        if (!$isAdmin && !empty($userPos)) {
+            $cleanPos = explode('(', $userPos)[0];
+            $cleanPos = trim($cleanPos);
+
+            $queryAlatChecks->where(function ($q) use ($userPos, $cleanPos) {
+                $q->where('pos', $userPos)
+                  ->orWhere('pos', 'ILIKE', "%{$cleanPos}%");
+            });
+        }
+
+        $todayAlatChecks = $queryAlatChecks->latest('id')->get();
+
+        $kategoriAlatList = [
+            'pemadam'        => ['label' => 'Alat Pemadam', 'route' => 'alat-pemadam.cek-harian-alat'],
+            'rescue'         => ['label' => 'Alat Penyelamatan (Rescue)', 'route' => 'alat-rescue.cek-harian-alat'],
+            'pencegahan'     => ['label' => 'Alat Pencegahan Kebakaran', 'route' => 'alat-pencegahan.cek-harian-alat'],
+            'command_center' => ['label' => 'Peralatan Command Center', 'route' => 'alat-cc.cek-alat-cc'],
+        ];
+
+        $userPeralatanStatus = collect($kategoriAlatList)->map(function ($cfg, $kat) use ($todayAlatChecks, $userPos) {
+            $cek = $todayAlatChecks->first(function ($item) use ($kat) {
+                return strtolower($item->kategori) === strtolower($kat);
+            });
+
+            return (object) [
+                'kategori'       => $kat,
+                'label'          => $cfg['label'],
+                'route'          => $cfg['route'],
+                'pos'            => $userPos ?: 'Semua Pos',
+                'sudah_dicek'    => $cek !== null,
+                'nama_pemeriksa' => $cek ? $cek->nama_pemeriksa : null,
+                'waktu_cek'      => $cek && $cek->created_at ? $cek->created_at->format('H:i') : null,
+                'total_baik'     => $cek ? ($cek->total_baik ?? 0) : 0,
+                'total_rusak'    => $cek ? ($cek->total_rusak ?? 0) : 0,
+                'cek_id'         => $cek ? $cek->id : null,
+            ];
+        })->sort(function ($a, $b) {
+            if ($a->sudah_dicek !== $b->sudah_dicek) {
+                return $a->sudah_dicek ? 1 : -1;
+            }
+            return strcmp($a->label, $b->label);
         })->values();
 
         // 6. Range Tahun Dinamis (Otomatis mencakup record tertua di DB s.d. 10 tahun ke depan)
@@ -328,6 +385,7 @@ class HomeController extends Controller
             'totalPengajuan',
             'summaryArmada',
             'userUnitStatus',
+            'userPeralatanStatus',
             'availableYears'
         ));
     }

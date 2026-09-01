@@ -338,9 +338,9 @@
                 </td>
             </tr>
             <tr>
-                <td class="label">Pengemudi Utama (1)</td>
+                <td class="label">Pengemudi 1</td>
                 <td class="value">{{ $unit->pengemudi_1 ?? '—' }}</td>
-                <td class="label">Pengemudi Pendamping (2)</td>
+                <td class="label">Pengemudi 2</td>
                 <td class="value">{{ $unit->pengemudi_2 ?? '—' }}</td>
             </tr>
         </table>

@@ -105,10 +105,78 @@
                             <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
                                 <span class="text-slate-500 font-medium">Cek Harian Hari Ini:</span>
                                 @if($unitSt->sudah_dicek)
-                                    <span class="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full text-[10.5px]">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                                        Sudah Dicek
+                                    <div class="flex flex-col items-end gap-0.5">
+                                        <span class="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full text-[10.5px]">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                            Sudah Dicek
+                                        </span>
+                                        @if($unitSt->nama_pemeriksa)
+                                            <span class="text-[9.5px] text-slate-500 font-semibold truncate max-w-[140px]" title="Dicek oleh {{ $unitSt->nama_pemeriksa }}{{ $unitSt->waktu_cek ? ' pukul ' . $unitSt->waktu_cek . ' WIB' : '' }}">
+                                                Oleh: {{ $unitSt->nama_pemeriksa }}{{ $unitSt->waktu_cek ? ' (' . $unitSt->waktu_cek . ')' : '' }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                @else
+                                    <span class="inline-flex items-center gap-1 font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-full text-[10.5px]">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-600"></span>
+                                        Belum Dicek
                                     </span>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
+        {{-- Status Pemeriksaan Peralatan Hari Ini Berdasarkan Pos Penempatan --}}
+        @if(!empty($userPeralatanStatus) && count($userPeralatanStatus) > 0)
+            <div class="mt-4 bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5">
+                <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+                    <h5 class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="wrench" class="w-4 h-4 text-emerald-700"></i>
+                        <span>Status Pengecekan Peralatan</span>
+                        @if(auth()->check() && auth()->user()->pos)
+                            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full">
+                                {{ auth()->user()->pos }}
+                            </span>
+                        @endif
+                    </h5>
+                    <span class="text-[11px] text-slate-500 font-medium">Monitoring kesiapan &amp; kondisi peralatan operasional pos</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                    @foreach($userPeralatanStatus as $alatSt)
+                        <div class="bg-white border rounded-xl p-3 flex flex-col justify-between gap-2 shadow-2xs {{ $alatSt->sudah_dicek ? 'border-emerald-200 bg-emerald-50/20' : 'border-red-200 bg-red-50/20' }}">
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <strong class="text-xs font-bold text-slate-900 block">{{ $alatSt->label }}</strong>
+                                    <span class="text-[10.5px] text-slate-500">{{ $alatSt->pos }}</span>
+                                </div>
+                                @if($alatSt->sudah_dicek)
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
+                                        {{ $alatSt->total_baik }} Baik{{ $alatSt->total_rusak > 0 ? ' • ' . $alatSt->total_rusak . ' Rusak' : '' }}
+                                    </span>
+                                @else
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-red-100 text-red-800">
+                                        Belum Cek
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                                <span class="text-slate-500 font-medium">Cek Hari Ini:</span>
+                                @if($alatSt->sudah_dicek)
+                                    <div class="flex flex-col items-end gap-0.5">
+                                        <span class="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full text-[10.5px]">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                            Sudah Dicek
+                                        </span>
+                                        @if($alatSt->nama_pemeriksa)
+                                            <span class="text-[9.5px] text-slate-500 font-semibold truncate max-w-[130px]" title="Dicek oleh {{ $alatSt->nama_pemeriksa }}{{ $alatSt->waktu_cek ? ' (' . $alatSt->waktu_cek . ' WIB)' : '' }}">
+                                                Oleh: {{ $alatSt->nama_pemeriksa }}{{ $alatSt->waktu_cek ? ' (' . $alatSt->waktu_cek . ')' : '' }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 @else
                                     <span class="inline-flex items-center gap-1 font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-full text-[10.5px]">
                                         <span class="w-1.5 h-1.5 rounded-full bg-red-600"></span>
@@ -282,6 +350,15 @@
                                     <p class="italic text-slate-800" x-text="event.catatan_admin"></p>
                                 </div>
                             </template>
+
+                            {{-- Tombol Cetak Dokumen Permohonan Bidang --}}
+                            <div class="pt-2 border-t border-slate-100 flex items-center justify-end">
+                                <a :href="'/pemeliharaan/pengajuan/' + event.id + '/cetak-dokumen/permohonanbidang'" target="_blank"
+                                   class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg text-xs transition-colors border border-blue-200 shadow-2xs">
+                                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                                    <span>Cetak Surat Permohonan Bidang</span>
+                                </a>
+                            </div>
 
                         </div>
                     </template>

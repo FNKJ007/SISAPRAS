@@ -394,6 +394,28 @@ class PengajuanController extends Controller
 
         return redirect()
             ->route('pemeliharaan.pengajuan')
-            ->with('success', 'Pengajuan pemeliharaan berhasil dikirim! Data telah masuk ke antrean verifikasi Admin.');
+            ->with('success', 'Pengajuan pemeliharaan berhasil dikirim! Data telah masuk ke antrean verifikasi Admin.')
+            ->with('pengajuan_id', $pengajuan->id)
+            ->with('kode_verifikasi', $pengajuan->kode_verifikasi);
+    }
+
+    /**
+     * Cetak / Unduh Dokumen Permohonan Bidang oleh User
+     */
+    public function cetakDokumen($id, $type = 'permohonanbidang')
+    {
+        $pengajuan = Pengajuan::findOrFail($id);
+
+        $typeNames = [
+            'permohonanbidang'  => 'Surat Permohonan Bidang',
+            'permohonanbengkel' => 'Surat Permohonan Bengkel',
+            'Suratpesanan'      => 'Surat Pesanan Pekerjaan Pemeliharaan',
+        ];
+
+        $title = $typeNames[$type] ?? 'Dokumen Pemeliharaan';
+        $tahunDoc = $pengajuan->created_at ? (int) $pengajuan->created_at->format('Y') : (int) date('Y');
+        $pengaturanDokumen = \App\Models\PengaturanDokumen::getAktif($tahunDoc);
+
+        return view('admin.pemeliharaan.cetak-dokumen', compact('pengajuan', 'type', 'title', 'pengaturanDokumen'));
     }
 }

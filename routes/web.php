@@ -68,6 +68,10 @@ Route::middleware(['auth', 'user'])->group(function () {
         ->name('pemeliharaan.pengajuan');
     Route::post('/pemeliharaan/pengajuan', [PengajuanController::class, 'store'])
         ->name('pemeliharaan.pengajuan.store');
+    Route::get('/pemeliharaan/pengajuan/{id}/cetak-dokumen/{type}', [PengajuanController::class, 'cetakDokumen'])
+        ->name('pemeliharaan.pengajuan.cetak-dokumen');
+    Route::get('/pemeliharaan/cetak-dokumen/{id}/{type}', [PengajuanController::class, 'cetakDokumen'])
+        ->name('pemeliharaan.cetak-dokumen');
 
     // ===== Unit Pemadam > Cek Harian Unit & Alat (Bidang Pemadam & SPI) =====
     Route::middleware(['bidang:pemadam'])->group(function () {

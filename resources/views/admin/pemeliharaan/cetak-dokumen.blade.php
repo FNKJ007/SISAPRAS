@@ -371,8 +371,14 @@
         $pengemudiNama = is_object($pengajuan) && !empty($pengajuan->nama_pemegang) ? $pengajuan->nama_pemegang : 'Riki Rohimat';
         $penempatanPos = is_object($pengajuan) && !empty($pengajuan->pos) ? $pengajuan->pos : 'MARGAASIH (TKI)';
 
+        // Data PKS, SPK, dan Bengkel Dinamis dari tabel pengaturan_dokumen (atau fallback jika belum diatur)
+        $tahunSurat = is_object($pengajuan) && isset($pengajuan->created_at) && $pengajuan->created_at instanceof \Carbon\Carbon
+            ? (int) $pengajuan->created_at->format('Y')
+            : (int) date('Y');
+
+        $docConfig = $pengaturanDokumen ?? \App\Models\PengaturanDokumen::getAktif($tahunSurat);
+
         // Pejabat SPI (Kepala Bidang SPI selaku KUASA PENGGUNA ANGGARAN)
-        // Diambil langsung dari data resmi master pegawai
         $userKabidSpi = \App\Models\User::where(function($q) {
                 $q->where('jabatan', 'LIKE', '%Kepala Bidang SPI%')
                   ->orWhere(function($q2) {
@@ -380,20 +386,17 @@
                          ->where('jabatan', 'LIKE', '%Kepala Bidang%');
                   });
             })->first();
-        $kabidNama = $userKabidSpi ? $userKabidSpi->name : 'Erpi Suwandi, S.T., M.M.';
-        $kabidNip = $userKabidSpi ? $userKabidSpi->nip : '197908202006041010';
+        $kabidNama    = $docConfig?->ttd_kpa_nama ?: ($userKabidSpi ? $userKabidSpi->name : 'Erpi Suwandi, S.T., M.M.');
+        $kabidNip     = $docConfig?->ttd_kpa_nip ?: ($userKabidSpi ? $userKabidSpi->nip : '197908202006041010');
+        $kabidJabatan = $docConfig?->ttd_kpa_jabatan ?: 'KEPALA BIDANG SPI';
+        $kabidPangkat = $docConfig?->ttd_kpa_pangkat ?: 'Pembina';
 
         // Pejabat Pemeliharaan (Kasi Pemeliharaan selaku PPTK)
         $userKasiPml = \App\Models\User::where('jabatan', 'LIKE', '%Pemeliharaan%')->first();
-        $kasiNama = $userKasiPml ? $userKasiPml->name : 'Ahmad Kuswara, S.M., M.M.';
-        $kasiNip = $userKasiPml ? $userKasiPml->nip : '197209212008011001';
-
-        // Data PKS, SPK, dan Bengkel Dinamis dari tabel pengaturan_dokumen (atau fallback jika belum diatur)
-        $tahunSurat = is_object($pengajuan) && isset($pengajuan->created_at) && $pengajuan->created_at instanceof \Carbon\Carbon
-            ? (int) $pengajuan->created_at->format('Y')
-            : (int) date('Y');
-
-        $docConfig = $pengaturanDokumen ?? \App\Models\PengaturanDokumen::getAktif($tahunSurat);
+        $kasiNama    = $docConfig?->ttd_pptk_nama ?: ($userKasiPml ? $userKasiPml->name : 'Ahmad Kuswara, S.M., M.M.');
+        $kasiNip     = $docConfig?->ttd_pptk_nip ?: ($userKasiPml ? $userKasiPml->nip : '197209212008011001');
+        $kasiJabatan = $docConfig?->ttd_pptk_jabatan ?: 'KEPALA SEKSI PEMELIHARAAN SARANA';
+        $kasiPangkat = $docConfig?->ttd_pptk_pangkat ?: 'Penata';
 
         $pksNomor        = $docConfig->nomor_pks ?? ('000.4.7.2/001/PKS-Pem/Bid.SPI/' . $tahunSurat);
         $spkNomor        = $docConfig->nomor_spk ?? ('SPK-004/I/' . $tahunSurat . '/PRA');
@@ -498,12 +501,12 @@
                 {{-- TTD Block Page 1 --}}
                 <div class="ttd-container-p1">
                     <div class="ttd-box">
-                        <div style="font-weight:700;">KEPALA BIDANG SPI</div>
+                        <div style="font-weight:700;">{{ $kabidJabatan }}</div>
                         <div style="font-weight:700;">selaku</div>
                         <div style="font-weight:700;">KUASA PENGGUNA ANGGARAN</div>
                         <div class="ttd-space"></div>
                         <div style="font-weight:700; text-decoration:underline;">{{ $kabidNama }}</div>
-                        <div style="font-weight:400;">Pembina</div>
+                        <div style="font-weight:400;">{{ $kabidPangkat }}</div>
                         <div style="font-weight:400;">NIP. {{ $kabidNip }}</div>
                     </div>
                 </div>
@@ -595,12 +598,26 @@
             @php
                 $nomorSuratBidang = '000.1.7.2/' . $kodeVerif;
                 $bidangName = is_object($pengajuan) && !empty($pengajuan->bidang) ? strtoupper($pengajuan->bidang) : 'PEMADAMAN';
+                $bidangLower = strtolower($bidangName);
+
+                $defaultKabidNama = str_contains($bidangLower, 'rescue') || str_contains($bidangLower, 'penyelamatan')
+                    ? ($docConfig?->ttd_kabid_rescue_nama ?: 'H. EDI KURNIADI, S.AP.')
+                    : (str_contains($bidangLower, 'pencegah')
+                        ? ($docConfig?->ttd_kabid_pencegahan_nama ?: 'Drs. H. MULYADI, M.Si.')
+                        : ($docConfig?->ttd_kabid_pemadam_nama ?: 'RD. ASEP BINTANG JOHAR SLAMET S.IP.MSI'));
+
+                $defaultKabidNip = str_contains($bidangLower, 'rescue') || str_contains($bidangLower, 'penyelamatan')
+                    ? ($docConfig?->ttd_kabid_rescue_nip ?: '197008121993031005')
+                    : (str_contains($bidangLower, 'pencegah')
+                        ? ($docConfig?->ttd_kabid_pencegahan_nip ?: '196811201993031005')
+                        : ($docConfig?->ttd_kabid_pemadam_nip ?: '197006062007011014'));
+
                 $menyetujuiNama = is_object($pengajuan) && !empty($pengajuan->nama_komandan_regu) ? $pengajuan->nama_komandan_regu : (is_object($pengajuan) && !empty($pengajuan->nama_kabid) ? $pengajuan->nama_kabid : 'Lukman');
                 $menyetujuiNip = is_object($pengajuan) && !empty($pengajuan->nip_komandan_regu) ? $pengajuan->nip_komandan_regu : '197606272007011002';
                 $pemohonNama = is_object($pengajuan) && !empty($pengajuan->nama_pemegang) ? $pengajuan->nama_pemegang : 'Riki Rohimat';
                 $pemohonNip = is_object($pengajuan) && !empty($pengajuan->nip_pemegang) ? $pengajuan->nip_pemegang : '198603032014121002';
-                $kabidBidangNama = is_object($pengajuan) && !empty($pengajuan->nama_kepala_bidang) ? $pengajuan->nama_kepala_bidang : 'RD. ASEP BINTANG JOHAR SLAMET S.IP.MSI';
-                $kabidBidangNip = is_object($pengajuan) && !empty($pengajuan->nip_kepala_bidang) ? $pengajuan->nip_kepala_bidang : '197006062007011014';
+                $kabidBidangNama = is_object($pengajuan) && !empty($pengajuan->nama_kepala_bidang) ? $pengajuan->nama_kepala_bidang : $defaultKabidNama;
+                $kabidBidangNip = is_object($pengajuan) && !empty($pengajuan->nip_kepala_bidang) ? $pengajuan->nip_kepala_bidang : $defaultKabidNip;
             @endphp
 
             {{-- ========================================================================= --}}
@@ -924,23 +941,23 @@
                     <div style="display: flex; justify-content: space-between; padding: 0 10px; align-items: flex-start;">
                         {{-- Left TTD: Kabid SPI --}}
                         <div style="text-align: center; width: 310px; font-size: 12px; line-height: 1.3;">
-                            <div style="font-weight:700;">KEPALA BIDANG SPI</div>
-                            <div style="font-weight:700;">DAN INFORMASI selaku</div>
+                            <div style="font-weight:700;">{{ $kabidJabatan }}</div>
+                            <div style="font-weight:700;">selaku</div>
                             <div style="font-weight:700;">KUASA PENGGUNA ANGGARAN</div>
                             <div style="height: 60px;"></div>
                             <div style="font-weight:700; text-decoration:underline;">{{ $kabidNama }}</div>
-                            <div style="font-weight:400;">Pembina</div>
+                            <div style="font-weight:400;">{{ $kabidPangkat }}</div>
                             <div style="font-weight:400;">NIP. {{ $kabidNip }}</div>
                         </div>
 
                         {{-- Right TTD: Kasi Pemeliharaan --}}
                         <div style="text-align: center; width: 310px; font-size: 12px; line-height: 1.3;">
-                            <div style="font-weight:700;">KEPALA SEKSI PEMELIHARAAN SARANA</div>
-                            <div style="font-weight:700;">SPI selaku</div>
+                            <div style="font-weight:700;">{{ $kasiJabatan }}</div>
+                            <div style="font-weight:700;">selaku</div>
                             <div style="font-weight:700;">PEJABAT PELAKSANA TEKNIS KEGIATAN</div>
                             <div style="height: 60px;"></div>
                             <div style="font-weight:700; text-decoration:underline;">{{ $kasiNama }}</div>
-                            <div style="font-weight:400;">Penata</div>
+                            <div style="font-weight:400;">{{ $kasiPangkat }}</div>
                             <div style="font-weight:400;">NIP. {{ $kasiNip }}</div>
                         </div>
                     </div>
@@ -1062,4 +1079,4 @@
         }
     </script>
 </body>
-</html>l>
+</html>

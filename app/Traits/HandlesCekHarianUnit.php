@@ -14,32 +14,28 @@ trait HandlesCekHarianUnit
     use OptimizesPdfImages;
 
     /**
-     * Generate & unduh PDF hasil Cek Harian Unit (Pemadam / Rescue).
+     * Generate & unduh PDF hasil Cek Harian Unit (Pemadam / Rescue / Pencegahan).
      */
     protected function exportCekHarianUnitPdf(int $id, string $kategori)
     {
         try {
-            $recordQuery = CekHarianUnit::where('kategori', $kategori);
-            if (!auth()->user()?->isAdmin()) {
-                $recordQuery->where('user_id', auth()->id());
+            $record = CekHarianUnit::find($id);
+            if (!$record) {
+                return redirect()->back()->with('error', 'Data pemeriksaan unit tidak ditemukan.');
             }
-            $record = $recordQuery->findOrFail($id);
 
-            // increase limits for PDF generation (ini_set jadi fallback kalau
-            // set_time_limit di-disable di php.ini, sering terjadi di Herd/hosting)
+            $kategori = !empty($record->kategori) ? strtolower($record->kategori) : $kategori;
+
             if (function_exists('set_time_limit')) {
                 @set_time_limit(300);
             }
             @ini_set('max_execution_time', 300);
             @ini_set('memory_limit', '512M');
 
-            // Semua gambar sudah di-embed sebagai data-URI lokal, jadi dompdf
-            // tidak perlu fetch remote sama sekali -> matikan supaya tidak ada
-            // request jaringan yang bikin lama/timeout.
             Pdf::setOptions(["isRemoteEnabled" => false, "isHtml5ParserEnabled" => true]);
 
             $buktiPemanasanData = $this->imageToDataUri($record->bukti_pemanasan);
-            $buktiBbmData      = $this->imageToDataUri($record->bukti_bbm);
+            $buktiBbmData       = $this->imageToDataUri($record->bukti_bbm);
             $buktiPencucianData = $this->imageToDataUri($record->bukti_pencucian ?? null);
 
             $dokTangkiData = [];
@@ -49,11 +45,12 @@ trait HandlesCekHarianUnit
                     $dokTangkiData[] = $d;
                 }
             }
-                $logoData = null;
-                $logoPath = public_path('images/logo-damkar.png');
-                if (file_exists($logoPath)) {
-                    $logoData = 'data:' . (mime_content_type($logoPath) ?: 'image/png') . ';base64,' . base64_encode(file_get_contents($logoPath));
-                }
+
+            $logoData = null;
+            $logoPath = public_path('images/logo-damkar.png');
+            if (file_exists($logoPath)) {
+                $logoData = 'data:' . (mime_content_type($logoPath) ?: 'image/png') . ';base64,' . base64_encode(file_get_contents($logoPath));
+            }
 
             $pemeriksaNip = $record->user->nip ?? \App\Models\User::where('name', $record->nama_pemeriksa)->value('nip') ?? '';
 
@@ -99,7 +96,12 @@ trait HandlesCekHarianUnit
                 'dok_tangki_data'      => $dokTangkiData,
             ])->setPaper('a4', 'portrait');
 
-            $namaFile = 'cek-harian-unit-' . $kategori . '-' . str_replace([' ', '/'], '-', $record->unit_nama) . '-' . $record->tanggal_pemeriksaan . '.pdf';
+            $tglStr = $record->tanggal_pemeriksaan instanceof \Carbon\Carbon
+                ? $record->tanggal_pemeriksaan->format('Y-m-d')
+                : substr(str_replace('/', '-', (string)$record->tanggal_pemeriksaan), 0, 10);
+
+            $unitClean = preg_replace('/[^a-zA-Z0-9_\-]/', '_', (string)($record->unit_nama ?? 'unit'));
+            $namaFile = "cek-harian-unit-{$kategori}-{$unitClean}-{$tglStr}-{$record->id}.pdf";
 
             return $pdf->download($namaFile);
         } catch (\Throwable $e) {

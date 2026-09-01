@@ -5,8 +5,23 @@
 @section('content')
 
     @if (session('success'))
-        <div class="alert-success" style="margin-bottom:16px;padding:10px 16px;background:#e6f4ea;color:#1e7e34;border-radius:5px;font-size:14px;">
-            {{ session('success') }}
+        <div class="alert-success" style="margin-bottom:20px;padding:16px 20px;background:#ECFDF5;border:1.5px solid #A7F3D0;border-radius:12px;display:flex;flex-direction:column;gap:12px;box-shadow:0 4px 12px rgba(16,185,129,0.08);">
+            <div style="display:flex;align-items:center;gap:10px;font-weight:700;color:#065F46;font-size:14px;">
+                <i data-lucide="check-circle-2" style="width:20px;height:20px;color:#059669;flex-shrink:0;"></i>
+                <span>{{ session('success') }}</span>
+            </div>
+            @if(session('pengajuan_id'))
+                <div style="padding-top:12px;border-top:1px dashed #A7F3D0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+                    <div style="font-size:12.5px;color:#047857;font-weight:500;">
+                        Surat permohonan bidang siap dicetak / diunduh sebagai arsip fisik:
+                    </div>
+                    <a href="{{ route('pemeliharaan.pengajuan.cetak-dokumen', ['id' => session('pengajuan_id'), 'type' => 'permohonanbidang']) }}" target="_blank"
+                       style="display:inline-flex;align-items:center;gap:8px;background:#1B2A6B;color:#FFFFFF;padding:9px 18px;border-radius:9px;font-size:12.5px;font-weight:700;text-decoration:none;box-shadow:0 2px 8px rgba(27,42,107,0.25);transition:all 0.2s;">
+                        <i data-lucide="file-text" style="width:16px;height:16px;"></i>
+                        <span>Cetak / Unduh Surat Permohonan Bidang</span>
+                    </a>
+                </div>
+            @endif
         </div>
     @endif
 
