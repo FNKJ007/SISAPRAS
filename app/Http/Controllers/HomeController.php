@@ -104,6 +104,7 @@ class HomeController extends Controller
                 }
 
                 return (object) [
+                    'id'                    => $item->id,
                     'tanggal_pengajuan'     => $tglTarget,
                     'unit_nama'             => strtoupper($item->nomor_lambung) . ' (' . ucfirst($item->pos) . ')',
                     'status'                => $item->status,
