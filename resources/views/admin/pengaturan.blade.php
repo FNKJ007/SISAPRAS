@@ -25,11 +25,11 @@
     @endif
 
     {{-- Sleek Compact Tab Switcher Bar --}}
-    <div class="w-full flex items-center mb-6">
-        <div class="inline-flex items-center gap-1 p-1 bg-white border border-slate-300 rounded-lg shadow-2xs">
+    <div class="w-full flex items-center mb-6 overflow-x-auto pb-1" style="max-width: 100%;">
+        <div class="inline-flex items-center gap-1 p-1 bg-white border border-slate-300 rounded-lg shadow-2xs whitespace-nowrap min-w-max">
             <button type="button" @click="activeTab = 'users'"
                     :class="activeTab === 'users' ? 'bg-[#1B2A6B] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
-                    class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-colors duration-150 whitespace-nowrap cursor-pointer border-0">
+                    class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-colors duration-150 cursor-pointer border-0">
                 <i data-lucide="users" class="w-4 h-4"></i>
                 <span>Manajemen &amp; Generate Akun</span>
                 <span :class="activeTab === 'users' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'"
@@ -40,7 +40,7 @@
 
             <button type="button" @click="activeTab = 'dokumen'"
                     :class="activeTab === 'dokumen' ? 'bg-[#1B2A6B] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
-                    class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-colors duration-150 whitespace-nowrap cursor-pointer border-0">
+                    class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-colors duration-150 cursor-pointer border-0">
                 <i data-lucide="file-text" class="w-4 h-4"></i>
                 <span>Pengaturan PKS &amp; SPK</span>
                 <span :class="activeTab === 'dokumen' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'"
@@ -51,7 +51,7 @@
 
             <button type="button" @click="activeTab = 'view_user'"
                     :class="activeTab === 'view_user' ? 'bg-[#1B2A6B] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
-                    class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-colors duration-150 whitespace-nowrap cursor-pointer border-0">
+                    class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-colors duration-150 cursor-pointer border-0">
                 <i data-lucide="eye" class="w-4 h-4"></i>
                 <span>Akses Tampilan User</span>
             </button>
@@ -339,7 +339,7 @@
     <div x-show="activeTab === 'view_user'" x-cloak>
         <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 24px; box-shadow:0 4px 12px rgba(15,23,42,0.03);">
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-                <div>
+                <div style="flex: 1 1 300px;">
                     <h3 style="font-size: 16px; font-weight: 800; color: #0F172A; margin: 0 0 6px 0; display: flex; align-items: center; gap: 8px;">
                         <i data-lucide="eye" style="width: 20px; height: 20px; color: #1B2A6B;"></i>
                         Lihat Halaman User (Mode Pratinjau Admin)
@@ -348,9 +348,9 @@
                         Beralih ke tampilan pengguna untuk melihat simulasi alur pengajuan pemeliharaan dan pengecekan harian dari sudut pandang petugas operasional.
                     </p>
                 </div>
-                <form action="{{ route('admin.switch-to-user') }}" method="POST">
+                <form action="{{ route('admin.switch-to-user') }}" method="POST" style="flex-shrink: 0; width: auto; max-width: 100%;">
                     @csrf
-                    <button type="submit" style="padding:10px 20px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(27,42,107,0.2);">
+                    <button type="submit" style="padding:10px 20px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(27,42,107,0.2); width: 100%; justify-content: center;">
                         <i data-lucide="external-link" style="width: 16px; height: 16px;"></i>
                         <span>Buka Halaman User</span>
                     </button>
@@ -364,7 +364,7 @@
         
         {{-- Header & Button --}}
         <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px;">
-            <div>
+            <div style="flex: 1 1 300px;">
                 <h1 style="font-size:22px; font-weight:800; color:#0F172A; margin:0; display:flex; align-items:center; gap:8px;">
                     <i data-lucide="file-text" style="width:24px; height:24px; color:#1B2A6B;"></i>
                     <span>Pengaturan PKS, SPK &amp; Bengkel Rekanan</span>
@@ -391,7 +391,7 @@
         </div>
 
         {{-- Cards Grid Per Tahun --}}
-        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:20px;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap:20px;">
             @forelse($pengaturanDokumenList as $doc)
                 @php
                     $isTahunIni = $doc->tahun == (int) date('Y');
