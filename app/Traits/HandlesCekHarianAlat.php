@@ -14,16 +14,17 @@ trait HandlesCekHarianAlat
     use OptimizesPdfImages;
 
     /**
-     * Generate & unduh PDF hasil Cek Harian Alat (Pemadam / Rescue).
+     * Generate & unduh PDF hasil Cek Harian Alat (Pemadam / Rescue / Command Center).
      */
     protected function exportCekHarianAlatPdf(int $id, string $kategori)
     {
         try {
-            $recordQuery = CekHarianAlat::where('kategori', $kategori);
-            if (!auth()->user()?->isAdmin()) {
-                $recordQuery->where('user_id', auth()->id());
+            $record = CekHarianAlat::find($id);
+            if (!$record) {
+                return redirect()->back()->with('error', 'Data pemeriksaan alat tidak ditemukan.');
             }
-            $record = $recordQuery->findOrFail($id);
+
+            $kategori = !empty($record->kategori) ? strtolower($record->kategori) : $kategori;
 
             if (function_exists('set_time_limit')) {
                 @set_time_limit(300);
@@ -80,7 +81,11 @@ trait HandlesCekHarianAlat
                 'foto_umum_data' => $fotoUmumData,
             ])->setPaper('a4', 'portrait');
 
-            $namaFile = 'cek-harian-alat-' . $kategori . '-' . $record->tanggal_pemeriksaan->format('Y-m-d') . '-' . $record->id . '.pdf';
+            $tglStr = $record->tanggal_pemeriksaan instanceof \Carbon\Carbon
+                ? $record->tanggal_pemeriksaan->format('Y-m-d')
+                : substr(str_replace('/', '-', (string)$record->tanggal_pemeriksaan), 0, 10);
+
+            $namaFile = "cek-harian-alat-{$kategori}-{$tglStr}-{$record->id}.pdf";
 
             return $pdf->download($namaFile);
         } catch (\Throwable $e) {

@@ -1234,20 +1234,34 @@ class AdminController extends Controller
      */
     public function storePengaturanDokumen(Request $request)
     {
-        $request->validate([
-            'tahun'               => 'required|integer|min:2020|max:2099|unique:pengaturan_dokumen,tahun',
-            'nomor_pks'           => 'required|string|max:255',
-            'nomor_spk'           => 'required|string|max:255',
-            'tanggal_pks_spk'     => 'required|date',
-            'nama_bengkel'        => 'required|string|max:255',
-            'alamat_bengkel'      => 'nullable|string|max:500',
-            'nama_pimpinan_bengkel' => 'nullable|string|max:255',
+        $validated = $request->validate([
+            'tahun'                      => 'required|integer|min:2020|max:2099|unique:pengaturan_dokumen,tahun',
+            'nomor_pks'                  => 'required|string|max:255',
+            'nomor_spk'                  => 'required|string|max:255',
+            'tanggal_pks_spk'            => 'required|date',
+            'nama_bengkel'               => 'required|string|max:255',
+            'alamat_bengkel'             => 'nullable|string|max:500',
+            'nama_pimpinan_bengkel'      => 'nullable|string|max:255',
+            'ttd_kpa_nama'               => 'nullable|string|max:255',
+            'ttd_kpa_nip'                => 'nullable|string|max:50',
+            'ttd_kpa_jabatan'            => 'nullable|string|max:255',
+            'ttd_kpa_pangkat'            => 'nullable|string|max:100',
+            'ttd_pptk_nama'              => 'nullable|string|max:255',
+            'ttd_pptk_nip'               => 'nullable|string|max:50',
+            'ttd_pptk_jabatan'           => 'nullable|string|max:255',
+            'ttd_pptk_pangkat'           => 'nullable|string|max:100',
+            'ttd_kabid_pemadam_nama'     => 'nullable|string|max:255',
+            'ttd_kabid_pemadam_nip'      => 'nullable|string|max:50',
+            'ttd_kabid_pemadam_jabatan'  => 'nullable|string|max:255',
+            'ttd_kabid_rescue_nama'      => 'nullable|string|max:255',
+            'ttd_kabid_rescue_nip'       => 'nullable|string|max:50',
+            'ttd_kabid_rescue_jabatan'   => 'nullable|string|max:255',
+            'ttd_kabid_pencegahan_nama'  => 'nullable|string|max:255',
+            'ttd_kabid_pencegahan_nip'   => 'nullable|string|max:50',
+            'ttd_kabid_pencegahan_jabatan'=> 'nullable|string|max:255',
         ]);
 
-        PengaturanDokumen::create($request->only([
-            'tahun', 'nomor_pks', 'nomor_spk', 'tanggal_pks_spk',
-            'nama_bengkel', 'alamat_bengkel', 'nama_pimpinan_bengkel',
-        ]));
+        PengaturanDokumen::create($validated);
 
         return redirect()->route('admin.pengaturan', ['tab' => 'dokumen'])
             ->with('success', 'Pengaturan dokumen tahun ' . $request->tahun . ' berhasil disimpan.');
@@ -1260,20 +1274,34 @@ class AdminController extends Controller
     {
         $doc = PengaturanDokumen::findOrFail($id);
 
-        $request->validate([
-            'tahun'               => 'required|integer|min:2020|max:2099|unique:pengaturan_dokumen,tahun,' . $id,
-            'nomor_pks'           => 'required|string|max:255',
-            'nomor_spk'           => 'required|string|max:255',
-            'tanggal_pks_spk'     => 'required|date',
-            'nama_bengkel'        => 'required|string|max:255',
-            'alamat_bengkel'      => 'nullable|string|max:500',
-            'nama_pimpinan_bengkel' => 'nullable|string|max:255',
+        $validated = $request->validate([
+            'tahun'                      => 'required|integer|min:2020|max:2099|unique:pengaturan_dokumen,tahun,' . $id,
+            'nomor_pks'                  => 'required|string|max:255',
+            'nomor_spk'                  => 'required|string|max:255',
+            'tanggal_pks_spk'            => 'required|date',
+            'nama_bengkel'               => 'required|string|max:255',
+            'alamat_bengkel'             => 'nullable|string|max:500',
+            'nama_pimpinan_bengkel'      => 'nullable|string|max:255',
+            'ttd_kpa_nama'               => 'nullable|string|max:255',
+            'ttd_kpa_nip'                => 'nullable|string|max:50',
+            'ttd_kpa_jabatan'            => 'nullable|string|max:255',
+            'ttd_kpa_pangkat'            => 'nullable|string|max:100',
+            'ttd_pptk_nama'              => 'nullable|string|max:255',
+            'ttd_pptk_nip'               => 'nullable|string|max:50',
+            'ttd_pptk_jabatan'           => 'nullable|string|max:255',
+            'ttd_pptk_pangkat'           => 'nullable|string|max:100',
+            'ttd_kabid_pemadam_nama'     => 'nullable|string|max:255',
+            'ttd_kabid_pemadam_nip'      => 'nullable|string|max:50',
+            'ttd_kabid_pemadam_jabatan'  => 'nullable|string|max:255',
+            'ttd_kabid_rescue_nama'      => 'nullable|string|max:255',
+            'ttd_kabid_rescue_nip'       => 'nullable|string|max:50',
+            'ttd_kabid_rescue_jabatan'   => 'nullable|string|max:255',
+            'ttd_kabid_pencegahan_nama'  => 'nullable|string|max:255',
+            'ttd_kabid_pencegahan_nip'   => 'nullable|string|max:50',
+            'ttd_kabid_pencegahan_jabatan'=> 'nullable|string|max:255',
         ]);
 
-        $doc->update($request->only([
-            'tahun', 'nomor_pks', 'nomor_spk', 'tanggal_pks_spk',
-            'nama_bengkel', 'alamat_bengkel', 'nama_pimpinan_bengkel',
-        ]));
+        $doc->update($validated);
 
         return redirect()->route('admin.pengaturan', ['tab' => 'dokumen'])
             ->with('success', 'Pengaturan dokumen tahun ' . $doc->tahun . ' berhasil diperbarui.');

@@ -624,11 +624,11 @@
                             </div>
                             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px;">
                                 <div>
-                                    <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase;">Pengemudi 1 (Utama)</div>
+                                    <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase;">Pengemudi 1</div>
                                     <div style="font-size:13.5px; font-weight:800; color:#0F172A; margin-top:2px;" x-text="'👤 ' + (activeUnit.pengemudi_1 && activeUnit.pengemudi_1 !== '—' ? activeUnit.pengemudi_1 : 'Belum Ditugaskan')"></div>
                                 </div>
                                 <div>
-                                    <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase;">Pengemudi 2 (Cadangan)</div>
+                                    <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase;">Pengemudi 2</div>
                                     <div style="font-size:13.5px; font-weight:800; color:#0F172A; margin-top:2px;" x-text="'👤 ' + (activeUnit.pengemudi_2 && activeUnit.pengemudi_2 !== '—' && activeUnit.pengemudi_2 !== '0' ? activeUnit.pengemudi_2 : '—')"></div>
                                 </div>
                             </div>
@@ -987,8 +987,8 @@
                                 <div style="font-size:13px; font-weight:800; color:#334155; margin-top:2px;" x-text="bukuServisData.unit.merk_tipe"></div>
                             </div>
                             <div>
-                                <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase;">Pengemudi Utama</div>
-                                <div style="font-size:13px; font-weight:800; color:#334155; margin-top:2px;" x-text="'👤 ' + (bukuServisData.unit.pengemudi_1 || '—')"></div>
+                                <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase;">Pengemudi 1 &amp; 2</div>
+                                <div style="font-size:12.5px; font-weight:800; color:#334155; margin-top:2px;" x-text="'1: ' + (bukuServisData.unit.pengemudi_1 || '—') + ' • 2: ' + (bukuServisData.unit.pengemudi_2 || '—')"></div>
                             </div>
                         </div>
 

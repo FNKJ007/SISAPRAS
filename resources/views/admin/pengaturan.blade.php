@@ -445,8 +445,16 @@
                                 <span style="color:#64748B; font-size:11.5px; display:block; margin-top:2px;">{{ $doc->alamat_bengkel ?? '-' }}</span>
                             </div>
                             <div>
-                                <span style="color:#64748B; font-size:11px; font-weight:700; text-transform:uppercase; display:block; margin-bottom:2px;">Pimpinan / TTD:</span>
+                                <span style="color:#64748B; font-size:11px; font-weight:700; text-transform:uppercase; display:block; margin-bottom:2px;">Pimpinan / TTD Bengkel:</span>
                                 <span style="font-weight:600; color:#334155;">{{ $doc->nama_pimpinan_bengkel ?? '-' }}</span>
+                            </div>
+                            <div style="border-top:1px dashed #CBD5E1; padding-top:8px;">
+                                <span style="color:#1B2A6B; font-size:11px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px;">Pejabat TTD Dokumen:</span>
+                                <div style="font-size:11.5px; color:#334155; line-height:1.4;">
+                                    <div><b>KPA (SPI):</b> {{ $doc->ttd_kpa_nama ?? 'Erpi Suwandi, S.T., M.M.' }}</div>
+                                    <div><b>PPTK (Pemeliharaan):</b> {{ $doc->ttd_pptk_nama ?? 'Ahmad Kuswara, S.M., M.M.' }}</div>
+                                    <div><b>Kabid Pemadam:</b> {{ $doc->ttd_kabid_pemadam_nama ?? 'RD. ASEP BINTANG JOHAR SLAMET S.IP.MSI' }}</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -456,7 +464,7 @@
                         <button type="button" @click="openDocEdit({{ Js::from($doc) }}, '{{ route('admin.pengaturan.dokumen.update', $doc->id) }}')"
                                 style="padding:7px 14px; background:#F8FAFC; border:1px solid #CBD5E1; color:#0F172A; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s;">
                             <i data-lucide="edit-2" style="width:13px; height:13px; color:#2563EB;"></i>
-                            <span>Edit Data</span>
+                            <span>Edit Data &amp; TTD</span>
                         </button>
                         <button type="button" @click="openDocDelete({{ Js::from($doc) }}, '{{ route('admin.pengaturan.dokumen.destroy', $doc->id) }}')"
                                 style="padding:7px 12px; background:#FEF2F2; border:1px solid #FECACA; color:#DC2626; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s;">
@@ -469,7 +477,7 @@
                 <div style="grid-column:1/-1; background:#FFFFFF; border:1px dashed #CBD5E1; border-radius:16px; padding:48px 24px; text-align:center;">
                     <i data-lucide="file-x" style="width:48px; height:48px; color:#94A3B8; margin:0 auto 12px;"></i>
                     <h3 style="font-size:16px; font-weight:700; color:#0F172A; margin:0 0 6px;">Belum Ada Pengaturan Dokumen</h3>
-                    <p style="font-size:13px; color:#64748B; margin:0 0 16px;">Tambahkan pengaturan PKS dan SPK untuk tahun anggaran saat ini.</p>
+                    <p style="font-size:13px; color:#64748B; margin:0 0 16px;">Tambahkan pengaturan PKS, SPK, dan Pejabat TTD untuk tahun anggaran saat ini.</p>
                     <button type="button" @click="docCreateModalOpen = true"
                             style="padding:9px 18px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">
                         <i data-lucide="plus" style="width:16px; height:16px;"></i>
@@ -485,11 +493,11 @@
     <div x-show="docCreateModalOpen" x-cloak class="admin-modal-overlay"
          style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
          @click.self="docCreateModalOpen = false">
-        <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:540px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
+        <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:620px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#FFFFFF; z-index:10;">
                 <div>
-                    <h3 style="font-size:16px; font-weight:800; color:#0F172A; margin:0;">Tambah Pengaturan PKS &amp; SPK</h3>
-                    <p style="font-size:12px; color:#64748B; margin:2px 0 0;">Pengaturan dokumen resmi untuk tahun anggaran baru.</p>
+                    <h3 style="font-size:16px; font-weight:800; color:#0F172A; margin:0;">Tambah Pengaturan PKS, SPK &amp; TTD Dokumen</h3>
+                    <p style="font-size:12px; color:#64748B; margin:2px 0 0;">Pengaturan dokumen resmi dan pejabat penandatangan untuk tahun anggaran baru.</p>
                 </div>
                 <button type="button" @click="docCreateModalOpen = false" style="background:none; border:none; cursor:pointer; color:#64748B;">
                     <i data-lucide="x" style="width:20px; height:20px;"></i>
@@ -539,6 +547,106 @@
                         <input type="text" name="nama_pimpinan_bengkel" value="CV. Pratama" placeholder="Contoh: CV. Pratama"
                                style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px;">
                     </div>
+
+                    {{-- SECTION CUSTOM TTD PEJABAT --}}
+                    <div style="background:#F8FAFC; border:1px solid #CBD5E1; border-radius:12px; padding:14px; margin-top:8px;">
+                        <h4 style="font-size:13px; font-weight:800; color:#1B2A6B; margin:0 0 10px 0; display:flex; align-items:center; gap:6px;">
+                            <i data-lucide="pen-tool" style="width:15px; height:15px;"></i>
+                            <span>Pengaturan Tanda Tangan (TTD) Pejabat Surat Resmi</span>
+                        </h4>
+
+                        {{-- TTD Kuasa Pengguna Anggaran (KPA / Kabid SPI) --}}
+                        <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #E2E8F0;">
+                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">1. Kuasa Pengguna Anggaran (KPA / Kabid SPI)</span>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
+                                    <input type="text" name="ttd_kpa_nama" value="Erpi Suwandi, S.T., M.M." style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
+                                    <input type="text" name="ttd_kpa_nip" value="197908202006041010" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Jabatan</label>
+                                    <input type="text" name="ttd_kpa_jabatan" value="KEPALA BIDANG SPI" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Pangkat / Golongan</label>
+                                    <input type="text" name="ttd_kpa_pangkat" value="Pembina" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- TTD PPTK (Kasi Pemeliharaan Sarana) --}}
+                        <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #E2E8F0;">
+                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">2. Pejabat Pelaksana Teknis Kegiatan (PPTK / Kasi Pemeliharaan)</span>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
+                                    <input type="text" name="ttd_pptk_nama" value="Ahmad Kuswara, S.M., M.M." style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
+                                    <input type="text" name="ttd_pptk_nip" value="197209212008011001" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Jabatan</label>
+                                    <input type="text" name="ttd_pptk_jabatan" value="KEPALA SEKSI PEMELIHARAAN SARANA" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Pangkat / Golongan</label>
+                                    <input type="text" name="ttd_pptk_pangkat" value="Penata" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- TTD Kepala Bidang Pemadaman --}}
+                        <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #E2E8F0;">
+                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">3. Mengetahui: Kepala Bidang Pemadaman</span>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
+                                    <input type="text" name="ttd_kabid_pemadam_nama" value="RD. ASEP BINTANG JOHAR SLAMET S.IP.MSI" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
+                                    <input type="text" name="ttd_kabid_pemadam_nip" value="197006062007011014" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- TTD Kepala Bidang Penyelamatan (Rescue) --}}
+                        <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #E2E8F0;">
+                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">4. Mengetahui: Kepala Bidang Penyelamatan (Rescue)</span>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
+                                    <input type="text" name="ttd_kabid_rescue_nama" value="H. EDI KURNIADI, S.AP." style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
+                                    <input type="text" name="ttd_kabid_rescue_nip" value="197008121993031005" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- TTD Kepala Bidang Pencegahan --}}
+                        <div>
+                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">5. Mengetahui: Kepala Bidang Pencegahan</span>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
+                                    <input type="text" name="ttd_kabid_pencegahan_nama" value="Drs. H. MULYADI, M.Si." style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
+                                    <input type="text" name="ttd_kabid_pencegahan_nip" value="196811201993031005" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
 
                 <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px;">
@@ -560,10 +668,10 @@
     <div x-show="docEditModalOpen" x-cloak class="admin-modal-overlay"
          style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
          @click.self="docEditModalOpen = false">
-        <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:540px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
+        <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:620px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#FFFFFF; z-index:10;">
                 <div>
-                    <h3 style="font-size:16px; font-weight:800; color:#0F172A; margin:0;">Edit Pengaturan PKS &amp; SPK</h3>
+                    <h3 style="font-size:16px; font-weight:800; color:#0F172A; margin:0;">Edit Pengaturan PKS, SPK &amp; TTD Dokumen</h3>
                     <p style="font-size:12px; color:#64748B; margin:2px 0 0;" x-text="'Tahun Anggaran: ' + (activeDoc.tahun || '')"></p>
                 </div>
                 <button type="button" @click="docEditModalOpen = false" style="background:none; border:none; cursor:pointer; color:#64748B;">
@@ -614,6 +722,106 @@
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nama Pimpinan / Tanda Tangan Bengkel</label>
                         <input type="text" name="nama_pimpinan_bengkel" x-model="activeDoc.nama_pimpinan_bengkel"
                                style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px;">
+                    </div>
+
+                    {{-- SECTION EDIT CUSTOM TTD PEJABAT --}}
+                    <div style="background:#F8FAFC; border:1px solid #CBD5E1; border-radius:12px; padding:14px; margin-top:8px;">
+                        <h4 style="font-size:13px; font-weight:800; color:#1B2A6B; margin:0 0 10px 0; display:flex; align-items:center; gap:6px;">
+                            <i data-lucide="pen-tool" style="width:15px; height:15px;"></i>
+                            <span>Pengaturan Tanda Tangan (TTD) Pejabat Surat Resmi</span>
+                        </h4>
+
+                        {{-- TTD Kuasa Pengguna Anggaran (KPA / Kabid SPI) --}}
+                        <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #E2E8F0;">
+                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">1. Kuasa Pengguna Anggaran (KPA / Kabid SPI)</span>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
+                                    <input type="text" name="ttd_kpa_nama" x-model="activeDoc.ttd_kpa_nama" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
+                                    <input type="text" name="ttd_kpa_nip" x-model="activeDoc.ttd_kpa_nip" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Jabatan</label>
+                                    <input type="text" name="ttd_kpa_jabatan" x-model="activeDoc.ttd_kpa_jabatan" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Pangkat / Golongan</label>
+                                    <input type="text" name="ttd_kpa_pangkat" x-model="activeDoc.ttd_kpa_pangkat" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- TTD PPTK (Kasi Pemeliharaan Sarana) --}}
+                        <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #E2E8F0;">
+                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">2. Pejabat Pelaksana Teknis Kegiatan (PPTK / Kasi Pemeliharaan)</span>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
+                                    <input type="text" name="ttd_pptk_nama" x-model="activeDoc.ttd_pptk_nama" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
+                                    <input type="text" name="ttd_pptk_nip" x-model="activeDoc.ttd_pptk_nip" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Jabatan</label>
+                                    <input type="text" name="ttd_pptk_jabatan" x-model="activeDoc.ttd_pptk_jabatan" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Pangkat / Golongan</label>
+                                    <input type="text" name="ttd_pptk_pangkat" x-model="activeDoc.ttd_pptk_pangkat" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- TTD Kepala Bidang Pemadaman --}}
+                        <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #E2E8F0;">
+                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">3. Mengetahui: Kepala Bidang Pemadaman</span>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
+                                    <input type="text" name="ttd_kabid_pemadam_nama" x-model="activeDoc.ttd_kabid_pemadam_nama" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
+                                    <input type="text" name="ttd_kabid_pemadam_nip" x-model="activeDoc.ttd_kabid_pemadam_nip" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- TTD Kepala Bidang Penyelamatan (Rescue) --}}
+                        <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #E2E8F0;">
+                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">4. Mengetahui: Kepala Bidang Penyelamatan (Rescue)</span>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
+                                    <input type="text" name="ttd_kabid_rescue_nama" x-model="activeDoc.ttd_kabid_rescue_nama" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
+                                    <input type="text" name="ttd_kabid_rescue_nip" x-model="activeDoc.ttd_kabid_rescue_nip" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- TTD Kepala Bidang Pencegahan --}}
+                        <div>
+                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">5. Mengetahui: Kepala Bidang Pencegahan</span>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
+                                    <input type="text" name="ttd_kabid_pencegahan_nama" x-model="activeDoc.ttd_kabid_pencegahan_nama" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
+                                    <input type="text" name="ttd_kabid_pencegahan_nip" x-model="activeDoc.ttd_kabid_pencegahan_nip" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 

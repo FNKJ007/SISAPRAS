@@ -126,7 +126,7 @@
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.data-pegawai') }}"
                                    class="{{ request()->routeIs('admin.pemeliharaan.data-pegawai*') ? 'active' : '' }}">
-                                    Data Pegawai
+                                    Data Pegawai Disdamkar
                                 </a>
                             </li>
                         </ul>
