@@ -31,8 +31,7 @@
             <div class="hero-brand">
                 <div class="hero-institutional-logos">
                     <img src="{{ asset('images/logo-kabupaten.png') }}" alt="Logo Kabupaten Bandung" class="hero-inst-logo" onerror="this.style.display='none'">
-                    <div class="hero-inst-divider"></div>
-                    <img src="{{ asset('images/logo-damkar.png') }}" alt="Logo Damkar" class="hero-inst-logo" onerror="this.style.display='none'">
+                    <span class="hero-inst-text">Dinas Pemadam Kebakaran<br>Kabupaten Bandung</span>
                 </div>
             </div>
 

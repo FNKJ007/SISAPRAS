@@ -104,7 +104,7 @@
                         <option value="" selected disabled>Pilih Unit / Kendaraan Rescue</option>
                         @foreach($unitList ?? [] as $unit)
                             <option value="{{ $unit->id }}" @selected(old('unit_id') == $unit->id)>
-                                {{ $unit->nomor_lambung ? $unit->nomor_lambung . ' — ' . $unit->plat_nomor . ($unit->pos ? ' [' . $unit->pos . ']' : '') . ($unit->merk_tipe ? ' (' . $unit->merk_tipe . ')' : '') : $unit->nama }}
+                                {{ $unit->nomor_lambung ? $unit->nomor_lambung . ' — ' . $unit->plat_nomor . ($unit->pos ? ' [' . $unit->pos . ']' : '') : $unit->nama }}
                             </option>
                         @endforeach
                     </select>
@@ -723,7 +723,7 @@
                 matchedUnits.forEach(function (u) {
                     var opt = document.createElement('option');
                     opt.value = u.id;
-                    var label = u.nomor_lambung ? (u.nomor_lambung + ' — ' + u.plat_nomor + (u.pos ? ' [' + u.pos + ']' : '') + (u.merk_tipe ? ' (' + u.merk_tipe + ')' : '')) : (u.nama || '');
+                    var label = u.nomor_lambung ? (u.nomor_lambung + ' — ' + u.plat_nomor + (u.pos ? ' [' + u.pos + ']' : '')) : (u.nama || '');
                     opt.textContent = label;
                     if (currentUnitId && String(u.id) === String(currentUnitId)) {
                         opt.selected = true;
