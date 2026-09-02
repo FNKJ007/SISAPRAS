@@ -181,8 +181,8 @@ class UnitManagementController extends Controller
         ];
 
         $validated = $request->validate([
-            'nama'             => 'required|string|max:255',
-            'kategori'         => 'required|string|max:100',
+            'nama'             => 'nullable|string|max:255',
+            'kategori'         => 'nullable|string|max:100',
             'nomor_lambung'    => 'nullable|string|max:100',
             'plat_nomor'       => 'nullable|string|max:100',
             'no_rangka_mesin'  => 'nullable|string|max:100',

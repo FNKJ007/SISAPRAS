@@ -268,36 +268,6 @@
                         </ul>
                     </div>
                 @endif
-                <div class="modal-form-grid">
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">No. Lambung <span style="color:#DC2626;">*</span></label>
-                        <input type="text" name="nomor_lambung" required value="{{ old('nomor_lambung') }}" placeholder="Contoh: P-01"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('nomor_lambung') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">TNKB (Plat Nomor) <span style="color:#DC2626;">*</span></label>
-                        <input type="text" name="plat_nomor" required value="{{ old('plat_nomor') }}" placeholder="Contoh: D 8518 V"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('plat_nomor') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nama Unit <span style="color:#DC2626;">*</span></label>
-                        <input type="text" name="nama" required value="{{ old('nama') }}" placeholder="Contoh: P-01 - HINO (4X4)"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:{{ isset($errors) && $errors->has('nama') ? '1.5px solid #DC2626' : '1px solid #CBD5E1' }}; outline:none;">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Merk / Tipe</label>
-                        <input type="text" name="merk_tipe" value="{{ old('merk_tipe') }}" placeholder="Contoh: HINO (4X4)"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">No. Rangka Mesin</label>
-                        <input type="text" name="no_rangka_mesin" value="{{ old('no_rangka_mesin') }}" placeholder="Contoh: FG8JJ1D-BGJ"
-                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
-                    </div>
-
-                    {{-- Jenis Kendaraan (Input Manual + Dropdown Riwayat + Hapus) --}}
-                    <div x-data="{ open: false, val: '{{ old('jenis_kendaraan') }}' }" style="position:relative;">
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Jenis Kendaraan</label>
                         <div style="position:relative; display:flex; align-items:center;">
                             <input type="text" name="jenis_kendaraan" x-model="val" placeholder="Ketik atau pilih jenis..."
                                    style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"

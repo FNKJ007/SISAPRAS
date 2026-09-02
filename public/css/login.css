@@ -34,7 +34,7 @@ body {
     left: -10%;
     width: 50vw;
     height: 50vw;
-    background: radial-gradient(circle, rgba(192, 32, 31, 0.25) 0%, rgba(13, 22, 58, 0) 70%);
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.25) 0%, rgba(13, 22, 58, 0) 70%);
     pointer-events: none;
     z-index: 0;
 }
@@ -63,7 +63,7 @@ body {
     border-radius: 24px;
     display: flex;
     overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(192, 32, 31, 0.15);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(37, 99, 235, 0.15);
     position: relative;
     z-index: 10;
 }
@@ -71,7 +71,7 @@ body {
 /* Kiri: Panel Hero Merah Damkar */
 .login-hero {
     flex: 1.1;
-    background: linear-gradient(135deg, #C0201F 0%, #9B1212 60%, #680B0B 100%);
+    background: linear-gradient(135deg, #1B2A6B 0%, #121E4E 100%);
     padding: 32px 36px;
     display: flex;
     flex-direction: column;
@@ -94,7 +94,7 @@ body {
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    opacity: 0.07;
+    opacity: 0.06;
     filter: grayscale(100%) brightness(200%);
     pointer-events: none;
 }
@@ -133,6 +133,15 @@ body {
     width: 1.5px;
     height: 24px;
     background: rgba(255, 255, 255, 0.4);
+}
+
+.hero-inst-text {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.35;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.2px;
 }
 
 .hero-content {
@@ -280,13 +289,13 @@ body {
 
 .input-custom:focus {
     background: #FFFFFF;
-    border-color: #C0201F;
-    box-shadow: 0 0 0 3px rgba(192, 32, 31, 0.12);
+    border-color: #2563EB;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 .input-custom:focus ~ .input-icon-left,
 .input-wrapper:focus-within .input-icon-left {
-    color: #C0201F;
+    color: #2563EB;
 }
 
 .toggle-password-btn {
@@ -310,7 +319,7 @@ body {
 .btn-login-submit {
     width: 100%;
     height: 46px;
-    background: linear-gradient(135deg, #C0201F 0%, #9B1212 100%);
+    background: linear-gradient(135deg, #1B2A6B 0%, #121E4E 100%);
     color: #FFFFFF;
     font-size: 14px;
     font-weight: 700;
@@ -318,7 +327,7 @@ body {
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    box-shadow: 0 6px 18px rgba(192, 32, 31, 0.28);
+    box-shadow: 0 6px 18px rgba(27, 42, 107, 0.28);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
@@ -329,8 +338,8 @@ body {
 
 .btn-login-submit:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 22px rgba(192, 32, 31, 0.38);
-    background: linear-gradient(135deg, #D62827 0%, #A81A19 100%);
+    box-shadow: 0 8px 22px rgba(27, 42, 107, 0.38);
+    background: linear-gradient(135deg, #2A3F8E 0%, #1B2A6B 100%);
 }
 
 .btn-login-submit:active {
@@ -380,6 +389,11 @@ body {
 
     .hero-inst-divider {
         height: 16px;
+    }
+
+    .hero-inst-text {
+        font-size: 9.5px;
+        line-height: 1.25;
     }
 
     .hero-content {
