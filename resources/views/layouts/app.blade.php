@@ -90,7 +90,7 @@
     <div class="app-wrapper">
 
         {{-- ===================== SIDEBAR USER ===================== --}}
-        <aside class="sidebar" id="sidebar">
+        <aside class="sidebar collapsed" id="sidebar">
 
             <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Buka/tutup sidebar" aria-expanded="true">
                 <i data-lucide="menu" class="icon-bars"></i>

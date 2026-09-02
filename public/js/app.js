@@ -161,10 +161,9 @@ document.addEventListener('DOMContentLoaded', function () {
         // 1. Pulihkan status terbuka dari sesi sebelumnya atau jika mengandung link aktif
         if (submenu) {
             var isStoredOpen = storedSubmenus.indexOf(targetId) !== -1;
-            var hasActiveChild = submenu.querySelector('a.active') !== null;
 
-            if (isStoredOpen || hasActiveChild) {
-                // Buka langsung tanpa animasi saat load halaman
+            if (isStoredOpen) {
+                // Buka langsung tanpa animasi saat load halaman jika disimpan dalam sesi
                 submenu.classList.add('open');
                 submenu.style.height = 'auto';
                 title.classList.add('active');

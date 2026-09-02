@@ -491,8 +491,7 @@
 
     {{-- ===================== MODAL: TAMBAH PENGATURAN DOKUMEN BARU ===================== --}}
     <div x-show="docCreateModalOpen" x-cloak class="admin-modal-overlay"
-         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
-         @click.self="docCreateModalOpen = false">
+         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);">
         <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:620px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#FFFFFF; z-index:10;">
                 <div>
@@ -666,8 +665,7 @@
 
     {{-- ===================== MODAL: EDIT PENGATURAN DOKUMEN ===================== --}}
     <div x-show="docEditModalOpen" x-cloak class="admin-modal-overlay"
-         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
-         @click.self="docEditModalOpen = false">
+         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);">
         <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:620px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#FFFFFF; z-index:10;">
                 <div>
@@ -842,8 +840,7 @@
 
     {{-- ===================== MODAL: KONFIRMASI HAPUS PENGATURAN DOKUMEN ===================== --}}
     <div x-show="docDeleteModalOpen" x-cloak class="admin-modal-overlay"
-         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
-         @click.self="docDeleteModalOpen = false">
+         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);">
         <div class="admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:440px; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             <div style="padding:24px; text-align:center;">
                 <div style="width:52px; height:52px; border-radius:50%; background:#FEE2E2; color:#DC2626; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
@@ -872,8 +869,7 @@
 
     {{-- ===================== MODAL: GENERATE / TAMBAH AKUN BARU ===================== --}}
     <div x-show="createModalOpen" x-cloak class="admin-modal-overlay admin-account-modal"
-         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
-         @click.self="createModalOpen = false">
+         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);">
         <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:540px; max-height:90vh; overflow-y:auto; overscroll-behavior:contain; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#FFFFFF; z-index:10;">
                 <div>
@@ -1081,8 +1077,7 @@
 
     {{-- ===================== MODAL: EDIT AKUN PENGGUNA ===================== --}}
     <div x-show="editModalOpen" x-cloak class="admin-modal-overlay"
-         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
-         @click.self="editModalOpen = false">
+         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);">
         <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:540px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; sticky; top:0; background:#FFFFFF; z-index:10;">
                 <div>
@@ -1225,8 +1220,7 @@
 
     {{-- ===================== MODAL: RESET PASSWORD AKUN ===================== --}}
     <div x-show="resetModalOpen" x-cloak class="admin-modal-overlay"
-         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
-         @click.self="resetModalOpen = false">
+         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);">
         <div class="admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:440px; padding:24px; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
                 <div style="width:40px; height:40px; border-radius:50%; background:#FEF3C7; color:#D97706; display:flex; align-items:center; justify-content:center;">
@@ -1272,8 +1266,7 @@
 
     {{-- ===================== MODAL: KONFIRMASI HAPUS AKUN ===================== --}}
     <div x-show="deleteModalOpen" x-cloak class="admin-modal-overlay"
-         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
-         @click.self="deleteModalOpen = false">
+         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);">
         <div class="admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:420px; padding:24px; text-align:center; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             <div style="width:48px; height:48px; border-radius:50%; background:#FEE2E2; color:#DC2626; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
                 <i data-lucide="user-x" style="width:24px; height:24px;"></i>
