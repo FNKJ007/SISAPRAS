@@ -156,8 +156,7 @@
 
     {{-- ===================== MODAL: UPDATE PROGRES ===================== --}}
     <div x-show="updateModalOpen" x-cloak class="admin-modal-overlay"
-         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
-         @click.self="updateModalOpen = false">
+         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);">
         <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between;">
                 <h3 style="font-size:15.5px; font-weight:800; color:#0F172A; margin:0;">Update Progres Pengerjaan — <span x-text="activeItem.nomor_lambung"></span></h3>

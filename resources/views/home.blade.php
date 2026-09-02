@@ -223,8 +223,7 @@
              x-transition:enter-end="opacity-100"
              x-transition:leave="transition ease-in duration-150"
              x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             @click.self="closeModal()">
+             x-transition:leave-end="opacity-0">
 
             <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] overflow-y-auto overflow-x-hidden border border-gray-100 custom-scrollbar m-auto"
                  x-transition:enter="transition ease-out duration-200"

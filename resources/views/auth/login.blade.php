@@ -133,7 +133,11 @@
             lucide.createIcons();
         }
 
-        try { localStorage.removeItem('api_open_submenus'); } catch(e) {}
+        try { 
+            sessionStorage.removeItem('API_open_submenus');
+            localStorage.removeItem('API_open_submenus');
+            localStorage.removeItem('api_open_submenus');
+        } catch(e) {}
     </script>
 
 </body>

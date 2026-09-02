@@ -244,8 +244,7 @@
 
     {{-- ===================== MODAL: TAMBAH UNIT ===================== --}}
     <div x-show="createModalOpen" x-cloak class="admin-modal-overlay"
-         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
-         @click.self="createModalOpen = false">
+         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);">
         <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:580px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#FFFFFF; z-index:10;">
                 <h3 style="font-size:15.5px; font-weight:800; color:#0F172A; margin:0;">Tambah Unit Kendaraan Baru</h3>
@@ -463,8 +462,7 @@
 
     {{-- ===================== MODAL: DETAIL & EDIT UNIT KENDARAAN ===================== --}}
     <div x-show="detailModalOpen" x-cloak class="admin-modal-overlay"
-         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
-         @click.self="detailModalOpen = false">
+         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);">
         <div class="custom-scrollbar admin-modal-dialog"
              style="background:#FFFFFF; border-radius:18px; width:100%; max-width:680px; max-height:92vh; overflow-y:auto; box-shadow:0 24px 50px -12px rgba(15,23,42,0.3); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             
@@ -878,8 +876,7 @@
 
     {{-- ===================== MODAL: KONFIRMASI HAPUS ===================== --}}
     <div x-show="deleteModalOpen" x-cloak class="admin-modal-overlay"
-         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
-         @click.self="deleteModalOpen = false">
+         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);">
         <div class="admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:420px; padding:24px; text-align:center; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             <div style="width:48px; height:48px; border-radius:50%; background:#FEE2E2; color:#DC2626; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
                 <i data-lucide="trash-2" style="width:24px; height:24px;"></i>
@@ -905,8 +902,7 @@
 
     {{-- ===================== MODAL: BUKU SERVIS DIGITAL ===================== --}}
     <div x-show="bukuServisModalOpen" x-cloak class="admin-modal-overlay"
-         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);"
-         @click.self="bukuServisModalOpen = false">
+         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);">
         <div class="custom-scrollbar admin-modal-dialog"
              style="background:#FFFFFF; border-radius:18px; width:100%; max-width:820px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 50px -12px rgba(15,23,42,0.3); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             

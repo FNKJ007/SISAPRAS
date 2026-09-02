@@ -243,7 +243,7 @@
          x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
          x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
         <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;">
-            <div @click.away="createModalOpen = false" style="background:#FFFFFF; border-radius:20px; max-width:540px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; overflow:visible;">
+            <div style="background:#FFFFFF; border-radius:20px; max-width:540px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; overflow:visible;">
                 <div style="padding:20px 24px; background:#0F172A; color:#FFFFFF; display:flex; align-items:center; justify-content:space-between; border-top-left-radius:20px; border-top-right-radius:20px;">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <div style="width:34px; height:34px; border-radius:10px; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center;">
@@ -387,7 +387,7 @@
          x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
          x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
         <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;">
-            <div @click.away="editModalOpen = false" style="background:#FFFFFF; border-radius:20px; max-width:540px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; overflow:visible;">
+            <div style="background:#FFFFFF; border-radius:20px; max-width:540px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; overflow:visible;">
                 <div style="padding:20px 24px; background:#1E3A8A; color:#FFFFFF; display:flex; align-items:center; justify-content:space-between; border-top-left-radius:20px; border-top-right-radius:20px;">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <div style="width:34px; height:34px; border-radius:10px; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center;">
@@ -526,7 +526,7 @@
          x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
          x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
         <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;">
-            <div @click.away="deleteModalOpen = false" style="background:#FFFFFF; border-radius:20px; max-width:440px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); overflow:hidden;">
+            <div style="background:#FFFFFF; border-radius:20px; max-width:440px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); overflow:hidden;">
                 <div style="padding:24px; text-align:center;">
                     <div style="width:52px; height:52px; background:#FEE2E2; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin:0 auto 16px auto;">
                         <i data-lucide="alert-triangle" style="width:26px; height:26px; color:#DC2626;"></i>
