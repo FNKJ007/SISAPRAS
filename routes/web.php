@@ -284,6 +284,10 @@ Route::middleware(['auth', 'admin', 'prevent-back-history'])->prefix('admin')->n
     Route::post('/switch-to-user', [AdminController::class, 'switchToUser'])->name('switch-to-user');
     Route::post('/switch-back-to-admin', [AdminController::class, 'switchBackToAdmin'])->name('switch-back-to-admin');
 
+    // Hapus Data Pengecekan
+    Route::delete('/pengecekan-unit/{id}', [AdminController::class, 'destroyCekHarianUnit'])->name('pengecekan-unit.destroy');
+    Route::delete('/pengecekan-alat/{id}', [AdminController::class, 'destroyCekHarianAlat'])->name('pengecekan-alat.destroy');
+
     // Redirect /admin → /admin/dashboard
     Route::redirect('/', '/admin/dashboard');
 });

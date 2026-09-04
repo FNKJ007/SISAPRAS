@@ -1319,4 +1319,26 @@ class AdminController extends Controller
         return redirect()->route('admin.pengaturan', ['tab' => 'dokumen'])
             ->with('success', 'Pengaturan dokumen tahun ' . $tahun . ' berhasil dihapus.');
     }
+
+    /**
+     * Hapus Data Pengecekan Unit
+     */
+    public function destroyCekHarianUnit($id)
+    {
+        $cekUnit = CekHarianUnit::findOrFail($id);
+        $cekUnit->delete();
+
+        return redirect()->back()->with('success', 'Data pengecekan unit berhasil dihapus.');
+    }
+
+    /**
+     * Hapus Data Pengecekan Alat
+     */
+    public function destroyCekHarianAlat($id)
+    {
+        $cekAlat = CekHarianAlat::findOrFail($id);
+        $cekAlat->delete();
+
+        return redirect()->back()->with('success', 'Data pengecekan alat berhasil dihapus.');
+    }
 }
