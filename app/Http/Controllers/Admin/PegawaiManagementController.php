@@ -135,9 +135,9 @@ class PegawaiManagementController extends Controller
             'regu'        => $validated['regu'] ?? null,
             'no_hp'       => $validated['no_hp'] ?? null,
             'email'       => $uniqueEmail,
-            'password'    => Hash::make(Str::random(32)),
+            'password'    => Hash::make('damkar123'), // Default password
             'role'        => 'user',
-            'has_account' => false,
+            'has_account' => true,
             'status'      => 'aktif',
         ]);
         CacheService::invalidate('user');
