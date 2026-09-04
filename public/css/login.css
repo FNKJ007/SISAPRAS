@@ -142,6 +142,11 @@ body {
     line-height: 1.35;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
     letter-spacing: 0.2px;
+    text-align: left;
+}
+
+.hero-inst-highlight {
+    color: #FACC15;
 }
 
 .hero-content {
@@ -376,24 +381,33 @@ body {
         top: 12px;
         left: 14px;
         right: 14px;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
     }
 
     .hero-institutional-logos {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
         padding: 0;
-        gap: 8px;
     }
 
     .hero-inst-logo {
-        height: 26px;
+        height: 20px;
+        width: auto;
     }
 
     .hero-inst-divider {
-        height: 16px;
+        height: 14px;
     }
 
     .hero-inst-text {
-        font-size: 9.5px;
+        font-size: 8px;
+        font-weight: 700;
         line-height: 1.25;
+        letter-spacing: 0.1px;
+        text-align: left;
     }
 
     .hero-content {
