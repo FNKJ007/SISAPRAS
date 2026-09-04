@@ -86,6 +86,7 @@
             {{-- ============ Regu ============ --}}
             <div class="form-group has-caret">
                 <label for="regu">Regu</label>
+                <input type="hidden" name="regu_id" id="regu_id" value="{{ old('regu_id', $currentUser->regu_id ?? '') }}">
                 <select name="regu" id="regu" required>
                     <option value="" disabled {{ !old('regu') && !($currentUser->regu ?? false) ? 'selected' : '' }}>— Pilih Regu Sesuai Pos —</option>
                     @if(!empty($currentUser->regu))
@@ -132,10 +133,42 @@
             </div>
 
             {{-- ============ Item Perbaikan ============ --}}
-            <div class="form-group">
+            <div class="form-group" x-data="{
+                itemVal: @js(old('item_perbaikan', '')),
+                toTitleCase(str) {
+                    return str.toLowerCase().replace(/(?:^|\s|\/|-)\S/g, function(a) { return a.toUpperCase(); });
+                },
+                get itemList() {
+                    if (!this.itemVal) return [];
+                    return this.itemVal.split(',').map(s => this.toTitleCase(s.trim())).filter(s => s.length > 0);
+                }
+            }">
                 <label for="item_perbaikan">Item Perbaikan</label>
-                <input type="text" name="item_perbaikan" id="item_perbaikan"
-                       value="{{ old('item_perbaikan') }}" required>
+                <input type="text"
+                       name="item_perbaikan"
+                       id="item_perbaikan"
+                       x-model="itemVal"
+                       placeholder="Contoh: Ganti Oli Mesin, Kampas Rem Depan, Aki 12V"
+                       required>
+
+                {{-- Petunjuk Singkat Pengisian --}}
+                <div style="display:flex; align-items:center; gap:6px; margin-top:4px; font-size:11.5px; color:#64748B;">
+                    <i data-lucide="info" style="width:14px; height:14px; color:#2563EB; flex-shrink:0;"></i>
+                    <span>Pisahkan dengan <strong>tanda koma (,)</strong> jika lebih dari 1 item.</span>
+                </div>
+
+                {{-- Live Badge Preview saat user mengetik lebih dari 1 item (Title Case) --}}
+                <div x-show="itemList.length > 1" x-cloak style="margin-top:6px; padding:8px 10px; background:#EFF6FF; border:1px dashed #BFDBFE; border-radius:8px;">
+                    <div style="font-size:11px; font-weight:700; color:#1E40AF; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;" x-text="'Terdeteksi ' + itemList.length + ' Item Perbaikan:'"></div>
+                    <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                        <template x-for="(item, idx) in itemList" :key="idx">
+                            <span style="display:inline-flex; align-items:center; gap:4px; background:#FFFFFF; color:#1D4ED8; border:1px solid #93C5FD; font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:6px; box-shadow:0 1px 2px rgba(0,0,0,0.05); text-transform:capitalize;">
+                                <span style="font-size:10px; opacity:0.7;" x-text="'#' + (idx + 1)"></span>
+                                <span x-text="item"></span>
+                            </span>
+                        </template>
+                    </div>
+                </div>
             </div>
 
             {{-- ============ Nama Pemegang/Penanggung Jawab Kendaraan ============ --}}
@@ -357,6 +390,8 @@
 
             const userReguDefault = @json(old('regu', $currentUser->regu ?? ''));
             const userBidangDefault = @json(old('bidang', $currentUser->bidang ?? ''));
+            const userReguIdDefault = @json(old('regu_id', $currentUser->regu_id ?? ''));
+            const reguIdInput = document.getElementById('regu_id');
 
             function normalizeKey(str) {
                 return (str || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -365,11 +400,14 @@
             // Filter opsi Regu berdasarkan Pos yang dipilih dari Master Data Regu
             function filterReguOptions(preserveSelected = true) {
                 if (!reguSelect) return;
+                const currentOpt = reguSelect.selectedIndex >= 0 ? reguSelect.options[reguSelect.selectedIndex] : null;
+                const currentOptId = currentOpt && currentOpt.dataset ? currentOpt.dataset.id : '';
                 const currentVal = reguSelect.value;
                 const selectedPosText = posSelect && posSelect.selectedIndex >= 0 ? posSelect.options[posSelect.selectedIndex].text : (posSelect ? posSelect.value : '');
                 const selectedPosKey = normalizeKey(selectedPosText);
                 const userReguKey = normalizeKey(userReguDefault);
                 const currentValKey = normalizeKey(currentVal);
+                const currentBidangText = bidangSelect && bidangSelect.selectedIndex >= 0 ? bidangSelect.options[bidangSelect.selectedIndex].text.trim().toLowerCase() : (userBidangDefault || '').toLowerCase().trim();
 
                 reguSelect.innerHTML = '';
 
@@ -385,30 +423,64 @@
                     return !selectedPosKey || rPosKey === selectedPosKey || rPosKey.includes(selectedPosKey) || selectedPosKey.includes(rPosKey);
                 });
 
-                let selectedOptValue = null;
+                let selectedOptElement = null;
 
                 if (matchingRegus.length > 0) {
                     matchingRegus.forEach(r => {
                         const opt = document.createElement('option');
                         opt.value = r.nama;
+                        opt.dataset.id = r.id || '';
+                        opt.dataset.danru = r.danru || '';
+                        opt.dataset.nipDanru = r.nip_danru || '';
+                        opt.dataset.bidang = r.bidang || '';
+                        opt.dataset.pos = r.pos || '';
+
                         let label = r.nama;
                         if (r.bidang) label += ' (' + r.bidang + ')';
                         if (r.danru) label += ' — Danru: ' + r.danru;
                         opt.textContent = label;
 
                         const rKey = normalizeKey(r.nama);
-                        // Prioritas 1: Sesuai nilai yang sudah dipilih sebelumnya jika masih valid di pos ini
-                        // Prioritas 2: Sesuai data Regu dari akun pengguna yang sedang login
-                        if (preserveSelected && currentValKey && (rKey === currentValKey || rKey.includes(currentValKey) || currentValKey.includes(rKey))) {
-                            opt.selected = true;
-                            selectedOptValue = r.nama;
-                        } else if (!selectedOptValue && userReguKey && (rKey === userReguKey || rKey.includes(userReguKey) || userReguKey.includes(rKey))) {
-                            opt.selected = true;
-                            selectedOptValue = r.nama;
+                        const rBidangKey = (r.bidang || '').toLowerCase().trim();
+                        const isBidangMatch = !currentBidangText || !rBidangKey || rBidangKey === currentBidangText || rBidangKey.includes(currentBidangText) || currentBidangText.includes(rBidangKey);
+
+                        // Prioritas 1: Sesuai opsi yang sudah dipilih sebelumnya
+                        if (preserveSelected && !selectedOptElement) {
+                            if (currentOptId && String(r.id) === String(currentOptId)) {
+                                opt.selected = true;
+                                selectedOptElement = opt;
+                            } else if (currentValKey && rKey === currentValKey && isBidangMatch) {
+                                opt.selected = true;
+                                selectedOptElement = opt;
+                            }
+                        }
+
+                        // Prioritas 2: Sesuai data profil user (regu_id spesifik, atau kombinasi Regu + Bidang)
+                        if (!selectedOptElement) {
+                            if (userReguIdDefault && String(r.id) === String(userReguIdDefault)) {
+                                opt.selected = true;
+                                selectedOptElement = opt;
+                            } else if (userReguKey && rKey === userReguKey && isBidangMatch) {
+                                opt.selected = true;
+                                selectedOptElement = opt;
+                            }
                         }
 
                         reguSelect.appendChild(opt);
                     });
+
+                    // Fallback jika belum ada yang cocok dengan bidang, cari berdasarkan nama regu saja
+                    if (!selectedOptElement && (currentValKey || userReguKey)) {
+                        const targetKey = currentValKey || userReguKey;
+                        for (let i = 0; i < reguSelect.options.length; i++) {
+                            const opt = reguSelect.options[i];
+                            if (opt.value && normalizeKey(opt.value) === targetKey) {
+                                opt.selected = true;
+                                selectedOptElement = opt;
+                                break;
+                            }
+                        }
+                    }
                 } else {
                     // Fallback opsi standar jika data belum diisi di Master Data
                     ['Regu 1', 'Regu 2', 'Regu 3', 'Regu 4'].forEach(nama => {
@@ -417,23 +489,28 @@
                         opt.textContent = nama;
                         const nKey = normalizeKey(nama);
 
-                        if (preserveSelected && currentValKey && (nKey === currentValKey || nKey.includes(currentValKey) || currentValKey.includes(nKey))) {
+                        if (preserveSelected && currentValKey && nKey === currentValKey && !selectedOptElement) {
                             opt.selected = true;
-                            selectedOptValue = nama;
-                        } else if (!selectedOptValue && userReguKey && (nKey === userReguKey || nKey.includes(userReguKey) || userReguKey.includes(nKey))) {
+                            selectedOptElement = opt;
+                        } else if (!selectedOptElement && userReguKey && nKey === userReguKey) {
                             opt.selected = true;
-                            selectedOptValue = nama;
+                            selectedOptElement = opt;
                         }
 
                         reguSelect.appendChild(opt);
                     });
                 }
 
-                if (selectedOptValue) {
-                    reguSelect.value = selectedOptValue;
+                if (selectedOptElement) {
+                    selectedOptElement.selected = true;
+                    if (reguIdInput && selectedOptElement.dataset && selectedOptElement.dataset.id) {
+                        reguIdInput.value = selectedOptElement.dataset.id;
+                    }
                 } else {
                     placeholderOpt.selected = true;
-                    reguSelect.value = '';
+                    if (reguIdInput) {
+                        reguIdInput.value = '';
+                    }
                 }
 
                 updateOfficialsFromProfile();
@@ -442,12 +519,32 @@
             // Auto-match pejabat (Danru & Kabid) berdasarkan Pos/Regu/Bidang dari Master Data
             function updateOfficialsFromProfile() {
                 const selectedPos = posSelect && posSelect.selectedIndex >= 0 ? normalizeKey(posSelect.options[posSelect.selectedIndex].text) : '';
-                const selectedRegu = reguSelect && reguSelect.selectedIndex >= 0 ? normalizeKey(reguSelect.options[reguSelect.selectedIndex].value || reguSelect.options[reguSelect.selectedIndex].text) : '';
+                const selectedOpt = reguSelect && reguSelect.selectedIndex >= 0 ? reguSelect.options[reguSelect.selectedIndex] : null;
+                const selectedRegu = selectedOpt ? normalizeKey(selectedOpt.value) : '';
                 const selectedBidang = bidangSelect && bidangSelect.selectedIndex >= 0 ? bidangSelect.options[bidangSelect.selectedIndex].text.trim().toLowerCase() : '';
 
-                // 1. Cari Danru dari Master Data Regu sesuai Pos & Regu yang dipilih
-                if (allReguList.length > 0 && selectedPos && selectedRegu) {
+                // 1. Cari Danru langsung dari dataset opsi regu yang dipilih (100% presisi)
+                if (selectedOpt && selectedOpt.dataset && selectedOpt.dataset.danru) {
+                    if (window.danruComp) {
+                        window.danruComp.searchQuery = selectedOpt.dataset.danru;
+                    }
+                    if (nipDanruInput) {
+                        nipDanruInput.value = selectedOpt.dataset.nipDanru || '';
+                    }
+                    if (reguIdInput && selectedOpt.dataset.id) {
+                        reguIdInput.value = selectedOpt.dataset.id;
+                    }
+                } else if (allReguList.length > 0 && selectedPos && selectedRegu) {
+                    // Fallback cari di allReguList dengan Pos, Regu, dan Bidang
                     let matchedRegu = allReguList.find(r => {
+                        const rPos = normalizeKey(r.pos || '');
+                        const rRegu = normalizeKey(r.nama || '');
+                        const rBidang = (r.bidang || '').toLowerCase().trim();
+                        const posMatch = (rPos && selectedPos && (rPos.includes(selectedPos) || selectedPos.includes(rPos)));
+                        const reguMatch = (rRegu && selectedRegu && rRegu === selectedRegu);
+                        const bidangMatch = !selectedBidang || !rBidang || rBidang === selectedBidang || rBidang.includes(selectedBidang) || selectedBidang.includes(rBidang);
+                        return posMatch && reguMatch && bidangMatch;
+                    }) || allReguList.find(r => {
                         const rPos = normalizeKey(r.pos || '');
                         const rRegu = normalizeKey(r.nama || '');
                         return (rPos && selectedPos && (rPos.includes(selectedPos) || selectedPos.includes(rPos))) &&
@@ -460,6 +557,9 @@
                         }
                         if (nipDanruInput) {
                             nipDanruInput.value = matchedRegu.nip_danru || '';
+                        }
+                        if (reguIdInput && matchedRegu.id) {
+                            reguIdInput.value = matchedRegu.id;
                         }
                     }
                 } else if (!selectedRegu) {
@@ -626,6 +726,7 @@
             // Event: Saat Bidang diganti -> update Kabid & filter regu
             if (bidangSelect) {
                 bidangSelect.addEventListener('change', function () {
+                    filterReguOptions(true);
                     updateOfficialsFromProfile();
                 });
             }

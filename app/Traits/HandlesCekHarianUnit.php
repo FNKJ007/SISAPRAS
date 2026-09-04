@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Models\CekHarianUnit;
 use App\Models\CekHarianAlat;
+use App\Models\Pengajuan;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -324,6 +325,45 @@ trait HandlesCekHarianUnit
             ->paginate(10, ['*'], 'alat_page')
             ->withQueryString();
 
-        return compact('cekUnitList', 'cekAlatList', 'tab', 'searchQuery', 'tanggal');
+        // ===== Hasil Riwayat Pengajuan Pemeliharaan =====
+        $pengajuanQuery = Pengajuan::where(function ($q) {
+            $q->where('user_id', auth()->id());
+            if (auth()->user() && auth()->user()->nip) {
+                $cleanNip = preg_replace('/\s+/', '', auth()->user()->nip);
+                $q->orWhereRaw("REPLACE(nip_pemegang, ' ', '') = ?", [$cleanNip]);
+            }
+        })->where(function ($q) use ($kategori) {
+            $q->where('bidang', 'ILIKE', "%{$kategori}%");
+            if ($kategori === 'pemadam') {
+                $q->orWhereNull('bidang');
+            }
+        });
+
+        if (!empty($searchQuery)) {
+            $pengajuanQuery->where(function ($q) use ($searchQuery) {
+                $q->where('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemegang', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_komandan_regu', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_kepala_bidang', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nomor_lambung', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('jenis_kendaraan', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('item_perbaikan', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('kode_verifikasi', 'ILIKE', "%{$searchQuery}%");
+            });
+        }
+
+        if (!empty($tanggal)) {
+            $pengajuanQuery->where(function ($q) use ($tanggal) {
+                $q->whereDate('created_at', $tanggal)
+                  ->orWhereDate('tanggal_keberangkatan', $tanggal);
+            });
+        }
+
+        $pengajuanList = $pengajuanQuery->with('items')
+            ->latest('id')
+            ->paginate(10, ['*'], 'pengajuan_page')
+            ->withQueryString();
+
+        return compact('cekUnitList', 'cekAlatList', 'pengajuanList', 'tab', 'searchQuery', 'tanggal');
     }
 }

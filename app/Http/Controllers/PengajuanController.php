@@ -177,16 +177,45 @@ class PengajuanController extends Controller
             $nomorLambungList[$u['nomor_lambung']] = $u['label'];
         }
 
-        // Cari Danru dari Master Data Regu sesuai Pos & Regu user
+        // Cari Danru dari Master Data Regu sesuai Pos, Regu, dan Bidang user
         $defaultDanru = null;
-        if ($currentUser && $currentUser->pos && $currentUser->regu) {
-            $userPosClean = strtolower(preg_replace('/[^a-z0-9]/', '', $currentUser->pos));
-            $userReguClean = strtolower(preg_replace('/[^a-z0-9]/', '', $currentUser->regu));
-            $matchedRegu = $allReguList->first(function ($r) use ($userPosClean, $userReguClean) {
-                $rPosClean = strtolower(preg_replace('/[^a-z0-9]/', '', $r->pos ?? ''));
-                $rReguClean = strtolower(preg_replace('/[^a-z0-9]/', '', $r->nama ?? ''));
-                return (str_contains($rPosClean, $userPosClean) || str_contains($userPosClean, $rPosClean)) && $rReguClean === $userReguClean;
-            });
+        if ($currentUser) {
+            $matchedRegu = null;
+
+            // 1. Prioritas utama: jika user sudah memiliki relasi regu_id yang spesifik
+            if (!empty($currentUser->regu_id)) {
+                $matchedRegu = $allReguList->firstWhere('id', $currentUser->regu_id);
+            }
+
+            // 2. Prioritas kedua: cocokkan Pos, Regu, dan Bidang pengguna
+            if (!$matchedRegu && $currentUser->pos && $currentUser->regu) {
+                $userPosClean = strtolower(preg_replace('/[^a-z0-9]/', '', $currentUser->pos));
+                $userReguClean = strtolower(preg_replace('/[^a-z0-9]/', '', $currentUser->regu));
+                $userBidangClean = strtolower(trim($currentUser->bidang ?? ''));
+
+                $matchedRegu = $allReguList->first(function ($r) use ($userPosClean, $userReguClean, $userBidangClean) {
+                    $rPosClean = strtolower(preg_replace('/[^a-z0-9]/', '', $r->pos ?? ''));
+                    $rReguClean = strtolower(preg_replace('/[^a-z0-9]/', '', $r->nama ?? ''));
+                    $rBidangClean = strtolower(trim($r->bidang ?? ''));
+
+                    $posMatch = (str_contains($rPosClean, $userPosClean) || str_contains($userPosClean, $rPosClean));
+                    $reguMatch = ($rReguClean === $userReguClean);
+                    $bidangMatch = !empty($userBidangClean) && !empty($rBidangClean) &&
+                        (str_contains($userBidangClean, $rBidangClean) || str_contains($rBidangClean, $userBidangClean));
+
+                    return $posMatch && $reguMatch && $bidangMatch;
+                });
+
+                // 3. Fallback: Cocokkan Pos & Regu tanpa Bidang jika tidak ditemukan yang spesifik bidangnya
+                if (!$matchedRegu) {
+                    $matchedRegu = $allReguList->first(function ($r) use ($userPosClean, $userReguClean) {
+                        $rPosClean = strtolower(preg_replace('/[^a-z0-9]/', '', $r->pos ?? ''));
+                        $rReguClean = strtolower(preg_replace('/[^a-z0-9]/', '', $r->nama ?? ''));
+                        return (str_contains($rPosClean, $userPosClean) || str_contains($userPosClean, $rPosClean)) && $rReguClean === $userReguClean;
+                    });
+                }
+            }
+
             if ($matchedRegu && $matchedRegu->danru) {
                 $defaultDanru = (object)[
                     'name' => $matchedRegu->danru,
@@ -364,9 +393,41 @@ class PengajuanController extends Controller
             $validated['regu'] = ucwords($cleanR);
         }
 
+        // Resolusi regu_id jika tersedia
+        if ($request->filled('regu_id')) {
+            $validated['regu_id'] = $request->input('regu_id');
+        } elseif (!empty($validated['pos']) && !empty($validated['regu'])) {
+            $pClean = strtolower(preg_replace('/[^a-z0-9]/', '', $validated['pos']));
+            $rClean = strtolower(preg_replace('/[^a-z0-9]/', '', $validated['regu']));
+            $bClean = strtolower(trim($validated['bidang'] ?? ''));
+            $matchR = \App\Models\Regu::all()->first(function ($r) use ($pClean, $rClean, $bClean) {
+                $rp = strtolower(preg_replace('/[^a-z0-9]/', '', $r->pos ?? ''));
+                $rn = strtolower(preg_replace('/[^a-z0-9]/', '', $r->nama ?? ''));
+                $rb = strtolower(trim($r->bidang ?? ''));
+                return ($rp && (str_contains($rp, $pClean) || str_contains($pClean, $rp))) &&
+                       ($rn === $rClean) &&
+                       (!empty($bClean) && !empty($rb) && (str_contains($bClean, $rb) || str_contains($rb, $bClean)));
+            });
+            if ($matchR) {
+                $validated['regu_id'] = $matchR->id;
+            }
+        }
+
         // Title Case Nama
-        $validated['nama_pemegang'] = ucwords(strtolower(trim($validated['nama_pemegang'])));
-        $validated['nama_komandan_regu'] = ucwords(strtolower(trim($validated['nama_komandan_regu'])));
+        if (str_contains($validated['nama_pemegang'], ',')) {
+            $pemegangParts = explode(',', $validated['nama_pemegang']);
+            $pemegangName = ucwords(strtolower(trim($pemegangParts[0])));
+            $pemegangGelar = implode(',', array_slice($pemegangParts, 1));
+            $validated['nama_pemegang'] = $pemegangName . ',' . $pemegangGelar;
+        } else {
+            $validated['nama_pemegang'] = ucwords(strtolower(trim($validated['nama_pemegang'])));
+        }
+
+        $danru = ucwords(strtolower(trim($validated['nama_komandan_regu'])));
+        $validated['nama_komandan_regu'] = preg_replace_callback('/\((.*?)\)/', function ($m) {
+            return '(' . strtoupper($m[1]) . ')';
+        }, $danru);
+
         $parts = explode(',', $validated['nama_kepala_bidang']);
         $name = ucwords(strtolower(trim($parts[0])));
         if (count($parts) > 1) {
@@ -383,6 +444,38 @@ class PengajuanController extends Controller
             }, $rawItems);
             $cleanItems = array_values(array_filter($cleanItems));
             $validated['item_perbaikan'] = implode(', ', $cleanItems);
+        }
+
+        // Cari dan hubungkan kabid_user_id (User Pegawai)
+        if (!empty($validated['nip_kepala_bidang'])) {
+            $cleanKabidNip = preg_replace('/\s+/', '', trim($validated['nip_kepala_bidang']));
+            $kabidUser = \App\Models\User::whereRaw("REPLACE(nip, ' ', '') = ?", [$cleanKabidNip])->first();
+            if ($kabidUser) {
+                $validated['kabid_user_id'] = $kabidUser->id;
+            }
+        }
+        if (empty($validated['kabid_user_id']) && !empty($validated['nama_kepala_bidang'])) {
+            $cleanKabidName = strtolower(trim(explode(',', $validated['nama_kepala_bidang'])[0]));
+            $kabidUser = \App\Models\User::whereRaw("LOWER(name) LIKE ?", ["%{$cleanKabidName}%"])->first();
+            if ($kabidUser) {
+                $validated['kabid_user_id'] = $kabidUser->id;
+            }
+        }
+
+        // Cari dan hubungkan danru_user_id (User Pegawai)
+        if (!empty($validated['nip_komandan_regu'])) {
+            $cleanDanruNip = preg_replace('/\s+/', '', trim($validated['nip_komandan_regu']));
+            $danruUser = \App\Models\User::whereRaw("REPLACE(nip, ' ', '') = ?", [$cleanDanruNip])->first();
+            if ($danruUser) {
+                $validated['danru_user_id'] = $danruUser->id;
+            }
+        }
+        if (empty($validated['danru_user_id']) && !empty($validated['nama_komandan_regu'])) {
+            $cleanDanruName = strtolower(trim(preg_replace('/\s*\([^)]*\)/', '', $validated['nama_komandan_regu'])));
+            $danruUser = \App\Models\User::whereRaw("LOWER(name) LIKE ?", ["%{$cleanDanruName}%"])->first();
+            if ($danruUser) {
+                $validated['danru_user_id'] = $danruUser->id;
+            }
         }
 
         $validated['user_id'] = auth()->id();
