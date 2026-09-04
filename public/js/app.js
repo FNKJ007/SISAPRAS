@@ -6,9 +6,21 @@ document.addEventListener('DOMContentLoaded', function () {
     var sidebarBackdrop   = document.getElementById('sidebarBackdrop'); // overlay gelap (khusus mobile)
 
     var MOBILE_BREAKPOINT = '(max-width: 768px)';
+    var SIDEBAR_STATE_KEY = 'BRAMA_sidebar_state';
 
     function isMobile() {
         return window.matchMedia(MOBILE_BREAKPOINT).matches;
+    }
+
+    // Initialize sidebar state on desktop
+    if (!isMobile() && sidebar) {
+        var storedSidebarState = sessionStorage.getItem(SIDEBAR_STATE_KEY);
+        if (storedSidebarState === 'open') {
+            sidebar.classList.remove('collapsed');
+        } else {
+            // Default on first load / login is collapsed
+            sidebar.classList.add('collapsed');
+        }
     }
 
     function openMobileSidebar() {
@@ -31,7 +43,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 openMobileSidebar();
             }
         } else {
-            if (sidebar) sidebar.classList.toggle('collapsed');
+            if (sidebar) {
+                sidebar.classList.toggle('collapsed');
+                sessionStorage.setItem(SIDEBAR_STATE_KEY, sidebar.classList.contains('collapsed') ? 'collapsed' : 'open');
+            }
         }
     }
 
@@ -175,6 +190,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // JIKA SIDEBAR DALAM KEADAAN TERTUTUP (COLLAPSED), OTOMATIS BUKA SIDEBAR!
             if (sidebar && sidebar.classList.contains('collapsed')) {
                 sidebar.classList.remove('collapsed');
+                if (!isMobile()) sessionStorage.setItem(SIDEBAR_STATE_KEY, 'open');
             }
 
             // Jika item ini memiliki submenu, lakukan toggle buka/tutup submenu
@@ -208,6 +224,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var inactivityTimer;
 
     function performAutoLogout() {
+        sessionStorage.removeItem(SIDEBAR_STATE_KEY);
         var logoutForm = document.querySelector('form[action*="logout"]');
         if (logoutForm) {
             logoutForm.submit();
@@ -228,5 +245,15 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     resetInactivityTimer();
+
+    // =========================================================================
+    //  CLEAR SIDEBAR STATE ON LOGOUT
+    // =========================================================================
+    var logoutForms = document.querySelectorAll('form[action*="logout"]');
+    logoutForms.forEach(function(form) {
+        form.addEventListener('submit', function() {
+            sessionStorage.removeItem(SIDEBAR_STATE_KEY);
+        });
+    });
 
 });
