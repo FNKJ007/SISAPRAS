@@ -158,11 +158,21 @@
                                         @endif
                                     </td>
                                     <td style="padding:14px 18px; text-align:center; white-space:nowrap;">
-                                        <button type="button" @click="openUnitModal({{ json_encode($item) }})"
-                                                style="padding:6px 14px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
-                                            <i data-lucide="eye" style="width:14px; height:14px;"></i>
-                                            <span>Detail</span>
-                                        </button>
+                                        <div style="display:flex; align-items:center; justify-content:center; gap:6px;">
+                                            <button type="button" @click="openUnitModal({{ json_encode($item) }})"
+                                                    style="padding:6px 14px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                                                <i data-lucide="eye" style="width:14px; height:14px;"></i>
+                                                <span>Detail</span>
+                                            </button>
+                                            <form action="{{ route('admin.pengecekan-unit.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data pengecekan unit ini?');" style="margin:0;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" style="padding:6px 14px; background:#DC2626; color:#FFFFFF; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                                                    <i data-lucide="trash-2" style="width:14px; height:14px;"></i>
+                                                    <span>Hapus</span>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -246,11 +256,21 @@
                                         @endif
                                     </td>
                                     <td style="padding:14px 18px; text-align:center; white-space:nowrap;">
-                                        <button type="button" @click="openAlatModal({{ json_encode($item) }})"
-                                                style="padding:6px 14px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
-                                            <i data-lucide="eye" style="width:14px; height:14px;"></i>
-                                            <span>Detail</span>
-                                        </button>
+                                        <div style="display:flex; align-items:center; justify-content:center; gap:6px;">
+                                            <button type="button" @click="openAlatModal({{ json_encode($item) }})"
+                                                    style="padding:6px 14px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                                                <i data-lucide="eye" style="width:14px; height:14px;"></i>
+                                                <span>Detail</span>
+                                            </button>
+                                            <form action="{{ route('admin.pengecekan-alat.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data pengecekan alat ini?');" style="margin:0;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" style="padding:6px 14px; background:#DC2626; color:#FFFFFF; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                                                    <i data-lucide="trash-2" style="width:14px; height:14px;"></i>
+                                                    <span>Hapus</span>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
