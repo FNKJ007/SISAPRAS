@@ -280,7 +280,7 @@
                 </div>
 
                 {{-- === Tombol Bawah Sidebar (Hanya 1 Tombol: Kembali ke Admin ATAU Logout) === --}}
-                <div class="menu-group" style="margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--sidebar-border);">
+                <div class="menu-group" style="margin-top: auto; padding-top: 15px; border-top: 1px solid var(--sidebar-border);">
                     @if(auth()->check() && auth()->user()->isAdmin() && session('admin_viewing_as_user'))
                         <form action="{{ route('admin.switch-back-to-admin') }}" method="POST">
                             @csrf

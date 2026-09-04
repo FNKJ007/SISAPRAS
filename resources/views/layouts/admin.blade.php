@@ -291,7 +291,7 @@
                 </div>
 
                 {{-- === Logout (Bawah Sidebar) === --}}
-                <div class="menu-group" style="margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--sidebar-border);">
+                <div class="menu-group" style="margin-top: auto; padding-top: 15px; border-top: 1px solid var(--sidebar-border);">
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button type="submit" class="menu-title" style="width: 100%; border: none; background: none; color: #fff; cursor: pointer; text-decoration: none;">
