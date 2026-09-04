@@ -1,11 +1,12 @@
 @extends('layouts.app')
-@section('title', 'Riwayat Pengecekan — Rescue')
+@section('title', 'Riwayat Pengecekan dan Pengajuan — Rescue')
 
 @section('content')
 <div class="max-w-7xl mx-auto p-3.5 sm:p-6" x-data="{
     activeTab: '{{ $tab ?? 'unit' }}',
     selectedUnit: null,
     selectedAlat: null,
+    selectedPengajuan: null,
     openUnitModal(item) {
         this.selectedUnit = item;
         this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
@@ -14,31 +15,47 @@
         this.selectedAlat = item;
         this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
     },
+    openPengajuanModal(item) {
+        this.selectedPengajuan = item;
+        this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+    },
     closeModals() {
         this.selectedUnit = null;
         this.selectedAlat = null;
+        this.selectedPengajuan = null;
     }
-}" x-effect="document.body.classList.toggle('modal-open', selectedUnit !== null || selectedAlat !== null)" x-init="$watch('activeTab', () => $nextTick(() => { if (window.lucide) lucide.createIcons(); }))">
+}" x-effect="document.body.classList.toggle('modal-open', selectedUnit !== null || selectedAlat !== null || selectedPengajuan !== null)" x-init="$watch('activeTab', () => $nextTick(() => { if (window.lucide) lucide.createIcons(); }))">
 
     {{-- Header Page --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-5">
-        <div>
-            <h1 class="text-lg sm:text-2xl font-extrabold text-blue-950 flex items-center gap-2">
-                <i data-lucide="history" class="w-5 h-5 sm:w-6 sm:h-6 text-amber-600 flex-shrink-0"></i>
-                <span>Riwayat Pengecekan Rescue</span>
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3.5 mb-5">
+        <div class="space-y-1">
+            <h1 class="text-xl sm:text-2xl font-black text-blue-950 flex items-center gap-2.5 tracking-tight">
+                <span class="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 shadow-2xs">
+                    <i data-lucide="history" class="w-5 h-5"></i>
+                </span>
+                <span>Riwayat Pengecekan dan Pengajuan Rescue</span>
             </h1>
-            <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Daftar rekapan hasil pemeriksaan harian unit armada dan peralatan rescue.</p>
+            <p class="text-xs sm:text-sm text-gray-500 max-w-2xl leading-relaxed">
+                Daftar rekapan hasil pemeriksaan harian unit armada, peralatan, serta pengajuan pemeliharaan rescue.
+            </p>
         </div>
-        <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+        
+        {{-- Action Buttons (Neat and Responsive) --}}
+        <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-2.5 flex-shrink-0 pt-1 lg:pt-0">
             <a href="{{ route('unit-rescue.cek-harian-unit-rescue') }}"
-               class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shadow-xs text-center">
-                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
-                <span>Cek Unit Baru</span>
+               class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs hover:shadow-sm whitespace-nowrap cursor-pointer">
+                <i data-lucide="truck" class="w-4 h-4"></i>
+                <span>Cek Unit</span>
             </a>
             <a href="{{ route('alat-rescue.cek-harian-alat') }}"
-               class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-blue-900 hover:bg-blue-950 text-white text-xs font-bold transition shadow-xs text-center">
-                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
-                <span>Cek Alat Baru</span>
+               class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-blue-900 hover:bg-blue-950 active:bg-blue-950 text-white rounded-xl text-xs font-bold transition-all shadow-xs hover:shadow-sm whitespace-nowrap cursor-pointer">
+                <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                <span>Cek Alat</span>
+            </a>
+            <a href="{{ route('pemeliharaan.pengajuan') }}"
+               class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs hover:shadow-sm whitespace-nowrap cursor-pointer">
+                <i data-lucide="file-plus-2" class="w-4 h-4"></i>
+                <span>Pengajuan Baru</span>
             </a>
         </div>
     </div>
@@ -77,27 +94,38 @@
     </div>
 
     {{-- Tab Switcher --}}
-    <div class="w-full sm:w-auto mb-4">
-        <div class="grid grid-cols-2 sm:inline-flex items-center gap-1 p-1 bg-white border border-gray-200 rounded-lg shadow-2xs w-full sm:w-auto">
+    <div class="mb-4">
+        <div class="bg-gray-100/90 p-1 rounded-xl border border-gray-200 inline-flex flex-nowrap overflow-x-auto no-scrollbar max-w-full gap-1 shadow-2xs">
             <button type="button" @click="activeTab = 'unit'"
-                    :class="activeTab === 'unit' ? 'bg-amber-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'"
-                    class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-md transition whitespace-nowrap cursor-pointer">
+                    :class="activeTab === 'unit' ? 'bg-white text-amber-600 shadow-xs font-extrabold border border-gray-200/80' : 'text-gray-600 hover:text-gray-900 hover:bg-white/60 font-bold'"
+                    class="inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2 text-xs rounded-lg transition-all whitespace-nowrap flex-shrink-0 cursor-pointer">
                 <i data-lucide="truck" class="w-3.5 h-3.5"></i>
                 <span>Unit Kendaraan</span>
-                <span :class="activeTab === 'unit' ? 'bg-white/25 text-white' : 'bg-gray-200 text-gray-700'"
-                      class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold ml-0.5">
+                <span :class="activeTab === 'unit' ? 'bg-amber-100 text-amber-700' : 'bg-gray-200 text-gray-700'"
+                      class="px-2 py-0.5 rounded-full text-[10px] font-extrabold transition">
                     {{ $cekUnitList->total() }}
                 </span>
             </button>
 
             <button type="button" @click="activeTab = 'alat'"
-                    :class="activeTab === 'alat' ? 'bg-amber-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'"
-                    class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-md transition whitespace-nowrap cursor-pointer">
+                    :class="activeTab === 'alat' ? 'bg-white text-amber-600 shadow-xs font-extrabold border border-gray-200/80' : 'text-gray-600 hover:text-gray-900 hover:bg-white/60 font-bold'"
+                    class="inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2 text-xs rounded-lg transition-all whitespace-nowrap flex-shrink-0 cursor-pointer">
                 <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
-                <span>Peralatan Rescue</span>
-                <span :class="activeTab === 'alat' ? 'bg-white/25 text-white' : 'bg-gray-200 text-gray-700'"
-                      class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold ml-0.5">
+                <span>Peralatan<span class="hidden sm:inline"> Rescue</span></span>
+                <span :class="activeTab === 'alat' ? 'bg-amber-100 text-amber-700' : 'bg-gray-200 text-gray-700'"
+                      class="px-2 py-0.5 rounded-full text-[10px] font-extrabold transition">
                     {{ $cekAlatList->total() }}
+                </span>
+            </button>
+
+            <button type="button" @click="activeTab = 'pengajuan'"
+                    :class="activeTab === 'pengajuan' ? 'bg-white text-amber-600 shadow-xs font-extrabold border border-gray-200/80' : 'text-gray-600 hover:text-gray-900 hover:bg-white/60 font-bold'"
+                    class="inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2 text-xs rounded-lg transition-all whitespace-nowrap flex-shrink-0 cursor-pointer">
+                <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i>
+                <span>Pengajuan</span>
+                <span :class="activeTab === 'pengajuan' ? 'bg-amber-100 text-amber-700' : 'bg-gray-200 text-gray-700'"
+                      class="px-2 py-0.5 rounded-full text-[10px] font-extrabold transition">
+                    {{ $pengajuanList->total() }}
                 </span>
             </button>
         </div>
@@ -433,6 +461,207 @@
         </div>
     </div>
 
+    {{-- ===================== TAB 3: PENGAJUAN PEMELIHARAAN ===================== --}}
+    <div x-show="activeTab === 'pengajuan'" x-cloak>
+        <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+            @if($pengajuanList->isEmpty())
+                <div class="p-10 sm:p-12 text-center">
+                    <div class="w-12 h-12 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center mx-auto mb-3 text-gray-400">
+                        <i data-lucide="inbox" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-gray-800">Belum Ada Riwayat Pengajuan Pemeliharaan</h3>
+                    <p class="text-xs text-gray-500 mt-1">Data surat permohonan pemeliharaan atau perbaikan rescue yang diajukan akan tercatat di sini.</p>
+                    <a href="{{ route('pemeliharaan.pengajuan') }}"
+                       class="inline-flex items-center gap-1.5 px-3.5 py-2 mt-4 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shadow-xs">
+                        <i data-lucide="file-plus" class="w-4 h-4"></i>
+                        <span>Buat Pengajuan Baru</span>
+                    </a>
+                </div>
+            @else
+                {{-- DESKTOP & TABLET TABLE VIEW (Hidden on Mobile) --}}
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50/80 border-b border-gray-200 text-gray-600 font-bold uppercase tracking-wider text-[11px]">
+                                <th class="py-3 px-3.5 text-center w-12">No</th>
+                                <th class="py-3 px-3.5">Tanggal / Kode</th>
+                                <th class="py-3 px-3.5">Unit Kendaraan</th>
+                                <th class="py-3 px-3.5">Pos &amp; Regu</th>
+                                <th class="py-3 px-3.5">Pemegang / Danru</th>
+                                <th class="py-3 px-3.5">Item Perbaikan</th>
+                                <th class="py-3 px-3.5 text-center">Status</th>
+                                <th class="py-3 px-3.5 text-center w-40">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @foreach($pengajuanList as $index => $item)
+                            <tr class="hover:bg-amber-50/20 transition">
+                                <td class="py-3 px-3.5 text-center text-gray-500 font-medium">
+                                    {{ $pengajuanList->firstItem() + $index }}
+                                </td>
+                                <td class="py-3 px-3.5 whitespace-nowrap">
+                                    <span class="font-bold text-gray-900 block">
+                                        {{ $item->created_at ? $item->created_at->translatedFormat('d M Y') : '-' }}
+                                    </span>
+                                    <span class="text-[10px] text-gray-400 font-mono">
+                                        {{ $item->kode_verifikasi }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3.5">
+                                    <span class="font-bold text-blue-950 block">{{ $item->nomor_lambung ?: '-' }}</span>
+                                    <span class="text-[10px] text-gray-500 font-medium">{{ $item->jenis_kendaraan ?: 'Unit Kendaraan' }}</span>
+                                </td>
+                                <td class="py-3 px-3.5 whitespace-nowrap">
+                                    <span class="font-bold text-gray-800 block">{{ $item->pos ?: '-' }}</span>
+                                    <span class="text-[10px] text-gray-500">{{ $item->regu ?: 'Regu 1' }}</span>
+                                </td>
+                                <td class="py-3 px-3.5">
+                                    <span class="font-bold text-gray-900 block">{{ $item->nama_pemegang }}</span>
+                                    <span class="text-[10px] text-gray-500 block">Danru: {{ $item->nama_komandan_regu ?: '-' }}</span>
+                                </td>
+                                <td class="py-3 px-3.5 max-w-[200px]">
+                                    @php
+                                        $itemList = $item->verified_item_list;
+                                    @endphp
+                                    @if(count($itemList) > 0)
+                                        <div class="flex flex-wrap gap-1">
+                                            @foreach(array_slice($itemList, 0, 2) as $it)
+                                                <span class="inline-block px-2 py-0.5 bg-gray-100 border border-gray-200 text-gray-700 rounded text-[10px] font-medium truncate max-w-[120px]">
+                                                    {{ $it }}
+                                                </span>
+                                            @endforeach
+                                            @if(count($itemList) > 2)
+                                                <span class="inline-block px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded text-[10px] font-bold">
+                                                    +{{ count($itemList) - 2 }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <span class="text-gray-400 italic text-[11px]">-</span>
+                                    @endif
+                                </td>
+                                <td class="py-3 px-3.5 text-center whitespace-nowrap">
+                                    @if($item->status === 'disetujui')
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                            <i data-lucide="check-circle" class="w-3 h-3"></i>
+                                            <span>Disetujui</span>
+                                        </span>
+                                        @if($item->status_pengerjaan === 'selesai')
+                                            <span class="block text-[9.5px] text-emerald-700 font-semibold mt-0.5">Selesai Servis</span>
+                                        @elseif(!empty($item->tanggal_keberangkatan))
+                                            <span class="block text-[9.5px] text-orange-600 font-semibold mt-0.5">Di Bengkel</span>
+                                        @endif
+                                    @elseif($item->status === 'ditolak')
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-red-100 text-red-800 border border-red-200">
+                                            <i data-lucide="x-circle" class="w-3 h-3"></i>
+                                            <span>Ditolak</span>
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                            <i data-lucide="clock" class="w-3 h-3"></i>
+                                            <span>Menunggu</span>
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="py-3 px-3.5 text-center whitespace-nowrap">
+                                    <div class="inline-flex items-center gap-1.5">
+                                        <a href="{{ route('pemeliharaan.pengajuan.cetak-dokumen', ['id' => $item->id, 'type' => 'permohonanbidang']) }}"
+                                           target="_blank"
+                                           title="Cetak Surat Permohonan Bidang"
+                                           class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[11px] font-bold transition shadow-2xs">
+                                            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                                            <span>Surat</span>
+                                        </a>
+                                        <button type="button" @click="openPengajuanModal({{ json_encode($item) }})"
+                                                title="Lihat Rincian Pengajuan"
+                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-[11px] font-bold transition border border-gray-200 cursor-pointer">
+                                            <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                            <span>Detail</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                {{-- MOBILE CARD VIEW (Optimized for Phones) --}}
+                <div class="block md:hidden divide-y divide-gray-100">
+                    @foreach($pengajuanList as $item)
+                    <div class="p-3.5 space-y-2.5">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <span class="text-[10px] font-mono text-gray-400 block">{{ $item->kode_verifikasi }}</span>
+                                <h3 class="font-extrabold text-xs text-blue-950 leading-snug">{{ $item->nomor_lambung ?: '-' }}</h3>
+                                <span class="text-[10px] text-gray-500 font-medium">{{ $item->jenis_kendaraan ?: 'Unit Kendaraan' }}</span>
+                            </div>
+                            <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                                @if($item->status === 'disetujui')
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                        Disetujui ✓
+                                    </span>
+                                @elseif($item->status === 'ditolak')
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800 border border-red-200">
+                                        Ditolak ✕
+                                    </span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                        Menunggu ⏳
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                            <div>
+                                <span class="text-[10px] font-semibold text-gray-400 block uppercase">Tanggal</span>
+                                <span class="font-bold text-gray-800 text-[11px] block">{{ $item->created_at ? $item->created_at->translatedFormat('d M Y') : '-' }}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-semibold text-gray-400 block uppercase">Pos &amp; Regu</span>
+                                <span class="font-bold text-gray-800 text-[11px] block truncate">{{ $item->pos ?: '-' }} ({{ $item->regu ?: 'Regu 1' }})</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-semibold text-gray-400 block uppercase">Pemegang</span>
+                                <span class="font-medium text-gray-800 text-[11px] block truncate">{{ $item->nama_pemegang }}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-semibold text-gray-400 block uppercase">Danru</span>
+                                <span class="font-medium text-gray-800 text-[11px] block truncate">{{ $item->nama_komandan_regu ?: '-' }}</span>
+                            </div>
+                        </div>
+
+                        <div class="text-xs">
+                            <span class="text-[10px] font-semibold text-gray-400 block uppercase mb-1">Item Perbaikan</span>
+                            <p class="text-[11px] text-gray-700 font-medium line-clamp-2">{{ $item->item_perbaikan ?: '-' }}</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <a href="{{ route('pemeliharaan.pengajuan.cetak-dokumen', ['id' => $item->id, 'type' => 'permohonanbidang']) }}"
+                               target="_blank"
+                               class="inline-flex items-center justify-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-xs text-center">
+                                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                                <span>Surat Bidang</span>
+                            </a>
+                            <button type="button" @click="openPengajuanModal({{ json_encode($item) }})"
+                                    class="inline-flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition border border-gray-200 text-center cursor-pointer">
+                                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                <span>Detail</span>
+                            </button>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+
+                {{-- Pagination --}}
+                <div class="p-3 sm:p-3.5 border-t border-gray-100 bg-gray-50/50">
+                    {{ $pengajuanList->links('vendor.pagination.custom') }}
+                </div>
+            @endif
+        </div>
+    </div>
+
     {{-- ===================== MODAL DETAIL UNIT ===================== --}}
     <div x-show="selectedUnit !== null" x-cloak
          class="fixed inset-0 z-50 overflow-hidden bg-black/50 flex items-center justify-center p-3 sm:p-4">
@@ -568,6 +797,140 @@
                            class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-xs text-center">
                             <i data-lucide="download" class="w-4 h-4"></i>
                             <span>Unduh PDF</span>
+                        </a>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    {{-- ===================== MODAL DETAIL PENGAJUAN ===================== --}}
+    <div x-show="selectedPengajuan !== null" x-cloak
+         class="fixed inset-0 z-50 overflow-hidden bg-black/50 flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl relative max-h-[90vh] flex flex-col overflow-hidden">
+            <button type="button" @click="closeModals()"
+                    class="absolute top-3.5 right-3.5 text-gray-400 hover:text-gray-600 p-1 cursor-pointer z-10">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <template x-if="selectedPengajuan">
+                <div class="flex flex-col h-full min-h-0">
+                    {{-- HEADER (tidak scroll) --}}
+                    <div class="flex-shrink-0 p-4 sm:p-6 border-b border-gray-200">
+                        <div class="flex items-center justify-between pr-6 mb-1">
+                            <span class="text-[11px] font-mono font-bold text-gray-400" x-text="selectedPengajuan.kode_verifikasi || '-'"></span>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold"
+                                  :class="{
+                                      'bg-emerald-100 text-emerald-800 border border-emerald-200': selectedPengajuan.status === 'disetujui',
+                                      'bg-red-100 text-red-800 border border-red-200': selectedPengajuan.status === 'ditolak',
+                                      'bg-amber-100 text-amber-800 border border-amber-200': selectedPengajuan.status !== 'disetujui' && selectedPengajuan.status !== 'ditolak'
+                                  }"
+                                  x-text="selectedPengajuan.status === 'disetujui' ? 'Disetujui' : (selectedPengajuan.status === 'ditolak' ? 'Ditolak' : 'Menunggu Verifikasi')">
+                            </span>
+                        </div>
+                        <h3 class="text-base sm:text-lg font-extrabold text-blue-950 mb-1" x-text="'Pengajuan Pemeliharaan: ' + (selectedPengajuan.nomor_lambung || 'Unit')"></h3>
+                        <p class="text-xs text-gray-500 mb-3.5" x-text="'Pos: ' + (selectedPengajuan.pos || '-') + ' (' + (selectedPengajuan.regu || 'Regu 1') + ') | Bidang: ' + (selectedPengajuan.bidang || '-')"></p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs bg-gray-50 p-3 sm:p-3.5 rounded-xl border border-gray-200">
+                            <div><strong class="text-gray-500">Pemegang Unit:</strong> <span class="font-bold text-gray-900" x-text="selectedPengajuan.nama_pemegang"></span></div>
+                            <div><strong class="text-gray-500">NIP Pemegang:</strong> <span class="text-gray-800" x-text="selectedPengajuan.nip_pemegang || '-'"></span></div>
+                            <div><strong class="text-gray-500">Komandan Regu:</strong> <span class="text-gray-800" x-text="selectedPengajuan.nama_komandan_regu || '-'"></span></div>
+                            <div><strong class="text-gray-500">Kepala Bidang:</strong> <span class="text-gray-800" x-text="selectedPengajuan.nama_kepala_bidang || '-'"></span></div>
+                            <div><strong class="text-gray-500">Jenis Kendaraan:</strong> <span class="font-bold text-gray-900" x-text="selectedPengajuan.jenis_kendaraan || '-'"></span></div>
+                            <div><strong class="text-gray-500">Tanggal Pengajuan:</strong> <span class="font-bold text-gray-900" x-text="selectedPengajuan.created_at ? new Date(selectedPengajuan.created_at).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'}) : '-'"></span></div>
+                        </div>
+                    </div>
+
+                    {{-- MIDDLE (scrollable) --}}
+                    <div class="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4">
+                        {{-- Status Pengerjaan Bengkel --}}
+                        <div x-show="selectedPengajuan.status === 'disetujui'"
+                             class="p-3 bg-amber-50/70 border border-amber-200 rounded-xl text-xs space-y-1">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-amber-950 flex items-center gap-1.5">
+                                    <i data-lucide="wrench" class="w-3.5 h-3.5 text-amber-600"></i>
+                                    Status Pengerjaan Bengkel
+                                </span>
+                                <span class="font-extrabold text-[10px] px-2 py-0.5 rounded-full"
+                                      :class="{
+                                          'bg-emerald-100 text-emerald-800': selectedPengajuan.status_pengerjaan === 'selesai',
+                                          'bg-orange-100 text-orange-800': selectedPengajuan.status_pengerjaan === 'proses' || (selectedPengajuan.tanggal_keberangkatan && selectedPengajuan.status_pengerjaan !== 'selesai'),
+                                          'bg-gray-100 text-gray-700': !selectedPengajuan.status_pengerjaan || selectedPengajuan.status_pengerjaan === 'belum_mulai'
+                                      }"
+                                      x-text="selectedPengajuan.status_pengerjaan === 'selesai' ? 'Selesai Pengerjaan' : (selectedPengajuan.status_pengerjaan === 'proses' || selectedPengajuan.tanggal_keberangkatan ? 'Sedang Dikerjakan' : 'Menunggu Pengerjaan')">
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-[11px] text-gray-600 pt-1">
+                                <div x-show="selectedPengajuan.tanggal_keberangkatan">
+                                    <span>Tgl Masuk Bengkel:</span>
+                                    <strong class="text-gray-900 block" x-text="selectedPengajuan.tanggal_keberangkatan"></strong>
+                                </div>
+                                <div x-show="selectedPengajuan.tanggal_selesai_pengerjaan">
+                                    <span>Tgl Selesai:</span>
+                                    <strong class="text-gray-900 block" x-text="selectedPengajuan.tanggal_selesai_pengerjaan"></strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Item Perbaikan --}}
+                        <div>
+                            <h4 class="font-bold text-xs uppercase tracking-wider text-gray-700 mb-2">Rincian Item Perbaikan</h4>
+                            
+                            {{-- Jika ada verifikasi per item dari admin --}}
+                            <template x-if="selectedPengajuan.item_verifikasis && Object.keys(selectedPengajuan.item_verifikasis).length > 0">
+                                <div class="space-y-1.5 border border-gray-200 rounded-xl p-3 bg-white">
+                                    <template x-for="(st, nm) in selectedPengajuan.item_verifikasis" :key="nm">
+                                        <div class="flex items-center justify-between text-xs py-1.5 border-b border-gray-100 last:border-b-0 gap-2">
+                                            <span class="font-medium text-gray-800" x-text="nm"></span>
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"
+                                                  :class="st === 'disetujui' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'"
+                                                  x-text="st === 'disetujui' ? 'Disetujui ✓' : 'Ditolak ✕'">
+                                            </span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+
+                            {{-- Jika belum ada verifikasi per item, tampilkan dari verified_item_list atau string item_perbaikan --}}
+                            <template x-if="!selectedPengajuan.item_verifikasis || Object.keys(selectedPengajuan.item_verifikasis).length === 0">
+                                <div class="space-y-1.5 border border-gray-200 rounded-xl p-3 bg-white">
+                                    <template x-if="selectedPengajuan.verified_item_list && selectedPengajuan.verified_item_list.length > 0">
+                                        <div>
+                                            <template x-for="(it, idx) in selectedPengajuan.verified_item_list" :key="idx">
+                                                <div class="flex items-center justify-between text-xs py-1.5 border-b border-gray-100 last:border-b-0 gap-2">
+                                                    <span class="font-medium text-gray-800" x-text="it"></span>
+                                                    <span class="text-[10px] text-gray-400 italic">Menunggu Verifikasi</span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <template x-if="!selectedPengajuan.verified_item_list || selectedPengajuan.verified_item_list.length === 0">
+                                        <p class="text-xs text-gray-700 font-medium" x-text="selectedPengajuan.item_perbaikan || '-'"></p>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+
+                        {{-- Catatan Admin --}}
+                        <div x-show="selectedPengajuan.catatan_admin">
+                            <h4 class="font-bold text-xs uppercase tracking-wider text-gray-700 mb-1.5">Catatan Verifikasi Admin</h4>
+                            <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-700 italic"
+                                 x-text="selectedPengajuan.catatan_admin">
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- FOOTER (tidak scroll) --}}
+                    <div class="flex-shrink-0 flex flex-col-reverse sm:flex-row justify-end gap-2 p-4 sm:p-6 border-t border-gray-200">
+                        <button type="button" @click="closeModals()"
+                                class="w-full sm:w-auto px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition cursor-pointer text-center">
+                            Tutup
+                        </button>
+                        <a :href="'/pemeliharaan/pengajuan/' + selectedPengajuan.id + '/cetak-dokumen/permohonanbidang'"
+                           target="_blank"
+                           class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-xs text-center">
+                            <i data-lucide="printer" class="w-4 h-4"></i>
+                            <span>Cetak Surat Permohonan Bidang</span>
                         </a>
                     </div>
                 </div>

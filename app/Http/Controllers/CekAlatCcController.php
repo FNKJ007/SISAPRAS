@@ -73,7 +73,7 @@ class CekAlatCcController extends Controller
      */
     public function riwayat(Request $request)
     {
-        $tab         = 'alat';
+        $tab         = $request->query('tab', 'alat');
         $searchQuery = $request->query('search', '');
         $tanggal     = $request->query('tanggal', '');
 
@@ -101,6 +101,37 @@ class CekAlatCcController extends Controller
             ->paginate(10, ['*'], 'alat_page')
             ->withQueryString();
 
-        return view('auth.alat-cc.riwayat', compact('cekAlatList', 'tab', 'searchQuery', 'tanggal'));
+        // Riwayat Pengajuan User
+        $user = auth()->user();
+        $pengajuanQuery = \App\Models\Pengajuan::with('items')
+            ->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+                if (!empty($user->nip)) {
+                    $q->orWhere('nip_pemegang', $user->nip);
+                }
+                if (!empty($user->name)) {
+                    $q->orWhere('nama_pemegang', 'ILIKE', $user->name);
+                }
+            });
+
+        if (!empty($searchQuery)) {
+            $pengajuanQuery->where(function ($q) use ($searchQuery) {
+                $q->where('nomor_lambung', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('jenis_kendaraan', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('item_perbaikan', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('status', 'ILIKE', "%{$searchQuery}%");
+            });
+        }
+
+        if (!empty($tanggal)) {
+            $pengajuanQuery->whereDate('created_at', $tanggal);
+        }
+
+        $pengajuanList = $pengajuanQuery->latest('id')
+            ->paginate(10, ['*'], 'pengajuan_page')
+            ->withQueryString();
+
+        return view('auth.alat-cc.riwayat', compact('cekAlatList', 'pengajuanList', 'tab', 'searchQuery', 'tanggal'));
     }
 }

@@ -7,6 +7,7 @@ use App\Models\CekHarianAlat;
 use App\Models\CekHarianUnit;
 use App\Models\Pengajuan;
 use App\Models\PengaturanDokumen;
+use App\Models\User;
 use App\Services\CacheService;
 use Illuminate\Http\Request;
 
@@ -477,8 +478,9 @@ class AdminController extends Controller
 
         $title = $typeNames[$type] ?? 'Dokumen Pemeliharaan';
 
-        // Ambil pengaturan dokumen (PKS/SPK/Bengkel) dari database
-        $pengaturanDokumen = PengaturanDokumen::getAktif((int) date('Y'));
+        // Ambil pengaturan dokumen (PKS/SPK/Bengkel) dari database berdasarkan tahun dokumen
+        $tahunDoc = (int) ($pengajuan->created_at ? $pengajuan->created_at->format('Y') : date('Y'));
+        $pengaturanDokumen = PengaturanDokumen::getAktif($tahunDoc);
 
         return view('admin.pemeliharaan.cetak-dokumen', compact('pengajuan', 'type', 'title', 'pengaturanDokumen'));
     }
@@ -1192,6 +1194,9 @@ class AdminController extends Controller
         // Data pengaturan dokumen (PKS/SPK/Bengkel) per tahun
         $pengaturanDokumenList = PengaturanDokumen::orderBy('tahun', 'desc')->get();
 
+        // Data pejabat TTD aktif saat ini (KPA, PPTK, Kabid) dari Data Pegawai
+        $pejabatTtdPreview = User::getPejabatTtd();
+
         return view('admin.pengaturan', compact(
             'userList',
             'kpi',
@@ -1207,7 +1212,8 @@ class AdminController extends Controller
             'existingBidangList',
             'existingReguList',
             'existingJabatanList',
-            'pengaturanDokumenList'
+            'pengaturanDokumenList',
+            'pejabatTtdPreview'
         ));
     }
 
@@ -1242,23 +1248,6 @@ class AdminController extends Controller
             'nama_bengkel'               => 'required|string|max:255',
             'alamat_bengkel'             => 'nullable|string|max:500',
             'nama_pimpinan_bengkel'      => 'nullable|string|max:255',
-            'ttd_kpa_nama'               => 'nullable|string|max:255',
-            'ttd_kpa_nip'                => 'nullable|string|max:50',
-            'ttd_kpa_jabatan'            => 'nullable|string|max:255',
-            'ttd_kpa_pangkat'            => 'nullable|string|max:100',
-            'ttd_pptk_nama'              => 'nullable|string|max:255',
-            'ttd_pptk_nip'               => 'nullable|string|max:50',
-            'ttd_pptk_jabatan'           => 'nullable|string|max:255',
-            'ttd_pptk_pangkat'           => 'nullable|string|max:100',
-            'ttd_kabid_pemadam_nama'     => 'nullable|string|max:255',
-            'ttd_kabid_pemadam_nip'      => 'nullable|string|max:50',
-            'ttd_kabid_pemadam_jabatan'  => 'nullable|string|max:255',
-            'ttd_kabid_rescue_nama'      => 'nullable|string|max:255',
-            'ttd_kabid_rescue_nip'       => 'nullable|string|max:50',
-            'ttd_kabid_rescue_jabatan'   => 'nullable|string|max:255',
-            'ttd_kabid_pencegahan_nama'  => 'nullable|string|max:255',
-            'ttd_kabid_pencegahan_nip'   => 'nullable|string|max:50',
-            'ttd_kabid_pencegahan_jabatan'=> 'nullable|string|max:255',
         ]);
 
         PengaturanDokumen::create($validated);
@@ -1282,23 +1271,6 @@ class AdminController extends Controller
             'nama_bengkel'               => 'required|string|max:255',
             'alamat_bengkel'             => 'nullable|string|max:500',
             'nama_pimpinan_bengkel'      => 'nullable|string|max:255',
-            'ttd_kpa_nama'               => 'nullable|string|max:255',
-            'ttd_kpa_nip'                => 'nullable|string|max:50',
-            'ttd_kpa_jabatan'            => 'nullable|string|max:255',
-            'ttd_kpa_pangkat'            => 'nullable|string|max:100',
-            'ttd_pptk_nama'              => 'nullable|string|max:255',
-            'ttd_pptk_nip'               => 'nullable|string|max:50',
-            'ttd_pptk_jabatan'           => 'nullable|string|max:255',
-            'ttd_pptk_pangkat'           => 'nullable|string|max:100',
-            'ttd_kabid_pemadam_nama'     => 'nullable|string|max:255',
-            'ttd_kabid_pemadam_nip'      => 'nullable|string|max:50',
-            'ttd_kabid_pemadam_jabatan'  => 'nullable|string|max:255',
-            'ttd_kabid_rescue_nama'      => 'nullable|string|max:255',
-            'ttd_kabid_rescue_nip'       => 'nullable|string|max:50',
-            'ttd_kabid_rescue_jabatan'   => 'nullable|string|max:255',
-            'ttd_kabid_pencegahan_nama'  => 'nullable|string|max:255',
-            'ttd_kabid_pencegahan_nip'   => 'nullable|string|max:50',
-            'ttd_kabid_pencegahan_jabatan'=> 'nullable|string|max:255',
         ]);
 
         $doc->update($validated);

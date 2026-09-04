@@ -200,4 +200,53 @@ class User extends Authenticatable
     {
         return $this->hasMany(Pengajuan::class, 'user_id');
     }
+
+    /**
+     * Dapatkan daftar pejabat aktif untuk penandatanganan dokumen kedinasan (TTD)
+     * Mengambil secara dinamis dari Master Data Pegawai berdasarkan jabatannya.
+     */
+    public static function getPejabatTtd(): array
+    {
+        // 1. KPA (Kuasa Pengguna Anggaran) - Kabid SPI / Sarana Prasarana
+        $kpa = static::where(function ($q) {
+            $q->where('jabatan', 'LIKE', '%Sarana%')
+              ->orWhere('jabatan', 'LIKE', '%SPI%')
+              ->orWhere('bidang', 'LIKE', '%Sarana%')
+              ->orWhere('bidang', 'LIKE', '%SPI%');
+        })->where('jabatan', 'LIKE', '%Kepala Bidang%')->first();
+
+        // 2. PPTK (Pejabat Pelaksana Teknis Kegiatan) - Kasi Pemeliharaan Sarana
+        $pptk = static::where('jabatan', 'LIKE', '%Pemeliharaan%')->first();
+
+        // 3. Kabid Pemadaman
+        $kabidPemadam = static::where('jabatan', 'LIKE', '%Kepala Bidang%')
+            ->where(function ($q) {
+                $q->where('jabatan', 'LIKE', '%Pemadam%')
+                  ->orWhere('bidang', 'LIKE', '%Pemadam%');
+            })->first();
+
+        // 4. Kabid Penyelamatan (Rescue)
+        $kabidRescue = static::where('jabatan', 'LIKE', '%Kepala Bidang%')
+            ->where(function ($q) {
+                $q->where('jabatan', 'LIKE', '%Penyelamatan%')
+                  ->orWhere('jabatan', 'LIKE', '%Rescue%')
+                  ->orWhere('bidang', 'LIKE', '%Rescue%')
+                  ->orWhere('bidang', 'LIKE', '%Penyelamatan%');
+            })->first();
+
+        // 5. Kabid Pencegahan Kebakaran
+        $kabidPencegahan = static::where('jabatan', 'LIKE', '%Kepala Bidang%')
+            ->where(function ($q) {
+                $q->where('jabatan', 'LIKE', '%Pencegah%')
+                  ->orWhere('bidang', 'LIKE', '%Pencegah%');
+            })->first();
+
+        return [
+            'kpa'              => $kpa,
+            'pptk'             => $pptk,
+            'kabid_pemadam'    => $kabidPemadam,
+            'kabid_rescue'     => $kabidRescue,
+            'kabid_pencegahan' => $kabidPencegahan,
+        ];
+    }
 }

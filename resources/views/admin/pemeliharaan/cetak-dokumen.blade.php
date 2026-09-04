@@ -378,24 +378,19 @@
 
         $docConfig = $pengaturanDokumen ?? \App\Models\PengaturanDokumen::getAktif($tahunSurat);
 
+        // Ambil data Pejabat Aktif secara live dari Master Data Pegawai
+        $pejabatTtd = \App\Models\User::getPejabatTtd();
+
         // Pejabat SPI (Kepala Bidang SPI selaku KUASA PENGGUNA ANGGARAN)
-        $userKabidSpi = \App\Models\User::where(function($q) {
-                $q->where('jabatan', 'LIKE', '%Kepala Bidang SPI%')
-                  ->orWhere(function($q2) {
-                      $q2->where('bidang', 'LIKE', '%SPI%')
-                         ->where('jabatan', 'LIKE', '%Kepala Bidang%');
-                  });
-            })->first();
-        $kabidNama    = $docConfig?->ttd_kpa_nama ?: ($userKabidSpi ? $userKabidSpi->name : 'Erpi Suwandi, S.T., M.M.');
-        $kabidNip     = $docConfig?->ttd_kpa_nip ?: ($userKabidSpi ? $userKabidSpi->nip : '197908202006041010');
-        $kabidJabatan = $docConfig?->ttd_kpa_jabatan ?: 'KEPALA BIDANG SPI';
+        $kabidNama    = $pejabatTtd['kpa'] ? $pejabatTtd['kpa']->name : ($docConfig?->ttd_kpa_nama ?: 'Erpi Suwandi, S.T., M.M.');
+        $kabidNip     = $pejabatTtd['kpa'] ? $pejabatTtd['kpa']->nip : ($docConfig?->ttd_kpa_nip ?: '197908202006041010');
+        $kabidJabatan = $pejabatTtd['kpa'] ? strtoupper($pejabatTtd['kpa']->jabatan) : ($docConfig?->ttd_kpa_jabatan ?: 'KEPALA BIDANG SARANA, PRASARANA DAN INFORMASI');
         $kabidPangkat = $docConfig?->ttd_kpa_pangkat ?: 'Pembina';
 
         // Pejabat Pemeliharaan (Kasi Pemeliharaan selaku PPTK)
-        $userKasiPml = \App\Models\User::where('jabatan', 'LIKE', '%Pemeliharaan%')->first();
-        $kasiNama    = $docConfig?->ttd_pptk_nama ?: ($userKasiPml ? $userKasiPml->name : 'Ahmad Kuswara, S.M., M.M.');
-        $kasiNip     = $docConfig?->ttd_pptk_nip ?: ($userKasiPml ? $userKasiPml->nip : '197209212008011001');
-        $kasiJabatan = $docConfig?->ttd_pptk_jabatan ?: 'KEPALA SEKSI PEMELIHARAAN SARANA';
+        $kasiNama    = $pejabatTtd['pptk'] ? $pejabatTtd['pptk']->name : ($docConfig?->ttd_pptk_nama ?: 'Muhammad Lutfiansyah, S.Sos., M.M.');
+        $kasiNip     = $pejabatTtd['pptk'] ? $pejabatTtd['pptk']->nip : ($docConfig?->ttd_pptk_nip ?: '199610172020121001');
+        $kasiJabatan = $pejabatTtd['pptk'] ? strtoupper($pejabatTtd['pptk']->jabatan) : ($docConfig?->ttd_pptk_jabatan ?: 'KEPALA SEKSI PEMELIHARAAN SARANA DAN PRASARANA');
         $kasiPangkat = $docConfig?->ttd_pptk_pangkat ?: 'Penata';
 
         $pksNomor        = $docConfig->nomor_pks ?? ('000.4.7.2/001/PKS-Pem/Bid.SPI/' . $tahunSurat);
@@ -600,24 +595,43 @@
                 $bidangName = is_object($pengajuan) && !empty($pengajuan->bidang) ? strtoupper($pengajuan->bidang) : 'PEMADAMAN';
                 $bidangLower = strtolower($bidangName);
 
-                $defaultKabidNama = str_contains($bidangLower, 'rescue') || str_contains($bidangLower, 'penyelamatan')
-                    ? ($docConfig?->ttd_kabid_rescue_nama ?: 'H. EDI KURNIADI, S.AP.')
+                // Dapatkan Kabid aktif dari Data Pegawai sesuai bidang pengajuan
+                $activeKabidUser = str_contains($bidangLower, 'rescue') || str_contains($bidangLower, 'penyelamatan')
+                    ? $pejabatTtd['kabid_rescue']
                     : (str_contains($bidangLower, 'pencegah')
-                        ? ($docConfig?->ttd_kabid_pencegahan_nama ?: 'Drs. H. MULYADI, M.Si.')
-                        : ($docConfig?->ttd_kabid_pemadam_nama ?: 'RD. ASEP BINTANG JOHAR SLAMET S.IP.MSI'));
+                        ? $pejabatTtd['kabid_pencegahan']
+                        : $pejabatTtd['kabid_pemadam']);
 
-                $defaultKabidNip = str_contains($bidangLower, 'rescue') || str_contains($bidangLower, 'penyelamatan')
-                    ? ($docConfig?->ttd_kabid_rescue_nip ?: '197008121993031005')
-                    : (str_contains($bidangLower, 'pencegah')
-                        ? ($docConfig?->ttd_kabid_pencegahan_nip ?: '196811201993031005')
-                        : ($docConfig?->ttd_kabid_pemadam_nip ?: '197006062007011014'));
+                // Kepala Bidang Pengaju: prioritaskan akun kabid aktif dari Master Pegawai
+                if ($activeKabidUser) {
+                    $kabidBidangNama = $activeKabidUser->name;
+                    $kabidBidangNip  = $activeKabidUser->nip;
+                } elseif (is_object($pengajuan) && $pengajuan->kabidUser) {
+                    $kabidBidangNama = $pengajuan->kabidUser->name;
+                    $kabidBidangNip  = $pengajuan->kabidUser->nip;
+                } else {
+                    $kabidBidangNama = is_object($pengajuan) && !empty($pengajuan->nama_kepala_bidang) ? $pengajuan->nama_kepala_bidang : 'Rd. Asep Bintang Johar Slamet, S.IP., M.Si.';
+                    $kabidBidangNip  = is_object($pengajuan) && !empty($pengajuan->nip_kepala_bidang) ? $pengajuan->nip_kepala_bidang : '197006062007011014';
+                }
 
-                $menyetujuiNama = is_object($pengajuan) && !empty($pengajuan->nama_komandan_regu) ? $pengajuan->nama_komandan_regu : (is_object($pengajuan) && !empty($pengajuan->nama_kabid) ? $pengajuan->nama_kabid : 'Lukman');
-                $menyetujuiNip = is_object($pengajuan) && !empty($pengajuan->nip_komandan_regu) ? $pengajuan->nip_komandan_regu : '197606272007011002';
-                $pemohonNama = is_object($pengajuan) && !empty($pengajuan->nama_pemegang) ? $pengajuan->nama_pemegang : 'Riki Rohimat';
-                $pemohonNip = is_object($pengajuan) && !empty($pengajuan->nip_pemegang) ? $pengajuan->nip_pemegang : '198603032014121002';
-                $kabidBidangNama = is_object($pengajuan) && !empty($pengajuan->nama_kepala_bidang) ? $pengajuan->nama_kepala_bidang : $defaultKabidNama;
-                $kabidBidangNip = is_object($pengajuan) && !empty($pengajuan->nip_kepala_bidang) ? $pengajuan->nip_kepala_bidang : $defaultKabidNip;
+                // Menyetujui (Danru / Kasi): jika terhubung ke danruUser FK, gunakan nama live
+                if (is_object($pengajuan) && $pengajuan->danruUser) {
+                    $menyetujuiNama = $pengajuan->danruUser->name;
+                    $menyetujuiNip  = $pengajuan->danruUser->nip;
+                } else {
+                    $menyetujuiNama = is_object($pengajuan) && !empty($pengajuan->nama_komandan_regu) ? $pengajuan->nama_komandan_regu : (is_object($pengajuan) && !empty($pengajuan->nama_kabid) ? $pengajuan->nama_kabid : 'Lukman');
+                    $menyetujuiNip  = is_object($pengajuan) && !empty($pengajuan->nip_komandan_regu) ? $pengajuan->nip_komandan_regu : '197606272007011002';
+                }
+                $menyetujuiNama = preg_replace_callback('/\((.*?)\)/', fn($m) => '(' . strtoupper($m[1]) . ')', $menyetujuiNama);
+
+                // Pemohon (Pengemudi / Pemegang Kendaraan)
+                if (is_object($pengajuan) && $pengajuan->user) {
+                    $pemohonNama = $pengajuan->user->name;
+                    $pemohonNip  = $pengajuan->user->nip;
+                } else {
+                    $pemohonNama = is_object($pengajuan) && !empty($pengajuan->nama_pemegang) ? $pengajuan->nama_pemegang : 'Riki Rohimat';
+                    $pemohonNip  = is_object($pengajuan) && !empty($pengajuan->nip_pemegang) ? $pengajuan->nip_pemegang : '198603032014121002';
+                }
             @endphp
 
             {{-- ========================================================================= --}}
@@ -836,8 +850,6 @@
             @php
                 $nomorSuratSP = '000.1.7.2/' . $kodeVerif . '/SP';
                 $nomorSuratPEM = '000.1.7.2/' . $kodeVerif . '/PEM';
-                $kasiNama = is_object($pengajuan) && !empty($pengajuan->nama_kasi) ? $pengajuan->nama_kasi : 'AHMAD KUSWARA, S.M., M.M';
-                $kasiNip  = is_object($pengajuan) && !empty($pengajuan->nip_kasi) ? $pengajuan->nip_kasi : '19720921 200801 1001';
             @endphp
 
             {{-- ========================================================================= --}}

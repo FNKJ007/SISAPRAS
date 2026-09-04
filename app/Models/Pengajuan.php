@@ -47,6 +47,11 @@ class Pengajuan extends Model
         'tanggal_selesai_pengerjaan' => 'date:Y-m-d',
     ];
 
+    protected $appends = [
+        'kode_verifikasi',
+        'verified_item_list',
+    ];
+
     public static array $statusPengerjaanMap = [
         'belum_mulai' => 'Belum Mulai',
         'proses'      => 'Dalam Pengerjaan',
@@ -128,10 +133,21 @@ class Pengajuan extends Model
 
             // Auto-clean names
             if (!empty($pengajuan->nama_pemegang)) {
-                $pengajuan->nama_pemegang = ucwords(strtolower(trim($pengajuan->nama_pemegang)));
+                $pemegang = trim($pengajuan->nama_pemegang);
+                if (str_contains($pemegang, ',')) {
+                    $parts = explode(',', $pemegang, 2);
+                    $namaUtama = ucwords(strtolower(trim($parts[0])));
+                    $gelar = trim($parts[1]);
+                    $pengajuan->nama_pemegang = $namaUtama . ', ' . $gelar;
+                } else {
+                    $pengajuan->nama_pemegang = ucwords(strtolower($pemegang));
+                }
             }
             if (!empty($pengajuan->nama_komandan_regu)) {
-                $pengajuan->nama_komandan_regu = ucwords(strtolower(trim($pengajuan->nama_komandan_regu)));
+                $danru = ucwords(strtolower(trim($pengajuan->nama_komandan_regu)));
+                $pengajuan->nama_komandan_regu = preg_replace_callback('/\((.*?)\)/', function ($m) {
+                    return '(' . strtoupper($m[1]) . ')';
+                }, $danru);
             }
             if (!empty($pengajuan->nama_kepala_bidang)) {
                 $parts = explode(',', $pengajuan->nama_kepala_bidang);
@@ -222,12 +238,24 @@ class Pengajuan extends Model
 
     public function getNamaPemegangAttribute($value)
     {
-        return $value ? ucwords(strtolower(trim($value))) : $value;
+        if (!$value) return $value;
+        $val = trim($value);
+        if (str_contains($val, ',')) {
+            $parts = explode(',', $val, 2);
+            $namaUtama = ucwords(strtolower(trim($parts[0])));
+            $gelar = trim($parts[1]);
+            return $namaUtama . ', ' . $gelar;
+        }
+        return ucwords(strtolower($val));
     }
 
     public function getNamaKomandanReguAttribute($value)
     {
-        return $value ? ucwords(strtolower(trim($value))) : $value;
+        if (!$value) return $value;
+        $danru = ucwords(strtolower(trim($value)));
+        return preg_replace_callback('/\((.*?)\)/', function ($m) {
+            return '(' . strtoupper($m[1]) . ')';
+        }, $danru);
     }
 
     public function getNamaKepalaBidangAttribute($value)

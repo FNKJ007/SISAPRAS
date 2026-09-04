@@ -902,54 +902,106 @@ body.admin-modal-open {
         display: flex;
     }
 
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        height: 100dvh; /* fallback */
-        width: 210px;
-        min-width: 210px;
-        transform: translateX(-100%);
-        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                    box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: 1000;
-        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-        border-radius: 0 16px 16px 0;
-        padding-bottom: env(safe-area-inset-bottom, 24px); /* Make sure logout isn't cut off */
+    .sidebar,
+    .sidebar.collapsed {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        width: 250px !important;
+        min-width: 250px !important;
+        max-width: 85vw !important;
+        transform: translateX(-100%) !important;
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        z-index: 9999 !important;
+        box-shadow: none !important;
+        border-radius: 0 20px 20px 0 !important;
+        padding-bottom: env(safe-area-inset-bottom, 24px) !important;
+        overflow-y: auto !important;
     }
 
-    .sidebar.mobile-open {
-        transform: translateX(0);
-        box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
+    .sidebar.mobile-open,
+    .sidebar.collapsed.mobile-open {
+        transform: translateX(0) !important;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.45) !important;
     }
 
     .sidebar-backdrop {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(15, 23, 42, 0.65);
-        z-index: 999;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.35s ease;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background-color: rgba(15, 23, 42, 0.65) !important;
+        z-index: 9998 !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        transition: opacity 0.35s ease !important;
+        display: block !important;
     }
 
     .sidebar-backdrop.show {
-        display: block;
-        opacity: 1;
-        pointer-events: auto;
+        opacity: 1 !important;
+        pointer-events: auto !important;
     }
 
-    /* Override: di mobile, collapsed elements harus benar-benar visible */
-    .sidebar:not(.mobile-open) .menu-label,
-    .sidebar:not(.mobile-open) .menu-title-left > span,
-    .sidebar:not(.mobile-open) .chevron,
-    .sidebar:not(.mobile-open) .brand-text {
-        opacity: 1;
-        pointer-events: auto;
+    /* Override: di mobile, seluruh menu label, submenu, dan chevron harus selalu tampil sempurna */
+    .sidebar .menu-label,
+    .sidebar.collapsed .menu-label,
+    .sidebar .menu-title-left > span,
+    .sidebar.collapsed .menu-title-left > span,
+    .sidebar .chevron,
+    .sidebar.collapsed .chevron,
+    .sidebar .brand-text,
+    .sidebar.collapsed .brand-text {
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        display: inline-block !important;
+    }
+
+    .sidebar .sidebar-toggle,
+    .sidebar.collapsed .sidebar-toggle {
+        padding: 0 16px !important;
+        justify-content: flex-start !important;
+    }
+
+    .sidebar .sidebar-toggle .icon-bars,
+    .sidebar.collapsed .sidebar-toggle .icon-bars {
+        margin-left: 0 !important;
+        margin-right: 12px !important;
+    }
+
+    .sidebar .menu-group,
+    .sidebar.collapsed .menu-group {
+        padding: 0 10px !important;
+    }
+
+    .sidebar .menu-title,
+    .sidebar.collapsed .menu-title {
+        width: 100% !important;
+        height: auto !important;
+        padding: 10px 14px !important;
+        justify-content: space-between !important;
+    }
+
+    .sidebar .menu-title-left,
+    .sidebar.collapsed .menu-title-left {
+        justify-content: flex-start !important;
+    }
+
+    .sidebar .menu-icon,
+    .sidebar.collapsed .menu-icon {
+        margin-left: 0 !important;
+        margin-right: 12px !important;
+    }
+
+    .sidebar.collapsed .submenu.open {
+        height: auto !important;
+        opacity: 1 !important;
+        padding: 4px 0 !important;
+        pointer-events: auto !important;
     }
 }
 

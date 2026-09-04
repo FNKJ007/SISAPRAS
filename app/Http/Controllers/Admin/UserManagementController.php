@@ -43,6 +43,7 @@ class UserManagementController extends Controller
                 'bidang'   => 'nullable|string|max:100',
                 'pos'      => 'nullable|string|max:100',
                 'regu'     => 'nullable|string|max:50',
+                'regu_id'  => 'nullable',
                 'no_hp'    => 'nullable|string|max:30',
                 'status'   => 'required|in:aktif,nonaktif',
             ], $messages);
@@ -53,6 +54,8 @@ class UserManagementController extends Controller
             }
             $validated['password'] = Hash::make($validated['password']);
             $validated['has_account'] = true;
+
+            $this->resolveReguData($validated, $existingUser);
 
             $existingUser->fill($validated);
             $existingUser->has_account = true;
@@ -82,6 +85,7 @@ class UserManagementController extends Controller
             'bidang'   => 'nullable|string|max:100',
             'pos'      => 'nullable|string|max:100',
             'regu'     => 'nullable|string|max:50',
+            'regu_id'  => 'nullable',
             'no_hp'    => 'nullable|string|max:30',
             'status'   => 'required|in:aktif,nonaktif',
         ], $messages);
@@ -94,6 +98,8 @@ class UserManagementController extends Controller
 
         $validated['password'] = Hash::make($validated['password']);
         $validated['has_account'] = true;
+
+        $this->resolveReguData($validated);
 
         User::create($validated);
         CacheService::invalidate('user');
@@ -129,6 +135,7 @@ class UserManagementController extends Controller
             'bidang'   => 'nullable|string|max:100',
             'pos'      => 'nullable|string|max:100',
             'regu'     => 'nullable|string|max:50',
+            'regu_id'  => 'nullable',
             'no_hp'    => 'nullable|string|max:30',
             'status'   => 'required|in:aktif,nonaktif',
         ], $messages);
@@ -138,6 +145,8 @@ class UserManagementController extends Controller
             $validated['email'] = null;
         }
         $validated['has_account'] = true;
+
+        $this->resolveReguData($validated, $user);
 
         $user->update($validated);
         CacheService::invalidate('user');
@@ -249,5 +258,54 @@ class UserManagementController extends Controller
             'success' => true,
             'message' => "Opsi riwayat '{$value}' berhasil dihapus dari sistem."
         ]);
+    }
+
+    /**
+     * Resolusi dan sinkronisasi regu_id dan nama regu secara akurat.
+     */
+    protected function resolveReguData(array &$validated, ?User $user = null): void
+    {
+        if (!empty($validated['regu_id'])) {
+            $regu = \App\Models\Regu::find($validated['regu_id']);
+            if ($regu) {
+                $validated['regu']    = $regu->nama;
+                $validated['regu_id'] = $regu->id;
+                return;
+            }
+        }
+
+        $pos      = $validated['pos'] ?? ($user->pos ?? null);
+        $reguName = $validated['regu'] ?? ($user->regu ?? null);
+        $bidang   = $validated['bidang'] ?? ($user->bidang ?? null);
+
+        if (!empty($pos) && !empty($reguName)) {
+            $pClean = strtolower(preg_replace('/[^a-z0-9]/', '', $pos));
+            $rClean = strtolower(preg_replace('/[^a-z0-9]/', '', $reguName));
+            $bClean = strtolower(trim($bidang ?? ''));
+
+            $allRegus = \App\Models\Regu::all();
+            $match = $allRegus->first(function ($r) use ($pClean, $rClean, $bClean) {
+                $rp = strtolower(preg_replace('/[^a-z0-9]/', '', $r->pos ?? ''));
+                $rn = strtolower(preg_replace('/[^a-z0-9]/', '', $r->nama ?? ''));
+                $rb = strtolower(trim($r->bidang ?? ''));
+                $posMatch = $rp && $pClean && (str_contains($rp, $pClean) || str_contains($pClean, $rp));
+                $reguMatch = $rn === $rClean;
+                $bidangMatch = !empty($bClean) && !empty($rb) && (str_contains($bClean, $rb) || str_contains($rb, $bClean));
+                return $posMatch && $reguMatch && $bidangMatch;
+            });
+
+            if (!$match) {
+                $match = $allRegus->first(function ($r) use ($pClean, $rClean) {
+                    $rp = strtolower(preg_replace('/[^a-z0-9]/', '', $r->pos ?? ''));
+                    $rn = strtolower(preg_replace('/[^a-z0-9]/', '', $r->nama ?? ''));
+                    return $rp && $pClean && (str_contains($rp, $pClean) || str_contains($pClean, $rp)) && $rn === $rClean;
+                });
+            }
+
+            if ($match) {
+                $validated['regu_id'] = $match->id;
+                $validated['regu']    = $match->nama;
+            }
+        }
     }
 }

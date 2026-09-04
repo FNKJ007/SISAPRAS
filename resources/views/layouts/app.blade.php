@@ -20,6 +20,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         [x-cloak] { display: none !important; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         /* Smooth Page Transition Animation */
         @keyframes smoothPageFadeIn {
@@ -165,7 +167,7 @@
                             <li>
                                 <a href="{{ route('unit-pemadam.riwayat') }}"
                                    class="{{ request()->routeIs('unit-pemadam.riwayat') ? 'active' : '' }}">
-                                    Riwayat Pengecekan
+                                    Riwayat
                                 </a>
                             </li>
                         </ul>
@@ -198,7 +200,7 @@
                             <li>
                                 <a href="{{ route('unit-rescue.riwayat') }}"
                                    class="{{ request()->routeIs('unit-rescue.riwayat') ? 'active' : '' }}">
-                                    Riwayat Pengecekan
+                                    Riwayat
                                 </a>
                             </li>
                         </ul>
@@ -231,7 +233,7 @@
                             <li>
                                 <a href="{{ route('unit-pencegahan.riwayat') }}"
                                    class="{{ request()->routeIs('unit-pencegahan.riwayat') ? 'active' : '' }}">
-                                    Riwayat Pengecekan
+                                    Riwayat
                                 </a>
                             </li>
                         </ul>
@@ -258,7 +260,7 @@
                             <li>
                                 <a href="{{ route('alat-cc.riwayat') }}"
                                    class="{{ request()->routeIs('alat-cc.riwayat') ? 'active' : '' }}">
-                                    Riwayat Pengecekan
+                                    Riwayat
                                 </a>
                             </li>
                         </ul>

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Data Pegawai Disdamkar — Admin')
+@section('title', 'Data Pegawai — Admin')
 
 @section('content')
 <div x-data="pegawaiApp()">
@@ -18,7 +18,7 @@
     {{-- Header Section --}}
     <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px;">
         <div>
-            <h1 style="font-size:22px; font-weight:800; color:#0F172A; margin:0;">Data Pegawai Disdamkar</h1>
+            <h1 style="font-size:22px; font-weight:800; color:#0F172A; margin:0;">Data Pegawai</h1>
             <p style="font-size:13px; color:#64748B; margin-top:4px; margin-bottom:0;">
                 Kelola data kepegawaian personil, pejabat pimpinan struktural, dan petugas Disdamkar.
             </p>

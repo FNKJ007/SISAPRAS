@@ -641,7 +641,22 @@ function pengajuanAdminModal() {
             if (!str) return '-';
             let s = String(str).trim();
             if (['r2', 'r3'].includes(s.toLowerCase())) return s.toUpperCase();
-            return s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+
+            // Pisahkan gelar jika ada koma
+            let parts = s.split(',');
+            let namePart = parts[0].trim();
+            let degreePart = parts.length > 1 ? ', ' + parts.slice(1).join(',').trim() : '';
+
+            let formatted = namePart.split(' ').map(w => {
+                if (w.startsWith('(') && w.endsWith(')')) {
+                    return '(' + w.slice(1, -1).toUpperCase() + ')';
+                }
+                return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+            }).join(' ');
+
+            formatted = formatted.replace(/\((.*?)\)/g, (match, p1) => '(' + p1.toUpperCase() + ')');
+
+            return formatted + degreePart;
         },
 
         formatKabid(str) {

@@ -293,9 +293,7 @@
                                         <div style="display:inline-flex; align-items:center; justify-content:flex-start; width:160px; gap:6px;">
                                             {{-- Edit Button --}}
                                             <button type="button" @click="
-                                                activeUser = {{ json_encode($item) }};
-                                                editUrl = '{{ route('admin.pengaturan.users.update', $item->id) }}';
-                                                editModalOpen = true;
+                                                openEditUser({{ json_encode($item) }}, '{{ route('admin.pengaturan.users.update', $item->id) }}');
                                             " title="Edit Akun" style="padding:5px 9px; background:#F1F5F9; color:#334155; border:1px solid #CBD5E1; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">
                                                 Edit
                                             </button>
@@ -382,6 +380,106 @@
             </div>
         </div>
 
+        {{-- Pejabat TTD Dokumen Live Preview Box (Otomatis dari Data Pegawai) --}}
+        <div style="background:#FFFFFF; border:1px solid #CBD5E1; border-radius:16px; padding:20px; margin-bottom:24px; box-shadow:0 4px 16px rgba(15,23,42,0.04);">
+            <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; border-bottom:1px solid #F1F5F9; padding-bottom:14px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:38px; height:38px; border-radius:10px; background:#EEF2FF; color:#4F46E5; display:flex; align-items:center; justify-content:center;">
+                        <i data-lucide="award" style="width:20px; height:20px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size:15px; font-weight:800; color:#0F172A; margin:0; display:flex; align-items:center; gap:8px;">
+                            <span>Pejabat Penandatangan (TTD) Surat Dokumen Kedinasan</span>
+                            <span style="font-size:11px; font-weight:700; background:#DCFCE7; color:#15803D; padding:2px 8px; border-radius:20px; border:1px solid #86EFAC;">
+                                Otomatis dari Data Pegawai
+                            </span>
+                        </h3>
+                        <p style="font-size:12px; color:#64748B; margin:2px 0 0;">
+                            Nama pejabat berikut otomatis dicantumkan pada Surat Permohonan, Surat Pesanan, dan Surat Kendali sesuai jabatannya.
+                        </p>
+                    </div>
+                </div>
+                <a href="{{ route('admin.pemeliharaan.data-pegawai') }}"
+                   style="padding:7px 14px; background:#F8FAFC; border:1px solid #CBD5E1; color:#1B2A6B; border-radius:8px; font-size:12px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s;">
+                    <i data-lucide="users" style="width:14px; height:14px; color:#2563EB;"></i>
+                    <span>Kelola di Data Pegawai ↗</span>
+                </a>
+            </div>
+
+            {{-- 5 Officials Grid Preview --}}
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px;">
+                {{-- 1. KPA --}}
+                <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:12px 14px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                        <span style="font-size:11px; font-weight:800; color:#1E40AF; text-transform:uppercase;">1. KPA (Kuasa Pengguna Anggaran)</span>
+                        <span style="font-size:10.5px; color:#64748B; font-weight:600;">Kabid SPI</span>
+                    </div>
+                    <div style="font-size:13px; font-weight:700; color:#0F172A;">
+                        {{ $pejabatTtdPreview['kpa']->name ?? 'Erpi Suwandi, S.T., M.M.' }}
+                    </div>
+                    <div style="font-size:11px; color:#64748B; margin-top:2px;">
+                        NIP. {{ $pejabatTtdPreview['kpa']->nip ?? '197908202006041010' }}
+                    </div>
+                </div>
+
+                {{-- 2. PPTK --}}
+                <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:12px 14px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                        <span style="font-size:11px; font-weight:800; color:#059669; text-transform:uppercase;">2. PPTK (Pelaksana Teknis)</span>
+                        <span style="font-size:10.5px; color:#64748B; font-weight:600;">Kasi Pemeliharaan</span>
+                    </div>
+                    <div style="font-size:13px; font-weight:700; color:#0F172A;">
+                        {{ $pejabatTtdPreview['pptk']->name ?? 'Muhammad Lutfiansyah, S.Sos., M.M.' }}
+                    </div>
+                    <div style="font-size:11px; color:#64748B; margin-top:2px;">
+                        NIP. {{ $pejabatTtdPreview['pptk']->nip ?? '199610172020121001' }}
+                    </div>
+                </div>
+
+                {{-- 3. Kabid Pemadaman --}}
+                <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:12px 14px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                        <span style="font-size:11px; font-weight:800; color:#DC2626; text-transform:uppercase;">3. Kabid Pemadaman</span>
+                        <span style="font-size:10.5px; color:#64748B; font-weight:600;">Unit Pemadam</span>
+                    </div>
+                    <div style="font-size:13px; font-weight:700; color:#0F172A;">
+                        {{ $pejabatTtdPreview['kabid_pemadam']->name ?? 'Rd. Asep Bintang Johar Slamet, S.IP., M.Si.' }}
+                    </div>
+                    <div style="font-size:11px; color:#64748B; margin-top:2px;">
+                        NIP. {{ $pejabatTtdPreview['kabid_pemadam']->nip ?? '197006062007011014' }}
+                    </div>
+                </div>
+
+                {{-- 4. Kabid Rescue --}}
+                <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:12px 14px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                        <span style="font-size:11px; font-weight:800; color:#D97706; text-transform:uppercase;">4. Kabid Penyelamatan</span>
+                        <span style="font-size:10.5px; color:#64748B; font-weight:600;">Unit Rescue</span>
+                    </div>
+                    <div style="font-size:13px; font-weight:700; color:#0F172A;">
+                        {{ $pejabatTtdPreview['kabid_rescue']->name ?? 'Edi Suhaedi, S.IP., M.AP.' }}
+                    </div>
+                    <div style="font-size:11px; color:#64748B; margin-top:2px;">
+                        NIP. {{ $pejabatTtdPreview['kabid_rescue']->nip ?? '198104102011011002' }}
+                    </div>
+                </div>
+
+                {{-- 5. Kabid Pencegahan --}}
+                <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:12px 14px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                        <span style="font-size:11px; font-weight:800; color:#7C3AED; text-transform:uppercase;">5. Kabid Pencegahan</span>
+                        <span style="font-size:10.5px; color:#64748B; font-weight:600;">Unit Pencegahan</span>
+                    </div>
+                    <div style="font-size:13px; font-weight:700; color:#0F172A;">
+                        {{ $pejabatTtdPreview['kabid_pencegahan']->name ?? 'Hendi Kurniawan, S.T., M.M.' }}
+                    </div>
+                    <div style="font-size:11px; color:#64748B; margin-top:2px;">
+                        NIP. {{ $pejabatTtdPreview['kabid_pencegahan']->nip ?? '197905182005011008' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- Info Alert Banner --}}
         <div style="background:#EFF6FF; border:1px solid #BFDBFE; border-radius:12px; padding:14px 18px; margin-bottom:20px; display:flex; align-items:flex-start; gap:12px;">
             <i data-lucide="info" style="width:20px; height:20px; color:#2563EB; flex-shrink:0; margin-top:2px;"></i>
@@ -448,14 +546,6 @@
                                 <span style="color:#64748B; font-size:11px; font-weight:700; text-transform:uppercase; display:block; margin-bottom:2px;">Pimpinan / TTD Bengkel:</span>
                                 <span style="font-weight:600; color:#334155;">{{ $doc->nama_pimpinan_bengkel ?? '-' }}</span>
                             </div>
-                            <div style="border-top:1px dashed #CBD5E1; padding-top:8px;">
-                                <span style="color:#1B2A6B; font-size:11px; font-weight:800; text-transform:uppercase; display:block; margin-bottom:4px;">Pejabat TTD Dokumen:</span>
-                                <div style="font-size:11.5px; color:#334155; line-height:1.4;">
-                                    <div><b>KPA (SPI):</b> {{ $doc->ttd_kpa_nama ?? 'Erpi Suwandi, S.T., M.M.' }}</div>
-                                    <div><b>PPTK (Pemeliharaan):</b> {{ $doc->ttd_pptk_nama ?? 'Ahmad Kuswara, S.M., M.M.' }}</div>
-                                    <div><b>Kabid Pemadam:</b> {{ $doc->ttd_kabid_pemadam_nama ?? 'RD. ASEP BINTANG JOHAR SLAMET S.IP.MSI' }}</div>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -464,7 +554,7 @@
                         <button type="button" @click="openDocEdit({{ Js::from($doc) }}, '{{ route('admin.pengaturan.dokumen.update', $doc->id) }}')"
                                 style="padding:7px 14px; background:#F8FAFC; border:1px solid #CBD5E1; color:#0F172A; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s;">
                             <i data-lucide="edit-2" style="width:13px; height:13px; color:#2563EB;"></i>
-                            <span>Edit Data &amp; TTD</span>
+                            <span>Edit Data PKS &amp; SPK</span>
                         </button>
                         <button type="button" @click="openDocDelete({{ Js::from($doc) }}, '{{ route('admin.pengaturan.dokumen.destroy', $doc->id) }}')"
                                 style="padding:7px 12px; background:#FEF2F2; border:1px solid #FECACA; color:#DC2626; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s;">
@@ -477,7 +567,7 @@
                 <div style="grid-column:1/-1; background:#FFFFFF; border:1px dashed #CBD5E1; border-radius:16px; padding:48px 24px; text-align:center;">
                     <i data-lucide="file-x" style="width:48px; height:48px; color:#94A3B8; margin:0 auto 12px;"></i>
                     <h3 style="font-size:16px; font-weight:700; color:#0F172A; margin:0 0 6px;">Belum Ada Pengaturan Dokumen</h3>
-                    <p style="font-size:13px; color:#64748B; margin:0 0 16px;">Tambahkan pengaturan PKS, SPK, dan Pejabat TTD untuk tahun anggaran saat ini.</p>
+                    <p style="font-size:13px; color:#64748B; margin:0 0 16px;">Tambahkan pengaturan PKS, SPK, dan Bengkel Rekanan untuk tahun anggaran saat ini.</p>
                     <button type="button" @click="docCreateModalOpen = true"
                             style="padding:9px 18px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">
                         <i data-lucide="plus" style="width:16px; height:16px;"></i>
@@ -492,11 +582,11 @@
     {{-- ===================== MODAL: TAMBAH PENGATURAN DOKUMEN BARU ===================== --}}
     <div x-show="docCreateModalOpen" x-cloak class="admin-modal-overlay"
          style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);">
-        <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:620px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
+        <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:580px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#FFFFFF; z-index:10;">
                 <div>
-                    <h3 style="font-size:16px; font-weight:800; color:#0F172A; margin:0;">Tambah Pengaturan PKS, SPK &amp; TTD Dokumen</h3>
-                    <p style="font-size:12px; color:#64748B; margin:2px 0 0;">Pengaturan dokumen resmi dan pejabat penandatangan untuk tahun anggaran baru.</p>
+                    <h3 style="font-size:16px; font-weight:800; color:#0F172A; margin:0;">Tambah Pengaturan PKS, SPK &amp; Bengkel</h3>
+                    <p style="font-size:12px; color:#64748B; margin:2px 0 0;">Pengaturan nomor kontrak dinas dan data bengkel rekanan untuk tahun anggaran baru.</p>
                 </div>
                 <button type="button" @click="docCreateModalOpen = false" style="background:none; border:none; cursor:pointer; color:#64748B;">
                     <i data-lucide="x" style="width:20px; height:20px;"></i>
@@ -547,104 +637,13 @@
                                style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px;">
                     </div>
 
-                    {{-- SECTION CUSTOM TTD PEJABAT --}}
-                    <div style="background:#F8FAFC; border:1px solid #CBD5E1; border-radius:12px; padding:14px; margin-top:8px;">
-                        <h4 style="font-size:13px; font-weight:800; color:#1B2A6B; margin:0 0 10px 0; display:flex; align-items:center; gap:6px;">
-                            <i data-lucide="pen-tool" style="width:15px; height:15px;"></i>
-                            <span>Pengaturan Tanda Tangan (TTD) Pejabat Surat Resmi</span>
-                        </h4>
-
-                        {{-- TTD Kuasa Pengguna Anggaran (KPA / Kabid SPI) --}}
-                        <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #E2E8F0;">
-                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">1. Kuasa Pengguna Anggaran (KPA / Kabid SPI)</span>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
-                                    <input type="text" name="ttd_kpa_nama" value="Erpi Suwandi, S.T., M.M." style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
-                                    <input type="text" name="ttd_kpa_nip" value="197908202006041010" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Jabatan</label>
-                                    <input type="text" name="ttd_kpa_jabatan" value="KEPALA BIDANG SPI" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Pangkat / Golongan</label>
-                                    <input type="text" name="ttd_kpa_pangkat" value="Pembina" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                            </div>
+                    {{-- Info Terhubung Otomatis --}}
+                    <div style="background:#F8FAFC; border:1px solid #CBD5E1; border-radius:10px; padding:12px; margin-top:4px; display:flex; align-items:flex-start; gap:10px;">
+                        <i data-lucide="info" style="width:18px; height:18px; color:#2563EB; flex-shrink:0; margin-top:2px;"></i>
+                        <div style="font-size:12px; color:#334155; line-height:1.4;">
+                            <strong>Pejabat Penandatangan (TTD) Terhubung Otomatis:</strong><br>
+                            Nama &amp; NIP KPA, PPTK, dan Kepala Bidang otomatis diambil langsung dari Master Data Pegawai yang aktif saat ini.
                         </div>
-
-                        {{-- TTD PPTK (Kasi Pemeliharaan Sarana) --}}
-                        <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #E2E8F0;">
-                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">2. Pejabat Pelaksana Teknis Kegiatan (PPTK / Kasi Pemeliharaan)</span>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
-                                    <input type="text" name="ttd_pptk_nama" value="Ahmad Kuswara, S.M., M.M." style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
-                                    <input type="text" name="ttd_pptk_nip" value="197209212008011001" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Jabatan</label>
-                                    <input type="text" name="ttd_pptk_jabatan" value="KEPALA SEKSI PEMELIHARAAN SARANA" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Pangkat / Golongan</label>
-                                    <input type="text" name="ttd_pptk_pangkat" value="Penata" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- TTD Kepala Bidang Pemadaman --}}
-                        <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #E2E8F0;">
-                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">3. Mengetahui: Kepala Bidang Pemadaman</span>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
-                                    <input type="text" name="ttd_kabid_pemadam_nama" value="RD. ASEP BINTANG JOHAR SLAMET S.IP.MSI" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
-                                    <input type="text" name="ttd_kabid_pemadam_nip" value="197006062007011014" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- TTD Kepala Bidang Penyelamatan (Rescue) --}}
-                        <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #E2E8F0;">
-                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">4. Mengetahui: Kepala Bidang Penyelamatan (Rescue)</span>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
-                                    <input type="text" name="ttd_kabid_rescue_nama" value="H. EDI KURNIADI, S.AP." style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
-                                    <input type="text" name="ttd_kabid_rescue_nip" value="197008121993031005" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- TTD Kepala Bidang Pencegahan --}}
-                        <div>
-                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">5. Mengetahui: Kepala Bidang Pencegahan</span>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
-                                    <input type="text" name="ttd_kabid_pencegahan_nama" value="Drs. H. MULYADI, M.Si." style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
-                                    <input type="text" name="ttd_kabid_pencegahan_nip" value="196811201993031005" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
 
@@ -666,10 +665,10 @@
     {{-- ===================== MODAL: EDIT PENGATURAN DOKUMEN ===================== --}}
     <div x-show="docEditModalOpen" x-cloak class="admin-modal-overlay"
          style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);">
-        <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:620px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
+        <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:580px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
             <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#FFFFFF; z-index:10;">
                 <div>
-                    <h3 style="font-size:16px; font-weight:800; color:#0F172A; margin:0;">Edit Pengaturan PKS, SPK &amp; TTD Dokumen</h3>
+                    <h3 style="font-size:16px; font-weight:800; color:#0F172A; margin:0;">Edit Pengaturan PKS, SPK &amp; Bengkel</h3>
                     <p style="font-size:12px; color:#64748B; margin:2px 0 0;" x-text="'Tahun Anggaran: ' + (activeDoc.tahun || '')"></p>
                 </div>
                 <button type="button" @click="docEditModalOpen = false" style="background:none; border:none; cursor:pointer; color:#64748B;">
@@ -722,104 +721,13 @@
                                style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px;">
                     </div>
 
-                    {{-- SECTION EDIT CUSTOM TTD PEJABAT --}}
-                    <div style="background:#F8FAFC; border:1px solid #CBD5E1; border-radius:12px; padding:14px; margin-top:8px;">
-                        <h4 style="font-size:13px; font-weight:800; color:#1B2A6B; margin:0 0 10px 0; display:flex; align-items:center; gap:6px;">
-                            <i data-lucide="pen-tool" style="width:15px; height:15px;"></i>
-                            <span>Pengaturan Tanda Tangan (TTD) Pejabat Surat Resmi</span>
-                        </h4>
-
-                        {{-- TTD Kuasa Pengguna Anggaran (KPA / Kabid SPI) --}}
-                        <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #E2E8F0;">
-                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">1. Kuasa Pengguna Anggaran (KPA / Kabid SPI)</span>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
-                                    <input type="text" name="ttd_kpa_nama" x-model="activeDoc.ttd_kpa_nama" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
-                                    <input type="text" name="ttd_kpa_nip" x-model="activeDoc.ttd_kpa_nip" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Jabatan</label>
-                                    <input type="text" name="ttd_kpa_jabatan" x-model="activeDoc.ttd_kpa_jabatan" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Pangkat / Golongan</label>
-                                    <input type="text" name="ttd_kpa_pangkat" x-model="activeDoc.ttd_kpa_pangkat" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                            </div>
+                    {{-- Info Terhubung Otomatis --}}
+                    <div style="background:#F8FAFC; border:1px solid #CBD5E1; border-radius:10px; padding:12px; margin-top:4px; display:flex; align-items:flex-start; gap:10px;">
+                        <i data-lucide="info" style="width:18px; height:18px; color:#2563EB; flex-shrink:0; margin-top:2px;"></i>
+                        <div style="font-size:12px; color:#334155; line-height:1.4;">
+                            <strong>Pejabat Penandatangan (TTD) Terhubung Otomatis:</strong><br>
+                            Nama &amp; NIP KPA, PPTK, dan Kepala Bidang otomatis diambil langsung dari Master Data Pegawai yang aktif saat ini.
                         </div>
-
-                        {{-- TTD PPTK (Kasi Pemeliharaan Sarana) --}}
-                        <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #E2E8F0;">
-                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">2. Pejabat Pelaksana Teknis Kegiatan (PPTK / Kasi Pemeliharaan)</span>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
-                                    <input type="text" name="ttd_pptk_nama" x-model="activeDoc.ttd_pptk_nama" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
-                                    <input type="text" name="ttd_pptk_nip" x-model="activeDoc.ttd_pptk_nip" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Jabatan</label>
-                                    <input type="text" name="ttd_pptk_jabatan" x-model="activeDoc.ttd_pptk_jabatan" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Pangkat / Golongan</label>
-                                    <input type="text" name="ttd_pptk_pangkat" x-model="activeDoc.ttd_pptk_pangkat" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- TTD Kepala Bidang Pemadaman --}}
-                        <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #E2E8F0;">
-                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">3. Mengetahui: Kepala Bidang Pemadaman</span>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
-                                    <input type="text" name="ttd_kabid_pemadam_nama" x-model="activeDoc.ttd_kabid_pemadam_nama" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
-                                    <input type="text" name="ttd_kabid_pemadam_nip" x-model="activeDoc.ttd_kabid_pemadam_nip" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- TTD Kepala Bidang Penyelamatan (Rescue) --}}
-                        <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed #E2E8F0;">
-                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">4. Mengetahui: Kepala Bidang Penyelamatan (Rescue)</span>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
-                                    <input type="text" name="ttd_kabid_rescue_nama" x-model="activeDoc.ttd_kabid_rescue_nama" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
-                                    <input type="text" name="ttd_kabid_rescue_nip" x-model="activeDoc.ttd_kabid_rescue_nip" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- TTD Kepala Bidang Pencegahan --}}
-                        <div>
-                            <span style="font-size:11.5px; font-weight:700; color:#0F172A; display:block; margin-bottom:6px;">5. Mengetahui: Kepala Bidang Pencegahan</span>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">Nama Lengkap + Gelar</label>
-                                    <input type="text" name="ttd_kabid_pencegahan_nama" x-model="activeDoc.ttd_kabid_pencegahan_nama" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:11px; color:#64748B; font-weight:600;">NIP</label>
-                                    <input type="text" name="ttd_kabid_pencegahan_nip" x-model="activeDoc.ttd_kabid_pencegahan_nip" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #CBD5E1; border-radius:6px; font-size:12px;">
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
 
@@ -830,7 +738,7 @@
                     </button>
                     <button type="submit"
                             style="padding:9px 18px; background:#2563EB; border:none; border-radius:8px; font-size:13px; font-weight:700; color:#FFFFFF; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
-                        <i data-lucide="save" style="width:16px; height:16px;"></i>
+                        <i data-lucide="check" style="width:16px; height:16px;"></i>
                         <span>Simpan Perubahan</span>
                     </button>
                 </div>
@@ -1025,17 +933,15 @@
                                 <label style="font-size:12px; font-weight:700; color:#334155; margin:0;">Regu</label>
                                 <span style="font-size:11px; color:#2563EB; font-weight:600;" x-show="createPos" x-text="'(Pos: ' + createPos + ')'"></span>
                             </div>
-                            <select name="regu" x-model="createRegu" @change="onReguChangeCreate()" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
+                            <input type="hidden" name="regu" :value="createRegu">
+                            <select name="regu_id" x-model="createReguId" @change="onReguIdChangeCreate()" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
                                 <option value="">— Pilih Regu Sesuai Pos —</option>
                                 <template x-for="r in getRegusForPos(createPos)" :key="r.id">
-                                    <option :value="r.nama" x-text="r.nama + (r.bidang ? ' — ' + r.bidang : '') + (r.danru ? ' (Danru: ' + r.danru + ')' : '')"></option>
+                                    <option :value="r.id" x-text="r.nama + (r.bidang ? ' — ' + r.bidang : '') + (r.danru ? ' (Danru: ' + r.danru + ')' : '')"></option>
                                 </template>
                                 <template x-if="getRegusForPos(createPos).length === 0">
                                     <optgroup label="Pilihan Standar">
-                                        <option value="Regu 1">Regu 1</option>
-                                        <option value="Regu 2">Regu 2</option>
-                                        <option value="Regu 3">Regu 3</option>
-                                        <option value="Regu 4">Regu 4</option>
+                                        <option value="">— Belum ada data regu pos —</option>
                                     </optgroup>
                                 </template>
                             </select>
@@ -1168,17 +1074,15 @@
                                 <label style="font-size:12px; font-weight:700; color:#334155; margin:0;">Regu</label>
                                 <span style="font-size:11px; color:#2563EB; font-weight:600;" x-show="activeUser.pos" x-text="'(Pos: ' + activeUser.pos + ')'"></span>
                             </div>
-                            <select name="regu" x-model="activeUser.regu" @change="onReguChangeEdit()" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
+                            <input type="hidden" name="regu" :value="activeUser.regu">
+                            <select name="regu_id" x-model="activeUser.regu_id" @change="onReguIdChangeEdit()" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
                                 <option value="">— Pilih Regu Sesuai Pos —</option>
                                 <template x-for="r in getRegusForPos(activeUser.pos)" :key="r.id">
-                                    <option :value="r.nama" x-text="r.nama + (r.bidang ? ' — ' + r.bidang : '') + (r.danru ? ' (Danru: ' + r.danru + ')' : '')"></option>
+                                    <option :value="r.id" x-text="r.nama + (r.bidang ? ' — ' + r.bidang : '') + (r.danru ? ' (Danru: ' + r.danru + ')' : '')"></option>
                                 </template>
                                 <template x-if="getRegusForPos(activeUser.pos).length === 0">
                                     <optgroup label="Pilihan Standar">
-                                        <option value="Regu 1">Regu 1</option>
-                                        <option value="Regu 2">Regu 2</option>
-                                        <option value="Regu 3">Regu 3</option>
-                                        <option value="Regu 4">Regu 4</option>
+                                        <option value="">— Belum ada data regu pos —</option>
                                     </optgroup>
                                 </template>
                             </select>
@@ -1363,10 +1267,39 @@ function pengaturanApp() {
         createBidang: '',
         createPos: '',
         createRegu: '',
+        createReguId: '',
         createNoHp: '',
         pegawaiList: @json($pegawaiList ?? []),
         pegawaiOpen: false,
         pegawaiQuery: '',
+        openEditUser(user, updateUrl) {
+            this.activeUser = Object.assign({}, user);
+            if (!this.activeUser.regu_id && this.activeUser.regu) {
+                const rClean = (this.activeUser.regu || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                const pClean = (this.activeUser.pos || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                const bClean = (this.activeUser.bidang || '').toLowerCase().trim();
+                const match = this.allReguList.find(r => {
+                    const rp = (r.pos || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const rn = (r.nama || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const rb = (r.bidang || '').toLowerCase().trim();
+                    return (rp.includes(pClean) || pClean.includes(rp)) &&
+                           rn === rClean &&
+                           (!bClean || rb === bClean || rb.includes(bClean) || bClean.includes(rb));
+                }) || this.allReguList.find(r => {
+                    const rp = (r.pos || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const rn = (r.nama || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                    return (rp.includes(pClean) || pClean.includes(rp)) && rn === rClean;
+                });
+                if (match) {
+                    this.activeUser.regu_id = match.id;
+                }
+            }
+            this.editUrl = updateUrl;
+            this.editModalOpen = true;
+            this.$nextTick(() => {
+                if (window.lucide) window.lucide.createIcons();
+            });
+        },
         filterPegawaiList(query) {
             if (!query || query.trim() === '') return [];
             let q = query.toLowerCase();
@@ -1393,6 +1326,20 @@ function pengaturanApp() {
             this.createEmail = '';
             this.pegawaiQuery = '';
             this.pegawaiOpen = false;
+
+            // Auto-resolve regu_id yang sesuai
+            if (this.createPos) {
+                let regus = this.getRegusForPos(this.createPos);
+                let match = regus.find(r => {
+                    let bMatch = !this.createBidang || (r.bidang && r.bidang.toLowerCase() === this.createBidang.toLowerCase());
+                    let rMatch = this.createRegu && r.nama.toLowerCase() === this.createRegu.toLowerCase();
+                    return bMatch && rMatch;
+                }) || regus.find(r => !this.createBidang || (r.bidang && r.bidang.toLowerCase() === this.createBidang.toLowerCase()));
+                if (match) {
+                    this.createReguId = match.id;
+                    this.createRegu = match.nama;
+                }
+            }
         },
         allReguList: @json($allReguList ?? []),
         getRegusForPos(posName) {
@@ -1406,18 +1353,66 @@ function pengaturanApp() {
             });
             return matched;
         },
+        onReguIdChangeCreate() {
+            if (this.createReguId) {
+                const r = this.allReguList.find(item => String(item.id) === String(this.createReguId));
+                if (r) {
+                    this.createRegu = r.nama;
+                }
+            } else {
+                this.createRegu = '';
+            }
+        },
+        onReguIdChangeEdit() {
+            if (this.activeUser.regu_id) {
+                const r = this.allReguList.find(item => String(item.id) === String(this.activeUser.regu_id));
+                if (r) {
+                    this.activeUser.regu = r.nama;
+                }
+            } else {
+                this.activeUser.regu = '';
+            }
+        },
         onBidangChangeCreate() {
-            // Tetap pertahankan pilihan regu user
+            if (this.createPos) {
+                let regus = this.getRegusForPos(this.createPos);
+                let match = regus.find(r => {
+                    let bMatch = !this.createBidang || (r.bidang && r.bidang.toLowerCase() === this.createBidang.toLowerCase());
+                    let rMatch = this.createRegu && r.nama.toLowerCase() === this.createRegu.toLowerCase();
+                    return bMatch && rMatch;
+                }) || regus.find(r => !this.createBidang || (r.bidang && r.bidang.toLowerCase() === this.createBidang.toLowerCase()));
+                if (match) {
+                    this.createReguId = match.id;
+                    this.createRegu = match.nama;
+                }
+            }
         },
         onBidangChangeEdit() {
-            // Tetap pertahankan pilihan regu user
+            if (this.activeUser.pos) {
+                let regus = this.getRegusForPos(this.activeUser.pos);
+                let match = regus.find(r => {
+                    let bMatch = !this.activeUser.bidang || (r.bidang && r.bidang.toLowerCase() === this.activeUser.bidang.toLowerCase());
+                    let rMatch = this.activeUser.regu && r.nama.toLowerCase() === this.activeUser.regu.toLowerCase();
+                    return bMatch && rMatch;
+                }) || regus.find(r => !this.activeUser.bidang || (r.bidang && r.bidang.toLowerCase() === this.activeUser.bidang.toLowerCase()));
+                if (match) {
+                    this.activeUser.regu_id = match.id;
+                    this.activeUser.regu = match.nama;
+                }
+            }
         },
         onPosChangeCreate() {
             if (!this.createPos) return;
             let regus = this.getRegusForPos(this.createPos);
             if (regus.length > 0) {
-                if (!this.createRegu || !regus.some(r => r.nama.toLowerCase() === this.createRegu.toLowerCase())) {
-                    this.createRegu = regus[0].nama;
+                let match = regus.find(r => {
+                    let bMatch = !this.createBidang || (r.bidang && r.bidang.toLowerCase() === this.createBidang.toLowerCase());
+                    let rMatch = this.createRegu && r.nama.toLowerCase() === this.createRegu.toLowerCase();
+                    return bMatch && rMatch;
+                }) || regus.find(r => !this.createBidang || (r.bidang && r.bidang.toLowerCase() === this.createBidang.toLowerCase())) || regus[0];
+                if (match) {
+                    this.createReguId = match.id;
+                    this.createRegu = match.nama;
                 }
             }
         },
@@ -1425,16 +1420,16 @@ function pengaturanApp() {
             if (!this.activeUser.pos) return;
             let regus = this.getRegusForPos(this.activeUser.pos);
             if (regus.length > 0) {
-                if (!this.activeUser.regu || !regus.some(r => r.nama.toLowerCase() === this.activeUser.regu.toLowerCase())) {
-                    this.activeUser.regu = regus[0].nama;
+                let match = regus.find(r => {
+                    let bMatch = !this.activeUser.bidang || (r.bidang && r.bidang.toLowerCase() === this.activeUser.bidang.toLowerCase());
+                    let rMatch = this.activeUser.regu && r.nama.toLowerCase() === this.activeUser.regu.toLowerCase();
+                    return bMatch && rMatch;
+                }) || regus.find(r => !this.activeUser.bidang || (r.bidang && r.bidang.toLowerCase() === this.activeUser.bidang.toLowerCase())) || regus[0];
+                if (match) {
+                    this.activeUser.regu_id = match.id;
+                    this.activeUser.regu = match.nama;
                 }
             }
-        },
-        onReguChangeCreate() {
-            // Tidak pernah menimpa bidang yang sudah dipilih user / pegawai
-        },
-        onReguChangeEdit() {
-            // Tidak pernah menimpa bidang yang sudah dipilih user / pegawai
         },
         generatedPass: 'Damkar' + Math.floor(1000 + Math.random() * 9000) + '!',
         showPassCreate: false,
