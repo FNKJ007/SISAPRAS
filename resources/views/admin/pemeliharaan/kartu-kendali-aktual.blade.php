@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Kartu Kendali SPJ — Admin')
+@section('title', 'Kartu Kendali Aktual — Admin')
 
 @section('content')
 <div>
@@ -7,9 +7,9 @@
     {{-- Header --}}
     <div class="no-print" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
         <div>
-            <h1 style="font-size:22px; font-weight:800; color:#0F172A; margin:0;">Kartu Kendali SPJ Pemeliharaan</h1>
+            <h1 style="font-size:22px; font-weight:800; color:#0F172A; margin:0;">Kartu Kendali Aktual Pemeliharaan</h1>
             <p style="font-size:13px; color:#64748B; margin-top:4px; margin-bottom:0;">
-                Ledger saldo kumulatif pemeliharaan berdasarkan data SPJ Pembayaran, per tahun anggaran.
+                Ledger rekapitulasi realisasi pemeliharaan kendaraan per bulan, per tahun anggaran.
             </p>
         </div>
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -97,54 +97,76 @@
 
             {{-- Judul Dokumen --}}
             <div class="judul-dokumen" style="text-align:center; margin-bottom:18px; page-break-inside:avoid; break-inside:avoid;">
-                <h2 style="font-size:14px; font-weight:800; text-transform:uppercase; color:#1B2A6B; text-decoration:underline; letter-spacing:0.5px; margin:0 0 3px 0;">KARTU KENDALI SPJ PEMELIHARAAN KENDARAAN</h2>
+                <h2 style="font-size:14px; font-weight:800; text-transform:uppercase; color:#1B2A6B; text-decoration:underline; letter-spacing:0.5px; margin:0 0 3px 0;">KARTU KENDALI AKTUAL PEMELIHARAAN KENDARAAN</h2>
                 <div style="font-size:11.5px; font-weight:600; color:#64748B;">
                     Tahun Anggaran {{ $tahunFilter }}
                 </div>
             </div>
 
-            @if($kartuKendaliRows->isEmpty())
+            @if(empty($matrix))
                 <div style="padding:56px 20px; text-align:center; background:#FFFFFF; display:flex; flex-direction:column; align-items:center; justify-content:center;">
                     <div style="width:64px; height:64px; background:#F8FAFC; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin:0 auto 16px auto; border:1px solid #E2E8F0;">
                         <i data-lucide="clipboard-list" style="width:30px; height:30px; color:#64748B;"></i>
                     </div>
                     <div style="font-size:16px; font-weight:800; color:#0F172A; margin-bottom:6px;">Belum Ada Data Pemeliharaan</div>
-                    <div style="font-size:13px; color:#64748B; max-width:400px; margin:0 auto;">Tidak ditemukan data pemeliharaan untuk tahun anggaran / filter yang dipilih.</div>
+                    <div style="font-size:13px; color:#64748B; max-width:400px; margin:0 auto;">Tidak ditemukan data unit untuk pemeliharaan saat ini.</div>
                 </div>
             @else
-                {{-- Tabel Presisi A4 dengan Auto Page-Break & Multi-Halaman --}}
-                <div style="margin-bottom:18px; border-radius:8px; border:1px solid #E2E8F0; overflow:hidden;">
-                    <table class="kartu-kendali-table" style="width:100%; border-collapse:collapse; font-size:11px; text-align:left; table-layout:auto; page-break-inside:auto;">
+                <div style="text-align:right; margin-bottom:4px;">
+                    <strong style="font-size:12px; font-weight:800; color:#0F172A;">{{ number_format($grandTotal, 0, ',', '.') }}</strong>
+                </div>
+                {{-- Tabel Matriks Kartu Kendali Aktual --}}
+                <div style="margin-bottom:18px; overflow-x:auto;">
+                    <table class="kartu-kendali-table" style="width:100%; border-collapse:collapse; font-size:10px; text-align:center; table-layout:auto; page-break-inside:auto; border:1px solid #000;">
                         <thead style="display:table-header-group;">
-                            <tr style="background:#1B2A6B; color:#FFFFFF; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; page-break-inside:avoid; break-inside:avoid;">
-                                <th style="padding:8px 8px; width:30px; text-align:center;">No</th>
-                                <th style="padding:8px 8px; width:80px;">Tanggal</th>
-                                <th style="padding:8px 8px; width:160px;">Nomor Invoice / Rujukan</th>
-                                <th style="padding:8px 8px; width:130px;">Unit / Lambung</th>
-                                <th style="padding:8px 8px; width:140px; text-align:right;">Jumlah (Rp)</th>
-                                <th style="padding:8px 8px; width:150px; text-align:right;">Saldo Kumulatif (Rp)</th>
+                            <tr style="page-break-inside:avoid; break-inside:avoid;">
+                                <th rowspan="2" style="padding:6px; border:1px solid #000; vertical-align:middle; width:70px;">NO. LAMBUNG</th>
+                                <th rowspan="2" style="padding:6px; border:1px solid #000; vertical-align:middle; width:75px;">TNKB</th>
+                                <th colspan="12" style="padding:6px; border:1px solid #000; font-weight:bold; letter-spacing:1px;">BULAN</th>
+                                <th rowspan="2" style="padding:6px; border:1px solid #000; vertical-align:middle; width:80px; font-weight:bold;">TOTAL</th>
+                            </tr>
+                            <tr style="page-break-inside:avoid; break-inside:avoid;">
+                                <th style="padding:4px; border:1px solid #000; font-weight:bold; width:65px;">01 (JAN)</th>
+                                <th style="padding:4px; border:1px solid #000; font-weight:bold; width:65px;">02 (FEB)</th>
+                                <th style="padding:4px; border:1px solid #000; font-weight:bold; width:65px;">03 (MAR)</th>
+                                <th style="padding:4px; border:1px solid #000; font-weight:bold; width:65px;">04 (APR)</th>
+                                <th style="padding:4px; border:1px solid #000; font-weight:bold; width:65px;">05 (MEI)</th>
+                                <th style="padding:4px; border:1px solid #000; font-weight:bold; width:65px;">06 (JUN)</th>
+                                <th style="padding:4px; border:1px solid #000; font-weight:bold; width:65px;">07 (JUL)</th>
+                                <th style="padding:4px; border:1px solid #000; font-weight:bold; width:65px;">08 (AGS)</th>
+                                <th style="padding:4px; border:1px solid #000; font-weight:bold; width:65px;">09 (SEP)</th>
+                                <th style="padding:4px; border:1px solid #000; font-weight:bold; width:65px;">10 (OKT)</th>
+                                <th style="padding:4px; border:1px solid #000; font-weight:bold; width:65px;">11 (NOV)</th>
+                                <th style="padding:4px; border:1px solid #000; font-weight:bold; width:65px;">12 (DES)</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($kartuKendaliRows as $i => $row)
-                                <tr class="item-table-row" style="border-bottom:1px solid #E2E8F0; page-break-inside:avoid; break-inside:avoid; {{ $i % 2 == 1 ? 'background:#FAFAFA;' : 'background:#FFFFFF;' }}">
-                                    <td style="padding:8px 8px; text-align:center; color:#64748B; font-weight:600;">{{ $i + 1 }}</td>
-                                    <td style="padding:8px 8px; color:#334155; white-space:nowrap;">{{ $row->tanggal_invoice ? $row->tanggal_invoice->format('d/m/Y') : '—' }}</td>
-                                    <td style="padding:8px 8px; font-weight:700; color:#1E3A8A; word-break:break-word;">{{ $row->nomor_invoice }}</td>
-                                    <td style="padding:8px 8px;">
-                                        <div style="font-weight:700; color:#0F172A;">{{ $row->no_lambung ?? optional($row->unit)->nomor_lambung ?? '—' }}</div>
-                                        <div style="font-size:9.5px; color:#64748B;">{{ $row->no_pol ?? optional($row->unit)->plat_nomor ?? '' }}</div>
+                            @foreach($matrix as $unitId => $data)
+                                <tr style="page-break-inside:avoid; break-inside:avoid;">
+                                    <td style="padding:4px; border:1px solid #000; text-align:left; font-weight:500;">{{ $data['unit']->nomor_lambung ?? '-' }}</td>
+                                    <td style="padding:4px; border:1px solid #000; text-align:left; font-weight:500;">{{ $data['unit']->plat_nomor ?? '-' }}</td>
+                                    @for($m = 1; $m <= 12; $m++)
+                                        <td style="padding:4px; border:1px solid #000; text-align:right;">
+                                            {{ $data['months'][$m] > 0 ? number_format($data['months'][$m], 0, ',', '.') : '-' }}
+                                        </td>
+                                    @endfor
+                                    <td style="padding:4px; border:1px solid #000; text-align:right; font-weight:bold;">
+                                        {{ $data['total'] > 0 ? number_format($data['total'], 0, ',', '.') : '-' }}
                                     </td>
-                                    <td style="padding:8px 8px; text-align:right; font-weight:700; color:#0F172A; font-variant-numeric:tabular-nums;">{{ number_format($row->total_biaya, 0, ',', '.') }}</td>
-                                    <td style="padding:8px 8px; text-align:right; font-weight:800; color:#1B2A6B; font-variant-numeric:tabular-nums;">{{ number_format($row->saldo_kumulatif, 0, ',', '.') }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
                         <tfoot style="display:table-footer-group; page-break-inside:avoid; break-inside:avoid;">
-                            <tr style="background:#F8FAFC; border-top:2px solid #E2E8F0; page-break-inside:avoid; break-inside:avoid;">
-                                <td colspan="4" style="padding:9px 10px; text-align:right; font-weight:800; color:#334155; font-size:11px; text-transform:uppercase;">TOTAL KUMULATIF PEMELIHARAAN SPJ</td>
-                                <td style="padding:9px 10px; text-align:right; font-weight:800; color:#1B2A6B; font-size:11.5px; font-variant-numeric:tabular-nums;">Rp {{ number_format($kpi['total_nilai'], 0, ',', '.') }}</td>
-                                <td style="padding:9px 10px; text-align:right; font-weight:800; color:#1B2A6B; font-size:11.5px; font-variant-numeric:tabular-nums;">Rp {{ number_format($kpi['total_nilai'], 0, ',', '.') }}</td>
+                            <tr>
+                                <td colspan="2" style="padding:6px; border:1px solid #000; font-weight:bold; text-align:center;">TOTAL</td>
+                                @for($m = 1; $m <= 12; $m++)
+                                    <td style="padding:6px; border:1px solid #000; text-align:right; font-weight:bold;">
+                                        {{ $totalPerBulan[$m] > 0 ? number_format($totalPerBulan[$m], 0, ',', '.') : '-' }}
+                                    </td>
+                                @endfor
+                                <td style="padding:6px; border:1px solid #000; text-align:right; font-weight:bold;">
+                                    {{ $grandTotal > 0 ? number_format($grandTotal, 0, ',', '.') : '-' }}
+                                </td>
                             </tr>
                         </tfoot>
                     </table>
@@ -170,8 +192,8 @@
 <style>
     @media print {
         @page {
-            size: A4 portrait;
-            margin: 10mm 10mm 15mm 10mm;
+            size: A4 landscape;
+            margin: 10mm;
         }
         .no-print, aside, nav, .sidebar, .topbar, .app-header, .mobile-menu-btn, header {
             display: none !important;
