@@ -670,11 +670,6 @@ class AdminController extends Controller
         ]);
     }
 
-    /**
-     * Kartu Kendali Aktual Pemeliharaan — ledger realisasi fisik pekerjaan
-     * berbasis data Monitoring Aktual (poin 1.f), menampilkan progres
-     * pengerjaan tiap unit per tahun (poin 1.h).
-     */
     public function pemeliharaanKartuKendaliAktual(Request $request)
     {
         $tahunList = \App\Models\Invoice::where('kategori_monitoring', 'aktual')
@@ -688,42 +683,64 @@ class AdminController extends Controller
         $tahunFilter    = $request->query('tahun', $tahunList->first() ?? date('Y'));
         $searchQuery    = $request->query('search', '');
 
-        $query = \App\Models\Invoice::with('unit')
-            ->where('kategori_monitoring', 'aktual')
+        // Fetch all active units
+        $unitsQuery = \App\Models\Unit::orderBy('nomor_lambung', 'asc');
+        if (!empty($searchQuery)) {
+            $unitsQuery->where(function ($q) use ($searchQuery) {
+                $q->where('nomor_lambung', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('plat_nomor', 'ILIKE', "%{$searchQuery}%");
+            });
+        }
+        $units = $unitsQuery->get();
+
+        // Fetch all invoices for the selected year
+        $invoices = \App\Models\Invoice::where('kategori_monitoring', 'aktual')
             ->where(function ($q) use ($tahunFilter) {
                 $q->where('tahun_anggaran', $tahunFilter)
                   ->orWhereYear('tanggal_invoice', $tahunFilter);
             })
-            ->orderBy('tanggal_invoice', 'asc')
-            ->orderBy('id', 'asc');
+            ->get();
 
-        if (!empty($searchQuery)) {
-            $query->where(function ($q) use ($searchQuery) {
-                $q->where('nomor_invoice', 'ILIKE', "%{$searchQuery}%")
-                  ->orWhere('no_pol', 'ILIKE', "%{$searchQuery}%")
-                  ->orWhere('no_lambung', 'ILIKE', "%{$searchQuery}%");
-            });
+        $matrix = [];
+        $totalPerBulan = array_fill(1, 12, 0);
+        $grandTotal = 0;
+
+        foreach ($units as $unit) {
+            $matrix[$unit->id] = [
+                'unit'   => $unit,
+                'months' => array_fill(1, 12, 0),
+                'total'  => 0,
+            ];
         }
 
-        $invoiceList = $query->get();
+        $unitByLambung = $units->keyBy('nomor_lambung');
 
-        // Hitung saldo kumulatif berjalan
-        $saldoBerjalan = 0;
-        $kartuKendaliRows = $invoiceList->map(function ($invoice) use (&$saldoBerjalan) {
-            $saldoBerjalan += (float) $invoice->total_biaya;
-            $invoice->saldo_kumulatif = $saldoBerjalan;
-            return $invoice;
-        });
+        foreach ($invoices as $inv) {
+            $unitId = $inv->unit_id;
+            if (!$unitId && $inv->no_lambung && isset($unitByLambung[$inv->no_lambung])) {
+                $unitId = $unitByLambung[$inv->no_lambung]->id;
+            }
 
-        $totalInvoice = $invoiceList->count();
-        $totalNilai   = (float) $invoiceList->sum('total_biaya');
-        $totalUnit    = $invoiceList->pluck('no_lambung')->filter()->unique()->count() 
-                     ?: $invoiceList->pluck('unit_id')->filter()->unique()->count();
-        $rataRata     = $totalInvoice > 0 ? ($totalNilai / $totalInvoice) : 0;
+            if ($unitId && isset($matrix[$unitId])) {
+                $bulan = $inv->tanggal_invoice ? (int) $inv->tanggal_invoice->format('n') : null;
+                
+                if ($bulan >= 1 && $bulan <= 12) {
+                    $biaya = (float) $inv->total_biaya;
+                    $matrix[$unitId]['months'][$bulan] += $biaya;
+                    $matrix[$unitId]['total'] += $biaya;
+                    $totalPerBulan[$bulan] += $biaya;
+                    $grandTotal += $biaya;
+                }
+            }
+        }
+
+        $totalInvoice = $invoices->count();
+        $totalUnit    = collect($matrix)->where('total', '>', 0)->count();
+        $rataRata     = $totalInvoice > 0 ? ($grandTotal / $totalInvoice) : 0;
 
         $kpi = [
             'total_invoice' => $totalInvoice,
-            'total_nilai'   => $totalNilai,
+            'total_nilai'   => $grandTotal,
             'total_unit'    => $totalUnit,
             'rata_rata'     => $rataRata,
         ];
@@ -734,7 +751,9 @@ class AdminController extends Controller
             ->first();
 
         return view('admin.pemeliharaan.kartu-kendali-aktual', [
-            'kartuKendaliRows' => $kartuKendaliRows,
+            'matrix'           => $matrix,
+            'totalPerBulan'    => $totalPerBulan,
+            'grandTotal'       => $grandTotal,
             'kpi'              => $kpi,
             'tahunList'        => $tahunList,
             'tahunFilter'      => $tahunFilter,

@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Kartu Kendali Aktual — Admin')
+@section('title', 'Kartu Kendali SPJ — Admin')
 
 @section('content')
 <div>
@@ -7,9 +7,9 @@
     {{-- Header --}}
     <div class="no-print" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
         <div>
-            <h1 style="font-size:22px; font-weight:800; color:#0F172A; margin:0;">Kartu Kendali Aktual Pemeliharaan</h1>
+            <h1 style="font-size:22px; font-weight:800; color:#0F172A; margin:0;">Kartu Kendali SPJ Pemeliharaan</h1>
             <p style="font-size:13px; color:#64748B; margin-top:4px; margin-bottom:0;">
-                Ledger saldo kumulatif pembayaran pemeliharaan berdasarkan data Aktual Pembayaran, per tahun anggaran.
+                Ledger saldo kumulatif pemeliharaan berdasarkan data SPJ Pembayaran, per tahun anggaran.
             </p>
         </div>
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -95,7 +95,7 @@
 
             {{-- Judul Dokumen --}}
             <div class="judul-dokumen" style="text-align:center; margin-bottom:18px; page-break-inside:avoid; break-inside:avoid;">
-                <h2 style="font-size:14px; font-weight:800; text-transform:uppercase; color:#1B2A6B; text-decoration:underline; letter-spacing:0.5px; margin:0 0 3px 0;">KARTU KENDALI AKTUAL PEMELIHARAAN KENDARAAN</h2>
+                <h2 style="font-size:14px; font-weight:800; text-transform:uppercase; color:#1B2A6B; text-decoration:underline; letter-spacing:0.5px; margin:0 0 3px 0;">KARTU KENDALI SPJ PEMELIHARAAN KENDARAAN</h2>
                 <div style="font-size:11.5px; font-weight:600; color:#64748B;">
                     Tahun Anggaran {{ $tahunFilter }}
                 </div>
