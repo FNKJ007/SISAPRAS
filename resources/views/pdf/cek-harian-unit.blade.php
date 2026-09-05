@@ -49,28 +49,56 @@
 <body>
     @php
         $unit = $unit ?? $record->unit;
-        $items = collect($record->perlengkapan ?? [])->filter(function ($item, $key) {
-            return !in_array($key, ['kebersihan_bagian_dalam', 'kebersihan_bagian_luar']);
-        });
-        $specialItems = collect([
-            ['label' => 'Kondisi Kebersihan Unit', 'status' => $record->kebersihan_unit === 'tidak_bersih' ? 'rusak' : 'baik', 'catatan' => null, 'show' => true],
-            ['label' => 'Level Air Tangki', 'status' => $record->level_air, 'catatan' => $record->level_air, 'show' => $record->kategori === 'pemadam'],
-            ['label' => 'Kondisi Tangki Air', 'status' => $record->kondisi_tangki_air, 'catatan' => null, 'show' => $record->kategori === 'pemadam'],
-            ['label' => 'Kebocoran Tangki Air', 'status' => $record->kebocoran_tangki_air, 'catatan' => null, 'show' => $record->kategori === 'pemadam'],
-            ['label' => 'Tekanan Pompa', 'status' => $record->tekanan_pompa, 'catatan' => null, 'show' => $record->kategori === 'pemadam'],
-            ['label' => 'Selang Induk', 'status' => $record->selang_induk, 'catatan' => null, 'show' => $record->kategori === 'pemadam'],
-        ])->filter(function ($item) {
-            return $item['show'] && $item['status'] !== null && $item['status'] !== '';
-        });
-        $items = $specialItems->concat($items);
-        $categoryNames = [
-            'pemadam' => ['Pemeriksaan Mesin & Komponen Mekanikal', 'Pemeriksaan Kabin & Kelistrikan Utama', 'Pemeriksaan Sasis, Ban, & Eksterior', 'Pemeriksaan Pompa & Sistem Pemadam', 'Pemeriksaan Perlengkapan & Peralatan'],
-            'rescue' => ['Pemeriksaan Mesin, Kabin & Kelistrikan', 'Pemeriksaan Sasis, Ban, & Eksterior', 'Pemeriksaan Perlengkapan Rescue'],
-            'pencegahan' => ['Pemeriksaan Kendaraan & Kelistrikan', 'Pemeriksaan Sasis, Ban, & Eksterior', 'Pemeriksaan Perlengkapan Pencegahan'],
+        $categoriesData = [];
+
+        // 1. Pemanasan, BBM & Kebersihan
+        $cat1 = [];
+        $cat1[] = ['label' => 'Pemanasan Kendaraan (Bukti Dilampirkan)', 'status' => $record->bukti_pemanasan ? 'baik' : 'perlu_perhatian', 'catatan' => ''];
+        $cat1[] = ['label' => 'Jenis BBM: ' . ucfirst($record->jenis_bbm ?? '-'), 'status' => 'baik', 'catatan' => ''];
+        $cat1[] = ['label' => 'Kondisi Kebersihan Unit', 'status' => $record->kebersihan_unit === 'tidak_bersih' ? 'rusak' : 'baik', 'catatan' => ''];
+
+        $categoriesData[] = [
+            'title' => 'Pemanasan Kendaraan, BBM & Kebersihan',
+            'items' => $cat1
         ];
-        $categories = $categoryNames[$record->kategori] ?? ['Pemeriksaan Kendaraan dan Perlengkapan'];
-        $itemsPerCategory = (int) ceil(max($items->count(), 1) / count($categories));
-        $chunks = $items->values()->chunk($itemsPerCategory);
+
+        // 2. Tangki & Pompa (If pemadam)
+        if ($record->kategori === 'pemadam') {
+            $cat2 = [];
+            
+            $levelAirLabel = \App\Models\CekHarianUnit::$levelMap[$record->level_air] ?? ucfirst(str_replace('_', ' ', $record->level_air ?? ''));
+            $cat2[] = ['label' => 'Level Air Tangki', 'status' => $record->level_air === 'kosong' ? 'perlu_perhatian' : 'baik', 'catatan' => $levelAirLabel];
+            
+            $cat2[] = ['label' => 'Kondisi Tangki Air', 'status' => $record->kondisi_tangki_air, 'catatan' => ''];
+            $cat2[] = ['label' => 'Kebocoran Tangki Air', 'status' => $record->kebocoran_tangki_air === 'ada' ? 'rusak' : 'baik', 'catatan' => $record->kebocoran_tangki_air === 'ada' ? 'Ada Kebocoran' : ''];
+            $cat2[] = ['label' => 'Tekanan Pompa', 'status' => $record->tekanan_pompa === 'kurang' ? 'perlu_perhatian' : ($record->tekanan_pompa === 'tidak_ada' ? 'rusak' : 'baik'), 'catatan' => ucfirst(str_replace('_', ' ', $record->tekanan_pompa ?? ''))];
+            $cat2[] = ['label' => 'Selang Induk', 'status' => $record->selang_induk, 'catatan' => ''];
+            if (!empty($record->catatan_tangki_pompa)) {
+                $cat2[] = ['label' => 'Catatan Tambahan Tangki/Pompa', 'status' => 'baik', 'catatan' => $record->catatan_tangki_pompa];
+            }
+            
+            $categoriesData[] = [
+                'title' => 'Pemeriksaan Tangki & Pompa',
+                'items' => $cat2
+            ];
+        }
+
+        // 3. Perlengkapan
+        $cat3 = [];
+        foreach ($record->perlengkapan ?? [] as $key => $val) {
+            if (in_array($key, ['kebersihan_bagian_dalam', 'kebersihan_bagian_luar'])) continue;
+            $cat3[] = [
+                'label' => $val['label'] ?? '-',
+                'status' => $val['status'] ?? 'baik',
+                'catatan' => $val['catatan'] ?? ''
+            ];
+        }
+        if (count($cat3) > 0) {
+            $categoriesData[] = [
+                'title' => 'Pemeriksaan Perlengkapan Kendaraan',
+                'items' => $cat3
+            ];
+        }
         $tanggal = strtotime($record->tanggal_pemeriksaan);
         $hari = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'];
 
@@ -112,16 +140,16 @@
     <table class="inspection">
         <thead><tr><th class="no">No</th><th class="item">Item Pemeriksaan</th><th class="standard">Standar</th><th colspan="5">Kondisi</th><th class="action">Rencana Tindak<br>Lanjut</th><th class="result">Hasil Tindak<br>Lanjut</th></tr><tr><th></th><th></th><th></th><th class="condition">R</th><th class="condition">RR</th><th class="condition">RS</th><th class="condition">TF</th><th class="condition">T</th><th></th><th></th></tr></thead>
         <tbody>
-        @foreach($chunks as $categoryIndex => $categoryItems)
-            <tr class="category"><td class="no">{{ $categoryIndex + 1 }}</td><td colspan="9">{{ $categories[$categoryIndex] ?? end($categories) }}</td></tr>
-            @foreach($categoryItems as $item)
+        @foreach($categoriesData as $categoryIndex => $catData)
+            <tr class="category"><td class="no">{{ $categoryIndex + 1 }}</td><td colspan="9">{{ $catData['title'] }}</td></tr>
+            @foreach($catData['items'] as $item)
                 @php
                     $status = strtolower($item['status'] ?? 'baik');
                     $isRusak = $status === 'rusak';
                     $isPerluPerhatian = in_array($status, ['perlu_perhatian', 'perlu perhatian']);
                     $note = trim($item['catatan'] ?? '');
                 @endphp
-                <tr><td class="no"></td><td>- {{ $item['label'] ?? '-' }}</td><td class="muted">{{ $isRusak || $isPerluPerhatian ? 'Perlu tindak lanjut sesuai hasil pemeriksaan.' : 'Berfungsi baik dan sesuai standar.' }}</td><td class="condition check">{{ $isRusak ? 'X' : '' }}</td><td class="condition check">{{ $isPerluPerhatian ? 'X' : '' }}</td><td class="condition"></td><td class="condition"></td><td class="condition"></td><td class="action">{{ $isRusak || $isPerluPerhatian ? str_replace('/', ' / ', ($note ?: 'Perlu pemeriksaan / perbaikan')) : '-' }}</td><td class="result">-</td></tr>
+                <tr><td class="no"></td><td>- {{ $item['label'] ?? '-' }}</td><td class="muted">{{ $isRusak || $isPerluPerhatian ? 'Perlu tindak lanjut sesuai hasil pemeriksaan.' : 'Berfungsi baik dan sesuai standar.' }}</td><td class="condition check">{{ $isRusak ? 'X' : '' }}</td><td class="condition check">{{ $isPerluPerhatian ? 'X' : '' }}</td><td class="condition"></td><td class="condition"></td><td class="condition"></td><td class="action">{{ $isRusak || $isPerluPerhatian ? str_replace('/', ' / ', ($note ?: 'Perlu pemeriksaan / perbaikan')) : ($note ?: '-') }}</td><td class="result">-</td></tr>
             @endforeach
         @endforeach
         </tbody>
