@@ -2,6 +2,22 @@
 
 @section('title', 'Data Unit Kendaraan — Admin')
 
+@push('styles')
+<style>
+    .modal-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+    @media (max-width: 640px) {
+        .modal-form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 <div x-data="dataUnitApp()">
 
@@ -177,8 +193,8 @@
 
                                 {{-- Pengemudi 1 & 2 --}}
                                 <td style="padding:12px 14px; font-size:11.5px;">
-                                    <div style="font-weight:700; color:#0F172A;">👤 1: {{ $item->pengemudi_1 && $item->pengemudi_1 !== '—' ? $item->pengemudi_1 : '—' }}</div>
-                                    <div style="font-weight:600; color:#64748B; margin-top:2px;">👤 2: {{ $item->pengemudi_2 && $item->pengemudi_2 !== '—' && $item->pengemudi_2 !== '0' ? $item->pengemudi_2 : '—' }}</div>
+                                    <div style="font-weight:700; color:#0F172A;">👤 1. {{ $item->pengemudi_1 && $item->pengemudi_1 !== '—' ? $item->pengemudi_1 : '—' }}</div>
+                                    <div style="font-weight:600; color:#64748B; margin-top:2px;">👤 2. {{ $item->pengemudi_2 && $item->pengemudi_2 !== '—' && $item->pengemudi_2 !== '0' ? $item->pengemudi_2 : '—' }}</div>
                                 </td>
 
                                 {{-- Status Unit (Ready vs Di Bengkel) --}}
@@ -245,14 +261,22 @@
     {{-- ===================== MODAL: TAMBAH UNIT ===================== --}}
     <div x-show="createModalOpen" x-cloak class="admin-modal-overlay"
          style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px; background-color:rgba(15,23,42,0.65);">
-        <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:16px; width:100%; max-width:580px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px -10px rgba(0,0,0,0.25); border:1px solid #E2E8F0; margin:auto;" @click.stop>
-            <div style="padding:16px 20px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#FFFFFF; z-index:10;">
-                <h3 style="font-size:15.5px; font-weight:800; color:#0F172A; margin:0;">Tambah Unit Kendaraan Baru</h3>
-                <button type="button" @click="createModalOpen = false" style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:4px;">
-                    <i data-lucide="x" style="width:18px; height:18px;"></i>
+        <div class="custom-scrollbar admin-modal-dialog" style="background:#FFFFFF; border-radius:18px; width:100%; max-width:680px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 50px -12px rgba(15,23,42,0.3); border:1px solid #E2E8F0; margin:auto;" @click.stop>
+            <div style="padding:18px 24px; border-bottom:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#FFFFFF; z-index:10;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="width:40px; height:40px; border-radius:12px; background:#EEF2FF; border:1px solid #C7D2FE; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <i data-lucide="truck" style="width:20px; height:20px; color:#1B2A6B;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size:16px; font-weight:800; color:#0F172A; margin:0;">Tambah Unit Kendaraan Baru</h3>
+                        <p style="font-size:12px; color:#64748B; margin:2px 0 0 0;">Daftarkan data armada operasional baru dinas</p>
+                    </div>
+                </div>
+                <button type="button" @click="createModalOpen = false" style="background:none; border:none; color:#94A3B8; cursor:pointer; padding:6px; border-radius:8px;">
+                    <i data-lucide="x" style="width:20px; height:20px;"></i>
                 </button>
             </div>
-            <form action="{{ route('admin.pemeliharaan.data-unit.store') }}" method="POST" style="padding:20px;">
+            <form action="{{ route('admin.pemeliharaan.data-unit.store') }}" method="POST" style="padding:22px;">
                 @csrf
                 @if(isset($errors) && $errors->any())
                     <div style="background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; padding:12px 16px; border-radius:12px; margin-bottom:18px; font-size:12.5px;">
@@ -267,6 +291,45 @@
                         </ul>
                     </div>
                 @endif
+                <div class="modal-form-grid" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:14px; margin-bottom:18px;">
+                    {{-- No. Lambung --}}
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">No. Lambung <span style="color:#DC2626;">*</span></label>
+                        <input type="text" name="nomor_lambung" required value="{{ old('nomor_lambung') }}" placeholder="Contoh: 01 / P-01"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+
+                    {{-- TNKB / Plat Nomor --}}
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">TNKB (Plat Nomor) <span style="color:#DC2626;">*</span></label>
+                        <input type="text" name="plat_nomor" required value="{{ old('plat_nomor') }}" placeholder="Contoh: D 8518 V"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+
+                    {{-- Nama Unit --}}
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Nama Unit <span style="color:#DC2626;">*</span></label>
+                        <input type="text" name="nama" required value="{{ old('nama') }}" placeholder="Contoh: Mobil Pemadam Ayaxx 4000L"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+
+                    {{-- Merk / Tipe --}}
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Merk / Tipe</label>
+                        <input type="text" name="merk_tipe" value="{{ old('merk_tipe') }}" placeholder="Contoh: Isuzu Giga FVR 34 P"
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+
+                    {{-- No. Rangka Mesin --}}
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">No. Rangka Mesin</label>
+                        <input type="text" name="no_rangka_mesin" value="{{ old('no_rangka_mesin') }}" placeholder="Contoh: MHFE74..."
+                               style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
+                    </div>
+
+                    {{-- Jenis Kendaraan (Input Manual + Dropdown Riwayat + Hapus) --}}
+                    <div x-data="{ open: false, val: '{{ old('jenis_kendaraan', '') }}' }" style="position:relative;">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Jenis Kendaraan</label>
                         <div style="position:relative; display:flex; align-items:center;">
                             <input type="text" name="jenis_kendaraan" x-model="val" placeholder="Ketik atau pilih jenis..."
                                    style="width:100%; padding:8px 34px 8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;"
@@ -315,6 +378,8 @@
                             </template>
                         </div>
                     </div>
+
+                    {{-- Penempatan (Pos) --}}
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Penempatan (Pos)</label>
                         <select name="pos" style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF;">
@@ -325,16 +390,21 @@
                             @endforeach
                         </select>
                     </div>
+
+                    {{-- Tahun Pembuatan --}}
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Tahun Pembuatan</label>
                         <input type="number" name="tahun_pembuatan" value="{{ old('tahun_pembuatan') }}" placeholder="2018"
                                style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
                     </div>
+
+                    {{-- CC (Kapasitas Mesin) --}}
                     <div>
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">CC (Kapasitas Mesin)</label>
                         <input type="number" name="cc" value="{{ old('cc') }}" placeholder="Contoh: 7684" min="0"
                                style="width:100%; padding:8px 12px; font-size:13px; border-radius:8px; border:1px solid #CBD5E1; outline:none;">
                     </div>
+
                     {{-- Pengemudi 1 (Ketik Autocomplete dari DB) --}}
                     <div style="position:relative;"
                          x-data="{
@@ -446,14 +516,15 @@
                     </div>
                 </div>
 
-                <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid #E2E8F0; padding-top:14px;">
+                <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid #E2E8F0; padding-top:16px;">
                     <button type="button" @click="createModalOpen = false"
                             style="padding:8px 16px; background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer;">
                         Batal
                     </button>
                     <button type="submit"
-                            style="padding:8px 18px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer;">
-                        Simpan Unit
+                            style="padding:8px 20px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                        <i data-lucide="check" style="width:15px; height:15px;"></i>
+                        <span>Simpan Unit</span>
                     </button>
                 </div>
             </form>
@@ -593,11 +664,11 @@
                             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px;">
                                 <div>
                                     <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase;">Pengemudi 1</div>
-                                    <div style="font-size:13.5px; font-weight:800; color:#0F172A; margin-top:2px;" x-text="'👤 ' + (activeUnit.pengemudi_1 && activeUnit.pengemudi_1 !== '—' ? activeUnit.pengemudi_1 : 'Belum Ditugaskan')"></div>
+                                    <div style="font-size:13.5px; font-weight:800; color:#0F172A; margin-top:2px;" x-text="'👤 1. ' + (activeUnit.pengemudi_1 && activeUnit.pengemudi_1 !== '—' ? activeUnit.pengemudi_1 : 'Belum Ditugaskan')"></div>
                                 </div>
                                 <div>
                                     <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase;">Pengemudi 2</div>
-                                    <div style="font-size:13.5px; font-weight:800; color:#0F172A; margin-top:2px;" x-text="'👤 ' + (activeUnit.pengemudi_2 && activeUnit.pengemudi_2 !== '—' && activeUnit.pengemudi_2 !== '0' ? activeUnit.pengemudi_2 : '—')"></div>
+                                    <div style="font-size:13.5px; font-weight:800; color:#0F172A; margin-top:2px;" x-text="'👤 2. ' + (activeUnit.pengemudi_2 && activeUnit.pengemudi_2 !== '—' && activeUnit.pengemudi_2 !== '0' ? activeUnit.pengemudi_2 : '—')"></div>
                                 </div>
                             </div>
                         </div>
@@ -642,7 +713,7 @@
                     @csrf
                     @method('PUT')
                     <div style="padding:22px;">
-                        <div class="modal-form-grid">
+                        <div class="modal-form-grid" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:14px; margin-bottom:18px;">
                             <div>
                                 <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">No. Lambung <span style="color:#DC2626;">*</span></label>
                                 <input type="text" name="nomor_lambung" required x-model="activeUnit.nomor_lambung"
@@ -954,7 +1025,10 @@
                             </div>
                             <div>
                                 <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase;">Pengemudi 1 &amp; 2</div>
-                                <div style="font-size:12.5px; font-weight:800; color:#334155; margin-top:2px;" x-text="'1: ' + (bukuServisData.unit.pengemudi_1 || '—') + ' • 2: ' + (bukuServisData.unit.pengemudi_2 || '—')"></div>
+                                <div style="font-size:12.5px; font-weight:800; color:#334155; margin-top:2px; line-height:1.4;">
+                                    <div x-text="'1. ' + (bukuServisData.unit.pengemudi_1 && bukuServisData.unit.pengemudi_1 !== '—' ? bukuServisData.unit.pengemudi_1 : '—')"></div>
+                                    <div x-text="'2. ' + (bukuServisData.unit.pengemudi_2 && bukuServisData.unit.pengemudi_2 !== '—' && bukuServisData.unit.pengemudi_2 !== '0' ? bukuServisData.unit.pengemudi_2 : '—')"></div>
+                                </div>
                             </div>
                         </div>
 
@@ -965,11 +1039,11 @@
                                 <div style="font-size:20px; font-weight:800; color:#1B2A6B; margin-top:4px;" x-text="bukuServisData.summary.total_pengajuan + ' Kali'"></div>
                             </div>
                             <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:12px; padding:14px 16px; box-shadow:0 2px 6px rgba(0,0,0,0.02);">
-                                <div style="font-size:11px; font-weight:700; color:#1B2A6B; text-transform:uppercase;">Total Kartu Kendali Pembayaran</div>
+                                <div style="font-size:11px; font-weight:700; color:#1B2A6B; text-transform:uppercase;">Total Kartu Kendali Aktual</div>
                                 <div style="font-size:18px; font-weight:800; color:#1B2A6B; margin-top:4px;" x-text="bukuServisData.summary.total_biaya_pembayaran"></div>
                             </div>
                             <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:12px; padding:14px 16px; box-shadow:0 2px 6px rgba(0,0,0,0.02);">
-                                <div style="font-size:11px; font-weight:700; color:#059669; text-transform:uppercase;">Total Kartu Kendali Aktual</div>
+                                <div style="font-size:11px; font-weight:700; color:#059669; text-transform:uppercase;">Total Kartu Kendali SPJ</div>
                                 <div style="font-size:18px; font-weight:800; color:#059669; margin-top:4px;" x-text="bukuServisData.summary.total_biaya_aktual"></div>
                             </div>
                         </div>
@@ -991,7 +1065,7 @@
                                 <div style="border:1px solid #E2E8F0; border-radius:12px; overflow:hidden;">
                                     <table style="width:100%; border-collapse:collapse; font-size:12px;">
                                         <thead style="background:#F8FAFC; border-bottom:1px solid #E2E8F0; color:#475569; font-weight:700;">
-                                            <tr>
+                                             <tr>
                                                 <th style="padding:10px 14px; text-align:left; width:120px;">Tanggal</th>
                                                 <th style="padding:10px 14px; text-align:left;">Item / Kerusakan Perbaikan</th>
                                                 <th style="padding:10px 14px; text-align:left;">Pemohon &amp; Pos</th>
@@ -1021,19 +1095,19 @@
                             </template>
                         </div>
 
-                        {{-- Section: Hasil Kartu Kendali Pembayaran --}}
+                        {{-- Section: Hasil Kartu Kendali Aktual --}}
                         <div style="margin-bottom:24px;">
                             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
                                 <h4 style="font-size:13.5px; font-weight:800; color:#0F172A; margin:0; display:flex; align-items:center; gap:6px;">
                                     <i data-lucide="receipt" style="width:16px; height:16px; color:#1B2A6B;"></i>
-                                    <span>Hasil Kartu Kendali Pembayaran (Monitoring Invoice)</span>
+                                    <span>Hasil Kartu Kendali Aktual (Aktual Pembayaran)</span>
                                 </h4>
                                 <span style="font-size:11.5px; font-weight:700; color:#1B2A6B; background:#EEF2FF; padding:3px 10px; border-radius:8px;" x-text="'Subtotal: ' + bukuServisData.summary.total_biaya_pembayaran"></span>
                             </div>
                             
                             <template x-if="bukuServisData.kendali_pembayaran_history.length === 0">
                                 <div style="background:#F8FAFC; border:1px dashed #CBD5E1; border-radius:10px; padding:18px; text-align:center; color:#64748B; font-size:12.5px;">
-                                    Belum ada catatan realisasi pada Kartu Kendali Pembayaran untuk unit ini.
+                                    Belum ada catatan realisasi pada Kartu Kendali Aktual untuk unit ini.
                                 </div>
                             </template>
 
@@ -1063,19 +1137,19 @@
                             </template>
                         </div>
 
-                        {{-- Section: Hasil Kartu Kendali Aktual --}}
+                        {{-- Section: Hasil Kartu Kendali SPJ --}}
                         <div style="margin-top:20px;">
                             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
                                 <h4 style="font-size:13.5px; font-weight:800; color:#0F172A; margin:0; display:flex; align-items:center; gap:6px;">
                                     <i data-lucide="clipboard-list" style="width:16px; height:16px; color:#059669;"></i>
-                                    <span>Hasil Kartu Kendali Aktual (Monitoring Aktual)</span>
+                                    <span>Hasil Kartu Kendali SPJ (SPJ Pembayaran)</span>
                                 </h4>
                                 <span style="font-size:11.5px; font-weight:700; color:#059669; background:#ECFDF5; padding:3px 10px; border-radius:8px;" x-text="'Subtotal: ' + bukuServisData.summary.total_biaya_aktual"></span>
                             </div>
                             
                             <template x-if="bukuServisData.kendali_aktual_history.length === 0">
                                 <div style="background:#F8FAFC; border:1px dashed #CBD5E1; border-radius:10px; padding:18px; text-align:center; color:#64748B; font-size:12.5px;">
-                                    Belum ada catatan pemeliharaan pada Kartu Kendali Aktual untuk unit ini.
+                                    Belum ada catatan pemeliharaan pada Kartu Kendali SPJ untuk unit ini.
                                 </div>
                             </template>
 
@@ -1087,7 +1161,7 @@
                                                 <th style="padding:10px 14px; text-align:left; width:120px;">Tanggal</th>
                                                 <th style="padding:10px 14px; text-align:left;">Nomor Rujukan / Invoice</th>
                                                 <th style="padding:10px 14px; text-align:left;">Nama Bengkel / Pelaksana</th>
-                                                <th style="padding:10px 14px; text-align:right; width:160px;">Total Biaya Aktual</th>
+                                                <th style="padding:10px 14px; text-align:right; width:160px;">Total Biaya SPJ</th>
                                             </tr>
                                         </thead>
                                         <tbody>

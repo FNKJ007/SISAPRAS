@@ -31,7 +31,7 @@
             <div class="hero-brand">
                 <div class="hero-institutional-logos">
                     <img src="{{ asset('images/logo-kabupaten.png') }}" alt="Logo Kabupaten Bandung" class="hero-inst-logo" onerror="this.style.display='none'">
-                    <span class="hero-inst-text">Dinas Pemadam Kebakaran<br>Kabupaten Bandung</span>
+                    <span class="hero-inst-text">Dinas Pemadam Kebakaran dan Penyelamatan<br>Kabupaten Bandung</span>
                 </div>
             </div>
 
@@ -44,7 +44,7 @@
 
             <!-- Footer Panel -->
             <div class="hero-footer">
-                &copy; {{ date('Y') }} Dinas Pemadam Kebakaran dan Penyelamatan.
+                &copy; {{ date('Y') }} Dinas Pemadam Kebakaran dan Penyelamatan Kabupaten Bandung.
             </div>
         </div>
 

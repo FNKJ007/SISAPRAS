@@ -1,7 +1,7 @@
 @php
     $isAktual = request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
-    $pageTitle = $isAktual ? 'Monitoring Aktual' : 'Monitoring Invoice';
-    $subTitle  = $isAktual ? 'Monitoring data aktual pemeliharaan unit.' : 'Monitoring data invoice pemeliharaan unit.';
+    $pageTitle = $isAktual ? 'SPJ Pembayaran' : 'Aktual Pembayaran';
+    $subTitle  = $isAktual ? 'Monitoring data SPJ pembayaran pemeliharaan unit.' : 'Monitoring data aktual pembayaran pemeliharaan unit.';
     $routePrefix = $isAktual ? 'admin.pemeliharaan.monitoring-aktual' : 'admin.pemeliharaan.invoice';
 @endphp
 

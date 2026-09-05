@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Kartu Kendali Aktual — Admin')
+@section('title', 'Kartu Kendali SPJ — Admin')
 
 @section('content')
 <div>
@@ -7,9 +7,9 @@
     {{-- Header --}}
     <div class="no-print" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
         <div>
-            <h1 style="font-size:22px; font-weight:800; color:#0F172A; margin:0;">Kartu Kendali Aktual Pemeliharaan</h1>
+            <h1 style="font-size:22px; font-weight:800; color:#0F172A; margin:0;">Kartu Kendali SPJ Pemeliharaan</h1>
             <p style="font-size:13px; color:#64748B; margin-top:4px; margin-bottom:0;">
-                Ledger saldo kumulatif pemeliharaan berdasarkan data Monitoring Aktual, per tahun anggaran.
+                Ledger saldo kumulatif pemeliharaan berdasarkan data SPJ Pembayaran, per tahun anggaran.
             </p>
         </div>
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -97,7 +97,7 @@
 
             {{-- Judul Dokumen --}}
             <div class="judul-dokumen" style="text-align:center; margin-bottom:18px; page-break-inside:avoid; break-inside:avoid;">
-                <h2 style="font-size:14px; font-weight:800; text-transform:uppercase; color:#1B2A6B; text-decoration:underline; letter-spacing:0.5px; margin:0 0 3px 0;">KARTU KENDALI AKTUAL PEMELIHARAAN KENDARAAN</h2>
+                <h2 style="font-size:14px; font-weight:800; text-transform:uppercase; color:#1B2A6B; text-decoration:underline; letter-spacing:0.5px; margin:0 0 3px 0;">KARTU KENDALI SPJ PEMELIHARAAN KENDARAAN</h2>
                 <div style="font-size:11.5px; font-weight:600; color:#64748B;">
                     Tahun Anggaran {{ $tahunFilter }}
                 </div>
@@ -142,7 +142,7 @@
                         </tbody>
                         <tfoot style="display:table-footer-group; page-break-inside:avoid; break-inside:avoid;">
                             <tr style="background:#F8FAFC; border-top:2px solid #E2E8F0; page-break-inside:avoid; break-inside:avoid;">
-                                <td colspan="4" style="padding:9px 10px; text-align:right; font-weight:800; color:#334155; font-size:11px; text-transform:uppercase;">TOTAL KUMULATIF PEMELIHARAAN AKTUAL</td>
+                                <td colspan="4" style="padding:9px 10px; text-align:right; font-weight:800; color:#334155; font-size:11px; text-transform:uppercase;">TOTAL KUMULATIF PEMELIHARAAN SPJ</td>
                                 <td style="padding:9px 10px; text-align:right; font-weight:800; color:#1B2A6B; font-size:11.5px; font-variant-numeric:tabular-nums;">Rp {{ number_format($kpi['total_nilai'], 0, ',', '.') }}</td>
                                 <td style="padding:9px 10px; text-align:right; font-weight:800; color:#1B2A6B; font-size:11.5px; font-variant-numeric:tabular-nums;">Rp {{ number_format($kpi['total_nilai'], 0, ',', '.') }}</td>
                             </tr>
@@ -232,7 +232,7 @@
         }
 
         const source = document.getElementById('kartu-kendali-print-area');
-        const filename = 'Kartu_Kendali_Aktual_{{ $tahunFilter }}.pdf';
+        const filename = 'Kartu_Kendali_SPJ_{{ $tahunFilter }}.pdf';
 
         // Clone ke container terisolasi di body agar layout sidebar/topbar
         // tidak menggeser posisi elemen saat html2canvas memaksa windowWidth.

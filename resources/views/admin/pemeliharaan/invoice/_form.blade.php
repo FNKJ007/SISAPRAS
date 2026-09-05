@@ -195,14 +195,14 @@
             @error('tahun_anggaran') <div style="color:#C0201F; font-size:11px; margin-top:4px;">{{ $message }}</div> @enderror
         </div>
 
-        {{-- Dropdown Pilih Unit (Monitoring Aktual: Semua Unit Master; Monitoring Invoice: Pengajuan Disetujui) --}}
+        {{-- Dropdown Pilih Unit (SPJ Pembayaran: Semua Unit Master; Aktual Pembayaran: Pengajuan Disetujui) --}}
         <div class="invoice-col-full">
             <label style="font-size:12.5px; font-weight:600; color:#475569; margin-bottom:4px; display:block;">Unit Kendaraan</label>
             <select id="select_pengajuan_unit" style="padding:10px 14px; border:1px solid {{ $errors->has('unit_id') || $errors->has('no_lambung') ? '#C0201F' : '#CBD5E1' }}; border-radius:8px; font-size:13px; width:100%; outline:none; background:#FFFFFF; box-sizing:border-box;" required>
                 <option value="">-- Pilih Unit Kendaraan --</option>
                 
                 @if($isAktual)
-                    {{-- Monitoring Aktual: Tampilkan semua Unit dari Master Data --}}
+                    {{-- SPJ Pembayaran: Tampilkan semua Unit dari Master Data --}}
                     @if(isset($units) && $units->count() > 0)
                         @foreach ($units as $u)
                             @php
@@ -230,7 +230,7 @@
                         <option value="" disabled>Belum ada data unit</option>
                     @endif
                 @else
-                    {{-- Monitoring Invoice: Berdasarkan Pengajuan yang Disetujui --}}
+                    {{-- Aktual Pembayaran: Berdasarkan Pengajuan yang Disetujui --}}
                     @if(isset($pengajuans) && $pengajuans->count() > 0)
                         @foreach ($pengajuans as $p)
                             @php
