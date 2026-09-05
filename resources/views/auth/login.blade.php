@@ -46,7 +46,7 @@
 
             <!-- Footer Panel -->
             <div class="hero-footer">
-                &copy; {{ date('Y') }} Dinas Pemadam Kebakaran dan Penyelamatan.
+                &copy; {{ date('Y') }} Dinas Pemadam Kebakaran dan Penyelamatan Kabupaten Bandung.
             </div>
         </div>
 

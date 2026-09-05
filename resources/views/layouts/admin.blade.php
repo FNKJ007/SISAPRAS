@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Dashboard Admin') — BRAMA | Berkala Rawat Armada, Alat, dan Sarana DAMKAR</title>
-    <meta name="description" content="Admin Panel Sistem Informasi Dinas Pemadam Kebakaran">
+    <meta name="description" content="Admin Panel Sistem Informasi Dinas Pemadam Kebakaran dan Penyelamatan Kabupaten Bandung">
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -158,27 +158,27 @@
                             </li>
 
                             <li>
-                                <a href="{{ route('admin.pemeliharaan.monitoring-aktual.index') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.monitoring-aktual.*') ? 'active' : '' }}">
-                                    Monitoring Aktual
+                                <a href="{{ route('admin.pemeliharaan.invoice.index') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.invoice.*') ? 'active' : '' }}">
+                                    Aktual Pembayaran
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('admin.pemeliharaan.invoice.index') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.invoice.*') ? 'active' : '' }}">
-                                    Monitoring Invoice
+                                <a href="{{ route('admin.pemeliharaan.monitoring-aktual.index') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.monitoring-aktual.*') ? 'active' : '' }}">
+                                    SPJ Pembayaran
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.kartu-kendali-pembayaran') }}"
                                    class="{{ request()->routeIs('admin.pemeliharaan.kartu-kendali-pembayaran') ? 'active' : '' }}">
-                                    Kartu Kendali Pembayaran
+                                    Kartu Kendali Aktual
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.kartu-kendali-aktual') }}"
                                    class="{{ request()->routeIs('admin.pemeliharaan.kartu-kendali-aktual') ? 'active' : '' }}">
-                                    Kartu Kendali Aktual
+                                    Kartu Kendali SPJ
                                 </a>
                             </li>
                         </ul>

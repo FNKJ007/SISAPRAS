@@ -203,7 +203,9 @@
                                                     jabatan: '{{ addslashes($item->jabatan ?? '') }}',
                                                     bidang: '{{ addslashes($item->bidang ?? '') }}',
                                                     pos: '{{ addslashes($item->pos ?? '') }}',
-                                                    regu: '{{ addslashes($item->regu ?? '') }}'
+                                                    regu: '{{ addslashes($item->regu ?? '') }}',
+                                                    regu_id: {{ $item->regu_id ? $item->regu_id : 'null' }},
+                                                    no_hp: '{{ addslashes($item->no_hp ?? '') }}'
                                                 }, '{{ route('admin.pemeliharaan.data-pegawai.update', $item->id) }}')"
                                                 style="padding:6px 9px; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px; color:#0F172A; cursor:pointer; font-size:12px; transition:all 0.15s;"
                                                 title="Edit Data Pegawai">
@@ -251,7 +253,7 @@
                         </div>
                         <div>
                             <h3 style="font-size:16px; font-weight:800; margin:0;">Tambah Pegawai / Pejabat Baru</h3>
-                            <p style="font-size:11.5px; color:#94A3B8; margin:2px 0 0 0;">Data identitas, NIP, jabatan &amp; bidang dinas</p>
+                            <p style="font-size:11.5px; color:#94A3B8; margin:2px 0 0 0;">Data identitas, NIP, akun login, jabatan &amp; pos dinas</p>
                         </div>
                     </div>
                     <button type="button" @click="createModalOpen = false" style="background:transparent; border:none; color:#94A3B8; cursor:pointer; font-size:18px;">✕</button>
@@ -263,7 +265,7 @@
                     {{-- Nama Pegawai --}}
                     <div style="margin-bottom:14px;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Nama Lengkap &amp; Gelar <span style="color:#DC2626;">*</span></label>
-                        <input type="text" name="name" value="{{ old('name') }}" placeholder="Contoh: Erpi Suwandi, S.T., M.M." required
+                        <input type="text" name="name" x-model="createName" placeholder="Contoh: Erpi Suwandi, S.T., M.M." required
                                 style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;">
                         @error('name') <p style="font-size:11px; color:#DC2626; margin-top:4px;">{{ $message }}</p> @enderror
                     </div>
@@ -271,9 +273,33 @@
                     {{-- NIP --}}
                     <div style="margin-bottom:14px;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">NIP (Nomor Induk Pegawai) <span style="color:#DC2626;">*</span></label>
-                        <input type="text" name="nip" value="{{ old('nip') }}" placeholder="Contoh: 197508142006041009" required
-                                style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;">
+                        <input type="text" name="nip" x-model="createNip" placeholder="Contoh: 197508142006041009" required
+                                style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; font-family:monospace; box-sizing:border-box;">
                         @error('nip') <p style="font-size:11px; color:#DC2626; margin-top:4px;">{{ $message }}</p> @enderror
+                    </div>
+
+                    {{-- Password Akun (Di bawah NIP) --}}
+                    <div style="margin-bottom:14px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                            <label style="font-size:12px; font-weight:700; color:#334155; margin:0;">
+                                Password Akun Login <span style="color:#DC2626;">*</span>
+                            </label>
+                            <button type="button" @click="createPassword = generateNewPassword()"
+                                    style="background:none; border:none; color:#1B2A6B; font-size:11.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px; text-decoration:underline;">
+                                <i data-lucide="key-round" style="width:12px; height:12px;"></i>
+                                <span>🎲 Acak Password</span>
+                            </button>
+                        </div>
+                        <div style="position:relative; display:flex; align-items:center;">
+                            <input :type="showPassCreate ? 'text' : 'password'" name="password" x-model="createPassword" required autocomplete="new-password" placeholder="Masukkan password akun pegawai (min. 6 karakter)..."
+                                   style="width:100%; padding:9px 36px 9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; font-family:monospace; box-sizing:border-box;">
+                            <button type="button" @click="showPassCreate = !showPassCreate" tabindex="-1"
+                                    style="position:absolute; right:8px; background:none; border:none; color:#64748B; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                                <i :data-lucide="showPassCreate ? 'eye-off' : 'eye'" style="width:16px; height:16px;"></i>
+                            </button>
+                        </div>
+                        <p style="font-size:11px; color:#64748B; margin:4px 0 0 0;">Akun login langsung terbuat otomatis dan siap digunakan untuk masuk sistem BRAMA.</p>
+                        @error('password') <p style="font-size:11px; color:#DC2626; margin-top:4px;">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Jabatan (Ketik Bebas / Dropdown Riwayat) --}}
@@ -344,29 +370,41 @@
                         @error('bidang') <p style="font-size:11px; color:#DC2626; margin-top:4px;">{{ $message }}</p> @enderror
                     </div>
 
-                    {{-- Pos Penempatan --}}
-                    <div style="margin-bottom:20px;">
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Pos Penempatan</label>
-                        <select name="pos" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF; box-sizing:border-box;">
-                            <option value="">— Pilih Pos Penempatan —</option>
-                            @foreach($posList as $p)
-                                @php $pName = is_string($p) ? $p : ($p->nama ?? ($p['nama'] ?? '')); @endphp
-                                <option value="{{ $pName }}" {{ old('pos') == $pName ? 'selected' : '' }}>{{ $pName }}</option>
-                            @endforeach
-                        </select>
+                    {{-- Pos Penempatan & Regu (Dropdown Dinamis Berdasarkan Pos) --}}
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+                        <div>
+                            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Pos Penempatan</label>
+                            <select name="pos" x-model="createPos" @change="onPosChangeCreate()" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF; box-sizing:border-box;">
+                                <option value="">— Pilih Pos Penempatan —</option>
+                                @foreach($posList as $p)
+                                    @php $pName = is_string($p) ? $p : ($p->nama ?? ($p['nama'] ?? '')); @endphp
+                                    <option value="{{ $pName }}">{{ $pName }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                                <label style="font-size:12px; font-weight:700; color:#334155; margin:0;">Regu</label>
+                                <span style="font-size:11px; color:#2563EB; font-weight:600;" x-show="createPos" x-text="'(Pos: ' + createPos + ')'"></span>
+                            </div>
+                            <input type="hidden" name="regu" :value="createRegu">
+                            <select name="regu_id" x-model="createReguId" @change="onReguIdChangeCreate()" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF; box-sizing:border-box;">
+                                <option value="">— Pilih Regu Sesuai Pos —</option>
+                                <template x-for="r in getRegusForPos(createPos)" :key="r.id">
+                                    <option :value="r.id" x-text="r.nama + (r.bidang ? ' — ' + r.bidang : '') + (r.danru ? ' (Danru: ' + r.danru + ')' : '')"></option>
+                                </template>
+                                <template x-if="getRegusForPos(createPos).length === 0">
+                                    <option value="" disabled>— Belum ada data regu pos ini —</option>
+                                </template>
+                            </select>
+                        </div>
                     </div>
 
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
-                        <div>
-                            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Regu</label>
-                            <input type="text" name="regu" value="{{ old('regu') }}" placeholder="Contoh: Regu 1"
-                                   style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;">
-                        </div>
-                        <div>
-                            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">No. WhatsApp / HP</label>
-                            <input type="text" name="no_hp" value="{{ old('no_hp') }}" placeholder="Contoh: 081234567890"
-                                   style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;">
-                        </div>
+                    {{-- No. WhatsApp / HP --}}
+                    <div style="margin-bottom:20px;">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">No. WhatsApp / HP</label>
+                        <input type="text" name="no_hp" x-model="createNoHp" placeholder="Contoh: 081234567890"
+                               style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;">
                     </div>
 
                     <div style="display:flex; align-items:center; justify-content:flex-end; gap:10px;">
@@ -374,7 +412,7 @@
                             Batal
                         </button>
                         <button type="submit" style="padding:9px 20px; border-radius:8px; border:none; background:#1B2A6B; color:#FFFFFF; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 4px 12px rgba(27,42,107,0.2);">
-                            Simpan Data Pegawai
+                            Simpan &amp; Buat Akun Pegawai
                         </button>
                     </div>
                 </form>
@@ -416,7 +454,7 @@
                     <div style="margin-bottom:14px;">
                         <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">NIP (Nomor Induk Pegawai) <span style="color:#DC2626;">*</span></label>
                         <input type="text" name="nip" x-model="activePegawai.nip" placeholder="NIP Pegawai" required
-                                style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;">
+                                style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; font-family:monospace; box-sizing:border-box;">
                     </div>
 
                     {{-- Jabatan (Ketik Bebas / Dropdown Riwayat) --}}
@@ -483,29 +521,41 @@
                         </div>
                     </div>
 
-                    {{-- Pos Penempatan --}}
-                    <div style="margin-bottom:20px;">
-                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Pos Penempatan</label>
-                        <select name="pos" x-model="activePegawai.pos" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF; box-sizing:border-box;">
-                            <option value="">— Pilih Pos Penempatan —</option>
-                            @foreach($posList as $p)
-                                @php $pName = is_string($p) ? $p : ($p->nama ?? ($p['nama'] ?? '')); @endphp
-                                <option value="{{ $pName }}">{{ $pName }}</option>
-                            @endforeach
-                        </select>
+                    {{-- Pos Penempatan & Regu (Dropdown Dinamis) --}}
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+                        <div>
+                            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Pos Penempatan</label>
+                            <select name="pos" x-model="activePegawai.pos" @change="onPosChangeEdit()" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF; box-sizing:border-box;">
+                                <option value="">— Pilih Pos Penempatan —</option>
+                                @foreach($posList as $p)
+                                    @php $pName = is_string($p) ? $p : ($p->nama ?? ($p['nama'] ?? '')); @endphp
+                                    <option value="{{ $pName }}">{{ $pName }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                                <label style="font-size:12px; font-weight:700; color:#334155; margin:0;">Regu</label>
+                                <span style="font-size:11px; color:#2563EB; font-weight:600;" x-show="activePegawai.pos" x-text="'(Pos: ' + activePegawai.pos + ')'"></span>
+                            </div>
+                            <input type="hidden" name="regu" :value="activePegawai.regu">
+                            <select name="regu_id" x-model="activePegawai.regu_id" @change="onReguIdChangeEdit()" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; background:#FFFFFF; box-sizing:border-box;">
+                                <option value="">— Pilih Regu Sesuai Pos —</option>
+                                <template x-for="r in getRegusForPos(activePegawai.pos)" :key="r.id">
+                                    <option :value="r.id" x-text="r.nama + (r.bidang ? ' — ' + r.bidang : '') + (r.danru ? ' (Danru: ' + r.danru + ')' : '')"></option>
+                                </template>
+                                <template x-if="getRegusForPos(activePegawai.pos).length === 0">
+                                    <option value="" disabled>— Belum ada data regu pos ini —</option>
+                                </template>
+                            </select>
+                        </div>
                     </div>
 
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
-                        <div>
-                            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Regu</label>
-                            <input type="text" name="regu" x-model="activePegawai.regu" placeholder="Contoh: Regu 1"
-                                   style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;">
-                        </div>
-                        <div>
-                            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">No. WhatsApp / HP</label>
-                            <input type="text" name="no_hp" x-model="activePegawai.no_hp" placeholder="Contoh: 081234567890"
-                                   style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;">
-                        </div>
+                    {{-- No. WhatsApp / HP --}}
+                    <div style="margin-bottom:20px;">
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">No. WhatsApp / HP</label>
+                        <input type="text" name="no_hp" x-model="activePegawai.no_hp" placeholder="Contoh: 081234567890"
+                               style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid #CBD5E1; font-size:13px; outline:none; box-sizing:border-box;">
                     </div>
 
                     <div style="display:flex; align-items:center; justify-content:flex-end; gap:10px;">
@@ -559,6 +609,20 @@ function pegawaiApp() {
         createModalOpen: {{ isset($errors) && $errors->any() ? 'true' : 'false' }},
         editModalOpen: false,
         deleteModalOpen: false,
+        showPassCreate: false,
+        
+        // Form Create Fields
+        createName: @json(old('name', '')),
+        createNip: @json(old('nip', '')),
+        createPassword: @json(old('password', '')),
+        createJabatan: @json(old('jabatan', '')),
+        createBidang: @json(old('bidang', '')),
+        createPos: @json(old('pos', '')),
+        createRegu: @json(old('regu', '')),
+        createReguId: @json(old('regu_id', '')),
+        createNoHp: @json(old('no_hp', '')),
+
+        // Form Edit Fields
         activePegawai: {
             id: null,
             name: '',
@@ -566,22 +630,106 @@ function pegawaiApp() {
             jabatan: '',
             bidang: '',
             pos: '',
-            regu: ''
+            regu: '',
+            regu_id: '',
+            no_hp: ''
         },
+
         editUrl: '',
         deleteUrl: '',
-        createJabatan: @json(old('jabatan', '')),
-        createBidang: @json(old('bidang', '')),
+
         existingJabatanList: @json($existingJabatanList ?? []),
         existingBidangList: @json($existingBidangList ?? []),
+        allReguList: @json($allReguList ?? []),
+
+        getRegusForPos(posName) {
+            if (!posName || posName.trim() === '') {
+                return this.allReguList;
+            }
+            let clean = posName.toLowerCase().replace(/[^a-z0-9]/g, '');
+            return this.allReguList.filter(r => {
+                let rClean = (r.pos || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                return rClean.includes(clean) || clean.includes(rClean);
+            });
+        },
+
+        onPosChangeCreate() {
+            this.createReguId = '';
+            this.createRegu = '';
+            if (this.createPos) {
+                let regus = this.getRegusForPos(this.createPos);
+                let match = regus.find(r => {
+                    let bMatch = !this.createBidang || (r.bidang && r.bidang.toLowerCase() === this.createBidang.toLowerCase());
+                    return bMatch;
+                });
+                if (match) {
+                    this.createReguId = match.id;
+                    this.createRegu = match.nama;
+                }
+            }
+        },
+
+        onReguIdChangeCreate() {
+            if (this.createReguId) {
+                const r = this.allReguList.find(item => String(item.id) === String(this.createReguId));
+                if (r) {
+                    this.createRegu = r.nama;
+                }
+            } else {
+                this.createRegu = '';
+            }
+        },
+
+        onPosChangeEdit() {
+            this.activePegawai.regu_id = '';
+            this.activePegawai.regu = '';
+            if (this.activePegawai.pos) {
+                let regus = this.getRegusForPos(this.activePegawai.pos);
+                let match = regus.find(r => {
+                    let bMatch = !this.activePegawai.bidang || (r.bidang && r.bidang.toLowerCase() === this.activePegawai.bidang.toLowerCase());
+                    return bMatch;
+                });
+                if (match) {
+                    this.activePegawai.regu_id = match.id;
+                    this.activePegawai.regu = match.nama;
+                }
+            }
+        },
+
+        onReguIdChangeEdit() {
+            if (this.activePegawai.regu_id) {
+                const r = this.allReguList.find(item => String(item.id) === String(this.activePegawai.regu_id));
+                if (r) {
+                    this.activePegawai.regu = r.nama;
+                }
+            } else {
+                this.activePegawai.regu = '';
+            }
+        },
+
+        generateNewPassword() {
+            const words = ['Damkar', 'Bandung', 'Brama', 'Yudha', 'Siaga', 'Rescue', 'Soreang'];
+            const randomWord = words[Math.floor(Math.random() * words.length)];
+            const randomNum = Math.floor(1000 + Math.random() * 9000);
+            return `${randomWord}@${randomNum}`;
+        },
+
         openCreateModal() {
+            this.createName = '';
+            this.createNip = '';
+            this.createPassword = this.generateNewPassword();
             this.createJabatan = '';
             this.createBidang = '';
+            this.createPos = '';
+            this.createRegu = '';
+            this.createReguId = '';
+            this.createNoHp = '';
             this.createModalOpen = true;
             this.$nextTick(() => {
                 if (window.lucide) window.lucide.createIcons();
             });
         },
+
         openEditModal(item, updateUrl) {
             this.activePegawai = Object.assign({
                 id: null,
@@ -590,14 +738,32 @@ function pegawaiApp() {
                 jabatan: '',
                 bidang: '',
                 pos: '',
-                regu: ''
+                regu: '',
+                regu_id: '',
+                no_hp: ''
             }, item);
+
+            // Auto-resolve regu_id if not present
+            if (!this.activePegawai.regu_id && this.activePegawai.regu) {
+                const rClean = (this.activePegawai.regu || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                const pClean = (this.activePegawai.pos || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                const match = this.allReguList.find(r => {
+                    const rp = (r.pos || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const rn = (r.nama || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                    return (rp.includes(pClean) || pClean.includes(rp)) && rn === rClean;
+                }) || this.allReguList.find(r => (r.nama || '').toLowerCase().replace(/[^a-z0-9]/g, '') === rClean);
+                if (match) {
+                    this.activePegawai.regu_id = match.id;
+                }
+            }
+
             this.editUrl = updateUrl;
             this.editModalOpen = true;
             this.$nextTick(() => {
                 if (window.lucide) window.lucide.createIcons();
             });
         },
+
         openDeleteModal(item, destroyUrl) {
             this.activePegawai = Object.assign({}, item);
             this.deleteUrl = destroyUrl;

@@ -353,11 +353,11 @@
                 <div class="kpi-val" style="color:#1B2A6B;">{{ $pengajuanList->count() }} Kali</div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-lbl">Total Kendali Pembayaran</div>
+                <div class="kpi-lbl">Total Kendali Aktual</div>
                 <div class="kpi-val" style="color:#1B2A6B; font-size:12.5px;">Rp {{ number_format($totalBiayaPembayaran, 0, ',', '.') }}</div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-lbl">Total Kendali Aktual</div>
+                <div class="kpi-lbl">Total Kendali SPJ</div>
                 <div class="kpi-val" style="color:#059669; font-size:12.5px;">Rp {{ number_format($totalBiayaAktual, 0, ',', '.') }}</div>
             </div>
             <div class="kpi-card">
@@ -402,11 +402,11 @@
             </table>
         @endif
 
-        {{-- Bagian IV.A: Hasil Kartu Kendali Pembayaran --}}
-        <div class="section-header">IV.A. Hasil Rekam Medis Kartu Kendali Pembayaran (Monitoring Invoice)</div>
+        {{-- Bagian IV.A: Hasil Kartu Kendali Aktual --}}
+        <div class="section-header">IV.A. Hasil Rekam Medis Kartu Kendali Aktual (Aktual Pembayaran)</div>
         @if($kendaliPembayaranList->isEmpty())
             <div style="background:#F8FAFC; border:1px dashed #CBD5E1; padding:14px; text-align:center; color:#64748B; font-size:11.5px; border-radius:6px; margin-bottom:16px;">
-                Belum ada catatan realisasi pada Kartu Kendali Pembayaran untuk unit ini.
+                Belum ada catatan realisasi pada Kartu Kendali Aktual untuk unit ini.
             </div>
         @else
             <table class="data-table">
@@ -434,7 +434,7 @@
                 </tbody>
                 <tfoot>
                     <tr style="background:#F1F5F9; font-weight:800;">
-                        <td colspan="4" style="text-align:right; font-size:10.5px; text-transform:uppercase;">Subtotal Kendali Pembayaran:</td>
+                        <td colspan="4" style="text-align:right; font-size:10.5px; text-transform:uppercase;">Subtotal Kendali Aktual:</td>
                         <td style="text-align:right; color:#1B2A6B; font-size:11.5px;">
                             Rp {{ number_format($totalBiayaPembayaran, 0, ',', '.') }}
                         </td>
@@ -443,11 +443,11 @@
             </table>
         @endif
 
-        {{-- Bagian IV.B: Hasil Kartu Kendali Aktual --}}
-        <div class="section-header">IV.B. Hasil Rekam Medis Kartu Kendali Aktual (Monitoring Aktual)</div>
+        {{-- Bagian IV.B: Hasil Kartu Kendali SPJ --}}
+        <div class="section-header">IV.B. Hasil Rekam Medis Kartu Kendali SPJ (SPJ Pembayaran)</div>
         @if($kendaliAktualList->isEmpty())
             <div style="background:#F8FAFC; border:1px dashed #CBD5E1; padding:14px; text-align:center; color:#64748B; font-size:11.5px; border-radius:6px; margin-bottom:20px;">
-                Belum ada catatan pemeliharaan pada Kartu Kendali Aktual untuk unit ini.
+                Belum ada catatan pemeliharaan pada Kartu Kendali SPJ untuk unit ini.
             </div>
         @else
             <table class="data-table">
@@ -475,7 +475,7 @@
                 </tbody>
                 <tfoot>
                     <tr style="background:#F1F5F9; font-weight:800;">
-                        <td colspan="4" style="text-align:right; font-size:10.5px; text-transform:uppercase;">Subtotal Kendali Aktual:</td>
+                        <td colspan="4" style="text-align:right; font-size:10.5px; text-transform:uppercase;">Subtotal Kendali SPJ:</td>
                         <td style="text-align:right; color:#059669; font-size:11.5px;">
                             Rp {{ number_format($totalBiayaAktual, 0, ',', '.') }}
                         </td>
