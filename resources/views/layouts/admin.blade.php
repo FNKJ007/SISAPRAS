@@ -170,14 +170,14 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('admin.pemeliharaan.kartu-kendali-pembayaran') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.kartu-kendali-pembayaran') ? 'active' : '' }}">
+                                <a href="{{ route('admin.pemeliharaan.kartu-kendali-aktual') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.kartu-kendali-aktual') ? 'active' : '' }}">
                                     Kartu Kendali Aktual
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('admin.pemeliharaan.kartu-kendali-aktual') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.kartu-kendali-aktual') ? 'active' : '' }}">
+                                <a href="{{ route('admin.pemeliharaan.kartu-kendali-pembayaran') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.kartu-kendali-pembayaran') ? 'active' : '' }}">
                                     Kartu Kendali SPJ
                                 </a>
                             </li>
