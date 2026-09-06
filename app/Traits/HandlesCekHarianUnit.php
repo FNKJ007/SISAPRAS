@@ -81,6 +81,7 @@ trait HandlesCekHarianUnit
             $pdf = Pdf::loadView('pdf.cek-harian-unit', [
                 'record'               => $record,
                 'unit'                 => $record->unit,
+                'kategori'             => $kategori,
                 'logo_data'            => $logoData,
                 'pemeriksa_nip'        => $pemeriksaNip,
                 'danru_nip'            => $danruNip,
@@ -223,6 +224,14 @@ trait HandlesCekHarianUnit
                 'label'   => $label,
                 'status'  => $itemStatus,
                 'catatan' => $itemCatatan,
+            ];
+        }
+
+        if ($request->filled('catatan_kebersihan_unit')) {
+            $processedPerlengkapan['kebersihan_unit'] = [
+                'label'   => 'Kondisi Kebersihan Unit',
+                'status'  => $validated['kebersihan_unit'] ?? 'bersih',
+                'catatan' => $request->input('catatan_kebersihan_unit'),
             ];
         }
 

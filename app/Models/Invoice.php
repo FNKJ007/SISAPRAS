@@ -80,9 +80,9 @@ class Invoice extends Model
     }
 
     /**
-     * Generate nomor invoice otomatis: INV/{tahun}/{bulan romawi}/{urutan}
+     * Generate nomor invoice otomatis: {prefix}/{tahun}/{bulan romawi}/{urutan}
      */
-    public static function generateNomorInvoice(?\DateTimeInterface $tanggal = null): string
+    public static function generateNomorInvoice(?\DateTimeInterface $tanggal = null, string $prefix = 'INV'): string
     {
         $tanggal = $tanggal ?? now();
         $romawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
@@ -94,7 +94,8 @@ class Invoice extends Model
         $urutan = str_pad((string) ($countThisMonth + 1), 4, '0', STR_PAD_LEFT);
 
         return sprintf(
-            'INV/%s/%s/%s',
+            '%s/%s/%s/%s',
+            $prefix,
             $tanggal->format('Y'),
             $romawi[(int) $tanggal->format('n')],
             $urutan

@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Kartu Kendali Aktual — Admin')
+@section('title', 'Kartu Kendali SPJ — Admin')
 
 @push('styles')
 <style>
@@ -120,9 +120,9 @@
     {{-- Header Halaman Web (Tidak ikut tercetak) --}}
     <div class="no-print" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:12px;">
         <div>
-            <h1 style="font-size:20px; font-weight:800; color:#0F172A; margin:0;">Kartu Kendali Aktual</h1>
+            <h1 style="font-size:20px; font-weight:800; color:#0F172A; margin:0;">Kartu Kendali SPJ</h1>
             <p style="font-size:12.5px; color:#64748B; margin-top:3px; margin-bottom:0;">
-                Matriks rekapitulasi realisasi pembayaran aktual pemeliharaan kendaraan operasional per unit dan per bulan, per tahun anggaran.
+                Matriks rekapitulasi realisasi pembayaran SPJ pemeliharaan kendaraan operasional per unit dan per bulan, per tahun anggaran.
             </p>
         </div>
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -141,7 +141,7 @@
 
     {{-- Filter Bar (Tidak ikut tercetak) --}}
     <div class="admin-filter-bar no-print" style="margin-bottom:18px;">
-        <form method="GET" action="{{ route('admin.pemeliharaan.kartu-kendali-aktual') }}" style="display:flex; align-items:center; gap:10px;">
+        <form method="GET" action="{{ route('admin.pemeliharaan.kartu-kendali-spj') }}" style="display:flex; align-items:center; gap:10px;">
             <div style="display:flex; align-items:center; gap:8px;">
                 <span style="font-size:12.5px; font-weight:700; color:#475569;">Tahun Anggaran:</span>
                 <select name="tahun" onchange="this.form.submit()" style="padding:7px 14px; font-size:12.5px; border-radius:8px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; color:#1E293B; font-weight:700; cursor:pointer;">
@@ -176,7 +176,7 @@
 
             {{-- Judul Dokumen --}}
             <div class="judul-dokumen" style="margin-bottom:12px; page-break-inside:avoid; break-inside:avoid;">
-                <div style="font-size:13px; font-weight:800; text-transform:uppercase; color:#0F172A; letter-spacing:0.5px; line-height:1.3;">KARTU KENDALI AKTUAL</div>
+                <div style="font-size:13px; font-weight:800; text-transform:uppercase; color:#0F172A; letter-spacing:0.5px; line-height:1.3;">KARTU KENDALI SPJ</div>
                 <div style="font-size:11.5px; font-weight:800; text-transform:uppercase; color:#0F172A; letter-spacing:0.5px; line-height:1.3;">PEMELIHARAAN KENDARAAN OPERASIONAL</div>
                 <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:#0F172A; letter-spacing:0.5px; line-height:1.3;">TAHUN ANGGARAN {{ $tahunFilter }}</div>
             </div>
@@ -308,7 +308,7 @@
         }
 
         const source = document.getElementById('kartu-kendali-print-area');
-        const filename = 'Kartu_Kendali_Aktual_{{ $tahunFilter }}.pdf';
+        const filename = 'Kartu_Kendali_SPJ_{{ $tahunFilter }}.pdf';
 
         // Temporarily fix ALL parent overflow to prevent clipping
         const savedOverflows = [];

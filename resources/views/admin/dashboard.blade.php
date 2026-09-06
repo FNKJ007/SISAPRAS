@@ -125,7 +125,7 @@
                 <span style="color:#C0201F; background:#FEE2E2; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700;">
                     💳 {{ $totalInvoiceCount }} Invoice Verified
                 </span>
-                <a href="{{ route('admin.pemeliharaan.monitoring-aktual.index') }}" style="color:#C0201F; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
+                <a href="{{ route('admin.pemeliharaan.spj-pembayaran.index') }}" style="color:#C0201F; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
                     Detail <i data-lucide="arrow-right" style="width:13px; height:13px;"></i>
                 </a>
             </div>
@@ -133,37 +133,85 @@
 
     </div>
 
-    {{-- ===================== ABSEN PENGECEKAN HARIAN UNIT (REPORT SUMMARY HARIAN) ===================== --}}
-    <div style="background:#fff; border-radius:16px; box-shadow:0px 14px 30px rgba(15, 23, 42, 0.04); border:1px solid #E2E8F0; overflow:hidden; margin-bottom:20px;" x-data="{ filterAbsen: 'semua' }">
+    {{-- ===================== ABSEN PENGECEKAN HARIAN (UNIT & PERALATAN) ===================== --}}
+    <div style="background:#fff; border-radius:16px; box-shadow:0px 14px 30px rgba(15, 23, 42, 0.04); border:1px solid #E2E8F0; overflow:hidden; margin-bottom:20px;"
+         x-data="{ tabAbsen: 'unit', filterUnit: 'semua', filterAlat: 'semua' }">
+        
+        {{-- Header & Sub-Tab Navigation --}}
         <div style="padding:18px 22px; border-bottom:1px solid #F1F5F9; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:linear-gradient(to right, #F8FAFC, #FFFFFF);">
             <div>
-                <span style="font-size:15.5px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:8px;">
-                    <i data-lucide="clipboard-check" style="width:19px; height:19px; color:#1B2A6B;"></i>
-                    Absen Pengecekan Harian Unit Armada
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <span style="font-size:15.5px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="clipboard-check" style="width:19px; height:19px; color:#1B2A6B;"></i>
+                        Absen Pengecekan Harian
+                    </span>
+
+                    {{-- Tab Switcher --}}
+                    <div style="display:inline-flex; background:#E2E8F0; padding:2.5px; border-radius:10px; font-size:12px; font-weight:700;">
+                        <button type="button" @click="tabAbsen = 'unit'"
+                                :class="tabAbsen === 'unit' ? 'bg-[#1B2A6B] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+                                style="padding:4px 12px; border-radius:8px; border:none; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px;">
+                            <i data-lucide="truck" style="width:13px; height:13px;"></i>
+                            <span>Unit Armada</span>
+                            <span :class="tabAbsen === 'unit' ? 'bg-white/20 text-white' : 'bg-slate-300 text-slate-700'"
+                                  style="padding:1px 6px; border-radius:999px; font-size:10px; font-weight:800;">
+                                {{ $absenSummary['total_unit'] ?? 0 }}
+                            </span>
+                        </button>
+                        <button type="button" @click="tabAbsen = 'alat'"
+                                :class="tabAbsen === 'alat' ? 'bg-[#1B2A6B] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+                                style="padding:4px 12px; border-radius:8px; border:none; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px;">
+                            <i data-lucide="wrench" style="width:13px; height:13px;"></i>
+                            <span>Peralatan Pos</span>
+                            <span :class="tabAbsen === 'alat' ? 'bg-white/20 text-white' : 'bg-slate-300 text-slate-700'"
+                                  style="padding:1px 6px; border-radius:999px; font-size:10px; font-weight:800;">
+                                {{ $absenAlatSummary['total_pos_kategori'] ?? 0 }}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <span style="font-size:12px; color:#64748B; margin-top:4px; display:block;" x-show="tabAbsen === 'unit'">
+                    Monitoring kepatuhan pemeriksaan harian {{ $absenSummary['total_unit'] ?? 25 }} unit kendaraan pemadam, rescue, dan pencegahan per hari ini (<strong>{{ now()->translatedFormat('l, d F Y') }}</strong>).
                 </span>
-                <span style="font-size:12px; color:#64748B; margin-top:2px; display:block;">
-                    Monitoring kepatuhan pemeriksaan harian 25 unit kendaraan pemadam, rescue, dan pencegahan per hari ini (<strong>{{ now()->translatedFormat('l, d F Y') }}</strong>).
+                <span style="font-size:12px; color:#64748B; margin-top:4px; display:block;" x-show="tabAbsen === 'alat'" x-cloak>
+                    Monitoring kepatuhan pemeriksaan harian peralatan operasional di seluruh 9 Pos Damkar sesuai kapabilitas pos per hari ini (<strong>{{ now()->translatedFormat('l, d F Y') }}</strong>).
                 </span>
             </div>
 
-            {{-- Filter Badges & KPI Counter --}}
-            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            {{-- Filter Badges: Unit --}}
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;" x-show="tabAbsen === 'unit'">
                 <div style="display:inline-flex; background:#F1F5F9; padding:3px; border-radius:10px; font-size:12px; font-weight:700;">
-                    <button type="button" @click="filterAbsen = 'semua'" :class="filterAbsen === 'semua' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-800'" style="padding:5px 12px; border-radius:8px; border:none; cursor:pointer; transition:all 0.2s;">
-                        Semua ({{ $absenSummary['total_unit'] }})
+                    <button type="button" @click="filterUnit = 'semua'" :class="filterUnit === 'semua' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-800'" style="padding:5px 12px; border-radius:8px; border:none; cursor:pointer; transition:all 0.2s;">
+                        Semua ({{ $absenSummary['total_unit'] ?? 0 }})
                     </button>
-                    <button type="button" @click="filterAbsen = 'sudah'" :class="filterAbsen === 'sudah' ? 'bg-emerald-600 text-white shadow-xs' : 'text-emerald-700 hover:text-emerald-900'" style="padding:5px 12px; border-radius:8px; border:none; cursor:pointer; transition:all 0.2s;">
-                        ✓ Sudah Dicek ({{ $absenSummary['sudah_dicek'] }})
+                    <button type="button" @click="filterUnit = 'sudah'" :class="filterUnit === 'sudah' ? 'bg-emerald-600 text-white shadow-xs' : 'text-emerald-700 hover:text-emerald-900'" style="padding:5px 12px; border-radius:8px; border:none; cursor:pointer; transition:all 0.2s;">
+                        ✓ Sudah Dicek ({{ $absenSummary['sudah_dicek'] ?? 0 }})
                     </button>
-                    <button type="button" @click="filterAbsen = 'belum'" :class="filterAbsen === 'belum' ? 'bg-red-600 text-white shadow-xs' : 'text-red-700 hover:text-red-900'" style="padding:5px 12px; border-radius:8px; border:none; cursor:pointer; transition:all 0.2s;">
-                        ✕ Belum Dicek ({{ $absenSummary['belum_dicek'] }})
+                    <button type="button" @click="filterUnit = 'belum'" :class="filterUnit === 'belum' ? 'bg-red-600 text-white shadow-xs' : 'text-red-700 hover:text-red-900'" style="padding:5px 12px; border-radius:8px; border:none; cursor:pointer; transition:all 0.2s;">
+                        ✕ Belum Dicek ({{ $absenSummary['belum_dicek'] ?? 0 }})
+                    </button>
+                </div>
+            </div>
+
+            {{-- Filter Badges: Peralatan --}}
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;" x-show="tabAbsen === 'alat'" x-cloak>
+                <div style="display:inline-flex; background:#F1F5F9; padding:3px; border-radius:10px; font-size:12px; font-weight:700;">
+                    <button type="button" @click="filterAlat = 'semua'" :class="filterAlat === 'semua' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-800'" style="padding:5px 12px; border-radius:8px; border:none; cursor:pointer; transition:all 0.2s;">
+                        Semua ({{ $absenAlatSummary['total_pos_kategori'] ?? 0 }})
+                    </button>
+                    <button type="button" @click="filterAlat = 'sudah'" :class="filterAlat === 'sudah' ? 'bg-emerald-600 text-white shadow-xs' : 'text-emerald-700 hover:text-emerald-900'" style="padding:5px 12px; border-radius:8px; border:none; cursor:pointer; transition:all 0.2s;">
+                        ✓ Sudah Dicek ({{ $absenAlatSummary['sudah_dicek'] ?? 0 }})
+                    </button>
+                    <button type="button" @click="filterAlat = 'belum'" :class="filterAlat === 'belum' ? 'bg-red-600 text-white shadow-xs' : 'text-red-700 hover:text-red-900'" style="padding:5px 12px; border-radius:8px; border:none; cursor:pointer; transition:all 0.2s;">
+                        ✕ Belum Dicek ({{ $absenAlatSummary['belum_dicek'] ?? 0 }})
                     </button>
                 </div>
             </div>
         </div>
 
-        {{-- Table Absen Unit --}}
-        <div style="overflow-x:auto; max-height:360px;" class="custom-scroll">
+        {{-- ===================== TAB 1: TABLE ABSEN UNIT ===================== --}}
+        <div style="overflow-x:auto; max-height:360px;" class="custom-scroll" x-show="tabAbsen === 'unit'">
             <table style="width:100%; border-collapse:collapse; text-align:left; font-size:12px;">
                 <thead style="position:sticky; top:0; background:#F8FAFC; z-index:2; border-bottom:1px solid #E2E8F0; color:#475569; font-weight:800; text-transform:uppercase; font-size:11px; letter-spacing:0.5px;">
                     <tr>
@@ -183,7 +231,7 @@
                             $isSudahDicek = !empty($uObj->sudah_dicek);
                         @endphp
                         <tr style="border-bottom:1px solid #F1F5F9;"
-                            x-show="filterAbsen === 'semua' || (filterAbsen === 'sudah' && {{ $isSudahDicek ? 'true' : 'false' }}) || (filterAbsen === 'belum' && {{ !$isSudahDicek ? 'true' : 'false' }})"
+                            x-show="filterUnit === 'semua' || (filterUnit === 'sudah' && {{ $isSudahDicek ? 'true' : 'false' }}) || (filterUnit === 'belum' && {{ !$isSudahDicek ? 'true' : 'false' }})"
                             class="hover:bg-gray-50/80 transition-colors">
                             <td style="padding:10px 16px;">
                                 <strong style="color:#0F172A; font-weight:800; font-size:12.5px;">{{ strtoupper($uObj->nomor_lambung ?? '—') }}</strong>
@@ -250,6 +298,98 @@
                     @empty
                         <tr>
                             <td colspan="7" style="padding:24px; text-align:center; color:#94A3B8;">Belum ada data unit armada yang terdaftar.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- ===================== TAB 2: TABLE ABSEN PERALATAN ===================== --}}
+        <div style="overflow-x:auto; max-height:360px;" class="custom-scroll" x-show="tabAbsen === 'alat'" x-cloak>
+            <table style="width:100%; border-collapse:collapse; text-align:left; font-size:12px;">
+                <thead style="position:sticky; top:0; background:#F8FAFC; z-index:2; border-bottom:1px solid #E2E8F0; color:#475569; font-weight:800; text-transform:uppercase; font-size:11px; letter-spacing:0.5px;">
+                    <tr>
+                        <th style="padding:10px 16px;">Pos Damkar</th>
+                        <th style="padding:10px 16px;">Kategori Peralatan</th>
+                        <th style="padding:10px 16px;">Status Cek Hari Ini</th>
+                        <th style="padding:10px 16px;">Kondisi Alat</th>
+                        <th style="padding:10px 16px;">Petugas Pemeriksa</th>
+                        <th style="padding:10px 16px; text-align:right;">Waktu Cek</th>
+                    </tr>
+                </thead>
+                <tbody style="divide-y:1px solid #F1F5F9;">
+                    @forelse($absenAlatList ?? [] as $alatAbsen)
+                        @php 
+                            $aObj = is_array($alatAbsen) ? (object)$alatAbsen : (is_object($alatAbsen) ? $alatAbsen : (object)[]);
+                            $isSudahDicek = !empty($aObj->sudah_dicek);
+                        @endphp
+                        <tr style="border-bottom:1px solid #F1F5F9;"
+                            x-show="filterAlat === 'semua' || (filterAlat === 'sudah' && {{ $isSudahDicek ? 'true' : 'false' }}) || (filterAlat === 'belum' && {{ !$isSudahDicek ? 'true' : 'false' }})"
+                            class="hover:bg-gray-50/80 transition-colors">
+                            <td style="padding:10px 16px; font-weight:700; color:#0F172A;">
+                                <span style="display:inline-flex; align-items:center; gap:5px;">
+                                    <i data-lucide="map-pin" style="width:13px; height:13px; color:#1B2A6B;"></i>
+                                    {{ $aObj->pos ?? '—' }}
+                                </span>
+                            </td>
+                            <td style="padding:10px 16px;">
+                                @php
+                                    $alatBadge = match(strtolower($aObj->kategori ?? '')) {
+                                        'rescue'         => 'background:#FEF3C7; color:#92400E; border:1px solid #FDE68A;',
+                                        'pencegahan'     => 'background:#E0E7FF; color:#3730A3; border:1px solid #C7D2FE;',
+                                        'command_center' => 'background:#F3E8FF; color:#6B21A8; border:1px solid #E9D5FF;',
+                                        default          => 'background:#FEE2E2; color:#991B1B; border:1px solid #FECACA;',
+                                    };
+                                @endphp
+                                <span style="padding:3px 9px; border-radius:6px; font-size:10.5px; font-weight:700; text-transform:uppercase; {{ $alatBadge }}">
+                                    {{ $aObj->kategori_label ?? 'ALAT PEMADAM' }}
+                                </span>
+                            </td>
+                            <td style="padding:10px 16px;">
+                                @if($aObj->sudah_dicek ?? false)
+                                    <span style="display:inline-flex; align-items:center; gap:5px; background:#D1FAE5; color:#065F46; padding:3px 9px; border-radius:12px; font-size:11px; font-weight:800;">
+                                        <span style="width:6px; height:6px; border-radius:50%; background:#059669;"></span>
+                                        Sudah Dicek
+                                    </span>
+                                @else
+                                    <span style="display:inline-flex; align-items:center; gap:5px; background:#FEE2E2; color:#991B1B; padding:3px 9px; border-radius:12px; font-size:11px; font-weight:800;">
+                                        <span style="width:6px; height:6px; border-radius:50%; background:#DC2626;"></span>
+                                        Belum Dicek
+                                    </span>
+                                @endif
+                            </td>
+                            <td style="padding:10px 16px;">
+                                @if($aObj->sudah_dicek ?? false)
+                                    <span style="display:inline-flex; align-items:center; gap:4px; font-size:11.5px; font-weight:700;">
+                                        <span style="color:#059669;">{{ $aObj->total_baik ?? 0 }} Baik</span>
+                                        @if(($aObj->total_rusak ?? 0) > 0)
+                                            <span style="color:#94A3B8;">•</span>
+                                            <span style="color:#DC2626; background:#FEE2E2; padding:1px 6px; border-radius:4px;">{{ $aObj->total_rusak }} Rusak</span>
+                                        @endif
+                                    </span>
+                                @else
+                                    <span style="color:#94A3B8; font-style:italic;">—</span>
+                                @endif
+                            </td>
+                            <td style="padding:10px 16px;">
+                                @if($aObj->sudah_dicek ?? false)
+                                    <span style="font-weight:700; color:#1E293B;">{{ $aObj->nama_pemeriksa ?? '—' }}</span>
+                                    <div style="font-size:10.5px; color:#64748B;">{{ $aObj->jabatan ?? '—' }}</div>
+                                @else
+                                    <span style="color:#94A3B8; font-style:italic;">—</span>
+                                @endif
+                            </td>
+                            <td style="padding:10px 16px; text-align:right;">
+                                @if(($aObj->sudah_dicek ?? false) && !empty($aObj->waktu_cek))
+                                    <span style="font-weight:700; color:#475569;">{{ $aObj->waktu_cek }} WIB</span>
+                                @else
+                                    <span style="color:#94A3B8;">—</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" style="padding:24px; text-align:center; color:#94A3B8;">Belum ada data target pengecekan peralatan yang terdaftar.</td>
                         </tr>
                     @endforelse
                 </tbody>

@@ -139,10 +139,16 @@
                         $isAdminSimulasi = auth()->user()->isAdmin() && session('admin_viewing_as_user');
                         $noBidang = empty(trim(auth()->user()->bidang ?? ''));
                         $showAll = $isSpi || $isAdminSimulasi || $noBidang;
+
+                        // Sidebar navigasi mengikuti bidang tugas pengguna masing-masing
+                        $canPemadam    = $showAll || str_contains($userBidang, 'pemadam');
+                        $canRescue     = $showAll || str_contains($userBidang, 'rescue') || str_contains($userBidang, 'penyelamatan');
+                        $canPencegahan = $showAll || str_contains($userBidang, 'pencegahan');
+                        $canCc         = $showAll || str_contains($userBidang, 'command center') || str_contains($userBidang, 'cc');
                     @endphp
 
                     {{-- === Unit Pemadam === --}}
-                    @if($showAll || str_contains($userBidang, 'pemadam'))
+                    @if($canPemadam)
                     <div class="menu-group">
                         <button class="menu-title" type="button" data-target="menuPemadam">
                             <span class="menu-title-left">
@@ -175,7 +181,7 @@
                     @endif
 
                     {{-- === Unit Rescue === --}}
-                    @if($showAll || str_contains($userBidang, 'rescue'))
+                    @if($canRescue)
                     <div class="menu-group">
                         <button class="menu-title" type="button" data-target="menuRescue">
                             <span class="menu-title-left">
@@ -208,7 +214,7 @@
                     @endif
 
                     {{-- === Bidang Pencegahan === --}}
-                    @if($showAll || str_contains($userBidang, 'pencegahan'))
+                    @if($canPencegahan)
                     <div class="menu-group">
                         <button class="menu-title" type="button" data-target="menuPencegahan">
                             <span class="menu-title-left">
@@ -241,7 +247,7 @@
                     @endif
 
                     {{-- === Command Center === --}}
-                    @if($showAll || str_contains($userBidang, 'command center'))
+                    @if($canCc)
                     <div class="menu-group">
                         <button class="menu-title" type="button" data-target="menuCommand">
                             <span class="menu-title-left">

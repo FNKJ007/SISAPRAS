@@ -180,7 +180,7 @@ trait HandlesCekHarianAlat
             'unit_nama'           => $unitNama,
             'nama_pemeriksa'      => $validated['nama_pemeriksa'],
             'jabatan'             => $validated['jabatan'],
-            'pos'                 => $validated['pos'] ?? ($unitObj ? $unitObj->pos : null),
+            'pos'                 => $validated['pos'] ?? ($unitObj ? $unitObj->pos : (auth()->user() ? auth()->user()->pos : null)),
             'nama_danru'          => $validated['nama_danru'] ?? null,
             'nama_kabid'          => $validated['nama_kabid'] ?? null,
             'tanggal_pemeriksaan' => $validated['tanggal_pemeriksaan'],

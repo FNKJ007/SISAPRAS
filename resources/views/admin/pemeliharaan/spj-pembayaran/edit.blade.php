@@ -1,7 +1,7 @@
 @php
-    $isAktual = request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+    $isAktual = request()->routeIs('admin.pemeliharaan.spj-pembayaran.*') || request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
     $pageTitle = $isAktual ? 'SPJ Pembayaran' : 'Aktual Pembayaran';
-    $routePrefix = $isAktual ? 'admin.pemeliharaan.monitoring-aktual' : 'admin.pemeliharaan.invoice';
+    $routePrefix = $isAktual ? 'admin.pemeliharaan.spj-pembayaran' : 'admin.pemeliharaan.aktual-pembayaran';
 @endphp
 
 @extends('layouts.admin')
@@ -73,7 +73,7 @@
     <form action="{{ route($routePrefix . '.update', $invoice) }}" method="POST">
         @csrf
         @method('PUT')
-        @include('admin.pemeliharaan.invoice._form')
+        @include('admin.pemeliharaan.spj-pembayaran._form')
     </form>
 
 </div>

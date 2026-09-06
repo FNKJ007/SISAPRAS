@@ -169,12 +169,13 @@ class AdminController extends Controller
             ];
         });
 
-        // 5. Absen Pengecekan Harian Unit (Cached for 15s to guarantee high responsiveness)
-        $absenData = \Illuminate\Support\Facades\Cache::remember('admin_dashboard_absen_unit_v2', 15, function () {
+        // 5. Absen Pengecekan Harian Unit & Peralatan (Cached for 15s to guarantee high responsiveness)
+        $absenData = \Illuminate\Support\Facades\Cache::remember('admin_dashboard_absen_unit_alat_v3', 15, function () {
             $todayStart = now()->startOfDay()->toDateTimeString();
             $todayEnd   = now()->endOfDay()->toDateTimeString();
             $todayDate  = now()->format('Y-m-d');
 
+            // --- A. Data Absen Pengecekan Unit Armada ---
             $todayCekUnits = \App\Models\CekHarianUnit::where(function ($q) use ($todayStart, $todayEnd, $todayDate) {
                     $q->whereBetween('created_at', [$todayStart, $todayEnd])
                       ->orWhere('tanggal_pemeriksaan', $todayDate);
@@ -204,16 +205,80 @@ class AdminController extends Controller
                 ];
             })->values()->toArray();
 
-            $sudahCount = count(array_filter($absenUnitList, fn($u) => !empty($u['sudah_dicek'])));
+            $sudahUnitCount = count(array_filter($absenUnitList, fn($u) => !empty($u['sudah_dicek'])));
             $absenSummary = [
                 'total_unit'  => count($absenUnitList),
-                'sudah_dicek' => $sudahCount,
-                'belum_dicek' => count($absenUnitList) - $sudahCount,
+                'sudah_dicek' => $sudahUnitCount,
+                'belum_dicek' => count($absenUnitList) - $sudahUnitCount,
+            ];
+
+            // --- B. Data Absen Pengecekan Peralatan Pos ---
+            $todayCekAlats = \App\Models\CekHarianAlat::where(function ($q) use ($todayStart, $todayEnd, $todayDate) {
+                    $q->whereBetween('created_at', [$todayStart, $todayEnd])
+                      ->orWhere('tanggal_pemeriksaan', $todayDate);
+                })
+                ->latest('id')
+                ->get();
+
+            $allActivePos = \App\Models\Pos::where('status', 'aktif')->orderBy('nama', 'asc')->get(['id', 'nama']);
+
+            $absenAlatList = [];
+            foreach ($allActivePos as $pos) {
+                $requiredCats = \App\Models\Pos::getKategoriAlatByPos($pos->nama);
+                $posName = $pos->nama;
+                $cleanPos = trim(explode('(', $posName)[0]);
+                $aliasInParen = '';
+                if (preg_match('/\((.*?)\)/', $posName, $m)) {
+                    $aliasInParen = trim($m[1]);
+                }
+
+                foreach ($requiredCats as $cat) {
+                    $cek = $todayCekAlats->first(function ($item) use ($cat, $posName, $cleanPos, $aliasInParen) {
+                        $catMatch = (strtolower($item->kategori) === strtolower($cat));
+                        if (!$catMatch) return false;
+
+                        $itemPos = strtolower(trim((string)$item->pos));
+                        if (empty($itemPos)) return false;
+
+                        return str_contains($itemPos, strtolower($cleanPos))
+                            || (!empty($aliasInParen) && str_contains($itemPos, strtolower($aliasInParen)))
+                            || str_contains(strtolower($posName), $itemPos);
+                    });
+
+                    $catLabel = match(strtolower($cat)) {
+                        'rescue'         => 'Alat Rescue',
+                        'pencegahan'     => 'Alat Pencegahan',
+                        'command_center' => 'Command Center',
+                        default          => 'Alat Pemadam',
+                    };
+
+                    $absenAlatList[] = [
+                        'pos'            => $posName,
+                        'kategori'       => $cat,
+                        'kategori_label' => $catLabel,
+                        'sudah_dicek'    => $cek !== null,
+                        'nama_pemeriksa' => $cek ? $cek->nama_pemeriksa : null,
+                        'jabatan'        => $cek ? $cek->jabatan : null,
+                        'total_baik'     => $cek ? ($cek->total_baik ?? 0) : 0,
+                        'total_rusak'    => $cek ? ($cek->total_rusak ?? 0) : 0,
+                        'waktu_cek'      => $cek && $cek->created_at ? $cek->created_at->format('H:i') : null,
+                        'cek_id'         => $cek ? $cek->id : null,
+                    ];
+                }
+            }
+
+            $sudahAlatCount = count(array_filter($absenAlatList, fn($a) => !empty($a['sudah_dicek'])));
+            $absenAlatSummary = [
+                'total_pos_kategori' => count($absenAlatList),
+                'sudah_dicek'        => $sudahAlatCount,
+                'belum_dicek'        => count($absenAlatList) - $sudahAlatCount,
             ];
 
             return [
-                'absenUnitList' => $absenUnitList,
-                'absenSummary'  => $absenSummary,
+                'absenUnitList'     => $absenUnitList,
+                'absenSummary'      => $absenSummary,
+                'absenAlatList'     => $absenAlatList,
+                'absenAlatSummary'  => $absenAlatSummary,
             ];
         });
 
@@ -487,116 +552,16 @@ class AdminController extends Controller
 
     public function pemeliharaanMonitoringAktual(Request $request)
     {
-        $statusFilter = $request->query('status_pengerjaan', 'semua');
-        $searchQuery  = $request->query('search', '');
-
-        // Auto-sync: pengajuan yang disetujui & punya tanggal keberangkatan
-        $today = now()->format('Y-m-d');
-        $approvedList = Pengajuan::where('status', 'disetujui')->whereNotNull('tanggal_keberangkatan')->get();
-        foreach ($approvedList as $item) {
-            $changed = false;
-            $keberangkatan = $item->tanggal_keberangkatan ? $item->tanggal_keberangkatan->format('Y-m-d') : null;
-
-            // 1. Auto-fill tanggal_mulai_pengerjaan dari tanggal_keberangkatan jika masih kosong
-            if ($keberangkatan && empty($item->tanggal_mulai_pengerjaan)) {
-                $item->tanggal_mulai_pengerjaan = $keberangkatan;
-                $changed = true;
-            }
-
-            // 2. Auto-update status_pengerjaan ke 'proses' jika jadwal keberangkatan <= hari ini dan masih 'belum_mulai'
-            if ($keberangkatan && $keberangkatan <= $today && $item->status_pengerjaan === 'belum_mulai') {
-                $item->status_pengerjaan = 'proses';
-                if ((int)$item->progress_persen === 0) {
-                    $item->progress_persen = 10;
-                }
-                $changed = true;
-            } elseif ($keberangkatan && $keberangkatan > $today && $item->status_pengerjaan === 'proses') {
-                $item->status_pengerjaan = 'belum_mulai';
-                $item->progress_persen = 0;
-                $changed = true;
-            }
-
-            if ($changed) {
-                $item->save();
-            }
-        }
-
-        \App\Models\Unit::syncStatusAll();
-
-        // Hanya unit yang sudah disetujui yang masuk pipeline pengerjaan aktual
-        $query = Pengajuan::where('status', 'disetujui')->latest();
-
-        if ($statusFilter !== 'semua' && in_array($statusFilter, ['belum_mulai', 'proses', 'selesai'])) {
-            $query->where('status_pengerjaan', $statusFilter);
-        }
-
-        if (!empty($searchQuery)) {
-            $query->where(function ($q) use ($searchQuery) {
-                $q->where('nomor_lambung', 'ILIKE', "%{$searchQuery}%")
-                  ->orWhere('pos', 'ILIKE', "%{$searchQuery}%")
-                  ->orWhere('nama_pemegang', 'ILIKE', "%{$searchQuery}%")
-                  ->orWhere('item_perbaikan', 'ILIKE', "%{$searchQuery}%");
-            });
-        }
-
-        $records = $query->paginate(10)->withQueryString();
-
-        $kpiRaw = Pengajuan::where('status', 'disetujui')
-            ->selectRaw("
-                count(*) as total,
-                count(case when status_pengerjaan = 'belum_mulai' or status_pengerjaan is null then 1 end) as belum_mulai,
-                count(case when status_pengerjaan = 'proses' then 1 end) as proses,
-                count(case when status_pengerjaan = 'selesai' then 1 end) as selesai
-            ")->first();
-
-        $kpi = [
-            'total'       => (int) ($kpiRaw->total ?? 0),
-            'belum_mulai' => (int) ($kpiRaw->belum_mulai ?? 0),
-            'proses'      => (int) ($kpiRaw->proses ?? 0),
-            'selesai'     => (int) ($kpiRaw->selesai ?? 0),
-        ];
-
-        return view('admin.pemeliharaan.monitoring-aktual', compact('records', 'kpi', 'statusFilter', 'searchQuery'));
+        return redirect()->route('admin.pemeliharaan.spj-pembayaran.index');
     }
 
-    /**
-     * Update progres pengerjaan aktual (dipakai oleh modal Update Progres).
-     */
-    public function updateProgresPengerjaan(Request $request, $id)
-    {
-        $validated = $request->validate([
-            'status_pengerjaan'          => 'required|in:belum_mulai,proses,selesai',
-            'tanggal_mulai_pengerjaan'   => 'nullable|date',
-            'tanggal_selesai_pengerjaan' => 'nullable|date',
-            'progress_persen'            => 'required|integer|min:0|max:100',
-            'progress_catatan'           => 'nullable|string|max:1000',
-        ]);
-
-        $pengajuan = Pengajuan::findOrFail($id);
-
-        // Konsistensi otomatis: selesai -> 100%, belum mulai -> 0%
-        if ($validated['status_pengerjaan'] === 'selesai') {
-            $validated['progress_persen'] = 100;
-            $validated['tanggal_selesai_pengerjaan'] = $validated['tanggal_selesai_pengerjaan'] ?? now()->format('Y-m-d');
-        } elseif ($validated['status_pengerjaan'] === 'belum_mulai') {
-            $validated['progress_persen'] = 0;
-        }
-
-        $pengajuan->update($validated);
-        \App\Models\Unit::syncStatusAll();
-        CacheService::invalidate(['pengajuan', 'unit']);
-
-        return redirect()
-            ->route('admin.pemeliharaan.monitoring-aktual')
-            ->with('success', "Progres pengerjaan unit '{$pengajuan->nomor_lambung}' berhasil diperbarui.");
-    }
 
     /**
     /**
      * Kartu Kendali Aktual Pemeliharaan — Matriks biaya pemeliharaan armada
-     * per unit dan per bulan (12 bulan) dalam satu tahun anggaran.
+     * per unit dan per bulan (12 bulan) dalam satu tahun anggaran berdasarkan Aktual Pembayaran.
      */
-    public function pemeliharaanKartuKendaliPembayaran(Request $request)
+    public function pemeliharaanKartuKendaliAktual(Request $request)
     {
         $existingYears = \App\Models\Invoice::whereNotNull('tahun_anggaran')
             ->where(function ($q) {
@@ -721,7 +686,7 @@ class AdminController extends Controller
             ->orWhere('jabatan', 'ILIKE', '%pemeliharaan%')
             ->first();
 
-        return view('admin.pemeliharaan.kartu-kendali-pembayaran', [
+        return view('admin.pemeliharaan.kartu-kendali-aktual', [
             'matrixRows'    => $matrixRows,
             'monthlyTotals' => $monthlyTotals,
             'grandTotal'    => $grandTotal,
@@ -737,7 +702,7 @@ class AdminController extends Controller
      * Kartu Kendali SPJ Pemeliharaan — Matriks realisasi pemeliharaan armada
      * berdasarkan data SPJ Pembayaran per unit dan per bulan.
      */
-    public function pemeliharaanKartuKendaliAktual(Request $request)
+    public function pemeliharaanKartuKendaliSpj(Request $request)
     {
         $existingYears = \App\Models\Invoice::whereNotNull('tahun_anggaran')
             ->where('kategori_monitoring', 'aktual')
@@ -856,7 +821,7 @@ class AdminController extends Controller
             ->orWhere('jabatan', 'ILIKE', '%pemeliharaan%')
             ->first();
 
-        return view('admin.pemeliharaan.kartu-kendali-aktual', [
+        return view('admin.pemeliharaan.kartu-kendali-spj', [
             'matrixRows'    => $matrixRows,
             'monthlyTotals' => $monthlyTotals,
             'grandTotal'    => $grandTotal,
