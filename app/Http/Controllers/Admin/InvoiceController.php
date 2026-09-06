@@ -26,8 +26,8 @@ class InvoiceController extends Controller
         $unitId = $unit ? $unit->id : 1;
         $kodeVerif = $p->kode_verifikasi ?? ('HAR-' . ($p->created_at ? $p->created_at->format('Ymd') : date('Ymd')) . '-' . sprintf('%04d', $p->id));
         $nomorInvoice = str_starts_with($kodeVerif, 'HAR-')
-            ? 'INV-AKT-' . substr($kodeVerif, 4)
-            : 'INV-AKT-' . $kodeVerif;
+            ? 'INV-SPJ-' . substr($kodeVerif, 4)
+            : 'INV-SPJ-' . $kodeVerif;
 
         $inv = Invoice::firstOrCreate(
             [
@@ -84,7 +84,7 @@ class InvoiceController extends Controller
 
     public function index(Request $request)
     {
-        $isAktual = $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+        $isAktual = $request->routeIs('admin.pemeliharaan.spj-pembayaran.*') || $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
 
         $query = Invoice::with('unit')
             ->when($isAktual, function ($q) {
@@ -204,7 +204,9 @@ class InvoiceController extends Controller
             ];
         })->values();
 
-        return view('admin.pemeliharaan.invoice.index', compact(
+        $viewFolder = $isAktual ? 'spj-pembayaran' : 'aktual-pembayaran';
+
+        return view("admin.pemeliharaan.{$viewFolder}.index", compact(
             'invoices',
             'units',
             'bulanList',
@@ -223,10 +225,13 @@ class InvoiceController extends Controller
     {
         $pengajuans = Pengajuan::where('status', 'disetujui')->latest()->get();
         $units = Unit::orderBy('nomor_lambung')->get();
-        $nomorInvoice = Invoice::generateNomorInvoice();
+        $isAktual = $request->routeIs('admin.pemeliharaan.spj-pembayaran.*') || $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+        $nomorInvoice = Invoice::generateNomorInvoice(null, $isAktual ? 'INV-SPJ' : 'INV');
         $selectedPengajuanId = $request->query('pengajuan_id');
 
-        return view('admin.pemeliharaan.invoice.create', compact('pengajuans', 'units', 'nomorInvoice', 'selectedPengajuanId'));
+        $viewFolder = $isAktual ? 'spj-pembayaran' : 'aktual-pembayaran';
+
+        return view("admin.pemeliharaan.{$viewFolder}.create", compact('pengajuans', 'units', 'nomorInvoice', 'selectedPengajuanId'));
     }
 
     public function store(Request $request)
@@ -261,8 +266,7 @@ class InvoiceController extends Controller
             }
 
             $unitId = $unit ? $unit->id : (Unit::first()->id ?? 1);
-
-            $isAktual = $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+            $isAktual = $request->routeIs('admin.pemeliharaan.spj-pembayaran.*') || $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
 
             $invoice = Invoice::create([
                 'nomor_invoice'       => $validated['nomor_invoice'],
@@ -306,15 +310,15 @@ class InvoiceController extends Controller
             $invoice->recalculateTotals();
         });
 
-        $isAktual = $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
-        $routeTarget = $isAktual ? 'admin.pemeliharaan.monitoring-aktual.index' : 'admin.pemeliharaan.invoice.index';
+        $isAktual = $request->routeIs('admin.pemeliharaan.spj-pembayaran.*') || $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+        $routeTarget = $isAktual ? 'admin.pemeliharaan.spj-pembayaran.index' : 'admin.pemeliharaan.aktual-pembayaran.index';
 
         return redirect()
             ->route($routeTarget)
             ->with('success', 'Data berhasil dibuat.');
     }
 
-    public function show(Invoice $invoice)
+    public function show(Request $request, Invoice $invoice)
     {
         $invoice->load('unit', 'items', 'creator');
         $pejabatKasi = \App\Models\User::where('jabatan', 'ILIKE', '%pemeliharaan sarana%')
@@ -322,16 +326,22 @@ class InvoiceController extends Controller
             ->orWhere('jabatan', 'ILIKE', '%pemeliharaan%')
             ->first();
 
-        return view('admin.pemeliharaan.invoice.show', compact('invoice', 'pejabatKasi'));
+        $isAktual = $request->routeIs('admin.pemeliharaan.spj-pembayaran.*') || $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+        $viewFolder = $isAktual ? 'spj-pembayaran' : 'aktual-pembayaran';
+
+        return view("admin.pemeliharaan.{$viewFolder}.show", compact('invoice', 'pejabatKasi'));
     }
 
-    public function edit(Invoice $invoice)
+    public function edit(Request $request, Invoice $invoice)
     {
         $invoice->load('items');
         $pengajuans = Pengajuan::where('status', 'disetujui')->latest()->get();
         $units = Unit::orderBy('nomor_lambung')->get();
 
-        return view('admin.pemeliharaan.invoice.edit', compact('invoice', 'pengajuans', 'units'));
+        $isAktual = $request->routeIs('admin.pemeliharaan.spj-pembayaran.*') || $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+        $viewFolder = $isAktual ? 'spj-pembayaran' : 'aktual-pembayaran';
+
+        return view("admin.pemeliharaan.{$viewFolder}.edit", compact('invoice', 'pengajuans', 'units'));
     }
 
     public function update(Request $request, Invoice $invoice)
@@ -409,8 +419,8 @@ class InvoiceController extends Controller
             $invoice->recalculateTotals();
         });
 
-        $isAktual = $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
-        $routeTarget = $isAktual ? 'admin.pemeliharaan.monitoring-aktual.index' : 'admin.pemeliharaan.invoice.index';
+        $isAktual = $request->routeIs('admin.pemeliharaan.spj-pembayaran.*') || $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+        $routeTarget = $isAktual ? 'admin.pemeliharaan.spj-pembayaran.index' : 'admin.pemeliharaan.aktual-pembayaran.index';
 
         return redirect()
             ->route($routeTarget)
@@ -419,10 +429,10 @@ class InvoiceController extends Controller
 
     public function destroy(Request $request, Invoice $invoice)
     {
-        $isAktual = $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+        $isAktual = $request->routeIs('admin.pemeliharaan.spj-pembayaran.*') || $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
         $invoice->delete();
 
-        $routeTarget = $isAktual ? 'admin.pemeliharaan.monitoring-aktual.index' : 'admin.pemeliharaan.invoice.index';
+        $routeTarget = $isAktual ? 'admin.pemeliharaan.spj-pembayaran.index' : 'admin.pemeliharaan.aktual-pembayaran.index';
 
         return redirect()
             ->route($routeTarget)

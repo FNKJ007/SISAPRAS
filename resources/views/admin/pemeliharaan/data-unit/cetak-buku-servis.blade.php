@@ -295,7 +295,7 @@
                 <h4>Pemerintah Kabupaten Bandung</h4>
                 <h2>Dinas Pemadam Kebakaran dan Penyelamatan</h2>
                 <h5>Bidang SPI</h5>
-                <p>Jl. Raya Soreang - Banjaran No. 129, Soreang, Kabupaten Bandung, Jawa Barat 40911 | Telp: (022) 5891113</p>
+                <p>Jl. Raya Soreang Km.17 Bandung Telp. (022) 5891113 Soreang 40911</p>
             </div>
             <img src="{{ asset('images/logo-damkar.png') }}" class="kop-logo" alt="Logo Damkar">
         </div>

@@ -1,9 +1,9 @@
-{{-- resources/views/admin/pemeliharaan/invoice/_form.blade.php --}}
+{{-- resources/views/admin/pemeliharaan/aktual-pembayaran/_form.blade.php --}}
 @php
     $isEdit = isset($invoice);
     $selectedPengajuanId = $selectedPengajuanId ?? old('pengajuan_id', request()->query('pengajuan_id', null));
-    $isAktual = request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
-    $routePrefix = $isAktual ? 'admin.pemeliharaan.monitoring-aktual' : 'admin.pemeliharaan.invoice';
+    $isAktual = request()->routeIs('admin.pemeliharaan.spj-pembayaran.*') || request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+    $routePrefix = $isAktual ? 'admin.pemeliharaan.spj-pembayaran' : 'admin.pemeliharaan.aktual-pembayaran';
 
     // Cari pengajuan yang dipilih jika ada
     $selectedPengajuan = null;

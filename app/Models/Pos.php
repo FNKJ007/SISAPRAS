@@ -150,4 +150,46 @@ class Pos extends Model
     {
         return $this->hasMany(Pengajuan::class, 'pos_id');
     }
+
+    /**
+     * Mengambil daftar kategori alat yang didukung / wajib dicek oleh Pos tertentu.
+     * Aturan Dinas Damkar:
+     * - Mako Soreang: Pemadam, Rescue, Pencegahan, Command Center
+     * - Ciparay & Cicalengka: Pemadam, Rescue
+     * - Pacira, TKI, Baleendah, Majalaya, Cileunyi, Pangalengan, dsb: Pemadam
+     *
+     * @param string|null $posName
+     * @return array
+     */
+    public static function getKategoriAlatByPos(?string $posName): array
+    {
+        if (empty(trim((string)$posName))) {
+            return ['pemadam', 'rescue', 'pencegahan', 'command_center'];
+        }
+
+        $posClean = strtolower(trim((string)$posName));
+
+        // 1. Mako Soreang (Full 4 Kategori: Pemadam, Rescue, Pencegahan, Command Center)
+        if (str_contains($posClean, 'soreang') || str_contains($posClean, 'mako')) {
+            return ['pemadam', 'rescue', 'pencegahan', 'command_center'];
+        }
+
+        // 2. Ciparay & Cicalengka (Pemadam + Rescue)
+        if (str_contains($posClean, 'ciparay') || str_contains($posClean, 'cicalengka')) {
+            return ['pemadam', 'rescue'];
+        }
+
+        // 3. Pos lainnya (Pacira, TKI/Margaasih, Baleendah, Majalaya, Cileunyi, Pangalengan, dsb)
+        return ['pemadam'];
+    }
+
+    /**
+     * Memeriksa apakah suatu Pos mendukung kategori alat tertentu.
+     */
+    public static function hasKategoriAlat(?string $posName, string $kategori): bool
+    {
+        $allowed = self::getKategoriAlatByPos($posName);
+        return in_array(strtolower(trim($kategori)), $allowed, true);
+    }
 }
+

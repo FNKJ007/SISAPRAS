@@ -145,7 +145,7 @@
                     <span class="text-[11px] text-slate-500 font-medium">Monitoring kesiapan &amp; kondisi peralatan operasional pos</span>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="grid grid-cols-1 {{ count($userPeralatanStatus) === 1 ? 'sm:grid-cols-1 md:grid-cols-1 max-w-sm' : (count($userPeralatanStatus) === 2 ? 'sm:grid-cols-2 md:grid-cols-2 max-w-2xl' : 'sm:grid-cols-2 md:grid-cols-4') }} gap-3">
                     @foreach($userPeralatanStatus as $alatSt)
                         <div class="bg-white border rounded-xl p-3 flex flex-col justify-between gap-2 shadow-2xs {{ $alatSt->sudah_dicek ? 'border-emerald-200 bg-emerald-50/20' : 'border-red-200 bg-red-50/20' }}">
                             <div class="flex items-start justify-between gap-2">

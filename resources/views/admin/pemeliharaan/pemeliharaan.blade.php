@@ -128,7 +128,7 @@
                                         <i data-lucide="shopping-bag" style="width:13px; height:13px;"></i>
                                         Surat Pesanan
                                     </a>
-                                    <a href="{{ route('admin.pemeliharaan.invoice.create', ['pengajuan_id' => $rec->id]) }}"
+                                    <a href="{{ route('admin.pemeliharaan.aktual-pembayaran.create', ['pengajuan_id' => $rec->id]) }}"
                                        title="Buat Invoice dari Permohonan Ini"
                                        style="display:inline-flex; align-items:center; gap:4px; padding:6px 10px; background:#1B2A6B; color:#FFFFFF; border:1px solid #1B2A6B; border-radius:6px; font-size:11.5px; font-weight:600; text-decoration:none; transition:all 0.2s; box-shadow:0 2px 6px rgba(27,42,107,0.2);"
                                        onmouseover="this.style.background='#0F172A';"

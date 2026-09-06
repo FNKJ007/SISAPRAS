@@ -175,21 +175,32 @@ Route::middleware(['auth', 'admin', 'prevent-back-history'])->prefix('admin')->n
         Route::get('/surat-permohonan',             [AdminController::class, 'pemeliharaanPemeliharaan'])->name('surat-permohonan');
         Route::get('/cetak-dokumen/{id}/{type}',    [AdminController::class, 'cetakDokumen'])->name('cetak-dokumen');
         
-        // Monitoring Aktual Routes
-        Route::post('/monitoring-aktual/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('monitoring-aktual.update-status');
-        Route::resource('monitoring-aktual', InvoiceController::class, [
-            'names' => 'monitoring-aktual',
-            'parameters' => ['monitoring-aktual' => 'invoice'],
+        // SPJ Pembayaran Routes (URL: /admin/pemeliharaan/spj-pembayaran)
+        Route::post('/spj-pembayaran/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('spj-pembayaran.update-status');
+        Route::resource('spj-pembayaran', InvoiceController::class, [
+            'names' => 'spj-pembayaran',
+            'parameters' => ['spj-pembayaran' => 'invoice'],
         ]);
+        // Fallback route agar URL /monitoring-aktual tetap dialihkan ke /spj-pembayaran
+        Route::get('/monitoring-aktual', fn() => redirect()->route('admin.pemeliharaan.spj-pembayaran.index'))->name('monitoring-aktual');
+        Route::get('/monitoring-aktual/index', fn() => redirect()->route('admin.pemeliharaan.spj-pembayaran.index'))->name('monitoring-aktual.index');
+        Route::get('/monitoring-aktual/{id}', fn($id) => redirect()->route('admin.pemeliharaan.spj-pembayaran.show', $id))->name('monitoring-aktual.show');
 
-        // Monitoring Invoice Routes
-        Route::post('/invoice/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('invoice.update-status');
-        Route::resource('invoice', InvoiceController::class, [
-            'names' => 'invoice',
-            'parameters' => ['invoice' => 'invoice'],
+
+        // Aktual Pembayaran Routes (URL: /admin/pemeliharaan/aktual-pembayaran)
+        Route::post('/aktual-pembayaran/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('aktual-pembayaran.update-status');
+        Route::resource('aktual-pembayaran', InvoiceController::class, [
+            'names' => 'aktual-pembayaran',
+            'parameters' => ['aktual-pembayaran' => 'invoice'],
         ]);
+        // Fallback route agar URL /invoice tetap dialihkan ke /aktual-pembayaran
+        Route::get('/invoice', fn() => redirect()->route('admin.pemeliharaan.aktual-pembayaran.index'))->name('invoice.index');
+        Route::get('/invoice/{id}', fn($id) => redirect()->route('admin.pemeliharaan.aktual-pembayaran.show', $id))->name('invoice.show');
+
         Route::get('/kartu-kendali-aktual',                [AdminController::class, 'pemeliharaanKartuKendaliAktual'])->name('kartu-kendali-aktual');
-        Route::get('/kartu-kendali-pembayaran',                [AdminController::class, 'pemeliharaanKartuKendaliPembayaran'])->name('kartu-kendali-pembayaran');
+        Route::get('/kartu-kendali-spj',                   [AdminController::class, 'pemeliharaanKartuKendaliSpj'])->name('kartu-kendali-spj');
+        // Fallback route agar URL /kartu-kendali-pembayaran tetap dialihkan ke /kartu-kendali-aktual
+        Route::get('/kartu-kendali-pembayaran',            fn() => redirect()->route('admin.pemeliharaan.kartu-kendali-aktual'))->name('kartu-kendali-pembayaran');
 
         // Data Unit CRUD Routes
         Route::get('/data-unit',                    [UnitManagementController::class, 'index'])->name('data-unit');

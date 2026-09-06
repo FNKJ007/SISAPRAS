@@ -1,7 +1,7 @@
 @php
-    $isAktual = request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+    $isAktual = request()->routeIs('admin.pemeliharaan.spj-pembayaran.*') || request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
     $pageTitle = $isAktual ? 'SPJ Pembayaran' : 'Aktual Pembayaran';
-    $routePrefix = $isAktual ? 'admin.pemeliharaan.monitoring-aktual' : 'admin.pemeliharaan.invoice';
+    $routePrefix = $isAktual ? 'admin.pemeliharaan.spj-pembayaran' : 'admin.pemeliharaan.aktual-pembayaran';
 @endphp
 
 @extends('layouts.admin')
@@ -213,17 +213,6 @@
                 </tfoot>
             </table>
         </div>
-
-        {{-- Catatan Khusus (jika ada) --}}
-        @if ($invoice->catatan)
-            <div style="background:#FFFBEB; border:1px solid #FCD34D; border-radius:6px; padding:10px 14px; margin-bottom:18px; page-break-inside:avoid; break-inside:avoid;">
-                <div style="font-size:10.5px; font-weight:700; color:#92400E; text-transform:uppercase; margin-bottom:2px; display:flex; align-items:center; gap:4px;">
-                    <i data-lucide="info" style="width:12px; height:12px;"></i>
-                    <span>Catatan Khusus:</span>
-                </div>
-                <div style="font-size:11px; color:#78350F; line-height:1.4;">{{ $invoice->catatan }}</div>
-            </div>
-        @endif
 
         {{-- Block Tanda Tangan Resmi (Dilindungi dari page-break terpotong) --}}
         <div class="ttd-box" style="margin-top:24px; display:flex; justify-content:flex-end; page-break-inside:avoid; break-inside:avoid;">

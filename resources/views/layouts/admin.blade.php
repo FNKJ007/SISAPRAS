@@ -158,26 +158,26 @@
                             </li>
 
                             <li>
-                                <a href="{{ route('admin.pemeliharaan.invoice.index') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.invoice.*') ? 'active' : '' }}">
+                                <a href="{{ route('admin.pemeliharaan.aktual-pembayaran.index') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.aktual-pembayaran.*') ? 'active' : '' }}">
                                     Aktual Pembayaran
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('admin.pemeliharaan.monitoring-aktual.index') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.monitoring-aktual.*') ? 'active' : '' }}">
+                                <a href="{{ route('admin.pemeliharaan.spj-pembayaran.index') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.spj-pembayaran.*') ? 'active' : '' }}">
                                     SPJ Pembayaran
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.pemeliharaan.kartu-kendali-pembayaran') }}"
-                                   class="{{ request()->routeIs('admin.pemeliharaan.kartu-kendali-pembayaran') ? 'active' : '' }}">
-                                    Kartu Kendali Aktual
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.pemeliharaan.kartu-kendali-aktual') }}"
                                    class="{{ request()->routeIs('admin.pemeliharaan.kartu-kendali-aktual') ? 'active' : '' }}">
+                                    Kartu Kendali Aktual
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('admin.pemeliharaan.kartu-kendali-spj') }}"
+                                   class="{{ request()->routeIs('admin.pemeliharaan.kartu-kendali-spj') ? 'active' : '' }}">
                                     Kartu Kendali SPJ
                                 </a>
                             </li>

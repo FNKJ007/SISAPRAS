@@ -1,8 +1,8 @@
 @php
-    $isAktual = request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+    $isAktual = request()->routeIs('admin.pemeliharaan.spj-pembayaran.*') || request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
     $pageTitle = $isAktual ? 'SPJ Pembayaran' : 'Aktual Pembayaran';
     $subTitle  = $isAktual ? 'Monitoring data SPJ pembayaran pemeliharaan unit.' : 'Monitoring data aktual pembayaran pemeliharaan unit.';
-    $routePrefix = $isAktual ? 'admin.pemeliharaan.monitoring-aktual' : 'admin.pemeliharaan.invoice';
+    $routePrefix = $isAktual ? 'admin.pemeliharaan.spj-pembayaran' : 'admin.pemeliharaan.aktual-pembayaran';
 @endphp
 
 @extends('layouts.admin')
@@ -135,87 +135,85 @@
 
         <div style="padding:18px 22px; border-bottom:1px solid #F1F5F9; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
             <div>
-                <span style="font-size:15px; font-weight:700; color:#0F172A; display:flex; align-items:center; gap:8px;">
-                    <i data-lucide="layout-dashboard" style="width:18px; height:18px; color:#1B2A6B;"></i>
-                    Dashboard Monitoring — {{ $selectedTahun }}
-                </span>
-                <span style="font-size:12px; color:#64748B; margin-top:2px; display:block;">Ringkasan biaya pemeliharaan unit berdasarkan filter unit &amp; bulan yang dipilih.</span>
-            </div>
-        </div>
+    {{-- Dashboard Ringkasan & Filter --}}
+    <div style="background:#FFFFFF; border-radius:14px; border:1px solid #E2E8F0; padding:18px 20px; margin-bottom:22px; box-shadow:0 1px 4px rgba(0,0,0,0.03);">
+        {{-- Filter Bar --}}
+        <form method="GET" action="{{ route($routePrefix . '.index') }}" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; padding-bottom:16px; border-bottom:1px solid #F1F5F9;">
+            <div style="display:flex; flex-wrap:wrap; align-items:center; gap:10px;">
+                {{-- Search --}}
+                <div style="position:relative; min-width:240px;">
+                    <i data-lucide="search" style="position:absolute; left:11px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:#94A3B8;"></i>
+                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari invoice, unit, bengkel..."
+                           style="padding:8px 12px 8px 34px; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; width:100%; outline:none; box-sizing:border-box;">
+                </div>
 
-        <form method="GET" action="{{ route($routePrefix . '.index') }}" style="padding:18px 22px; border-bottom:1px solid #F1F5F9; background:#FAFAFA;">
-            {{-- Pertahankan filter tabel (search) saat filter dashboard disubmit --}}
-            @if(request('q'))<input type="hidden" name="q" value="{{ request('q') }}">@endif
+                {{-- Status Filter --}}
+                <select name="status" onchange="this.form.submit()"
+                        style="padding:8px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; background:#FFFFFF; color:#334155; font-weight:600; outline:none; cursor:pointer;">
+                    <option value="">Semua Status</option>
+                    <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
+                    <option value="diajukan" {{ request('status') === 'diajukan' ? 'selected' : '' }}>Diajukan</option>
+                    <option value="disetujui" {{ request('status') === 'disetujui' ? 'selected' : '' }}>Disetujui</option>
+                    <option value="lunas" {{ request('status') === 'lunas' ? 'selected' : '' }}>Lunas</option>
+                </select>
 
-            <div class="dashboard-filter-row" style="display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap;">
-
-                {{-- Filter Tahun --}}
-                <div>
-                    <label style="display:block; font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Tahun</label>
+                {{-- Filter Tahun Anggaran --}}
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:12.5px; color:#64748B; font-weight:600;">Tahun:</span>
                     <select name="tahun" onchange="this.form.submit()"
-                            style="padding:8px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; font-weight:600; background:#FFFFFF; color:#1E293B; outline:none; cursor:pointer;">
-                        @foreach($availableTahun as $th)
-                            <option value="{{ $th }}" {{ (string) $selectedTahun === (string) $th ? 'selected' : '' }}>{{ $th }}</option>
+                            style="padding:8px 12px; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; background:#FFFFFF; color:#1B2A6B; font-weight:700; outline:none; cursor:pointer;">
+                        @foreach($availableTahun as $t)
+                            <option value="{{ $t }}" {{ $selectedTahun == $t ? 'selected' : '' }}>{{ $t }}</option>
                         @endforeach
                     </select>
                 </div>
 
-                {{-- Filter Unit (multi-select checkbox dropdown) --}}
-                <div style="position:relative;">
-                    <label style="display:block; font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Unit Dipilih</label>
-                    <button type="button" @click="unitOpen = !unitOpen; bulanOpen = false" @click.outside="unitOpen = false"
-                            style="display:flex; align-items:center; justify-content:space-between; gap:10px; min-width:220px; padding:8px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; font-weight:600; background:#FFFFFF; color:#1E293B; cursor:pointer;">
+                {{-- Filter Multi Unit (Dropdown) --}}
+                <div style="position:relative;" x-data="{ open: false }">
+                    <button type="button" @click="open = !open"
+                            style="display:inline-flex; align-items:center; gap:6px; padding:8px 12px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; font-weight:600; color:#334155; cursor:pointer;">
+                        <i data-lucide="truck" style="width:14px; height:14px; color:#64748B;"></i>
                         <span>
                             @if(empty($selectedUnitIds))
-                                Semua Unit ({{ $units->count() }})
-                            @elseif(count($selectedUnitIds) === 1)
-                                @php $sUnit = $units->firstWhere('id', (int)$selectedUnitIds[0]); @endphp
-                                {{ $sUnit->nomor_lambung ?? ($sUnit->nama ?? '1 Unit Dipilih') }}
+                                Semua Unit
                             @else
-                                {{ count($selectedUnitIds) }} Unit Dipilih
+                                {{ count($selectedUnitIds) }} Unit Terpilih
                             @endif
                         </span>
-                        <i data-lucide="chevron-down" style="width:14px; height:14px; color:#64748B;"></i>
+                        <i data-lucide="chevron-down" style="width:13px; height:13px; color:#64748B;"></i>
                     </button>
-                    <div x-show="unitOpen" x-cloak
-                         style="position:absolute; z-index:20; top:calc(100% + 6px); left:0; width:260px; max-height:280px; overflow-y:auto; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:10px; box-shadow:0 12px 28px rgba(15,23,42,0.12); padding:10px;">
-                        <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:12.5px; font-weight:700; color:#1B2A6B; border-bottom:1px solid #F1F5F9; margin-bottom:4px; cursor:pointer;">
-                            <input type="checkbox" onchange="this.closest('div').querySelectorAll('input[name=\'unit[]\']').forEach(cb => cb.checked = this.checked); this.form.submit();">
-                            Pilih Semua
-                        </label>
-                        @foreach($units as $unit)
+                    <div x-show="open" @click.outside="open = false" x-cloak
+                         style="position:absolute; top:calc(100% + 4px); left:0; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.12); padding:8px; width:260px; max-height:280px; overflow-y:auto; z-index:100;">
+                        <div style="font-size:11px; font-weight:700; color:#94A3B8; text-transform:uppercase; padding:4px 8px; margin-bottom:4px;">Pilih Unit</div>
+                        @foreach($units as $u)
                             <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:12.5px; color:#334155; cursor:pointer; border-radius:6px;"
                                    onmouseover="this.style.background='#F8FAFC';" onmouseout="this.style.background='transparent';">
-                                <input type="checkbox" name="unit[]" value="{{ $unit->id }}" onchange="this.form.submit()"
-                                       {{ in_array((string) $unit->id, array_map('strval', $selectedUnitIds)) ? 'checked' : '' }}>
-                                {{ $unit->nomor_lambung ?? $unit->nama }}
+                                <input type="checkbox" name="unit_id[]" value="{{ $u->id }}" onchange="this.form.submit()"
+                                       {{ in_array($u->id, $selectedUnitIds) ? 'checked' : '' }}>
+                                <span style="font-weight:700; color:#1B2A6B;">{{ $u->nomor_lambung }}</span>
+                                <span style="color:#64748B; font-size:11.5px;">({{ $u->plat_nomor }})</span>
                             </label>
                         @endforeach
                     </div>
                 </div>
 
-                {{-- Filter Bulan (multi-select checkbox dropdown) --}}
-                <div style="position:relative;">
-                    <label style="display:block; font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Bulan Dipilih</label>
-                    <button type="button" @click="bulanOpen = !bulanOpen; unitOpen = false" @click.outside="bulanOpen = false"
-                            style="display:flex; align-items:center; justify-content:space-between; gap:10px; min-width:220px; padding:8px 14px; border:1px solid #CBD5E1; border-radius:8px; font-size:13px; font-weight:600; background:#FFFFFF; color:#1E293B; cursor:pointer;">
+                {{-- Filter Multi Bulan (Dropdown) --}}
+                <div style="position:relative;" x-data="{ open: false }">
+                    <button type="button" @click="open = !open"
+                            style="display:inline-flex; align-items:center; gap:6px; padding:8px 12px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; font-weight:600; color:#334155; cursor:pointer;">
+                        <i data-lucide="calendar" style="width:14px; height:14px; color:#64748B;"></i>
                         <span>
                             @if(empty($selectedBulan))
-                                Semua Bulan (12)
-                            @elseif(count($selectedBulan) === 1)
-                                {{ $bulanList[$selectedBulan[0]] ?? $selectedBulan[0] }}
+                                Semua Bulan
                             @else
-                                {{ count($selectedBulan) }} Bulan Dipilih
+                                {{ count($selectedBulan) }} Bulan
                             @endif
                         </span>
-                        <i data-lucide="chevron-down" style="width:14px; height:14px; color:#64748B;"></i>
+                        <i data-lucide="chevron-down" style="width:13px; height:13px; color:#64748B;"></i>
                     </button>
-                    <div x-show="bulanOpen" x-cloak
-                         style="position:absolute; z-index:20; top:calc(100% + 6px); left:0; width:220px; max-height:280px; overflow-y:auto; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:10px; box-shadow:0 12px 28px rgba(15,23,42,0.12); padding:10px;">
-                        <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:12.5px; font-weight:700; color:#1B2A6B; border-bottom:1px solid #F1F5F9; margin-bottom:4px; cursor:pointer;">
-                            <input type="checkbox" onchange="this.closest('div').querySelectorAll('input[name=\'bulan[]\']').forEach(cb => cb.checked = this.checked); this.form.submit();">
-                            Pilih Semua
-                        </label>
+                    <div x-show="open" @click.outside="open = false" x-cloak
+                         style="position:absolute; top:calc(100% + 4px); left:0; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.12); padding:8px; width:220px; max-height:280px; overflow-y:auto; z-index:100;">
+                        <div style="font-size:11px; font-weight:700; color:#94A3B8; text-transform:uppercase; padding:4px 8px; margin-bottom:4px;">Pilih Bulan</div>
                         @foreach($bulanList as $key => $label)
                             <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; font-size:12.5px; color:#334155; cursor:pointer; border-radius:6px;"
                                    onmouseover="this.style.background='#F8FAFC';" onmouseout="this.style.background='transparent';">
@@ -228,7 +226,7 @@
                 </div>
 
                 @if(!empty($selectedUnitIds) || !empty($selectedBulan) || request('tahun'))
-                    <a href="{{ route('admin.pemeliharaan.invoice.index') }}"
+                    <a href="{{ route($routePrefix . '.index') }}"
                        style="display:inline-flex; align-items:center; gap:4px; padding:8px 14px; background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; border-radius:8px; font-size:12.5px; text-decoration:none; font-weight:600;">
                         <i data-lucide="rotate-ccw" style="width:13px; height:13px;"></i>
                         <span>Reset Filter</span>

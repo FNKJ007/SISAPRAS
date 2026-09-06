@@ -341,7 +341,18 @@ class HomeController extends Controller
             'command_center' => ['label' => 'Peralatan Command Center', 'route' => 'alat-cc.cek-alat-cc'],
         ];
 
-        $userPeralatanStatus = collect($kategoriAlatList)->map(function ($cfg, $kat) use ($todayAlatChecks, $userPos) {
+        // Filter kategori alat sesuai kapabilitas operasional Pos pengguna
+        $allowedCategories = (!$isAdmin && !empty($userPos))
+            ? \App\Models\Pos::getKategoriAlatByPos($userPos)
+            : ['pemadam', 'rescue', 'pencegahan', 'command_center'];
+
+        $filteredKategoriAlatList = array_filter(
+            $kategoriAlatList,
+            fn ($k) => in_array($k, $allowedCategories, true),
+            ARRAY_FILTER_USE_KEY
+        );
+
+        $userPeralatanStatus = collect($filteredKategoriAlatList)->map(function ($cfg, $kat) use ($todayAlatChecks, $userPos) {
             $cek = $todayAlatChecks->first(function ($item) use ($kat) {
                 return strtolower($item->kategori) === strtolower($kat);
             });
