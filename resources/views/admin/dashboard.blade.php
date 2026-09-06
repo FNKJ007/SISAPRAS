@@ -398,13 +398,13 @@
     </div>
 
     {{-- Main Grid: Charts (Left 2/3) + Activity & Distribution (Right 1/3) --}}
-    <div class="dash-bottom-grid" style="display:grid; grid-template-columns:1fr 340px; gap:20px; align-items:start;">
+    <div class="dash-bottom-grid" style="display:grid; grid-template-columns:minmax(0, 1fr) 340px; gap:20px; align-items:start; width:100%; min-width:0;">
 
         {{-- Left Column: Charts Container --}}
-        <div style="display:flex; flex-direction:column; gap:20px;">
+        <div style="display:flex; flex-direction:column; gap:20px; min-width:0; width:100%;">
 
             {{-- Chart 1: Grafik Tren Inspeksi & Perbaikan --}}
-            <div style="background:#fff; border-radius:16px; box-shadow:0px 14px 30px rgba(15, 23, 42, 0.04); border:1px solid #E2E8F0; overflow:hidden;">
+            <div style="background:#fff; border-radius:16px; box-shadow:0px 14px 30px rgba(15, 23, 42, 0.04); border:1px solid #E2E8F0; overflow:hidden; width:100%; min-width:0;">
                 <div style="padding:18px 22px; border-bottom:1px solid #F1F5F9; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                     <div>
                         <span style="font-size:15px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:8px;">
@@ -416,7 +416,7 @@
                 </div>
 
                 {{-- Canvas Chart.js --}}
-                <div style="padding:20px 22px; position:relative; height:270px;">
+                <div style="padding:20px 22px; position:relative; height:270px; width:100%; min-width:0; overflow:hidden;">
                     <canvas id="chartPemeliharaan" style="width:100%; height:100%;"></canvas>
                 </div>
 
@@ -435,7 +435,7 @@
             </div>
 
             {{-- Chart 2: Grafik Realisasi Biaya Pemeliharaan (Rp per Bulan) --}}
-            <div style="background:#fff; border-radius:16px; box-shadow:0px 14px 30px rgba(15, 23, 42, 0.04); border:1px solid #E2E8F0; overflow:hidden;">
+            <div style="background:#fff; border-radius:16px; box-shadow:0px 14px 30px rgba(15, 23, 42, 0.04); border:1px solid #E2E8F0; overflow:hidden; width:100%; min-width:0;">
                 <div style="padding:18px 22px; border-bottom:1px solid #F1F5F9; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                     <div>
                         <span style="font-size:15px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:8px;">
@@ -450,7 +450,7 @@
                 </div>
 
                 {{-- Canvas Biaya --}}
-                <div style="padding:20px 22px; position:relative; height:220px;">
+                <div style="padding:20px 22px; position:relative; height:220px; width:100%; min-width:0; overflow:hidden;">
                     <canvas id="chartBiaya" style="width:100%; height:100%;"></canvas>
                 </div>
             </div>
@@ -458,7 +458,7 @@
         </div>
 
         {{-- Right Column: Pos Distribution + Recent Activity --}}
-        <div style="display:flex; flex-direction:column; gap:20px;">
+        <div style="display:flex; flex-direction:column; gap:20px; min-width:0; width:100%;">
 
             {{-- 1. Sebaran Armada per Pos / Sektor --}}
             <div style="background:#fff; border-radius:16px; box-shadow:0px 14px 30px rgba(15, 23, 42, 0.04); border:1px solid #E2E8F0; overflow:hidden;">
@@ -711,7 +711,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 @push('styles')
 <style>
-@media (max-width: 992px) {
+@media (max-width: 1140px) {
     .dash-bottom-grid {
         grid-template-columns: 1fr !important;
     }
