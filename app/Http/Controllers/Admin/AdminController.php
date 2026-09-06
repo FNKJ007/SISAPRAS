@@ -592,27 +592,51 @@ class AdminController extends Controller
     }
 
     /**
-     * Kartu Kendali Pembayaran Pemeliharaan — ledger berjalan berbasis
-     * data Monitoring Invoice (poin 1.e), menampilkan saldo kumulatif
-     * per kode rekening / tahun anggaran (poin 1.g).
+    /**
+     * Kartu Kendali Aktual Pemeliharaan — Matriks biaya pemeliharaan armada
+     * per unit dan per bulan (12 bulan) dalam satu tahun anggaran.
      */
     public function pemeliharaanKartuKendaliPembayaran(Request $request)
     {
-        $tahunList = \App\Models\Invoice::whereNotNull('tahun_anggaran')
+        $existingYears = \App\Models\Invoice::whereNotNull('tahun_anggaran')
             ->where(function ($q) {
                 $q->where('kategori_monitoring', 'invoice')
                   ->orWhereNull('kategori_monitoring');
             })
-            ->distinct()
-            ->orderByDesc('tahun_anggaran')
             ->pluck('tahun_anggaran')
             ->filter()
+            ->map(fn($y) => (int)$y)
+            ->toArray();
+
+        $currentYear = (int) date('Y');
+        $defaultYears = range($currentYear - 2, $currentYear + 2);
+        $tahunList = collect(array_unique(array_merge($existingYears, $defaultYears)))
+            ->sortDesc()
             ->values();
 
-        $tahunFilter    = $request->query('tahun', $tahunList->first() ?? date('Y'));
+        $tahunFilter    = (string) $request->query('tahun', in_array($currentYear, $tahunList->toArray()) ? $currentYear : ($tahunList->first() ?? date('Y')));
         $searchQuery    = $request->query('search', '');
 
-        $query = \App\Models\Invoice::with('unit')
+        // Ambil semua armada unit dengan pengurutan standar Damkar
+        $units = \App\Models\Unit::all()->sort(function ($a, $b) {
+            $getPriority = function ($code) {
+                $code = strtoupper(trim($code ?? ''));
+                if (str_starts_with($code, 'P-')) return 1;
+                if (str_starts_with($code, 'R-')) return 2;
+                if (str_starts_with($code, 'S-')) return 3;
+                if (str_starts_with($code, 'PC-')) return 4;
+                if (str_starts_with($code, 'MP-')) return 5;
+                if (str_starts_with($code, 'K-')) return 6;
+                return 99;
+            };
+            $pA = $getPriority($a->nomor_lambung);
+            $pB = $getPriority($b->nomor_lambung);
+            if ($pA !== $pB) return $pA <=> $pB;
+            return strnatcasecmp($a->nomor_lambung ?? '', $b->nomor_lambung ?? '');
+        });
+
+        // Ambil data invoice pembayaran untuk tahun yang dipilih
+        $invoices = \App\Models\Invoice::with('unit')
             ->where(function ($q) {
                 $q->where('kategori_monitoring', 'invoice')
                   ->orWhereNull('kategori_monitoring');
@@ -621,38 +645,75 @@ class AdminController extends Controller
                 $q->where('tahun_anggaran', $tahunFilter)
                   ->orWhereYear('tanggal_invoice', $tahunFilter);
             })
-            ->orderBy('tanggal_invoice', 'asc')
-            ->orderBy('id', 'asc');
+            ->get();
 
-        if (!empty($searchQuery)) {
-            $query->where(function ($q) use ($searchQuery) {
-                $q->where('nomor_invoice', 'ILIKE', "%{$searchQuery}%")
-                  ->orWhere('no_pol', 'ILIKE', "%{$searchQuery}%")
-                  ->orWhere('no_lambung', 'ILIKE', "%{$searchQuery}%");
+        $matrixRows = [];
+        $monthlyTotals = array_fill(1, 12, 0);
+        $grandTotal = 0;
+        $totalUnitsServed = 0;
+        $lastPrefix = null;
+
+        foreach ($units as $unit) {
+            if (!empty($searchQuery)) {
+                $q = strtolower($searchQuery);
+                if (
+                    !str_contains(strtolower($unit->nomor_lambung ?? ''), $q) &&
+                    !str_contains(strtolower($unit->plat_nomor ?? ''), $q) &&
+                    !str_contains(strtolower($unit->nama ?? ''), $q)
+                ) {
+                    continue;
+                }
+            }
+
+            $currCode = strtoupper(trim($unit->nomor_lambung ?? ''));
+            $currPrefix = explode('-', $currCode)[0] ?? '';
+            $isNewGroup = ($lastPrefix !== null && $lastPrefix !== $currPrefix);
+            $lastPrefix = $currPrefix;
+
+            // Cari invoice yang terkait dengan unit ini
+            $unitInvoices = $invoices->filter(function ($inv) use ($unit) {
+                if ($inv->unit_id && $inv->unit_id == $unit->id) return true;
+                if (!empty($inv->no_lambung) && strtoupper(trim($inv->no_lambung)) === strtoupper(trim($unit->nomor_lambung ?? ''))) return true;
+                return false;
             });
+
+            $months = [];
+            $unitTotal = 0;
+            for ($m = 1; $m <= 12; $m++) {
+                $mInvoices = $unitInvoices->filter(function ($inv) use ($m) {
+                    return $inv->tanggal_invoice && (int) $inv->tanggal_invoice->format('n') === $m;
+                });
+                $mCost = (float) $mInvoices->sum('total_biaya');
+                $months[$m] = $mCost;
+                $unitTotal += $mCost;
+                $monthlyTotals[$m] += $mCost;
+            }
+
+            if ($unitTotal > 0) {
+                $totalUnitsServed++;
+            }
+            $grandTotal += $unitTotal;
+
+            $matrixRows[] = [
+                'unit'          => $unit,
+                'no_lambung'    => $unit->nomor_lambung ?? '—',
+                'tnkb'          => $unit->plat_nomor ?? $unit->no_rangka_mesin ?? '—',
+                'months'        => $months,
+                'total'         => $unitTotal,
+                'invoice_count' => $unitInvoices->count(),
+                'is_new_group'  => $isNewGroup,
+            ];
         }
 
-        $invoiceList = $query->get();
-
-        // Hitung saldo kumulatif berjalan (running total) — inti dari kartu kendali
-        $saldoBerjalan = 0;
-        $kartuKendaliRows = $invoiceList->map(function ($invoice) use (&$saldoBerjalan) {
-            $saldoBerjalan += (float) $invoice->total_biaya;
-            $invoice->saldo_kumulatif = $saldoBerjalan;
-            return $invoice;
-        });
-
-        $totalInvoice = $invoiceList->count();
-        $totalNilai   = (float) $invoiceList->sum('total_biaya');
-        $totalUnit    = $invoiceList->pluck('no_lambung')->filter()->unique()->count() 
-                     ?: $invoiceList->pluck('unit_id')->filter()->unique()->count();
-        $rataRata     = $totalInvoice > 0 ? ($totalNilai / $totalInvoice) : 0;
+        $totalInvoice = $invoices->count();
+        $rataRata = $totalUnitsServed > 0 ? ($grandTotal / $totalUnitsServed) : 0;
 
         $kpi = [
-            'total_invoice' => $totalInvoice,
-            'total_nilai'   => $totalNilai,
-            'total_unit'    => $totalUnit,
-            'rata_rata'     => $rataRata,
+            'total_invoice'  => $totalInvoice,
+            'total_nilai'    => $grandTotal,
+            'total_unit'     => $totalUnitsServed,
+            'total_all_unit' => count($matrixRows),
+            'rata_rata'      => $rataRata,
         ];
 
         $pejabatKasi = \App\Models\User::where('jabatan', 'ILIKE', '%pemeliharaan sarana%')
@@ -661,88 +722,133 @@ class AdminController extends Controller
             ->first();
 
         return view('admin.pemeliharaan.kartu-kendali-pembayaran', [
-            'kartuKendaliRows' => $kartuKendaliRows,
-            'kpi'              => $kpi,
-            'tahunList'        => $tahunList,
-            'tahunFilter'      => $tahunFilter,
-            'searchQuery'      => $searchQuery,
-            'pejabatKasi'      => $pejabatKasi,
+            'matrixRows'    => $matrixRows,
+            'monthlyTotals' => $monthlyTotals,
+            'grandTotal'    => $grandTotal,
+            'kpi'           => $kpi,
+            'tahunList'     => $tahunList,
+            'tahunFilter'   => $tahunFilter,
+            'searchQuery'   => $searchQuery,
+            'pejabatKasi'   => $pejabatKasi,
         ]);
     }
 
+    /**
+     * Kartu Kendali SPJ Pemeliharaan — Matriks realisasi pemeliharaan armada
+     * berdasarkan data SPJ Pembayaran per unit dan per bulan.
+     */
     public function pemeliharaanKartuKendaliAktual(Request $request)
     {
-        $tahunList = \App\Models\Invoice::where('kategori_monitoring', 'aktual')
-            ->whereNotNull('tahun_anggaran')
-            ->distinct()
-            ->orderByDesc('tahun_anggaran')
+        $existingYears = \App\Models\Invoice::whereNotNull('tahun_anggaran')
+            ->where('kategori_monitoring', 'aktual')
             ->pluck('tahun_anggaran')
             ->filter()
+            ->map(fn($y) => (int)$y)
+            ->toArray();
+
+        $currentYear = (int) date('Y');
+        $defaultYears = range($currentYear - 2, $currentYear + 2);
+        $tahunList = collect(array_unique(array_merge($existingYears, $defaultYears)))
+            ->sortDesc()
             ->values();
 
-        $tahunFilter    = $request->query('tahun', $tahunList->first() ?? date('Y'));
+        $tahunFilter    = (string) $request->query('tahun', in_array($currentYear, $tahunList->toArray()) ? $currentYear : ($tahunList->first() ?? date('Y')));
         $searchQuery    = $request->query('search', '');
 
-        // Fetch all active units
-        $unitsQuery = \App\Models\Unit::orderBy('nomor_lambung', 'asc');
-        if (!empty($searchQuery)) {
-            $unitsQuery->where(function ($q) use ($searchQuery) {
-                $q->where('nomor_lambung', 'ILIKE', "%{$searchQuery}%")
-                  ->orWhere('plat_nomor', 'ILIKE', "%{$searchQuery}%");
-            });
-        }
-        $units = $unitsQuery->get();
+        // Ambil semua armada unit dengan pengurutan standar Damkar
+        $units = \App\Models\Unit::all()->sort(function ($a, $b) {
+            $getPriority = function ($code) {
+                $code = strtoupper(trim($code ?? ''));
+                if (str_starts_with($code, 'P-')) return 1;
+                if (str_starts_with($code, 'R-')) return 2;
+                if (str_starts_with($code, 'S-')) return 3;
+                if (str_starts_with($code, 'PC-')) return 4;
+                if (str_starts_with($code, 'MP-')) return 5;
+                if (str_starts_with($code, 'K-')) return 6;
+                return 99;
+            };
+            $pA = $getPriority($a->nomor_lambung);
+            $pB = $getPriority($b->nomor_lambung);
+            if ($pA !== $pB) return $pA <=> $pB;
+            return strnatcasecmp($a->nomor_lambung ?? '', $b->nomor_lambung ?? '');
+        });
 
-        // Fetch all invoices for the selected year
-        $invoices = \App\Models\Invoice::where('kategori_monitoring', 'aktual')
+        // Ambil data invoice SPJ pembayaran untuk tahun yang dipilih
+        $invoices = \App\Models\Invoice::with('unit')
+            ->where('kategori_monitoring', 'aktual')
             ->where(function ($q) use ($tahunFilter) {
                 $q->where('tahun_anggaran', $tahunFilter)
                   ->orWhereYear('tanggal_invoice', $tahunFilter);
             })
             ->get();
 
-        $matrix = [];
-        $totalPerBulan = array_fill(1, 12, 0);
+        $matrixRows = [];
+        $monthlyTotals = array_fill(1, 12, 0);
         $grandTotal = 0;
+        $totalUnitsServed = 0;
+        $lastPrefix = null;
 
         foreach ($units as $unit) {
-            $matrix[$unit->id] = [
-                'unit'   => $unit,
-                'months' => array_fill(1, 12, 0),
-                'total'  => 0,
+            if (!empty($searchQuery)) {
+                $q = strtolower($searchQuery);
+                if (
+                    !str_contains(strtolower($unit->nomor_lambung ?? ''), $q) &&
+                    !str_contains(strtolower($unit->plat_nomor ?? ''), $q) &&
+                    !str_contains(strtolower($unit->nama ?? ''), $q)
+                ) {
+                    continue;
+                }
+            }
+
+            $currCode = strtoupper(trim($unit->nomor_lambung ?? ''));
+            $currPrefix = explode('-', $currCode)[0] ?? '';
+            $isNewGroup = ($lastPrefix !== null && $lastPrefix !== $currPrefix);
+            $lastPrefix = $currPrefix;
+
+            // Cari invoice yang terkait dengan unit ini
+            $unitInvoices = $invoices->filter(function ($inv) use ($unit) {
+                if ($inv->unit_id && $inv->unit_id == $unit->id) return true;
+                if (!empty($inv->no_lambung) && strtoupper(trim($inv->no_lambung)) === strtoupper(trim($unit->nomor_lambung ?? ''))) return true;
+                return false;
+            });
+
+            $months = [];
+            $unitTotal = 0;
+            for ($m = 1; $m <= 12; $m++) {
+                $mInvoices = $unitInvoices->filter(function ($inv) use ($m) {
+                    return $inv->tanggal_invoice && (int) $inv->tanggal_invoice->format('n') === $m;
+                });
+                $mCost = (float) $mInvoices->sum('total_biaya');
+                $months[$m] = $mCost;
+                $unitTotal += $mCost;
+                $monthlyTotals[$m] += $mCost;
+            }
+
+            if ($unitTotal > 0) {
+                $totalUnitsServed++;
+            }
+            $grandTotal += $unitTotal;
+
+            $matrixRows[] = [
+                'unit'          => $unit,
+                'no_lambung'    => $unit->nomor_lambung ?? '—',
+                'tnkb'          => $unit->plat_nomor ?? $unit->no_rangka_mesin ?? '—',
+                'months'        => $months,
+                'total'         => $unitTotal,
+                'invoice_count' => $unitInvoices->count(),
+                'is_new_group'  => $isNewGroup,
             ];
         }
 
-        $unitByLambung = $units->keyBy('nomor_lambung');
-
-        foreach ($invoices as $inv) {
-            $unitId = $inv->unit_id;
-            if (!$unitId && $inv->no_lambung && isset($unitByLambung[$inv->no_lambung])) {
-                $unitId = $unitByLambung[$inv->no_lambung]->id;
-            }
-
-            if ($unitId && isset($matrix[$unitId])) {
-                $bulan = $inv->tanggal_invoice ? (int) $inv->tanggal_invoice->format('n') : null;
-                
-                if ($bulan >= 1 && $bulan <= 12) {
-                    $biaya = (float) $inv->total_biaya;
-                    $matrix[$unitId]['months'][$bulan] += $biaya;
-                    $matrix[$unitId]['total'] += $biaya;
-                    $totalPerBulan[$bulan] += $biaya;
-                    $grandTotal += $biaya;
-                }
-            }
-        }
-
         $totalInvoice = $invoices->count();
-        $totalUnit    = collect($matrix)->where('total', '>', 0)->count();
-        $rataRata     = $totalInvoice > 0 ? ($grandTotal / $totalInvoice) : 0;
+        $rataRata = $totalUnitsServed > 0 ? ($grandTotal / $totalUnitsServed) : 0;
 
         $kpi = [
-            'total_invoice' => $totalInvoice,
-            'total_nilai'   => $grandTotal,
-            'total_unit'    => $totalUnit,
-            'rata_rata'     => $rataRata,
+            'total_invoice'  => $totalInvoice,
+            'total_nilai'    => $grandTotal,
+            'total_unit'     => $totalUnitsServed,
+            'total_all_unit' => count($matrixRows),
+            'rata_rata'      => $rataRata,
         ];
 
         $pejabatKasi = \App\Models\User::where('jabatan', 'ILIKE', '%pemeliharaan sarana%')
@@ -751,14 +857,14 @@ class AdminController extends Controller
             ->first();
 
         return view('admin.pemeliharaan.kartu-kendali-aktual', [
-            'matrix'           => $matrix,
-            'totalPerBulan'    => $totalPerBulan,
-            'grandTotal'       => $grandTotal,
-            'kpi'              => $kpi,
-            'tahunList'        => $tahunList,
-            'tahunFilter'      => $tahunFilter,
-            'searchQuery'      => $searchQuery,
-            'pejabatKasi'      => $pejabatKasi,
+            'matrixRows'    => $matrixRows,
+            'monthlyTotals' => $monthlyTotals,
+            'grandTotal'    => $grandTotal,
+            'kpi'           => $kpi,
+            'tahunList'     => $tahunList,
+            'tahunFilter'   => $tahunFilter,
+            'searchQuery'   => $searchQuery,
+            'pejabatKasi'   => $pejabatKasi,
         ]);
     }
 
