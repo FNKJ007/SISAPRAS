@@ -217,11 +217,11 @@
                     <tr>
                         <th style="padding:10px 16px;">Unit Armada</th>
                         <th style="padding:10px 16px;">Posko Penempatan</th>
-                        <th style="padding:10px 16px;">Kategori</th>
-                        <th style="padding:10px 16px;">Status Cek Hari Ini</th>
-                        <th style="padding:10px 16px;">Petugas Pemeriksa</th>
-                        <th style="padding:10px 16px;">Kebersihan</th>
-                        <th style="padding:10px 16px; text-align:right;">Waktu Cek</th>
+                        <th style="padding:10px 16px; text-align:center;">Kategori</th>
+                        <th style="padding:10px 16px; text-align:center;">Status Cek Hari Ini</th>
+                        <th style="padding:10px 16px; text-align:center;">Petugas Pemeriksa</th>
+                        <th style="padding:10px 16px; text-align:center;">Kebersihan</th>
+                        <th style="padding:10px 16px; text-align:center;">Waktu Cek</th>
                     </tr>
                 </thead>
                 <tbody style="divide-y:1px solid #F1F5F9;">
@@ -239,11 +239,11 @@
                             </td>
                             <td style="padding:10px 16px; font-weight:600; color:#334155;">
                                 <span style="display:inline-flex; align-items:center; gap:4px;">
-                                    <i data-lucide="map-pin" style="width:13px; height:13px; color:#94A3B8;"></i>
-                                    {{ $uObj->pos ?? '—' }}
+                                     <i data-lucide="map-pin" style="width:13px; height:13px; color:#94A3B8;"></i>
+                                     {{ $uObj->pos ?? '—' }}
                                 </span>
                             </td>
-                            <td style="padding:10px 16px;">
+                            <td style="padding:10px 16px; text-align:center;">
                                 @php
                                     $catBadge = match(strtolower($uObj->kategori ?? '')) {
                                         'rescue' => 'background:#FEF3C7; color:#92400E;',
@@ -255,7 +255,7 @@
                                     {{ $uObj->kategori ?? 'PEMADAM' }}
                                 </span>
                             </td>
-                            <td style="padding:10px 16px;">
+                            <td style="padding:10px 16px; text-align:center;">
                                 @if($uObj->sudah_dicek ?? false)
                                     <span style="display:inline-flex; align-items:center; gap:5px; background:#D1FAE5; color:#065F46; padding:3px 9px; border-radius:12px; font-size:11px; font-weight:800;">
                                         <span style="width:6px; height:6px; border-radius:50%; background:#059669;"></span>
@@ -268,7 +268,7 @@
                                     </span>
                                 @endif
                             </td>
-                            <td style="padding:10px 16px;">
+                            <td style="padding:10px 16px; text-align:center;">
                                 @if($uObj->sudah_dicek ?? false)
                                     <span style="font-weight:700; color:#1E293B;">{{ $uObj->nama_pemeriksa ?? '—' }}</span>
                                     <div style="font-size:10.5px; color:#64748B;">{{ $uObj->jabatan ?? '—' }}</div>
@@ -276,7 +276,7 @@
                                     <span style="color:#94A3B8; font-style:italic;">—</span>
                                 @endif
                             </td>
-                            <td style="padding:10px 16px;">
+                            <td style="padding:10px 16px; text-align:center;">
                                 @if($uObj->sudah_dicek ?? false)
                                     @if(($uObj->kebersihan ?? '') === 'tidak_bersih')
                                         <span style="color:#DC2626; font-weight:700; font-size:11px;">⚠️ Tidak Bersih</span>
@@ -287,7 +287,7 @@
                                     <span style="color:#94A3B8;">—</span>
                                 @endif
                             </td>
-                            <td style="padding:10px 16px; text-align:right;">
+                            <td style="padding:10px 16px; text-align:center;">
                                 @if(($uObj->sudah_dicek ?? false) && !empty($uObj->waktu_cek))
                                     <span style="font-weight:700; color:#475569;">{{ $uObj->waktu_cek }} WIB</span>
                                 @else
@@ -310,11 +310,11 @@
                 <thead style="position:sticky; top:0; background:#F8FAFC; z-index:2; border-bottom:1px solid #E2E8F0; color:#475569; font-weight:800; text-transform:uppercase; font-size:11px; letter-spacing:0.5px;">
                     <tr>
                         <th style="padding:10px 16px;">Pos Damkar</th>
-                        <th style="padding:10px 16px;">Kategori Peralatan</th>
-                        <th style="padding:10px 16px;">Status Cek Hari Ini</th>
-                        <th style="padding:10px 16px;">Kondisi Alat</th>
-                        <th style="padding:10px 16px;">Petugas Pemeriksa</th>
-                        <th style="padding:10px 16px; text-align:right;">Waktu Cek</th>
+                        <th style="padding:10px 16px; text-align:center;">Kategori Peralatan</th>
+                        <th style="padding:10px 16px; text-align:center;">Status Cek Hari Ini</th>
+                        <th style="padding:10px 16px; text-align:center;">Kondisi Alat</th>
+                        <th style="padding:10px 16px; text-align:center;">Petugas Pemeriksa</th>
+                        <th style="padding:10px 16px; text-align:center;">Waktu Cek</th>
                     </tr>
                 </thead>
                 <tbody style="divide-y:1px solid #F1F5F9;">
@@ -332,7 +332,7 @@
                                     {{ $aObj->pos ?? '—' }}
                                 </span>
                             </td>
-                            <td style="padding:10px 16px;">
+                            <td style="padding:10px 16px; text-align:center;">
                                 @php
                                     $alatBadge = match(strtolower($aObj->kategori ?? '')) {
                                         'rescue'         => 'background:#FEF3C7; color:#92400E; border:1px solid #FDE68A;',
@@ -345,7 +345,7 @@
                                     {{ $aObj->kategori_label ?? 'ALAT PEMADAM' }}
                                 </span>
                             </td>
-                            <td style="padding:10px 16px;">
+                            <td style="padding:10px 16px; text-align:center;">
                                 @if($aObj->sudah_dicek ?? false)
                                     <span style="display:inline-flex; align-items:center; gap:5px; background:#D1FAE5; color:#065F46; padding:3px 9px; border-radius:12px; font-size:11px; font-weight:800;">
                                         <span style="width:6px; height:6px; border-radius:50%; background:#059669;"></span>
@@ -358,9 +358,9 @@
                                     </span>
                                 @endif
                             </td>
-                            <td style="padding:10px 16px;">
+                            <td style="padding:10px 16px; text-align:center;">
                                 @if($aObj->sudah_dicek ?? false)
-                                    <span style="display:inline-flex; align-items:center; gap:4px; font-size:11.5px; font-weight:700;">
+                                    <span style="display:inline-flex; align-items:center; justify-content:center; gap:4px; font-size:11.5px; font-weight:700;">
                                         <span style="color:#059669;">{{ $aObj->total_baik ?? 0 }} Baik</span>
                                         @if(($aObj->total_rusak ?? 0) > 0)
                                             <span style="color:#94A3B8;">•</span>
@@ -371,7 +371,7 @@
                                     <span style="color:#94A3B8; font-style:italic;">—</span>
                                 @endif
                             </td>
-                            <td style="padding:10px 16px;">
+                            <td style="padding:10px 16px; text-align:center;">
                                 @if($aObj->sudah_dicek ?? false)
                                     <span style="font-weight:700; color:#1E293B;">{{ $aObj->nama_pemeriksa ?? '—' }}</span>
                                     <div style="font-size:10.5px; color:#64748B;">{{ $aObj->jabatan ?? '—' }}</div>
@@ -379,7 +379,7 @@
                                     <span style="color:#94A3B8; font-style:italic;">—</span>
                                 @endif
                             </td>
-                            <td style="padding:10px 16px; text-align:right;">
+                            <td style="padding:10px 16px; text-align:center;">
                                 @if(($aObj->sudah_dicek ?? false) && !empty($aObj->waktu_cek))
                                     <span style="font-weight:700; color:#475569;">{{ $aObj->waktu_cek }} WIB</span>
                                 @else
