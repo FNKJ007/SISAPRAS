@@ -5,7 +5,7 @@
 
     {{-- Flash Message Success --}}
     @if(session('success'))
-        <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between shadow-xs">
+        <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between shadow-xs gap-3 flex-wrap">
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">✓</div>
                 <div>
@@ -13,6 +13,13 @@
                     <p class="text-xs text-emerald-700 mt-0.5">{{ session('success') }}</p>
                 </div>
             </div>
+            @if(session('cek_id'))
+                <a href="{{ route('alat-cc.cek-alat-cc.export-pdf', session('cek_id')) }}"
+                   class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition shrink-0">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    Unduh PDF
+                </a>
+            @endif
         </div>
     @endif
 
