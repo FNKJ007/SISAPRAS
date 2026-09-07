@@ -8,7 +8,12 @@
         * { box-sizing: border-box; }
         body { font-family: 'DejaVu Sans', sans-serif; font-size: 10.5px; color: #1f2937; line-height: 1.35; }
 
-        .header { text-align: center; border-bottom: 2px solid #059669; padding-bottom: 8px; margin-bottom: 12px; }
+        .kop-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; border-bottom: 2px solid #059669; padding-bottom: 8px; }
+        .kop-table td { vertical-align: middle; }
+        .logo-img { width: 48px; height: auto; max-height: 52px; }
+        .kop-title { font-size: 10.5pt; font-weight: bold; line-height: 1.2; text-transform: uppercase; color: #000; }
+        .kop-subtitle { font-size: 9pt; font-weight: bold; margin-top: 3px; text-transform: uppercase; color: #000; }
+        .header { text-align: center; margin-bottom: 12px; }
         .header h1 { font-size: 15px; margin: 0 0 2px; color: #065f46; font-weight: bold; }
         .header p { font-size: 9.5px; margin: 0; color: #6b7280; }
 
@@ -51,9 +56,22 @@
 </head>
 <body>
 
-    {{-- Header Judul --}}
+    {{-- Kop Surat --}}
+    <table class="kop-table">
+        <tr>
+            <td style="width: 55px;">
+                @if(!empty($logo_data))
+                    <img src="{{ $logo_data }}" class="logo-img">
+                @endif
+            </td>
+            <td style="padding-left: 8px;">
+                <div class="kop-title">DINAS PEMADAM KEBAKARAN DAN PENYELAMATAN</div>
+                <div class="kop-title">KABUPATEN BANDUNG</div>
+                <div class="kop-subtitle">{{ strtoupper($judul) }}</div>
+            </td>
+        </tr>
+    </table>
     <div class="header">
-        <h1>{{ $judul }}</h1>
         <p>Dicetak pada {{ now()->translatedFormat('d F Y, H:i') }} WIB</p>
     </div>
 
