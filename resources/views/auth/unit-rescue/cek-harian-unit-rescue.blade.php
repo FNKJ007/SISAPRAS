@@ -609,6 +609,15 @@
         }
     });
 
+    // Remove file from global window scope so it can be called from inline onclick
+    window.removeFile = function(targetInputId, index) {
+        var targetInput = document.getElementById(targetInputId);
+        if (targetInput && targetInput.accumulatedFiles) {
+            targetInput.accumulatedFiles.splice(index, 1);
+            targetInput.dispatchEvent(new Event('render-preview'));
+        }
+    };
+
     // Update label & render thumbnail preview for file inputs
     function bindFilePreview(inputId, labelId, previewId, placeholder) {
         var input = document.getElementById(inputId);
@@ -616,47 +625,37 @@
         var previewEl = document.getElementById(previewId);
         if (!input || !labelEl) return;
 
-        input.addEventListener('change', function () {
-            if (previewEl) previewEl.innerHTML = '';
-            var errEl = document.getElementById('err_' + inputId);
+        input.accumulatedFiles = [];
 
-            if (input.files.length === 0) {
+        function renderFiles() {
+            var errEl = document.getElementById('err_' + inputId);
+            
+            if (input.accumulatedFiles.length === 0) {
                 labelEl.textContent = placeholder;
                 labelEl.parentElement.classList.remove('border-emerald-500', 'bg-emerald-50/50', 'border-red-500', 'bg-red-50/50');
-                if (previewEl) previewEl.classList.add('hidden');
-                return;
-            }
-
-            // Validasi semua file yang dipilih
-            for (var f = 0; f < input.files.length; f++) {
-                var res = validateSingleFile(input.files[f]);
-                if (!res.valid) {
-                    if (errEl) {
-                        errEl.textContent = res.error;
-                        errEl.classList.remove('hidden');
-                    }
-                    labelEl.parentElement.classList.add('border-red-500', 'bg-red-50/50');
-                    labelEl.parentElement.classList.remove('border-emerald-500', 'bg-emerald-50/50');
-                    labelEl.textContent = placeholder;
-                    if (previewEl) previewEl.classList.add('hidden');
-                    input.value = '';
-                    return;
+                if (previewEl) {
+                    previewEl.innerHTML = '';
+                    previewEl.classList.add('hidden');
                 }
+                var dt = new DataTransfer();
+                input.files = dt.files;
+                return;
             }
 
             if (errEl) errEl.classList.add('hidden');
             labelEl.parentElement.classList.remove('border-red-500', 'bg-red-50/50');
             labelEl.parentElement.classList.add('border-emerald-500', 'bg-emerald-50/50');
 
-            if (input.files.length === 1) {
-                labelEl.textContent = '✓ ' + input.files[0].name;
+            if (input.accumulatedFiles.length === 1) {
+                labelEl.textContent = '✓ ' + input.accumulatedFiles[0].name;
             } else {
-                labelEl.textContent = '✓ ' + input.files.length + ' file foto terpilih';
+                labelEl.textContent = '✓ ' + input.accumulatedFiles.length + ' file foto terpilih';
             }
 
             if (previewEl) {
+                previewEl.innerHTML = '';
                 previewEl.classList.remove('hidden');
-                Array.from(input.files).forEach(function (file) {
+                input.accumulatedFiles.forEach(function (file, index) {
                     if (file.type.startsWith('image/')) {
                         var sizeMB = (file.size / 1024 / 1024).toFixed(1);
                         var sizeText = file.size >= 1024 * 1024 ? sizeMB + ' MB' : (file.size / 1024).toFixed(1) + ' KB';
@@ -667,9 +666,10 @@
                             item.innerHTML = `
                                 <img src="${e.target.result}" alt="Preview" class="w-12 h-12 object-cover rounded-md border border-emerald-200">
                                 <div>
-                                    <span class="block text-xs font-bold text-emerald-900 truncate max-w-[160px]">${file.name}</span>
+                                    <span class="block text-xs font-bold text-emerald-900 truncate max-w-[130px]">${file.name}</span>
                                     <span class="block text-[10px] text-emerald-700 font-semibold">${sizeText} · Foto Terpilih ✓</span>
                                 </div>
+                                <button type="button" class="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center hover:bg-red-600 transition-colors shadow" onclick="removeFile('${inputId}', ${index})" title="Hapus foto">×</button>
                             `;
                             previewEl.appendChild(item);
                         };
@@ -677,6 +677,51 @@
                     }
                 });
             }
+            
+            var dt = new DataTransfer();
+            input.accumulatedFiles.forEach(f => dt.items.add(f));
+            input.files = dt.files;
+        }
+
+        input.addEventListener('render-preview', renderFiles);
+
+        input.addEventListener('change', function () {
+            var errEl = document.getElementById('err_' + inputId);
+            var maxFiles = input.hasAttribute('multiple') ? 3 : 1;
+
+            if (input.files.length === 0 && input.accumulatedFiles.length === 0) {
+                return;
+            }
+
+            var newFiles = Array.from(input.files);
+            for (var f = 0; f < newFiles.length; f++) {
+                var res = validateSingleFile(newFiles[f]);
+                if (!res.valid) {
+                    if (errEl) {
+                        errEl.textContent = res.error;
+                        errEl.classList.remove('hidden');
+                    }
+                    labelEl.parentElement.classList.add('border-red-500', 'bg-red-50/50');
+                    labelEl.parentElement.classList.remove('border-emerald-500', 'bg-emerald-50/50');
+                    labelEl.textContent = placeholder;
+                    input.value = ''; 
+                    renderFiles();
+                    return;
+                }
+            }
+
+            if (maxFiles > 1) {
+                newFiles.forEach(f => {
+                    if (input.accumulatedFiles.length < maxFiles) {
+                        input.accumulatedFiles.push(f);
+                    }
+                });
+            } else {
+                input.accumulatedFiles = newFiles.slice(0, 1);
+            }
+
+            if (errEl) errEl.classList.add('hidden');
+            renderFiles();
         });
     }
 
