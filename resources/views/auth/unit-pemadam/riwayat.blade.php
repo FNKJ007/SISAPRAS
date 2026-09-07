@@ -683,6 +683,7 @@
                             <div><strong class="text-gray-500">Jabatan:</strong> <span class="text-gray-800" x-text="selectedUnit.jabatan"></span></div>
                             <div><strong class="text-gray-500">Danru:</strong> <span class="text-gray-800" x-text="selectedUnit.nama_danru || '-'"></span></div>
                             <div><strong class="text-gray-500">Kepala Bidang:</strong> <span class="text-gray-800" x-text="selectedUnit.nama_kabid || '-'"></span></div>
+                            <div><strong class="text-gray-500">Kilometer:</strong> <span class="font-bold text-gray-900" x-text="selectedUnit.kilometer ? selectedUnit.kilometer + ' KM' : '-'"></span></div>
                             <div><strong class="text-gray-500">Kebersihan:</strong> <span class="font-bold capitalize" x-text="selectedUnit.kebersihan_unit"></span></div>
                             <div><strong class="text-gray-500">Kondisi Rusak:</strong> <span class="font-bold text-red-600" x-text="(selectedUnit.jumlah_rusak || 0) + ' item'"></span></div>
                         </div>

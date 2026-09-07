@@ -121,14 +121,15 @@
         .legend-text {
             font-size: 7pt;
             font-weight: bold;
-            margin-top: 6px;
-            margin-bottom: 15px;
+            margin-top: 8px;
+            margin-bottom: 25px;
         }
         .signatures-table {
             width: 100%;
             border-collapse: collapse;
             page-break-inside: avoid;
             font-size: 7.5pt;
+            margin-top: 15px;
         }
         .signatures-table td {
             width: 33.33%;
@@ -136,7 +137,7 @@
             vertical-align: top;
         }
         .sig-space {
-            height: 48px;
+            height: 52px;
         }
         .sig-name {
             font-weight: bold;
@@ -350,7 +351,7 @@
                     <tr>
                         <td>Kilometer</td>
                         <td>:</td>
-                        <td class="meta-val-line">{{ $record->level_bbm ? $record->level_bbm : '-' }}</td>
+                        <td class="meta-val-line">{{ $record->kilometer ? (is_numeric($record->kilometer) ? number_format($record->kilometer, 0, ',', '.') . ' KM' : $record->kilometer . ' KM') : '-' }}</td>
                     </tr>
                     <tr>
                         <td>Pengemudi</td>

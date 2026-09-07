@@ -357,6 +357,7 @@
                 <div style="margin-bottom:14px;">
                     <div style="font-size:12px; font-weight:800; color:#0F172A; margin-bottom:8px; border-bottom:1px solid #E2E8F0; padding-bottom:6px;">Pemanasan &amp; BBM</div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div><span style="color:#64748B;">Kilometer:</span> <strong x-text="activeUnit.kilometer ? activeUnit.kilometer + ' KM' : '-'"></strong></div>
                         <div><span style="color:#64748B;">Jenis BBM:</span> <strong x-text="capitalize(activeUnit.jenis_bbm)"></strong></div>
                         <div><span style="color:#64748B;">Level Air:</span> <strong x-text="levelLabel(activeUnit.level_air)"></strong></div>
                     </div>
