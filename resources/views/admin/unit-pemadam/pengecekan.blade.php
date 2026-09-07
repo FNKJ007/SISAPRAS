@@ -370,8 +370,8 @@
                                     <i data-lucide="image" style="width:14px; height:14px; color:#1B2A6B;"></i> Bukti Pemanasan
                                 </div>
                                 <div x-show="!imgError">
-                                    <a :href="'/storage/' + activeUnit.bukti_pemanasan" target="_blank" title="Klik untuk lihat ukuran penuh">
-                                        <img :src="'/storage/' + activeUnit.bukti_pemanasan" alt="Bukti Pemanasan"
+                                    <a :href="fotoUrl(activeUnit.bukti_pemanasan)" target="_blank" title="Klik untuk lihat ukuran penuh">
+                                        <img :src="fotoUrl(activeUnit.bukti_pemanasan)" alt="Bukti Pemanasan"
                                              x-on:error="imgError = true"
                                              style="width:100%; height:120px; object-fit:cover; border-radius:8px; border:1px solid #CBD5E1; transition:transform 0.2s;"
                                              onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
@@ -392,8 +392,8 @@
                                     <i data-lucide="image" style="width:14px; height:14px; color:#1B2A6B;"></i> Bukti Level BBM
                                 </div>
                                 <div x-show="!imgError">
-                                    <a :href="'/storage/' + activeUnit.bukti_bbm" target="_blank" title="Klik untuk lihat ukuran penuh">
-                                        <img :src="'/storage/' + activeUnit.bukti_bbm" alt="Bukti Level BBM"
+                                    <a :href="fotoUrl(activeUnit.bukti_bbm)" target="_blank" title="Klik untuk lihat ukuran penuh">
+                                        <img :src="fotoUrl(activeUnit.bukti_bbm)" alt="Bukti Level BBM"
                                              x-on:error="imgError = true"
                                              style="width:100%; height:120px; object-fit:cover; border-radius:8px; border:1px solid #CBD5E1; transition:transform 0.2s;"
                                              onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
@@ -431,8 +431,8 @@
                             <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px;">Dokumentasi Tangki &amp; Pompa:</div>
                             <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
                                 <template x-for="(foto, idx) in activeUnit.dokumentasi_tangki_pompa" :key="idx">
-                                    <a :href="'/storage/' + foto" target="_blank" title="Klik untuk lihat ukuran penuh">
-                                        <img :src="'/storage/' + foto" :alt="'Foto ' + (idx + 1)"
+                                    <a :href="fotoUrl(foto)" target="_blank" title="Klik untuk lihat ukuran penuh">
+                                        <img :src="fotoUrl(foto)" :alt="'Foto ' + (idx + 1)"
                                              style="width:100%; height:90px; object-fit:cover; border-radius:8px; border:1px solid #CBD5E1; transition:transform 0.2s;"
                                              onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
                                     </a>
@@ -554,8 +554,8 @@
                             </div>
                             <div style="display:flex; flex-wrap:wrap; gap:8px;">
                                 <template x-for="(foto, fi) in fotoUmumList(activeAlat)" :key="fi">
-                                    <a :href="'/storage/' + foto" target="_blank" title="Klik untuk lihat ukuran penuh" style="width:calc(50% - 4px); min-width:110px;">
-                                        <img :src="'/storage/' + foto" alt="Foto Umum Dokumentasi Alat"
+                                    <a :href="fotoUrl(foto)" target="_blank" title="Klik untuk lihat ukuran penuh" style="width:calc(50% - 4px); min-width:110px;">
+                                        <img :src="fotoUrl(foto)" alt="Foto Umum Dokumentasi Alat"
                                              style="width:100%; height:110px; object-fit:cover; border-radius:8px; border:1px solid #CBD5E1; transition:transform 0.2s;"
                                              onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                                     </a>
@@ -604,6 +604,7 @@ function pengecekanPemadamAdmin(initialTab) {
 
         unitModalOpen: false,
         activeUnit: {},
+        storageUrl: @js(asset('storage')),
 
         alatModalOpen: false,
         activeAlat: {},
@@ -633,6 +634,13 @@ function pengecekanPemadamAdmin(initialTab) {
         levelLabel(val) {
             const map = { penuh: 'Penuh', '3_4': '3/4', '1_2': '1/2', kosong: 'Kosong' };
             return map[val] || val || '-';
+        },
+
+        fotoUrl(value) {
+            if (!value) return '';
+            if (/^https?:\/\//i.test(value)) return value;
+            const path = String(value).replace(/^\/+/, '').replace(/^storage\//i, '');
+            return this.storageUrl + '/' + path.split('/').map(encodeURIComponent).join('/');
         },
 
         formatDate(val) {

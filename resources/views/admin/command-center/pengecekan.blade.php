@@ -234,8 +234,8 @@
                             </div>
                             <div style="display:flex; flex-wrap:wrap; gap:8px;">
                                 <template x-for="(foto, fi) in fotoUmumList(activeAlat)" :key="fi">
-                                    <a :href="'/storage/' + foto" target="_blank" title="Klik untuk lihat ukuran penuh" style="width:calc(50% - 4px); min-width:110px;">
-                                        <img :src="'/storage/' + foto" alt="Foto Dokumentasi Alat Command Center"
+                                    <a :href="fotoUrl(foto)" target="_blank" title="Klik untuk lihat ukuran penuh" style="width:calc(50% - 4px); min-width:110px;">
+                                        <img :src="fotoUrl(foto)" alt="Foto Dokumentasi Alat Command Center"
                                              style="width:100%; height:110px; object-fit:cover; border-radius:8px; border:1px solid #CBD5E1; transition:transform 0.2s;"
                                              onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                                     </a>
@@ -257,6 +257,7 @@ function pengecekanCommandCenterAdmin() {
     return {
         activeAlat: {},
         alatModalOpen: false,
+        storageUrl: @js(asset('storage')),
 
         openAlatModal(item) {
             this.activeAlat = item;
@@ -269,6 +270,14 @@ function pengecekanCommandCenterAdmin() {
             const d = new Date(val);
             if (isNaN(d)) return val;
             return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        },
+
+        fotoUrl(value) {
+            if (!value) return '';
+            if (/^https?:\/\//i.test(value)) return value;
+
+            const path = String(value).replace(/^\/+/, '').replace(/^storage\//i, '');
+            return this.storageUrl + '/' + path.split('/').map(encodeURIComponent).join('/');
         },
 
         fotoUmumList(item) {
