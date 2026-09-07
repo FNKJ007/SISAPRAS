@@ -34,6 +34,12 @@ trait HandlesCekHarianAlat
 
             Pdf::setOptions(["isRemoteEnabled" => false, "isHtml5ParserEnabled" => true]);
 
+            $logoData = null;
+            $logoPath = public_path('images/logo-damkar.png');
+            if (file_exists($logoPath)) {
+                $logoData = 'data:' . (mime_content_type($logoPath) ?: 'image/png') . ';base64,' . base64_encode(file_get_contents($logoPath));
+            }
+
             $pemeriksaNip = $record->user->nip ?? \App\Models\User::where('name', $record->nama_pemeriksa)->value('nip') ?? '';
 
             $danruNip = '';
@@ -68,6 +74,7 @@ trait HandlesCekHarianAlat
 
             $pdf = Pdf::loadView('pdf.cek-harian-alat', [
                 'record'        => $record,
+                'logo_data'     => $logoData,
                 'pemeriksa_nip' => $pemeriksaNip,
                 'danru_nip'     => $danruNip,
                 'kabid_nip'     => $kabidNip,
