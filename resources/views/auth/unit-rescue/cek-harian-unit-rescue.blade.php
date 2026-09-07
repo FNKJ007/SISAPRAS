@@ -208,15 +208,32 @@
                     <span>Pemanasan Kendaraan <span class="text-red-500">*</span></span>
                 </h3>
                 <p class="text-xs text-gray-600 mb-3">(Unit harus dioperasikan dan dikendarai minimal sejauh 1 KM. Silakan lampirkan dokumentasi sebagai bukti)</p>
-                <label for="bukti_pemanasan"
-                       class="flex items-center justify-between border border-gray-300 bg-white rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
-                    <span id="buktiPemanasanLabel">Lampirkan Bukti Pemanasan <span class="text-red-500">*</span></span>
-                    <span>📎</span>
-                </label>
-                <input id="bukti_pemanasan" type="file" name="bukti_pemanasan" accept="image/*" class="hidden">
-                <p id="err_bukti_pemanasan" class="text-xs text-red-600 font-medium mt-1.5 hidden"></p>
-                <div id="buktiPemanasanPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
-                @error('bukti_pemanasan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                    <div>
+                        <label for="kilometer" class="block text-sm font-medium mb-1">Kilometer Saat Ini (KM) <span class="text-red-500">*</span></label>
+                        <p class="text-xs text-gray-500 mb-2">(Catat angka odometer / speedometer terkini)</p>
+                        <div class="relative">
+                            <input type="number" id="kilometer" name="kilometer" value="{{ old('kilometer') }}"
+                                   placeholder="Contoh: 45200" required min="0" step="any"
+                                   class="w-full rounded-lg border border-gray-300 px-3 py-2.5 pr-12 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-500">KM</span>
+                        </div>
+                        @error('kilometer') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <p class="font-medium text-sm mb-1">Bukti Foto Pemanasan Kendaraan <span class="text-red-500">*</span></p>
+                        <p class="text-xs text-gray-500 mb-2">(Foto kendaraan saat pemanasan/jalan)</p>
+                        <label for="bukti_pemanasan"
+                               class="flex items-center justify-between border border-gray-300 bg-white rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-pointer hover:border-blue-500 transition-colors">
+                            <span id="buktiPemanasanLabel">Lampirkan Bukti Pemanasan <span class="text-red-500">*</span></span>
+                            <span>📎</span>
+                        </label>
+                        <input id="bukti_pemanasan" type="file" name="bukti_pemanasan" accept="image/*" class="hidden">
+                        <p id="err_bukti_pemanasan" class="text-xs text-red-600 font-medium mt-1.5 hidden"></p>
+                        <div id="buktiPemanasanPreview" class="mt-2.5 flex flex-wrap gap-2.5 hidden"></div>
+                        @error('bukti_pemanasan') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
             </div>
 
             {{-- 2. Bahan Bakar Minyak (BBM) --}}
