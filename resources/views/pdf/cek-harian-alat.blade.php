@@ -11,8 +11,8 @@
         .kop-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; border-bottom: 2px solid #059669; padding-bottom: 8px; }
         .kop-table td { vertical-align: middle; }
         .logo-img { width: 48px; height: auto; max-height: 52px; }
-        .kop-title { font-size: 10.5pt; font-weight: bold; line-height: 1.2; text-transform: uppercase; color: #000; }
-        .kop-subtitle { font-size: 9pt; font-weight: bold; margin-top: 3px; text-transform: uppercase; color: #000; }
+        .kop-title { font-size: 10.5pt; font-weight: bold; line-height: 1.2; text-transform: uppercase; color: #000; text-align: center; }
+        .kop-subtitle { font-size: 9pt; font-weight: bold; margin-top: 3px; text-transform: uppercase; color: #000; text-align: center; }
         .header { text-align: center; margin-bottom: 12px; }
         .header h1 { font-size: 15px; margin: 0 0 2px; color: #065f46; font-weight: bold; }
         .header p { font-size: 9.5px; margin: 0; color: #6b7280; }
