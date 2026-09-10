@@ -80,6 +80,7 @@
 }
 
 [x-cloak] { display: none !important; }
+.form-card { max-width: 100% !important; width: 100% !important; margin: 0 !important; }
 
 @media (max-width: 900px) {
     .dashboard-chart-grid {
@@ -105,7 +106,7 @@
 }
 </style>
 
-<div class="form-card" style="max-width:100%; box-shadow:none; padding:0; background:transparent;">
+<div class="form-card" style="max-width:100%; width:100%; margin:0; box-shadow:none; padding:0; background:transparent;">
 
     {{-- Page Header --}}
     <div class="invoice-index-header">

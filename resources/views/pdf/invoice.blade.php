@@ -1,44 +1,3 @@
-@php
-if (!function_exists('invoicePenyebut')) {
-    function invoicePenyebut($nilai) {
-        $nilai = abs($nilai);
-        $huruf = array("", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas");
-        $temp = "";
-        if ($nilai < 12) {
-            $temp = " ". $huruf[$nilai];
-        } else if ($nilai < 20) {
-            $temp = invoicePenyebut($nilai - 10). " Belas";
-        } else if ($nilai < 100) {
-            $temp = invoicePenyebut(floor($nilai/10))." Puluh". invoicePenyebut($nilai % 10);
-        } else if ($nilai < 200) {
-            $temp = " Seratus" . invoicePenyebut($nilai - 100);
-        } else if ($nilai < 1000) {
-            $temp = invoicePenyebut(floor($nilai/100)) . " Ratus" . invoicePenyebut($nilai % 100);
-        } else if ($nilai < 2000) {
-            $temp = " Seribu" . invoicePenyebut($nilai - 1000);
-        } else if ($nilai < 1000000) {
-            $temp = invoicePenyebut(floor($nilai/1000)) . " Ribu" . invoicePenyebut($nilai % 1000);
-        } else if ($nilai < 1000000000) {
-            $temp = invoicePenyebut(floor($nilai/1000000)) . " Juta" . invoicePenyebut($nilai % 1000000);
-        } else if ($nilai < 1000000000000) {
-            $temp = invoicePenyebut(floor($nilai/1000000000)) . " Milyar" . invoicePenyebut(fmod($nilai,1000000000));
-        } else if ($nilai < 1000000000000000) {
-            $temp = invoicePenyebut(floor($nilai/1000000000000)) . " Trilyun" . invoicePenyebut(fmod($nilai,1000000000000));
-        }     
-        return $temp;
-    }
-}
-if (!function_exists('invoiceTerbilang')) {
-    function invoiceTerbilang($nilai) {
-        if ($nilai < 0) {
-            $hasil = "Minus ". trim(invoicePenyebut($nilai));
-        } else {
-            $hasil = trim(invoicePenyebut($nilai));
-        }     
-        return ($hasil ?: 'Nol') . " Rupiah";
-    }
-}
-@endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -47,7 +6,8 @@ if (!function_exists('invoiceTerbilang')) {
     <title>Invoice - {{ $invoice->nomor_invoice }}</title>
     <style>
         @page {
-            margin: 36pt 45pt 36pt 45pt;
+            margin: 28pt 40pt 28pt 40pt;
+            size: A4;
         }
         * {
             box-sizing: border-box;
@@ -56,179 +16,239 @@ if (!function_exists('invoiceTerbilang')) {
         }
         body {
             font-family: 'DejaVu Sans', Arial, sans-serif;
-            font-size: 8pt;
+            font-size: 8.5pt;
             color: #111827;
-            line-height: 1.3;
+            line-height: 1.35;
             background: #FFFFFF;
         }
         table {
             border-collapse: collapse;
         }
+
+        /* === KOP SURAT === */
+        .kop-table { width: 100%; table-layout: fixed; margin-bottom: 4px; }
+        .kop-logo { width: 12%; vertical-align: middle; }
+        .kop-center { width: 76%; text-align: center; vertical-align: middle; padding: 0 6px; }
+        .kop-title1 { font-size: 11pt; font-weight: bold; color: #000000; text-transform: uppercase; line-height: 1.2; }
+        .kop-title2 { font-size: 13.5pt; font-weight: bold; color: #C0201F; text-transform: uppercase; margin-top: 2px; margin-bottom: 2px; line-height: 1.2; }
+        .kop-subtitle { font-size: 7.5pt; color: #374151; }
+        .kop-divider { border-top: 3px solid #000000; margin-bottom: 2px; }
+        .kop-divider2 { border-top: 1px solid #000000; margin-bottom: 14px; }
+
+        /* === JUDUL DOKUMEN === */
+        .doc-title { text-align: center; margin-bottom: 14px; }
+        .doc-title-text {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #000000;
+            text-decoration: underline;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .doc-nomor { font-size: 8.5pt; font-weight: normal; color: #333333; margin-top: 4px; }
+
+        /* === TABEL INFO === */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 14px;
+            border: 1px solid #94A3B8;
+            font-size: 8pt;
+        }
+        .info-table td { padding: 4px 8px; vertical-align: top; }
+        .info-label { color: #374151; width: 22%; }
+        .info-sep { color: #374151; width: 2%; text-align: center; }
+        .info-val { font-weight: bold; color: #0F172A; width: 26%; }
+        .info-divider { border-left: 1px solid #94A3B8; }
+        .info-table tr { border-bottom: 1px solid #CBD5E1; }
+        .info-table tr:last-child { border-bottom: none; }
+
+        /* === TABEL RINCIAN ITEM === */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0;
+            font-size: 8pt;
+            border: 1px solid #94A3B8;
+        }
+        .items-table thead tr {
+            background-color: #1B2A6B;
+            color: #FFFFFF;
+        }
+        .items-table thead th {
+            padding: 6px 4px;
+            border: 1px solid #263380;
+            font-weight: bold;
+            font-size: 7.5pt;
+            text-transform: uppercase;
+        }
+        .items-table tbody td {
+            padding: 5px 6px;
+            border: 1px solid #CBD5E1;
+        }
+        .items-table tbody tr:nth-child(even) { background-color: #F8FAFC; }
+        .items-table tfoot td {
+            padding: 5px 8px;
+            border: 1px solid #94A3B8;
+        }
+
+        /* === TANDA TANGAN === */
+        .ttd-table { width: 100%; margin-top: 16px; }
+        .ttd-cell {
+            width: 40%;
+            text-align: center;
+            font-size: 8pt;
+            color: #1a1a1a;
+            vertical-align: top;
+        }
+        .ttd-kota { color: #374151; margin-bottom: 3px; }
+        .ttd-jabatan { font-weight: bold; color: #111827; margin-bottom: 48px; }
+        .ttd-nama { font-weight: bold; color: #111827; text-decoration: underline; font-style: italic; }
+        .ttd-nip { font-size: 7pt; color: #374151; margin-top: 2px; }
     </style>
 </head>
 <body>
 
-    {{-- Kop Surat Resmi --}}
-    <table style="width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 4px;">
+    {{-- KOP SURAT --}}
+    <table class="kop-table">
         <tr>
-            <td style="width: 12%; text-align: left; vertical-align: middle;">
+            <td class="kop-logo" style="text-align: left;">
                 @if(!empty($logoKabData))
-                    <img src="{{ $logoKabData }}" style="width: 48px; height: auto; display: block;" alt="Logo Pemkab">
+                    <img src="{{ $logoKabData }}" style="width: 52px; height: auto; display: block;" alt="Logo Pemkab">
                 @endif
             </td>
-            <td style="width: 76%; text-align: center; vertical-align: middle; padding: 0 4px;">
-                <div style="font-size: 11pt; font-weight: bold; color: #000000; text-transform: uppercase; line-height: 1.25;">PEMERINTAH KABUPATEN BANDUNG</div>
-                <div style="font-size: 13pt; font-weight: bold; color: #C0201F; text-transform: uppercase; margin-top: 2px; margin-bottom: 2px; line-height: 1.25;">DINAS PEMADAM KEBAKARAN DAN PENYELAMATAN</div>
-                <div style="font-size: 8pt; color: #374151; line-height: 1.25;">Bidang Sarana, Prasarana dan Informasi — Seksi Pemeliharaan Sarana dan Prasarana</div>
+            <td class="kop-center">
+                <div class="kop-title1">PEMERINTAH KABUPATEN BANDUNG</div>
+                <div class="kop-title2">DINAS PEMADAM KEBAKARAN DAN PENYELAMATAN</div>
+                <div class="kop-subtitle">Bidang Sarana, Prasarana dan Informasi &mdash; Seksi Pemeliharaan Sarana dan Prasarana</div>
             </td>
-            <td style="width: 12%; text-align: right; vertical-align: middle;">
+            <td class="kop-logo" style="text-align: right;">
                 @if(!empty($logoDamkarData))
-                    <img src="{{ $logoDamkarData }}" style="width: 48px; height: auto; display: block; margin-left: auto;" alt="Logo Damkar">
+                    <img src="{{ $logoDamkarData }}" style="width: 52px; height: auto; display: block; margin-left: auto;" alt="Logo Damkar">
                 @endif
             </td>
         </tr>
     </table>
-    <div style="border-top: 2px solid #000000; border-bottom: 0.5px solid #000000; height: 1.5px; margin-top: 4px; margin-bottom: 10px;"></div>
+    <div class="kop-divider"></div>
+    <div class="kop-divider2"></div>
 
-    {{-- Judul Dokumen --}}
-    <div style="text-align: center; margin-bottom: 10px;">
-        <div style="font-size: 11.5pt; font-weight: bold; color: #1B2A6B; text-decoration: underline; letter-spacing: 0.5px; text-transform: uppercase;">INVOICE PEMELIHARAAN KENDARAAN</div>
-        <div style="font-size: 8.5pt; font-weight: bold; color: #4B5563; margin-top: 2px;">Nomor: {{ $invoice->nomor_invoice }}</div>
+    {{-- JUDUL DOKUMEN --}}
+    <div class="doc-title">
+        <div class="doc-title-text">INVOICE PEMELIHARAAN KENDARAAN</div>
+        <div class="doc-nomor">Nomor: {{ $invoice->nomor_invoice }}</div>
     </div>
 
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; border: 1px solid #CBD5E1; background: #F8FAFC; table-layout: fixed; font-size: 8pt;">
+    {{-- DATA INVOICE & UNIT --}}
+    <table class="info-table">
         <tr>
-            <td style="width: 17%; padding: 3.5px 6px; color: #4B5563;">Bengkel / Rekanan</td>
-            <td style="width: 2%; padding: 3.5px 0; text-align: center; color: #4B5563;">:</td>
-            <td style="width: 31%; padding: 3.5px 6px; font-weight: bold; color: #1B2A6B;">{{ $invoice->nama_bengkel ?: 'CV. PRATAMA MOTOR' }}</td>
-            <td style="width: 17%; padding: 3.5px 6px; color: #4B5563; border-left: 1px solid #CBD5E1;">No. Lambung</td>
-            <td style="width: 2%; padding: 3.5px 0; text-align: center; color: #4B5563;">:</td>
-            <td style="width: 31%; padding: 3.5px 6px; font-weight: bold; color: #1B2A6B;">{{ $invoice->no_lambung }}</td>
+            <td class="info-label">Bengkel / Rekanan</td>
+            <td class="info-sep">:</td>
+            <td class="info-val">{{ $invoice->nama_bengkel ?: 'CV. Pratama Motor' }}</td>
+            <td class="info-label info-divider">No. Lambung</td>
+            <td class="info-sep">:</td>
+            <td class="info-val">{{ $invoice->no_lambung ?: '—' }}</td>
         </tr>
         <tr>
-            <td style="padding: 3.5px 6px; color: #4B5563;">No. Invoice</td>
-            <td style="padding: 3.5px 0; text-align: center; color: #4B5563;">:</td>
-            <td style="padding: 3.5px 6px; font-weight: bold; color: #111827;">{{ $invoice->nomor_invoice }}</td>
-            <td style="padding: 3.5px 6px; color: #4B5563; border-left: 1px solid #CBD5E1;">No. Polisi (TNKB)</td>
-            <td style="padding: 3.5px 0; text-align: center; color: #4B5563;">:</td>
-            <td style="padding: 3.5px 6px; font-weight: bold; color: #111827;">{{ $invoice->no_pol ?: '—' }}</td>
+            <td class="info-label">No. Invoice</td>
+            <td class="info-sep">:</td>
+            <td class="info-val">{{ $invoice->nomor_invoice }}</td>
+            <td class="info-label info-divider">No. Polisi (TNKB)</td>
+            <td class="info-sep">:</td>
+            <td class="info-val">{{ $invoice->no_pol ?: '—' }}</td>
         </tr>
         <tr>
-            <td style="padding: 3.5px 6px; color: #4B5563;">Tanggal Invoice</td>
-            <td style="padding: 3.5px 0; text-align: center; color: #4B5563;">:</td>
-            <td style="padding: 3.5px 6px; color: #111827;">{{ $invoice->tanggal_invoice ? $invoice->tanggal_invoice->translatedFormat('d F Y') : '—' }}</td>
-            <td style="padding: 3.5px 6px; color: #4B5563; border-left: 1px solid #CBD5E1;">Jenis Kendaraan</td>
-            <td style="padding: 3.5px 0; text-align: center; color: #4B5563;">:</td>
-            <td style="padding: 3.5px 6px; color: #111827;">{{ $invoice->jenis_mobil ?: '—' }}</td>
+            <td class="info-label">Tanggal Invoice</td>
+            <td class="info-sep">:</td>
+            <td class="info-val" style="font-weight: normal;">{{ $invoice->tanggal_invoice ? $invoice->tanggal_invoice->translatedFormat('d F Y') : '—' }}</td>
+            <td class="info-label info-divider">Jenis Kendaraan</td>
+            <td class="info-sep">:</td>
+            <td class="info-val">{{ strtoupper($invoice->jenis_mobil ?: '—') }}</td>
         </tr>
         <tr>
-            <td style="padding: 3.5px 6px; color: #4B5563;">Tahun Anggaran</td>
-            <td style="padding: 3.5px 0; text-align: center; color: #4B5563;">:</td>
-            <td style="padding: 3.5px 6px; color: #111827;">{{ $invoice->tahun_anggaran }}</td>
-            <td style="padding: 3.5px 6px; color: #4B5563; border-left: 1px solid #CBD5E1;">Lokasi / Pos</td>
-            <td style="padding: 3.5px 0; text-align: center; color: #4B5563;">:</td>
-            <td style="padding: 3.5px 6px; color: #111827;">{{ $invoice->lokasi ?: '—' }}</td>
+            <td class="info-label">Tahun Anggaran</td>
+            <td class="info-sep">:</td>
+            <td class="info-val" style="font-weight: normal;">{{ $invoice->tahun_anggaran }}</td>
+            <td class="info-label info-divider">Lokasi / Pos</td>
+            <td class="info-sep">:</td>
+            <td class="info-val" style="font-weight: normal;">{{ $invoice->lokasi ?: '—' }}</td>
         </tr>
     </table>
 
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; font-size: 7.8pt; border: 1px solid #CBD5E1;">
+    {{-- RINCIAN ITEM --}}
+    <table class="items-table">
         <thead>
-            <tr style="background-color: #1B2A6B; color: #FFFFFF;">
-                <th style="width: 4%; text-align: center; padding: 5px 2px; border: 1px solid #1B2A6B; color: #FFFFFF; font-weight: bold; font-size: 7.5pt;">NO</th>
-                <th style="width: 11%; text-align: center; padding: 5px 2px; border: 1px solid #1B2A6B; color: #FFFFFF; font-weight: bold; font-size: 7.5pt;">KD. ITEM</th>
-                <th style="width: 35%; text-align: left; padding: 5px 6px; border: 1px solid #1B2A6B; color: #FFFFFF; font-weight: bold; font-size: 7.5pt;">NAMA ITEM / JENIS PERBAIKAN</th>
-                <th style="width: 6%; text-align: center; padding: 5px 2px; border: 1px solid #1B2A6B; color: #FFFFFF; font-weight: bold; font-size: 7.5pt;">VOL</th>
-                <th style="width: 8%; text-align: center; padding: 5px 2px; border: 1px solid #1B2A6B; color: #FFFFFF; font-weight: bold; font-size: 7.5pt;">SATUAN</th>
-                <th style="width: 15%; text-align: right; padding: 5px 6px; border: 1px solid #1B2A6B; color: #FFFFFF; font-weight: bold; font-size: 7.5pt;">HARGA (RP)</th>
-                <th style="width: 7%; text-align: center; padding: 5px 2px; border: 1px solid #1B2A6B; color: #FFFFFF; font-weight: bold; font-size: 7.5pt;">POT (%)</th>
-                <th style="width: 14%; text-align: right; padding: 5px 6px; border: 1px solid #1B2A6B; color: #FFFFFF; font-weight: bold; font-size: 7.5pt;">TOTAL (RP)</th>
+            <tr>
+                <th style="width: 4%;  text-align: center;">NO</th>
+                <th style="width: 11%; text-align: center;">KD. ITEM</th>
+                <th style="width: 35%; text-align: left;   padding-left: 8px;">NAMA ITEM / JENIS PERBAIKAN</th>
+                <th style="width: 6%;  text-align: center;">JML</th>
+                <th style="width: 8%;  text-align: center;">SATUAN</th>
+                <th style="width: 15%; text-align: right;  padding-right: 8px;">HARGA (Rp)</th>
+                <th style="width: 7%;  text-align: center;">POT. (%)</th>
+                <th style="width: 14%; text-align: right;  padding-right: 8px;">TOTAL (Rp)</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($invoice->items as $i => $item)
-                <tr style="{{ $i % 2 == 1 ? 'background-color: #F8FAFC;' : 'background-color: #FFFFFF;' }}">
-                    <td style="text-align: center; padding: 3.5px 2px; border: 1px solid #E2E8F0; color: #64748B;">{{ $i + 1 }}</td>
-                    <td style="text-align: center; padding: 3.5px 2px; border: 1px solid #E2E8F0; font-family: monospace;">{{ $item->kode_item ?: '—' }}</td>
-                    <td style="padding: 3.5px 6px; border: 1px solid #E2E8F0; font-weight: bold; color: #0F172A;">{{ ucwords(strtolower(trim($item->jenis_perbaikan))) }}</td>
-                    <td style="text-align: center; padding: 3.5px 2px; border: 1px solid #E2E8F0;">{{ rtrim(rtrim(number_format($item->vol, 2, ',', '.'), '0'), ',') }}</td>
-                    <td style="text-align: center; padding: 3.5px 2px; border: 1px solid #E2E8F0; color: #4B5563;">{{ ucwords(strtolower(trim($item->satuan))) }}</td>
-                    <td style="text-align: right; padding: 3.5px 6px; border: 1px solid #E2E8F0;">{{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
-                    <td style="text-align: center; padding: 3.5px 2px; border: 1px solid #E2E8F0; color: #64748B;">{{ (float)$item->potongan_persen > 0 ? rtrim(rtrim(number_format($item->potongan_persen, 2, ',', '.'), '0'), ',') . '%' : '0%' }}</td>
-                    <td style="text-align: right; padding: 3.5px 6px; border: 1px solid #E2E8F0; font-weight: bold; color: #0F172A;">{{ number_format($item->total_biaya, 0, ',', '.') }}</td>
+                <tr>
+                    <td style="text-align: center; color: #374151;">{{ $i + 1 }}</td>
+                    <td style="text-align: center; font-style: italic; color: #1B2A6B;">{{ $item->kode_item ?: '—' }}</td>
+                    <td style="padding-left: 8px; font-weight: bold; color: #0F172A;">{{ ucwords(strtolower(trim($item->jenis_perbaikan))) }}</td>
+                    <td style="text-align: center;">{{ rtrim(rtrim(number_format($item->vol, 2, ',', '.'), '0'), ',') }}</td>
+                    <td style="text-align: center; color: #4B5563;">{{ ucwords(strtolower(trim($item->satuan))) }}</td>
+                    <td style="text-align: right; padding-right: 8px;">{{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
+                    <td style="text-align: center; color: #374151;">{{ (float)$item->potongan_persen > 0 ? rtrim(rtrim(number_format($item->potongan_persen, 2, ',', '.'), '0'), ',') . '%' : '0%' }}</td>
+                    <td style="text-align: right; padding-right: 8px; font-weight: bold; color: #0F172A;">{{ number_format($item->total_biaya, 0, ',', '.') }}</td>
                 </tr>
             @endforeach
         </tbody>
         <tfoot>
             @php
-                $subtotalVal = (float) ($invoice->subtotal ?: $invoice->items->sum('total_biaya'));
-                $potonganPct = (float) ($invoice->potongan ?? 0);
+                $subtotalVal    = (float) ($invoice->subtotal ?: $invoice->items->sum('total_biaya'));
+                $potonganPct    = (float) ($invoice->potongan ?? 0);
                 $potonganNominal = $subtotalVal * ($potonganPct / 100);
-                $dppVal = max(0, $subtotalVal - $potonganNominal);
-                $pajakPct = (float) ($invoice->pajak ?? 0);
-                $pajakNominal = $dppVal * ($pajakPct / 100);
-                $totalAkhir = (float) $invoice->total_biaya;
-                
-                $extraRows = 1 + ($potonganPct > 0 ? 1 : 0) + ($pajakPct > 0 ? 1 : 0) + ((float)$invoice->biaya_lain > 0 ? 1 : 0) + 1;
+                $dppVal         = max(0, $subtotalVal - $potonganNominal);
+                $pajakPct       = (float) ($invoice->pajak ?? 0);
+                $pajakNominal   = $dppVal * ($pajakPct / 100);
             @endphp
-            <tr>
-                <td colspan="5" rowspan="{{ $extraRows }}" style="vertical-align: top; background-color: #F8FAFC; padding: 5px 8px; border: 1px solid #E2E8F0;">
-                    <div style="font-size: 7pt; font-weight: bold; color: #64748B; text-transform: uppercase; margin-bottom: 2px;">Terbilang :</div>
-                    <div style="font-size: 7.5pt; font-style: italic; font-weight: bold; color: #1B2A6B; line-height: 1.3; padding: 3px 6px; background-color: #FFFFFF; border: 1px solid #CBD5E1;">
-                        # {{ invoiceTerbilang($totalAkhir) }} #
-                    </div>
-                    @if($invoice->catatan)
-                        <div style="margin-top: 3px; font-size: 7pt; color: #4B5563;">
-                            <strong>Catatan:</strong> {{ $invoice->catatan }}
-                        </div>
-                    @endif
-                </td>
-                <td colspan="2" style="text-align: right; font-weight: bold; color: #4B5563; background-color: #F8FAFC; padding: 3.5px 6px; border: 1px solid #E2E8F0;">SUBTOTAL:</td>
-                <td style="text-align: right; font-weight: bold; background-color: #F8FAFC; padding: 3.5px 6px; border: 1px solid #E2E8F0;">Rp {{ number_format($subtotalVal, 0, ',', '.') }}</td>
+            <tr style="background-color: #F8FAFC;">
+                <td colspan="7" style="text-align: right; font-weight: bold; font-size: 8pt; color: #475569; padding-right: 10px;">SUBTOTAL ITEMS:</td>
+                <td style="text-align: right; font-weight: bold; font-size: 8.5pt; color: #0F172A; padding-right: 8px;">Rp {{ number_format($subtotalVal, 0, ',', '.') }}</td>
             </tr>
             @if($potonganPct > 0)
-                <tr>
-                    <td colspan="2" style="text-align: right; color: #64748B; padding: 2.5px 6px; border: 1px solid #E2E8F0;">Diskon ({{ rtrim(rtrim(number_format($potonganPct, 2, ',', '.'), '0'), ',') }}%):</td>
-                    <td style="text-align: right; font-weight: bold; color: #DC2626; padding: 2.5px 6px; border: 1px solid #E2E8F0;">- Rp {{ number_format($potonganNominal, 0, ',', '.') }}</td>
-                </tr>
+            <tr style="background-color: #FFFFFF;">
+                <td colspan="7" style="text-align: right; color: #64748B; padding-right: 10px;">Potongan / Diskon ({{ rtrim(rtrim(number_format($potonganPct, 2, ',', '.'), '0'), ',') }}%):</td>
+                <td style="text-align: right; font-weight: bold; color: #DC2626; padding-right: 8px;">- Rp {{ number_format($potonganNominal, 0, ',', '.') }}</td>
+            </tr>
             @endif
             @if($pajakPct > 0)
-                <tr>
-                    <td colspan="2" style="text-align: right; color: #64748B; padding: 2.5px 6px; border: 1px solid #E2E8F0;">PPN ({{ rtrim(rtrim(number_format($pajakPct, 2, ',', '.'), '0'), ',') }}%):</td>
-                    <td style="text-align: right; font-weight: bold; color: #0F172A; padding: 2.5px 6px; border: 1px solid #E2E8F0;">+ Rp {{ number_format($pajakNominal, 0, ',', '.') }}</td>
-                </tr>
+            <tr style="background-color: #FFFFFF;">
+                <td colspan="7" style="text-align: right; color: #64748B; padding-right: 10px;">Pajak / PPN ({{ rtrim(rtrim(number_format($pajakPct, 2, ',', '.'), '0'), ',') }}%):</td>
+                <td style="text-align: right; font-weight: bold; color: #0F172A; padding-right: 8px;">+ Rp {{ number_format($pajakNominal, 0, ',', '.') }}</td>
+            </tr>
             @endif
             @if((float)$invoice->biaya_lain > 0)
-                <tr>
-                    <td colspan="2" style="text-align: right; color: #64748B; padding: 2.5px 6px; border: 1px solid #E2E8F0;">Biaya Lainnya:</td>
-                    <td style="text-align: right; font-weight: bold; padding: 2.5px 6px; border: 1px solid #E2E8F0;">+ Rp {{ number_format($invoice->biaya_lain, 0, ',', '.') }}</td>
-                </tr>
+            <tr style="background-color: #FFFFFF;">
+                <td colspan="7" style="text-align: right; color: #64748B; padding-right: 10px;">Biaya Lainnya:</td>
+                <td style="text-align: right; font-weight: bold; color: #0F172A; padding-right: 8px;">+ Rp {{ number_format($invoice->biaya_lain, 0, ',', '.') }}</td>
+            </tr>
             @endif
-            <tr style="background-color: #1B2A6B; color: #FFFFFF;">
-                <td colspan="2" style="text-align: right; font-weight: bold; color: #FFFFFF; font-size: 7.5pt; padding: 4px 6px; border: 1px solid #1B2A6B; text-transform: uppercase;">TOTAL AKHIR:</td>
-                <td style="text-align: right; font-weight: bold; color: #FFFFFF; font-size: 8pt; padding: 4px 6px; border: 1px solid #1B2A6B;">Rp {{ number_format($totalAkhir, 0, ',', '.') }}</td>
+            <tr style="background-color: #EFF6FF;">
+                <td colspan="7" style="text-align: right; font-weight: bold; font-size: 8.5pt; color: #0F172A; text-transform: uppercase; padding-right: 10px;">TOTAL AKHIR INVOICE:</td>
+                <td style="text-align: right; font-weight: bold; font-size: 9pt; color: #1B2A6B; padding-right: 8px;">Rp {{ number_format($invoice->total_biaya, 0, ',', '.') }}</td>
             </tr>
         </tfoot>
     </table>
 
-    {{-- Tanda Tangan Dua Pihak --}}
-    <table style="width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: 12px; page-break-inside: avoid;">
+    {{-- TANDA TANGAN --}}
+    <table class="ttd-table">
         <tr>
-            {{-- Pihak Bengkel / Rekanan --}}
-            <td style="width: 44%; text-align: center; vertical-align: top; font-size: 8pt;">
-                <div style="color: #4B5563;">Penyedia Jasa / Bengkel Rekanan</div>
-                <div style="font-weight: bold; color: #0F172A; margin-top: 2px;">{{ $invoice->nama_bengkel ?: 'CV. PRATAMA MOTOR' }}</div>
-                <div style="height: 45px;"></div>
-                <div style="font-weight: bold; color: #0F172A;">( ..................................................... )</div>
-                <div style="font-size: 7pt; color: #64748B; margin-top: 2px;">Cap &amp; Tanda Tangan</div>
-            </td>
-            <td style="width: 12%;"></td>
-            {{-- Pihak Dinas --}}
-            <td style="width: 44%; text-align: center; vertical-align: top; font-size: 8pt;">
-                <div style="color: #4B5563;">Soreang, {{ $invoice->tanggal_invoice ? $invoice->tanggal_invoice->translatedFormat('d F Y') : now()->translatedFormat('d F Y') }}</div>
-                <div style="font-weight: bold; color: #0F172A; margin-top: 2px;">Kepala Seksi Pemeliharaan Sarana Dan Prasarana</div>
-                <div style="height: 45px;"></div>
-                <div style="font-weight: bold; color: #0F172A; text-decoration: underline;">{{ $pejabatKasi->name ?? 'Ahmad Kuswara, S.M., M.M.' }}</div>
-                <div style="font-size: 7pt; color: #64748B; margin-top: 2px;">NIP. {{ $pejabatKasi->nip ?? '197209212008011001' }}</div>
+            <td style="width: 60%;"></td>
+            <td class="ttd-cell">
+                <div class="ttd-kota">Soreang, {{ $invoice->tanggal_invoice ? $invoice->tanggal_invoice->translatedFormat('d F Y') : now()->translatedFormat('d F Y') }}</div>
+                <div class="ttd-jabatan">Kepala Seksi Pemeliharaan Sarana Dan Prasarana</div>
+                <div class="ttd-nama">{{ $pejabatKasi->name ?? 'Ahmad Kuswara, S.M., M.M.' }}</div>
+                <div class="ttd-nip">NIP. {{ $pejabatKasi->nip ?? '197209212008011001' }}</div>
             </td>
         </tr>
     </table>

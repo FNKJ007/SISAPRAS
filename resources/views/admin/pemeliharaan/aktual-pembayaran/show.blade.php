@@ -152,6 +152,7 @@
         </div>
 
 
+
         {{-- DATA INVOICE & UNIT --}}
         <table style="width:100%; border-collapse:collapse; background:#F8FAFC; border:1px solid #CBD5E1; margin-bottom:18px;">
             <tr>
@@ -212,29 +213,29 @@
         {{-- RINCIAN ITEM --}}
         <div style="margin-bottom:18px;">
             <table class="invoice-items-table" style="width:100%; border-collapse:collapse; font-size:11px; text-align:left; border:1px solid #CBD5E1;">
-                <thead style="background:#1B2A6B;">
-                    <tr style="background:#1B2A6B !important; color:#FFFFFF !important;">
-                        <th style="background-color:#1B2A6B !important; color:#FFFFFF !important; padding:8px 8px; width:35px; text-align:center; border:1px solid #1B2A6B; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; -webkit-print-color-adjust:exact; print-color-adjust:exact;">No</th>
-                        <th style="background-color:#1B2A6B !important; color:#FFFFFF !important; padding:8px 8px; width:75px; text-align:center; border:1px solid #1B2A6B; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; -webkit-print-color-adjust:exact; print-color-adjust:exact;">Kd. Item</th>
-                        <th style="background-color:#1B2A6B !important; color:#FFFFFF !important; padding:8px 8px; border:1px solid #1B2A6B; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; -webkit-print-color-adjust:exact; print-color-adjust:exact;">Nama Item / Jenis Perbaikan</th>
-                        <th style="background-color:#1B2A6B !important; color:#FFFFFF !important; padding:8px 8px; width:45px; text-align:center; border:1px solid #1B2A6B; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; -webkit-print-color-adjust:exact; print-color-adjust:exact;">Vol</th>
-                        <th style="background-color:#1B2A6B !important; color:#FFFFFF !important; padding:8px 8px; width:55px; text-align:center; border:1px solid #1B2A6B; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; -webkit-print-color-adjust:exact; print-color-adjust:exact;">Satuan</th>
-                        <th style="background-color:#1B2A6B !important; color:#FFFFFF !important; padding:8px 8px; width:100px; text-align:right; border:1px solid #1B2A6B; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; -webkit-print-color-adjust:exact; print-color-adjust:exact;">Harga (Rp)</th>
-                        <th style="background-color:#1B2A6B !important; color:#FFFFFF !important; padding:8px 8px; width:55px; text-align:center; border:1px solid #1B2A6B; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; -webkit-print-color-adjust:exact; print-color-adjust:exact;">Pot. (%)</th>
-                        <th style="background-color:#1B2A6B !important; color:#FFFFFF !important; padding:8px 8px; width:115px; text-align:right; border:1px solid #1B2A6B; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; -webkit-print-color-adjust:exact; print-color-adjust:exact;">Total Biaya (Rp)</th>
+                <thead>
+                    <tr style="background:#1B2A6B; color:#FFFFFF;">
+                        <th style="padding:8px 8px; width:35px; text-align:center; border:1px solid #263380; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF;">No</th>
+                        <th style="padding:8px 8px; width:75px; text-align:center; border:1px solid #263380; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF;">Kd. Item</th>
+                        <th style="padding:8px 8px; border:1px solid #263380; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF;">Nama Item / Jenis Perbaikan</th>
+                        <th style="padding:8px 8px; width:45px; text-align:center; border:1px solid #263380; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF;">Jml</th>
+                        <th style="padding:8px 8px; width:60px; text-align:center; border:1px solid #263380; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF;">Satuan</th>
+                        <th style="padding:8px 8px; width:110px; text-align:right; border:1px solid #263380; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF;">Harga (Rp)</th>
+                        <th style="padding:8px 8px; width:65px; text-align:center; border:1px solid #263380; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF;">Pot. (%)</th>
+                        <th style="padding:8px 8px; width:120px; text-align:right; border:1px solid #263380; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF;">Total (Rp)</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($invoice->items as $i => $item)
                         <tr style="{{ $i % 2 == 1 ? 'background:#FAFAFA;' : 'background:#FFFFFF;' }}">
-                            <td style="padding:6px 8px; text-align:center; color:#64748B; font-weight:600; border:1px solid #CBD5E1;">{{ $i + 1 }}</td>
-                            <td style="padding:6px 8px; text-align:center; color:#475569; font-weight:700; font-family:monospace; border:1px solid #CBD5E1;">{{ $item->kode_item ?: '—' }}</td>
-                            <td style="padding:6px 8px; font-weight:600; color:#0F172A; border:1px solid #CBD5E1;">{{ ucwords(strtolower(trim($item->jenis_perbaikan))) }}</td>
-                            <td style="padding:6px 8px; text-align:center; color:#334155; font-weight:600; border:1px solid #CBD5E1;">{{ rtrim(rtrim(number_format($item->vol, 2, ',', '.'), '0'), ',') }}</td>
-                            <td style="padding:6px 8px; text-align:center; color:#64748B; border:1px solid #CBD5E1;">{{ ucwords(strtolower(trim($item->satuan))) }}</td>
-                            <td style="padding:6px 8px; text-align:right; color:#334155; font-variant-numeric:tabular-nums; border:1px solid #CBD5E1;">{{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
-                            <td style="padding:6px 8px; text-align:center; color:#64748B; border:1px solid #CBD5E1;">{{ (float)$item->potongan_persen > 0 ? rtrim(rtrim(number_format($item->potongan_persen, 2, ',', '.'), '0'), ',') . '%' : '0%' }}</td>
-                            <td style="padding:6px 8px; text-align:right; font-weight:700; color:#0F172A; font-variant-numeric:tabular-nums; border:1px solid #CBD5E1;">{{ number_format($item->total_biaya, 0, ',', '.') }}</td>
+                            <td style="padding:7px 8px; text-align:center; color:#64748B; font-weight:600; border:1px solid #CBD5E1;">{{ $i + 1 }}</td>
+                            <td style="padding:7px 8px; text-align:center; color:#1B2A6B; font-weight:600; font-style:italic; border:1px solid #CBD5E1;">{{ $item->kode_item ?: '—' }}</td>
+                            <td style="padding:7px 8px; font-weight:600; color:#0F172A; border:1px solid #CBD5E1;">{{ ucwords(strtolower(trim($item->jenis_perbaikan))) }}</td>
+                            <td style="padding:7px 8px; text-align:center; color:#334155; font-weight:600; border:1px solid #CBD5E1;">{{ rtrim(rtrim(number_format($item->vol, 2, ',', '.'), '0'), ',') }}</td>
+                            <td style="padding:7px 8px; text-align:center; color:#64748B; border:1px solid #CBD5E1;">{{ ucwords(strtolower(trim($item->satuan))) }}</td>
+                            <td style="padding:7px 8px; text-align:right; color:#334155; font-variant-numeric:tabular-nums; border:1px solid #CBD5E1;">{{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
+                            <td style="padding:7px 8px; text-align:center; color:#64748B; border:1px solid #CBD5E1;">{{ (float)$item->potongan_persen > 0 ? rtrim(rtrim(number_format($item->potongan_persen, 2, ',', '.'), '0'), ',') . '%' : '0%' }}</td>
+                            <td style="padding:7px 8px; text-align:right; font-weight:700; color:#0F172A; font-variant-numeric:tabular-nums; border:1px solid #CBD5E1;">{{ number_format($item->total_biaya, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -246,68 +247,44 @@
                         $dppVal = max(0, $subtotalVal - $potonganNominal);
                         $pajakPct = (float) ($invoice->pajak ?? 0);
                         $pajakNominal = $dppVal * ($pajakPct / 100);
-                        $totalAkhir = (float) $invoice->total_biaya;
-                        
-                        $extraRows = 1 + ($potonganPct > 0 ? 1 : 0) + ($pajakPct > 0 ? 1 : 0) + ((float)$invoice->biaya_lain > 0 ? 1 : 0) + 1;
                     @endphp
-                    <tr>
-                        <td colspan="5" rowspan="{{ $extraRows }}" style="vertical-align:top; background:#F8FAFC; padding:10px 12px; border:1px solid #CBD5E1;">
-                            <div style="font-size:10px; font-weight:700; color:#64748B; text-transform:uppercase; margin-bottom:3px;">Terbilang :</div>
-                            <div style="font-size:11.5px; font-style:italic; font-weight:700; color:#1B2A6B; line-height:1.35; padding:5px 8px; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:4px;">
-                                # {{ invoiceTerbilang($totalAkhir) }} #
-                            </div>
-                            @if($invoice->catatan)
-                                <div style="margin-top:8px; font-size:10.5px; color:#475569;">
-                                    <strong style="color:#0F172A;">Catatan:</strong> {{ $invoice->catatan }}
-                                </div>
-                            @endif
-                        </td>
-                        <td colspan="2" style="padding:7px 10px; text-align:right; font-weight:700; font-size:11px; color:#475569; background:#F8FAFC; border:1px solid #CBD5E1;">SUBTOTAL:</td>
-                        <td style="padding:7px 10px; text-align:right; font-weight:700; font-size:11.5px; color:#0F172A; background:#F8FAFC; font-variant-numeric:tabular-nums; border:1px solid #CBD5E1;">Rp {{ number_format($subtotalVal, 0, ',', '.') }}</td>
+                    <tr style="background:#F8FAFC;">
+                        <td colspan="7" style="padding:8px 10px; text-align:right; font-weight:700; font-size:11px; color:#475569; border:1px solid #CBD5E1;">SUBTOTAL ITEMS:</td>
+                        <td style="padding:8px 10px; text-align:right; font-weight:800; font-size:11.5px; color:#0F172A; font-variant-numeric:tabular-nums; border:1px solid #CBD5E1;">Rp {{ number_format($subtotalVal, 0, ',', '.') }}</td>
                     </tr>
                     @if($potonganPct > 0)
                         <tr style="background:#FFFFFF;">
-                            <td colspan="2" style="padding:5px 10px; text-align:right; font-weight:600; font-size:10.5px; color:#64748B; border:1px solid #CBD5E1;">Diskon ({{ rtrim(rtrim(number_format($potonganPct, 2, ',', '.'), '0'), ',') }}%):</td>
+                            <td colspan="7" style="padding:5px 10px; text-align:right; font-weight:600; font-size:10.5px; color:#64748B; border:1px solid #CBD5E1;">Potongan / Diskon Tambahan ({{ rtrim(rtrim(number_format($potonganPct, 2, ',', '.'), '0'), ',') }}%):</td>
                             <td style="padding:5px 10px; text-align:right; font-weight:700; font-size:11px; color:#DC2626; font-variant-numeric:tabular-nums; border:1px solid #CBD5E1;">- Rp {{ number_format($potonganNominal, 0, ',', '.') }}</td>
                         </tr>
                     @endif
                     @if($pajakPct > 0)
                         <tr style="background:#FFFFFF;">
-                            <td colspan="2" style="padding:5px 10px; text-align:right; font-weight:600; font-size:10.5px; color:#64748B; border:1px solid #CBD5E1;">PPN ({{ rtrim(rtrim(number_format($pajakPct, 2, ',', '.'), '0'), ',') }}%):</td>
+                            <td colspan="7" style="padding:5px 10px; text-align:right; font-weight:600; font-size:10.5px; color:#64748B; border:1px solid #CBD5E1;">Pajak / PPN ({{ rtrim(rtrim(number_format($pajakPct, 2, ',', '.'), '0'), ',') }}%):</td>
                             <td style="padding:5px 10px; text-align:right; font-weight:700; font-size:11px; color:#0F172A; font-variant-numeric:tabular-nums; border:1px solid #CBD5E1;">+ Rp {{ number_format($pajakNominal, 0, ',', '.') }}</td>
                         </tr>
                     @endif
                     @if((float)$invoice->biaya_lain > 0)
                         <tr style="background:#FFFFFF;">
-                            <td colspan="2" style="padding:5px 10px; text-align:right; font-weight:600; font-size:10.5px; color:#64748B; border:1px solid #CBD5E1;">Biaya Lainnya:</td>
+                            <td colspan="7" style="padding:5px 10px; text-align:right; font-weight:600; font-size:10.5px; color:#64748B; border:1px solid #CBD5E1;">Biaya Lainnya:</td>
                             <td style="padding:5px 10px; text-align:right; font-weight:700; font-size:11px; color:#0F172A; font-variant-numeric:tabular-nums; border:1px solid #CBD5E1;">+ Rp {{ number_format($invoice->biaya_lain, 0, ',', '.') }}</td>
                         </tr>
                     @endif
-                    <tr style="background:#1B2A6B; color:#FFFFFF;">
-                        <td colspan="2" style="padding:7px 10px; text-align:right; font-weight:800; font-size:11px; color:#FFFFFF; text-transform:uppercase; border:1px solid #1B2A6B;">TOTAL AKHIR:</td>
-                        <td style="padding:7px 10px; text-align:right; font-weight:800; font-size:12px; color:#FFFFFF; font-variant-numeric:tabular-nums; border:1px solid #1B2A6B;">Rp {{ number_format($invoice->total_biaya, 0, ',', '.') }}</td>
+                    <tr style="background:#F1F5F9;">
+                        <td colspan="7" style="padding:9px 10px; text-align:right; font-weight:800; font-size:11.5px; color:#0F172A; text-transform:uppercase; border:1px solid #CBD5E1;">TOTAL AKHIR INVOICE:</td>
+                        <td style="padding:9px 10px; text-align:right; font-weight:800; font-size:12.5px; color:#1B2A6B; font-variant-numeric:tabular-nums; border:1px solid #CBD5E1;">Rp {{ number_format($invoice->total_biaya, 0, ',', '.') }}</td>
                     </tr>
                 </tfoot>
             </table>
         </div>
 
-        {{-- Block Tanda Tangan Resmi Dua Pihak --}}
-        <table style="width:100%; border-collapse:collapse; margin-top:24px;">
+        {{-- Block Tanda Tangan Resmi --}}
+        <table style="width:100%; border-collapse:collapse; margin-top:20px;">
             <tr>
-                {{-- Pihak Bengkel / Rekanan --}}
-                <td style="width:48%; text-align:center; font-size:11px; color:#334155; vertical-align:top;">
-                    <div style="font-size:11px; color:#475569;">Penyedia Jasa / Bengkel Rekanan</div>
-                    <div style="font-weight:700; color:#0F172A; margin-top:2px; font-size:11.5px;">{{ $invoice->nama_bengkel ?: 'CV. PRATAMA MOTOR' }}</div>
-                    <div style="height:55px;"></div>
-                    <div style="font-weight:700; color:#0F172A;">( ..................................................... )</div>
-                    <div style="font-size:10px; color:#64748B; margin-top:2px;">Cap &amp; Tanda Tangan</div>
-                </td>
-                <td style="width:4%;"></td>
-                {{-- Pihak Dinas --}}
-                <td style="width:48%; text-align:center; font-size:11px; color:#334155; vertical-align:top;">
-                    <div style="font-size:11px; color:#475569;">Soreang, {{ $invoice->tanggal_invoice ? $invoice->tanggal_invoice->translatedFormat('d F Y') : now()->translatedFormat('d F Y') }}</div>
-                    <div style="font-weight:700; color:#0F172A; margin-top:2px; font-size:11.5px;">Kepala Seksi Pemeliharaan Sarana Dan Prasarana</div>
-                    <div style="height:55px;"></div>
+                <td style="width:60%;"></td>
+                <td style="width:40%; text-align:center; font-size:11px; color:#334155; vertical-align:top;">
+                    <div>Soreang, {{ $invoice->tanggal_invoice ? $invoice->tanggal_invoice->translatedFormat('d F Y') : now()->translatedFormat('d F Y') }}</div>
+                    <div style="font-weight:700; color:#0F172A; margin-top:3px; margin-bottom:50px;">Kepala Seksi Pemeliharaan Sarana Dan Prasarana</div>
                     <div style="font-weight:700; color:#0F172A; text-decoration:underline;">{{ $pejabatKasi->name ?? 'Ahmad Kuswara, S.M., M.M.' }}</div>
                     <div style="font-size:10px; color:#64748B; margin-top:2px;">NIP. {{ $pejabatKasi->nip ?? '197209212008011001' }}</div>
                 </td>
