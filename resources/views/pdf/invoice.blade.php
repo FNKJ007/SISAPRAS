@@ -25,7 +25,7 @@
         .kop-table {
             width: 100%;
             border-collapse: collapse;
-            border-bottom: 2.5px double #0F172A;
+            border-bottom: 1.5px solid #0F172A;
             padding-bottom: 8px;
             margin-bottom: 12px;
         }
@@ -107,6 +107,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 8pt;
+            border: 1px solid #CBD5E1;
             margin-bottom: 12px;
         }
         .items-table th {
@@ -116,10 +117,10 @@
             padding: 5px 6px;
             font-size: 7.5pt;
             text-transform: uppercase;
-            border: 1px solid #101B4B;
+            border: 1px solid #CBD5E1;
         }
         .items-table td {
-            border: 1px solid #E2E8F0;
+            border: 1px solid #CBD5E1;
             padding: 4px 6px;
             vertical-align: middle;
         }
