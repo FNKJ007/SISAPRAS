@@ -309,6 +309,24 @@
     {{-- Main Data Card --}}
     <div style="background:#FFFFFF; border-radius:16px; border:1px solid #E2E8F0; box-shadow:0px 18px 40px rgba(112,144,176,0.08); overflow:hidden;">
 
+        {{-- Judul Tabel Data --}}
+        <div style="padding:18px 24px; border-bottom:1px solid #F1F5F9; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:36px; height:36px; border-radius:10px; background:#EFF6FF; display:flex; align-items:center; justify-content:center; color:#1B2A6B;">
+                    <i data-lucide="table" style="width:18px; height:18px;"></i>
+                </div>
+                <div>
+                    <h3 style="font-size:16px; font-weight:800; color:#0F172A; margin:0;">Tabel Data {{ $pageTitle }}</h3>
+                    <div style="font-size:12px; color:#64748B; margin-top:2px;">Daftar seluruh invoice {{ strtolower($pageTitle) }} pemeliharaan kendaraan dinas</div>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:12px; font-weight:700; color:#1B2A6B; background:#EFF6FF; padding:5px 12px; border-radius:8px; border:1px solid #DBEAFE;">
+                    Total: {{ $invoices->total() }} Dokumen
+                </span>
+            </div>
+        </div>
+
         {{-- Filter & Search Toolbar --}}
         <div style="padding:16px 20px; border-bottom:1px solid #F1F5F9; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; background:#FAFAFA;">
             <form method="GET" action="{{ route($routePrefix . '.index') }}" class="invoice-filter-form">
