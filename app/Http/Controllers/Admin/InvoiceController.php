@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Models\InvoiceItem;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class InvoiceController extends Controller
 {
@@ -330,6 +331,26 @@ class InvoiceController extends Controller
         $viewFolder = $isAktual ? 'spj-pembayaran' : 'aktual-pembayaran';
 
         return view("admin.pemeliharaan.{$viewFolder}.show", compact('invoice', 'pejabatKasi'));
+    }
+
+    public function exportPdf(Request $request, Invoice $invoice)
+    {
+        $invoice->load('unit', 'items', 'creator');
+        $pejabatKasi = \App\Models\User::where('jabatan', 'ILIKE', '%pemeliharaan sarana%')
+            ->orWhere('jabatan', 'ILIKE', '%seksi pemeliharaan%')
+            ->orWhere('jabatan', 'ILIKE', '%pemeliharaan%')
+            ->first();
+
+        $logoKabPath = public_path('images/logo-kabupaten.png');
+        $logoDamkarPath = public_path('images/logo-damkar.png');
+        $logoKabData = file_exists($logoKabPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoKabPath)) : null;
+        $logoDamkarData = file_exists($logoDamkarPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoDamkarPath)) : null;
+
+        $pdf = Pdf::loadView('pdf.invoice', compact('invoice', 'pejabatKasi', 'logoKabData', 'logoDamkarData'))
+            ->setPaper('a4', 'portrait');
+
+        $cleanNo = preg_replace('/[^a-zA-Z0-9_\-]/', '_', (string) $invoice->nomor_invoice);
+        return $pdf->download("Invoice_{$cleanNo}.pdf");
     }
 
     public function edit(Request $request, Invoice $invoice)

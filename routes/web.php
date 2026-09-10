@@ -176,6 +176,7 @@ Route::middleware(['auth', 'admin', 'prevent-back-history'])->prefix('admin')->n
         Route::get('/cetak-dokumen/{id}/{type}',    [AdminController::class, 'cetakDokumen'])->name('cetak-dokumen');
         
         // SPJ Pembayaran Routes (URL: /admin/pemeliharaan/spj-pembayaran)
+        Route::get('/spj-pembayaran/{invoice}/pdf', [InvoiceController::class, 'exportPdf'])->name('spj-pembayaran.pdf');
         Route::post('/spj-pembayaran/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('spj-pembayaran.update-status');
         Route::resource('spj-pembayaran', InvoiceController::class, [
             'names' => 'spj-pembayaran',
@@ -188,6 +189,7 @@ Route::middleware(['auth', 'admin', 'prevent-back-history'])->prefix('admin')->n
 
 
         // Aktual Pembayaran Routes (URL: /admin/pemeliharaan/aktual-pembayaran)
+        Route::get('/aktual-pembayaran/{invoice}/pdf', [InvoiceController::class, 'exportPdf'])->name('aktual-pembayaran.pdf');
         Route::post('/aktual-pembayaran/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('aktual-pembayaran.update-status');
         Route::resource('aktual-pembayaran', InvoiceController::class, [
             'names' => 'aktual-pembayaran',
