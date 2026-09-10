@@ -1,21 +1,5 @@
 # syntax=docker/dockerfile:1
 
-# Build the Vite assets independently so the production image does not contain
-# Node.js or node_modules.
-FROM node:22-bookworm-slim AS assets
-
-WORKDIR /app
-
-COPY package.json package-lock.json ./
-RUN npm ci
-
-COPY vite.config.js ./
-COPY resources ./resources
-COPY public ./public
-
-RUN npm run build
-
-
 FROM php:8.3-apache-bookworm
 
 ENV APP_ENV=production \
@@ -31,19 +15,19 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libfreetype6-dev \
         libjpeg62-turbo-dev \
+        libonig-dev \
         libpng-dev \
         libpq-dev \
         libzip-dev \
         unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(nproc)" gd pdo_pgsql zip \
+    && docker-php-ext-install -j"$(nproc)" gd mbstring pdo_pgsql zip \
     && a2enmod rewrite headers \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY . ./
-COPY --from=assets /app/public/build ./public/build
 COPY docker/apache-laravel.conf /etc/apache2/conf-available/laravel.conf
 COPY docker/render-entrypoint.sh /usr/local/bin/render-entrypoint
 
