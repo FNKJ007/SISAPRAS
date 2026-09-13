@@ -323,12 +323,22 @@ class HomeController extends Controller
         });
 
         if (!$isAdmin && !empty($userPos)) {
-            $cleanPos = explode('(', $userPos)[0];
-            $cleanPos = trim($cleanPos);
+            $cleanPos = trim(explode('(', $userPos)[0]);
+            $aliasInParen = '';
+            if (preg_match('/\((.*?)\)/', $userPos, $m)) {
+                $aliasInParen = trim($m[1]);
+            }
 
-            $queryAlatChecks->where(function ($q) use ($userPos, $cleanPos) {
+            $queryAlatChecks->where(function ($q) use ($userPos, $cleanPos, $aliasInParen) {
                 $q->where('pos', $userPos)
                   ->orWhere('pos', 'ILIKE', "%{$cleanPos}%");
+                if (!empty($aliasInParen)) {
+                    $q->orWhere('pos', 'ILIKE', "%{$aliasInParen}%");
+                }
+                // Jika user berada di Mako / Soreang, sertakan juga pemeriksaan Command Center
+                if (str_contains(strtolower($userPos), 'soreang') || str_contains(strtolower($userPos), 'mako')) {
+                    $q->orWhere('kategori', 'ILIKE', '%command%');
+                }
             });
         }
 
@@ -353,8 +363,37 @@ class HomeController extends Controller
         );
 
         $userPeralatanStatus = collect($filteredKategoriAlatList)->map(function ($cfg, $kat) use ($todayAlatChecks, $userPos) {
-            $cek = $todayAlatChecks->first(function ($item) use ($kat) {
-                return strtolower($item->kategori) === strtolower($kat);
+            $cleanPos = strtolower(trim(explode('(', (string)$userPos)[0]));
+            $aliasInParen = '';
+            if (preg_match('/\((.*?)\)/', (string)$userPos, $m)) {
+                $aliasInParen = strtolower(trim($m[1]));
+            }
+
+            $cek = $todayAlatChecks->first(function ($item) use ($kat, $userPos, $cleanPos, $aliasInParen) {
+                $itemKat = strtolower(trim((string)$item->kategori));
+                $targetKat = strtolower(trim((string)$kat));
+
+                $catMatch = ($itemKat === $targetKat)
+                    || ($targetKat === 'command_center' && str_contains($itemKat, 'command'))
+                    || ($targetKat === 'pemadam' && str_contains($itemKat, 'pemadam'))
+                    || ($targetKat === 'rescue' && str_contains($itemKat, 'rescue'))
+                    || ($targetKat === 'pencegahan' && str_contains($itemKat, 'pencegahan'));
+
+                if (!$catMatch) return false;
+
+                if (!empty($userPos)) {
+                    $itemPos = strtolower(trim((string)$item->pos));
+                    // Jika pos Mako/Soreang dan kategori command center, selalu match
+                    if ($targetKat === 'command_center' && (str_contains(strtolower($userPos), 'soreang') || str_contains(strtolower($userPos), 'mako'))) {
+                        return true;
+                    }
+                    if (!empty($itemPos)) {
+                        return str_contains($itemPos, $cleanPos)
+                            || (!empty($aliasInParen) && str_contains($itemPos, $aliasInParen))
+                            || str_contains(strtolower($userPos), $itemPos);
+                    }
+                }
+                return true;
             });
 
             return (object) [
