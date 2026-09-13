@@ -34,12 +34,13 @@
         {{-- Identitas Pemeriksaan: Regu, Nama Pemeriksa, Jabatan, Tanggal, Danru, Kabid --}}
         <div class="daily-tool-identity rounded-xl p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-                <label for="pos" class="block text-sm font-medium mb-1">Regu / Pos <span class="text-red-500">*</span></label>
+                <label for="pos" class="block text-sm font-medium mb-1">Pos Damkar <span class="text-red-500">*</span></label>
                 <select id="pos" name="pos" required
                         class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
-                    <option value="" selected disabled>Pilih Regu</option>
-                    @foreach($reguList ?? ['Regu 1', 'Regu 2', 'Regu 3', 'Regu 4'] as $regu)
-                        <option value="{{ $regu }}" @selected(old('pos', auth()->user()->regu ?? '') == $regu)>{{ $regu }}</option>
+                    <option value="" selected disabled>Pilih Pos Damkar</option>
+                    @foreach($posList ?? [] as $p)
+                        @php $pName = is_string($p) ? $p : ($p->nama ?? ($p['nama'] ?? '')); @endphp
+                        <option value="{{ $pName }}" @selected(old('pos', auth()->user()->pos ?? '') == $pName)>{{ $pName }}</option>
                     @endforeach
                 </select>
                 @error('pos') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror

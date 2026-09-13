@@ -6,13 +6,8 @@
     <title>Invoice - {{ $invoice->nomor_invoice }}</title>
     <style>
         /* === PAGE SETUP ===
-           CATATAN PENTING:
-           DomPDF sering tidak konsisten menerapkan margin lewat @page saat
-           satuannya px, sehingga hasil PDF terlihat mepet ke kiri-kanan
-           walau kode CSS sudah benar. Solusi paling stabil: set margin
-           @page ke 0, lalu beri padding langsung di <body> memakai satuan
-           mm. Ini yang membuat margin kiri-kanan benar-benar terlihat di
-           file PDF hasil download.
+           DomPDF: set @page margin ke 0 lalu beri padding di body dgn satuan mm
+           agar margin kiri-kanan-atas-bawah benar-benar tercetak di PDF.
         */
         @page {
             margin: 0;
@@ -29,7 +24,7 @@
             color: #111827;
             line-height: 1.3;
             background: #FFFFFF;
-            /* Margin halaman sesungguhnya ada di sini (top right bottom left) */
+            /* Margin halaman sesungguhnya (top right bottom left) */
             padding: 12mm 20mm 14mm 20mm;
         }
         table {
@@ -90,6 +85,7 @@
             font-weight: normal;
             line-height: 1.2;
         }
+        /* Garis Pembatas Kop — single bold line, sama dengan preview */
         .kop-divider {
             border-top: 2.5pt solid #000000;
             margin-top: 6px;
@@ -116,7 +112,7 @@
             margin-top: 3px;
         }
 
-        /* === KOTAK INFORMASI (TABLE 100% SEJAJAR TABEL ITEM, PADDING 24px, GAP 50px) === */
+        /* === KOTAK INFORMASI === */
         .info-box-table {
             width: 100%;
             border-collapse: collapse;
@@ -164,7 +160,7 @@
             word-wrap: break-word;
         }
 
-        /* === TABEL ITEM (PADDING SEL 10-12px KIRI-KANAN) === */
+        /* === TABEL ITEM === */
         .items-table {
             width: 100%;
             border-collapse: collapse;
@@ -183,6 +179,7 @@
             font-weight: bold;
             font-size: 7.5pt;
             text-transform: uppercase;
+            letter-spacing: 0.3px;
             color: #FFFFFF;
             white-space: nowrap;
         }
@@ -213,7 +210,7 @@
             text-align: right;
             padding-right: 10px !important;
             color: #0F172A;
-            font-size: 8pt;
+            font-size: 8.5pt;
         }
         .row-extra td {
             background-color: #FFFFFF;
@@ -223,6 +220,7 @@
             padding-right: 12px !important;
             color: #64748B;
             font-size: 7.5pt;
+            font-weight: 500;
         }
         .extra-val {
             text-align: right;
@@ -253,7 +251,7 @@
             text-align: right;
             padding-right: 10px !important;
             color: #16244f;
-            font-size: 8.5pt;
+            font-size: 9pt;
         }
 
         /* === TANDA TANGAN === */
@@ -285,13 +283,12 @@
         .ttd-nama {
             font-weight: bold;
             text-decoration: underline;
-            font-style: italic;
             color: #0F172A;
             font-size: 8pt;
         }
         .ttd-nip {
             font-size: 7pt;
-            color: #4B5563;
+            color: #64748B;
             margin-top: 2px;
         }
     </style>
@@ -326,10 +323,9 @@
         <div class="doc-nomor">Nomor: {{ $invoice->nomor_invoice }}</div>
     </div>
 
-    {{-- KOTAK INFORMASI (2 KOLOM, PADDING DALAM 24px, GAP 50px, LEBAR 100% SEJAJAR TABEL ITEM) --}}
+    {{-- KOTAK INFORMASI (2 KOLOM) --}}
     <table class="info-box-table">
         <tr>
-            {{-- Kolom Kiri (Lebar 50%, Padding Kiri 24px, Padding Kanan 25px) --}}
             <td class="info-col-left">
                 <table class="info-subtable">
                     <tr>
@@ -355,7 +351,6 @@
                 </table>
             </td>
 
-            {{-- Kolom Kanan (Lebar 50%, Padding Kiri 25px, Padding Kanan 24px -> Gap Total 50px) --}}
             <td class="info-col-right">
                 <table class="info-subtable">
                     <tr>
@@ -383,7 +378,7 @@
         </tr>
     </table>
 
-    {{-- TABEL ITEM (PADDING 10-12px) --}}
+    {{-- TABEL ITEM --}}
     <table class="items-table">
         <thead>
             <tr>
@@ -401,11 +396,11 @@
             @foreach ($invoice->items as $i => $item)
                 <tr>
                     <td style="text-align: center; color: #4B5563;">{{ $i + 1 }}</td>
-                    <td style="text-align: center; font-style: italic; color: #16244f;">{{ $item->kode_item ?: '—' }}</td>
+                    <td style="text-align: center; color: #16244f;">{{ $item->kode_item ?: '—' }}</td>
                     <td style="padding-left: 10px; font-weight: bold; color: #0F172A;">{{ ucwords(strtolower(trim($item->jenis_perbaikan))) }}</td>
-                    <td style="text-align: center;">{{ rtrim(rtrim(number_format($item->vol, 2, ',', '.'), '0'), ',') }}</td>
+                    <td style="text-align: center; color: #334155;">{{ rtrim(rtrim(number_format($item->vol, 2, ',', '.'), '0'), ',') }}</td>
                     <td style="text-align: center; color: #4B5563;">{{ ucwords(strtolower(trim($item->satuan))) }}</td>
-                    <td style="text-align: right; padding-right: 10px;">{{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
+                    <td style="text-align: right; padding-right: 10px; color: #334155;">{{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
                     <td style="text-align: center; color: #4B5563;">{{ (float)$item->potongan_persen > 0 ? rtrim(rtrim(number_format($item->potongan_persen, 2, ',', '.'), '0'), ',') . '%' : '0%' }}</td>
                     <td style="text-align: right; padding-right: 10px; font-weight: bold; color: #0F172A;">{{ number_format($item->total_biaya, 0, ',', '.') }}</td>
                 </tr>

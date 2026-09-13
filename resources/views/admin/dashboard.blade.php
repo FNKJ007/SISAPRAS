@@ -1,3 +1,6 @@
+@php
+    use Illuminate\Support\Js;
+@endphp
 @extends('layouts.admin')
 @section('title', 'Dashboard Admin')
 
@@ -397,6 +400,365 @@
         </div>
     </div>
 
+    {{-- ===================== KALENDER PEMELIHARAAN (SEMUA POS & UNIT) ===================== --}}
+    <div style="background:#fff; border-radius:16px; box-shadow:0px 14px 30px rgba(15, 23, 42, 0.04); border:1px solid #E2E8F0; padding:22px; margin-bottom:20px;"
+         x-data="calendarModal()" @keydown.escape.window="closeModal()">
+
+        {{-- MODAL DETAIL SIMPEL & TANPA SCROLL KANAN-KIRI --}}
+        <template x-teleport="body">
+            <div x-show="modalOpen"
+                 x-cloak
+                 class="fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-4"
+                 style="background-color: rgba(15, 23, 42, 0.72);"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0">
+
+                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] overflow-y-auto overflow-x-hidden border border-gray-100 custom-scrollbar m-auto"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 scale-100"
+                     x-transition:leave-end="opacity-0 scale-95"
+                     @click.stop>
+
+                    {{-- Header Modal --}}
+                    <div class="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-red-50 text-red-700 flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="calendar" class="w-4.5 h-4.5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-900 text-sm sm:text-base leading-tight">Detail Pengajuan (Semua Pos)</h3>
+                                <p class="text-[11px] font-semibold text-red-700 mt-0.5" x-text="selectedDate"></p>
+                            </div>
+                        </div>
+                        <button type="button" @click="closeModal()"
+                                class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+                            <i data-lucide="x" class="w-4.5 h-4.5"></i>
+                        </button>
+                    </div>
+
+                    {{-- Body List Events --}}
+                    <div class="p-4 sm:p-5 space-y-3">
+                        <template x-for="(event, idx) in selectedEvents" :key="idx">
+                            <div class="border border-slate-200 rounded-xl p-3.5 sm:p-4 bg-white shadow-xs space-y-3">
+                                
+                                {{-- Header Unit & Status Badge --}}
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <i data-lucide="truck" class="w-4 h-4 text-slate-700 flex-shrink-0"></i>
+                                        <h4 class="font-bold text-slate-900 text-xs sm:text-sm truncate" x-text="event.unit_nama"></h4>
+                                    </div>
+
+                                    <span class="inline-flex items-center gap-1.5 text-[10.5px] font-extrabold px-2.5 py-1 rounded-full w-fit shadow-2xs"
+                                          :class="{
+                                              'bg-amber-50 text-amber-900 border border-amber-300': event.status_kalender === 'menunggu',
+                                              'bg-blue-50 text-blue-900 border border-blue-300': event.status_kalender === 'disetujui_ke_bengkel',
+                                              'bg-orange-50 text-orange-950 border border-orange-300': event.status_kalender === 'dalam_perbaikan',
+                                              'bg-emerald-50 text-emerald-900 border border-emerald-300': event.status_kalender === 'selesai',
+                                              'bg-red-50 text-red-900 border border-red-300': event.status_kalender === 'ditolak'
+                                          }">
+                                        <span class="w-1.5 h-1.5 rounded-full"
+                                              :class="{
+                                                  'bg-amber-500': event.status_kalender === 'menunggu',
+                                                  'bg-blue-600': event.status_kalender === 'disetujui_ke_bengkel',
+                                                  'bg-orange-500': event.status_kalender === 'dalam_perbaikan',
+                                                  'bg-emerald-500': event.status_kalender === 'selesai',
+                                                  'bg-red-600': event.status_kalender === 'ditolak'
+                                              }"></span>
+                                        <span x-text="event.status_label"></span>
+                                    </span>
+                                </div>
+
+                                {{-- Jadwal Keberangkatan Bengkel (Belum Berangkat / Masa Depan) --}}
+                                <template x-if="event.tanggal_keberangkatan && event.status_kalender === 'disetujui_ke_bengkel'">
+                                    <div class="bg-blue-50/70 border border-blue-200 rounded-lg p-2.5 flex items-center gap-2 text-xs font-semibold text-blue-900">
+                                        <span class="text-base">🚛</span>
+                                        <div>
+                                            <span class="text-[10px] font-bold text-blue-700 block uppercase">Jadwal Ke Bengkel</span>
+                                            <span class="font-bold text-blue-900" x-text="event.tanggal_keberangkatan"></span>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                {{-- Sedang Dalam Perbaikan di Bengkel --}}
+                                <template x-if="event.status_kalender === 'dalam_perbaikan'">
+                                    <div class="bg-orange-50/80 border border-orange-200 rounded-lg p-2.5 flex items-center gap-2 text-xs font-semibold text-orange-950">
+                                        <span class="text-base">⚙️</span>
+                                        <div>
+                                            <span class="text-[10px] font-bold text-orange-700 block uppercase">Proses Perbaikan</span>
+                                            <span class="font-bold text-orange-950">Unit Sedang Dikerjakan di Bengkel</span>
+                                            <span class="text-[10.5px] font-normal text-orange-800 block" x-show="event.tanggal_keberangkatan" x-text="'Masuk Bengkel: ' + event.tanggal_keberangkatan"></span>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                {{-- Sudah Selesai Perbaikan & Kembali ke Pos --}}
+                                <template x-if="event.status_kalender === 'selesai'">
+                                    <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 flex items-center gap-2 text-xs font-semibold text-emerald-900">
+                                        <span class="text-base">✅</span>
+                                        <div>
+                                            <span class="text-[10px] font-bold text-emerald-700 block uppercase">Status Pemeliharaan</span>
+                                            <span class="font-bold text-emerald-900">Selesai &amp; Unit Kembali Siap Operasi</span>
+                                            <span class="text-[10.5px] font-normal text-emerald-800 block" x-show="event.tanggal_selesai" x-text="'Tanggal Selesai: ' + event.tanggal_selesai"></span>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                {{-- Item Perbaikan & Badges --}}
+                                <div>
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Item Perbaikan</span>
+                                    
+                                    {{-- Jika Ada Rincian Verifikasi Per Item --}}
+                                    <template x-if="event.item_verifikasis && event.item_verifikasis.length > 0">
+                                        <div class="flex flex-wrap gap-1.5">
+                                            <template x-for="(it, i) in event.item_verifikasis" :key="i">
+                                                <span class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-md border"
+                                                      :class="it.status === 'disetujui' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-red-50 text-red-800 border-red-200'">
+                                                    <span x-text="it.status === 'disetujui' ? '✓' : '✕'"></span>
+                                                    <span x-text="it.nama"></span>
+                                                    <span class="text-[10px] font-normal" x-text="'(' + (it.status === 'disetujui' ? 'Disetujui' : 'Ditolak') + ')'"></span>
+                                                </span>
+                                            </template>
+                                        </div>
+                                    </template>
+
+                                    {{-- Jika Tidak Ada Rincian Per Item --}}
+                                    <template x-if="!event.item_verifikasis || event.item_verifikasis.length === 0">
+                                        <p class="text-xs font-bold text-slate-800" x-text="event.item_perbaikan || '-'"></p>
+                                    </template>
+                                </div>
+
+                                {{-- Catatan Admin --}}
+                                <template x-if="event.catatan_admin">
+                                    <div class="bg-slate-50 border border-slate-200/80 rounded-lg p-2.5 text-xs text-slate-700">
+                                        <span class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Catatan Admin</span>
+                                        <p class="italic text-slate-800" x-text="event.catatan_admin"></p>
+                                    </div>
+                                </template>
+
+                                {{-- Tombol Aksi Admin: Kelola Verifikasi & Cetak Dokumen --}}
+                                <div class="pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-end gap-2">
+                                    <a :href="'{{ route('admin.pemeliharaan.pengajuan') }}?search=' + encodeURIComponent(event.nomor_lambung || '')"
+                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-lg text-xs transition-colors border border-slate-300 shadow-2xs">
+                                        <i data-lucide="check-square" class="w-3.5 h-3.5 text-slate-700"></i>
+                                        <span>Kelola Pengajuan</span>
+                                    </a>
+                                    <a :href="'/admin/pemeliharaan/cetak-dokumen/' + event.id + '/permohonanbidang'" target="_blank"
+                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg text-xs transition-colors border border-blue-200 shadow-2xs">
+                                        <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                                        <span>Cetak Surat Permohonan</span>
+                                    </a>
+                                </div>
+
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- Footer --}}
+                    <div class="px-4 py-2.5 border-t border-gray-100 bg-gray-50/80 rounded-b-2xl text-center">
+                        <p class="text-[10.5px] text-gray-400 font-medium">Tekan <kbd class="px-1 py-0.5 bg-white border border-gray-200 rounded text-gray-600 font-bold">Esc</kbd> atau klik luar untuk menutup</p>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        {{-- Header Banner Kalender --}}
+        <div class="flex items-start justify-between flex-wrap gap-4 mb-6 pb-5 border-b border-gray-100">    
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>
+                    <h2 class="text-lg sm:text-xl font-bold text-gray-900">Kalender Pemeliharaan Seluruh Pos &amp; Unit</h2>
+                </div>
+                <p class="text-gray-500 text-xs sm:text-sm">
+                    Jadwal &amp; status verifikasi pengajuan unit operasional dari seluruh Pos Damkar secara real-time.
+                    <span class="hidden sm:inline text-gray-400">— Klik tanggal bertanda untuk melihat detail.</span>
+                </p>
+            </div>
+
+            {{-- Ringkasan Status Badges (Menunggu, Disetujui/Bengkel, Selesai, Ditolak) --}}
+            <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
+                <div class="flex items-center justify-between sm:justify-start gap-2 text-xs font-semibold bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-3 py-1.5 shadow-2xs">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <span>Menunggu:</span>
+                    </div>
+                    <span class="bg-amber-200/80 text-amber-950 px-2 py-0.5 rounded-md text-[11px] font-bold">{{ $calendarRingkasan['menunggu'] }}</span>
+                </div>
+                <div class="flex items-center justify-between sm:justify-start gap-2 text-xs font-semibold bg-blue-50 border border-blue-200 text-blue-900 rounded-xl px-3 py-1.5 shadow-2xs">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                        <span>Disetujui / Bengkel:</span>
+                    </div>
+                    <span class="bg-blue-200/80 text-blue-950 px-2 py-0.5 rounded-md text-[11px] font-bold">{{ $calendarRingkasan['disetujui'] }}</span>
+                </div>
+                <div class="flex items-center justify-between sm:justify-start gap-2 text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl px-3 py-1.5 shadow-2xs">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                        <span>Selesai:</span>
+                    </div>
+                    <span class="bg-emerald-200/80 text-emerald-950 px-2 py-0.5 rounded-md text-[11px] font-bold">{{ $calendarRingkasan['selesai'] }}</span>
+                </div>
+                <div class="flex items-center justify-between sm:justify-start gap-2 text-xs font-semibold bg-red-50 border border-red-200 text-red-900 rounded-xl px-3 py-1.5 shadow-2xs">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-red-600"></span>
+                        <span>Ditolak:</span>
+                    </div>
+                    <span class="bg-red-200/80 text-red-950 px-2 py-0.5 rounded-md text-[11px] font-bold">{{ $calendarRingkasan['ditolak'] }}</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- Navigasi Bulan & Dropdown Pilih Bulan/Tahun --}}
+        <div class="flex items-center justify-between gap-1.5 sm:gap-3 mb-6 bg-slate-50 border border-slate-200/80 rounded-2xl p-2 sm:p-3 shadow-2xs">
+
+            {{-- Tombol Bulan Sebelumnya --}}
+            <a href="{{ $calendarPrevMonthUrl }}"
+               class="inline-flex items-center justify-center gap-1 px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl text-slate-700 bg-white border border-slate-200 shadow-2xs hover:bg-slate-100 hover:text-slate-900 transition-all flex-shrink-0"
+               title="Bulan Sebelumnya">
+                <i data-lucide="chevron-left" class="w-4 h-4 text-slate-600"></i>
+                <span class="hidden sm:inline">Sebelumnya</span>
+            </a>
+
+            {{-- Dropdown Form Pilih Bulan & Tahun --}}
+            <form action="{{ route('admin.dashboard') }}" method="GET" class="flex items-center gap-1.5 justify-center flex-1 min-w-0">
+                <input type="hidden" name="tahun" value="{{ $currentYear }}">
+                <div class="flex items-center gap-1 sm:gap-1.5 bg-white border border-slate-200 rounded-xl px-2 sm:px-3 py-1.5 shadow-2xs max-w-full overflow-hidden">
+                    <i data-lucide="calendar" class="w-4 h-4 text-red-600 flex-shrink-0"></i>
+
+                    {{-- Select Bulan --}}
+                    <select name="month" onchange="this.form.submit()"
+                            class="bg-transparent text-xs sm:text-sm font-bold text-slate-800 focus:outline-none cursor-pointer py-0.5 font-sans truncate max-w-[90px] xs:max-w-[110px] sm:max-w-none">
+                        @foreach([
+                            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                        ] as $mNum => $mName)
+                            <option value="{{ $mNum }}" @selected($calendarBulanAktif->month == $mNum)>{{ $mName }}</option>
+                        @endforeach
+                    </select>
+
+                    {{-- Select Tahun Dinamis --}}
+                    <select name="year" onchange="this.form.submit()"
+                            class="bg-transparent text-xs sm:text-sm font-bold text-slate-800 focus:outline-none cursor-pointer py-0.5 border-l border-slate-200 pl-1 sm:pl-2 font-sans">
+                        @foreach(($calendarAvailableYears ?? range(2020, (int)date('Y') + 10)) as $y)
+                            <option value="{{ $y }}" @selected($calendarBulanAktif->year == $y)>{{ $y }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                @unless($calendarBulanAktif->isCurrentMonth())
+                    <a href="{{ route('admin.dashboard') }}"
+                       class="text-[10px] sm:text-[11px] px-2 sm:px-2.5 py-1.5 rounded-xl bg-red-100/90 text-red-800 hover:bg-red-200 transition-colors font-bold shadow-2xs inline-flex items-center gap-1 flex-shrink-0"
+                       title="Kembali ke Bulan Saat Ini">
+                        <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                        <span class="hidden md:inline">Hari Ini</span>
+                    </a>
+                @endunless
+            </form>
+
+            {{-- Tombol Bulan Berikutnya --}}
+            <a href="{{ $calendarNextMonthUrl }}"
+               class="inline-flex items-center justify-center gap-1 px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl text-slate-700 bg-white border border-slate-200 shadow-2xs hover:bg-slate-100 hover:text-slate-900 transition-all flex-shrink-0"
+               title="Bulan Berikutnya">
+                <span class="hidden sm:inline">Berikutnya</span>
+                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600"></i>
+            </a>
+        </div>
+
+        {{-- Tabel Grid Kalender --}}
+        <div class="rounded-xl border border-gray-200 w-full overflow-hidden shadow-xs">
+            <table class="w-full border-collapse table-fixed">
+                <thead>
+                    <tr class="bg-slate-100/80 border-b border-gray-200">
+                        @foreach(['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'] as $hari)
+                            <th class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider py-2.5 text-center px-1">
+                                {{ $hari }}
+                            </th>
+                        @endforeach
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @foreach($calendarWeeks as $week)
+                        <tr>
+                            @foreach($week as $hari)
+                                @php
+                                    $tanggalKey = $hari->toDateString();
+                                    $eventsHariIni = $calendarEventsByDate->get($tanggalKey, collect());
+                                    $isBulanIni = $hari->month === $calendarBulanAktif->month;
+                                    $isHariIni = $hari->isToday();
+                                    $adaData = $eventsHariIni->count() > 0;
+                                    $adaDisetujui = $eventsHariIni->contains(fn($e) => in_array($e->status_kalender ?? $e->status, ['disetujui_ke_bengkel', 'dalam_perbaikan']));
+                                @endphp
+                                <td class="align-top border-r border-gray-100 last:border-r-0 p-1 sm:p-2 h-16 sm:h-20 w-[14.28%] relative transition-all duration-150
+                                           {{ $isBulanIni ? 'bg-white' : 'bg-slate-50/70 opacity-60' }}
+                                           {{ $adaData ? 'cursor-pointer hover:bg-red-50/70 hover:ring-2 hover:ring-inset hover:ring-red-400/50' : '' }}"
+                                    @if($adaData)
+                                        @click="openModal({{ Js::from($hari->translatedFormat('l, d F Y')) }}, {{ Js::from($eventsHariIni->values()) }})"
+                                        title="Klik untuk melihat detail status verifikasi pengajuan ({{ $eventsHariIni->count() }} unit)"
+                                    @endif
+                                >
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-xs sm:text-sm font-semibold
+                                            {{ $isBulanIni ? 'text-slate-800' : 'text-slate-400' }}
+                                            {{ $isHariIni ? 'inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-r from-red-600 to-red-800 text-white shadow-sm text-[10px] sm:text-xs font-bold' : '' }}">
+                                            {{ $hari->day }}
+                                        </span>
+
+                                        @if($adaDisetujui)
+                                            <span class="w-2 h-2 rounded-full bg-blue-600 animate-ping" title="Unit dijadwalkan / dalam perbaikan di bengkel"></span>
+                                        @endif
+                                    </div>
+
+                                    {{-- Event Badges --}}
+                                    <div class="space-y-1">
+                                        @foreach($eventsHariIni->take(2) as $event)
+                                            @php
+                                                $statusK = $event->status_kalender ?? $event->status;
+                                                $badgeStyle = match($statusK) {
+                                                    'menunggu'              => 'bg-amber-100/90 text-amber-900 border-amber-300',
+                                                    'disetujui_ke_bengkel'  => 'bg-blue-100/90 text-blue-900 border-blue-300',
+                                                    'dalam_perbaikan'       => 'bg-orange-100/90 text-orange-950 border-orange-300',
+                                                    'selesai'               => 'bg-emerald-100/90 text-emerald-900 border-emerald-300',
+                                                    'ditolak'               => 'bg-red-100/90 text-red-900 border-red-300',
+                                                    default                 => 'bg-slate-100 text-slate-800 border-slate-300',
+                                                };
+                                                $prefixLabel = match($statusK) {
+                                                    'menunggu'              => '⏳ ',
+                                                    'disetujui_ke_bengkel'  => '🗓️ ',
+                                                    'dalam_perbaikan'       => '⚙️ ',
+                                                    'selesai'               => '✓ ',
+                                                    'ditolak'               => '❌ ',
+                                                    default                 => '',
+                                                };
+                                            @endphp
+                                            <div class="text-[9px] sm:text-[11px] leading-tight px-1.5 py-0.5 rounded-md border {{ $badgeStyle }} truncate font-bold shadow-2xs"
+                                                 title="{{ $prefixLabel }}{{ $event->unit_nama }} ({{ $event->status_label ?? ucfirst($event->status) }})">
+                                                 {{ $prefixLabel }}{{ $event->unit_nama }}
+                                            </div>
+                                        @endforeach
+
+                                        @if($eventsHariIni->count() > 2)
+                                            <div class="text-[9px] sm:text-[10px] text-red-700 font-extrabold px-0.5">
+                                                +{{ $eventsHariIni->count() - 2 }} detail →
+                                            </div>
+                                        @endif
+                                    </div>
+                                </td>
+                            @endforeach
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
     {{-- Main Grid: Charts (Left 2/3) + Activity & Distribution (Right 1/3) --}}
     <div class="dash-bottom-grid" style="display:grid; grid-template-columns:minmax(0, 1fr) 340px; gap:20px; align-items:start; width:100%; min-width:0;">
 
@@ -706,6 +1068,27 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
+function calendarModal() {
+    return {
+        modalOpen: false,
+        selectedDate: '',
+        selectedEvents: [],
+
+        openModal(tanggal, events) {
+            this.selectedDate = tanggal;
+            this.selectedEvents = events;
+            this.modalOpen = true;
+            this.$nextTick(() => {
+                if (window.lucide) lucide.createIcons();
+            });
+        },
+
+        closeModal() {
+            this.modalOpen = false;
+        }
+    };
+}
 </script>
 @endpush
 

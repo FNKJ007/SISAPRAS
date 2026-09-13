@@ -9,6 +9,7 @@ use App\Models\Pengajuan;
 use App\Models\PengaturanDokumen;
 use App\Models\User;
 use App\Services\CacheService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -234,8 +235,21 @@ class AdminController extends Controller
 
                 foreach ($requiredCats as $cat) {
                     $cek = $todayCekAlats->first(function ($item) use ($cat, $posName, $cleanPos, $aliasInParen) {
-                        $catMatch = (strtolower($item->kategori) === strtolower($cat));
+                        $itemKat = strtolower(trim((string)$item->kategori));
+                        $targetKat = strtolower(trim((string)$cat));
+
+                        $catMatch = ($itemKat === $targetKat)
+                            || ($targetKat === 'command_center' && str_contains($itemKat, 'command'))
+                            || ($targetKat === 'pemadam' && str_contains($itemKat, 'pemadam'))
+                            || ($targetKat === 'rescue' && str_contains($itemKat, 'rescue'))
+                            || ($targetKat === 'pencegahan' && str_contains($itemKat, 'pencegahan'));
+
                         if (!$catMatch) return false;
+
+                        // Khusus Command Center di Pos Mako / Soreang
+                        if ($targetKat === 'command_center' && (str_contains(strtolower($posName), 'soreang') || str_contains(strtolower($posName), 'mako'))) {
+                            return true;
+                        }
 
                         $itemPos = strtolower(trim((string)$item->pos));
                         if (empty($itemPos)) return false;
@@ -282,8 +296,150 @@ class AdminController extends Controller
             ];
         });
 
+        // =====================================================================
+        // 6. Kalender Pengajuan Pemeliharaan (Semua Pos & Semua Unit)
+        // =====================================================================
+        Carbon::setLocale('id');
+
+        $calendarMonth = (int) $request->query('month', $request->query('bulan', date('n')));
+        $calendarYear  = (int) $request->query('year', $request->query('tahun', date('Y')));
+
+        // Navigasi Bulan Kalender
+        $calendarCurrentDate     = Carbon::createFromDate($calendarYear, $calendarMonth, 1);
+        $calendarBulanAktif      = $calendarCurrentDate;
+        $calendarBulanSebelumnya = $calendarCurrentDate->copy()->subMonth();
+        $calendarBulanBerikutnya = $calendarCurrentDate->copy()->addMonth();
+
+        $calendarPrevMonthUrl = route('admin.dashboard', [
+            'month' => $calendarBulanSebelumnya->month,
+            'year'  => $calendarBulanSebelumnya->year,
+            'tahun' => $currentYear,
+        ]);
+        $calendarNextMonthUrl = route('admin.dashboard', [
+            'month' => $calendarBulanBerikutnya->month,
+            'year'  => $calendarBulanBerikutnya->year,
+            'tahun' => $currentYear,
+        ]);
+
+        // Query SEMUA pengajuan pemeliharaan dari SELURUH POS & UNIT untuk bulan kalender aktif
+        $calendarTglAwal  = $calendarCurrentDate->copy()->startOfMonth();
+        $calendarTglAkhir = $calendarCurrentDate->copy()->endOfMonth();
+
+        $dbPengajuanKalender = Pengajuan::where(function ($query) use ($calendarTglAwal, $calendarTglAkhir) {
+            $query->whereBetween('tanggal_keberangkatan', [$calendarTglAwal->format('Y-m-d'), $calendarTglAkhir->format('Y-m-d')])
+                  ->orWhereBetween('tanggal_selesai_pengerjaan', [$calendarTglAwal->format('Y-m-d'), $calendarTglAkhir->format('Y-m-d')])
+                  ->orWhereBetween('created_at', [$calendarTglAwal->copy()->startOfDay(), $calendarTglAkhir->copy()->endOfDay()]);
+        })
+        ->latest('id')
+        ->get();
+
+        $todayStr = now()->format('Y-m-d');
+
+        if ($dbPengajuanKalender->count() > 0) {
+            $calendarPengajuanList = $dbPengajuanKalender->map(function ($item) use ($todayStr) {
+                // Tanggal penempatan di kalender: Gunakan tanggal_keberangkatan jika ada, atau created_at
+                $tglTarget = ($item->tanggal_keberangkatan)
+                    ? $item->tanggal_keberangkatan->toDateString()
+                    : $item->created_at->toDateString();
+
+                $itemVerificatedList = [];
+                if (!empty($item->item_verifikasis) && is_array($item->item_verifikasis)) {
+                    foreach ($item->item_verifikasis as $itemName => $itemStatus) {
+                        $itemVerificatedList[] = [
+                            'nama'   => $itemName,
+                            'status' => $itemStatus, // 'disetujui' atau 'ditolak'
+                        ];
+                    }
+                }
+
+                $tglBerangkatStr = $item->tanggal_keberangkatan ? $item->tanggal_keberangkatan->format('Y-m-d') : null;
+
+                if ($item->status === 'selesai' || $item->status_pengerjaan === 'selesai') {
+                    $statusKalender = 'selesai';
+                    $statusLabel    = 'Selesai';
+                } elseif ($item->status === 'disetujui') {
+                    if ($tglBerangkatStr && $tglBerangkatStr > $todayStr) {
+                        $statusKalender = 'disetujui_ke_bengkel';
+                        $statusLabel    = 'Disetujui ke Bengkel';
+                    } else {
+                        $statusKalender = 'dalam_perbaikan';
+                        $statusLabel    = 'Dalam Perbaikan';
+                    }
+                } elseif ($item->status === 'ditolak') {
+                    $statusKalender = 'ditolak';
+                    $statusLabel    = 'Ditolak Admin';
+                } else {
+                    $statusKalender = 'menunggu';
+                    $statusLabel    = 'Menunggu Verifikasi';
+                }
+
+                return (object) [
+                    'id'                    => $item->id,
+                    'tanggal_pengajuan'     => $tglTarget,
+                    'unit_nama'             => strtoupper($item->nomor_lambung ?? 'Unit') . ($item->pos ? ' (' . ucfirst($item->pos) . ')' : ''),
+                    'nomor_lambung'         => $item->nomor_lambung,
+                    'pos'                   => $item->pos,
+                    'status'                => $item->status,
+                    'status_kalender'       => $statusKalender,
+                    'status_label'          => $statusLabel,
+                    'item_perbaikan'        => $item->item_perbaikan,
+                    'item_verifikasis'      => $itemVerificatedList,
+                    'tanggal_keberangkatan' => $item->tanggal_keberangkatan ? $item->tanggal_keberangkatan->translatedFormat('l, d F Y') : null,
+                    'tanggal_selesai'       => $item->tanggal_selesai_pengerjaan ? $item->tanggal_selesai_pengerjaan->translatedFormat('l, d F Y') : null,
+                    'catatan_admin'         => $item->catatan_admin,
+                ];
+            });
+        } else {
+            $calendarPengajuanList = collect([]);
+        }
+
+        // Grouping data pengajuan berdasarkan tanggal_pengajuan ('Y-m-d')
+        $calendarEventsByDate = $calendarPengajuanList->groupBy('tanggal_pengajuan');
+
+        // Bangun Grid Minggu Kalender (Minggu s.d. Sabtu)
+        $startOfCalendar = $calendarCurrentDate->copy()->startOfMonth()->startOfWeek(Carbon::SUNDAY);
+        $endOfCalendar   = $calendarCurrentDate->copy()->endOfMonth()->endOfWeek(Carbon::SATURDAY);
+
+        $calendarWeeks = [];
+        $dayCursor = $startOfCalendar->copy();
+        while ($dayCursor->lte($endOfCalendar)) {
+            $week = [];
+            for ($i = 0; $i < 7; $i++) {
+                $week[] = $dayCursor->copy();
+                $dayCursor->addDay();
+            }
+            $calendarWeeks[] = $week;
+        }
+
+        // Hitung Ringkasan Status Pengajuan Bulan Ini
+        $calendarRingkasan = [
+            'total_pengajuan' => $calendarPengajuanList->count(),
+            'menunggu'        => $calendarPengajuanList->where('status_kalender', 'menunggu')->count(),
+            'disetujui'       => $calendarPengajuanList->whereIn('status_kalender', ['disetujui_ke_bengkel', 'dalam_perbaikan'])->count(),
+            'selesai'         => $calendarPengajuanList->where('status_kalender', 'selesai')->count(),
+            'ditolak'         => $calendarPengajuanList->where('status_kalender', 'ditolak')->count(),
+        ];
+
+        // Range Tahun Dinamis
+        $minDbYear = Pengajuan::min('created_at') ? Carbon::parse(Pengajuan::min('created_at'))->year : date('Y') - 5;
+        $startYear = min(2020, $minDbYear);
+        $endYear   = max((int) date('Y') + 10, $calendarYear + 5);
+        $calendarAvailableYears = range($startYear, $endYear);
+
         return view('admin.dashboard', array_merge($stats, $absenData, [
-            'currentYear' => $currentYear,
+            'currentYear'             => $currentYear,
+            'calendarMonth'           => $calendarMonth,
+            'calendarYear'            => $calendarYear,
+            'calendarCurrentDate'     => $calendarCurrentDate,
+            'calendarBulanAktif'      => $calendarBulanAktif,
+            'calendarBulanSebelumnya'  => $calendarBulanSebelumnya,
+            'calendarBulanBerikutnya'  => $calendarBulanBerikutnya,
+            'calendarPrevMonthUrl'    => $calendarPrevMonthUrl,
+            'calendarNextMonthUrl'    => $calendarNextMonthUrl,
+            'calendarWeeks'           => $calendarWeeks,
+            'calendarEventsByDate'    => $calendarEventsByDate,
+            'calendarRingkasan'       => $calendarRingkasan,
+            'calendarAvailableYears'  => $calendarAvailableYears,
         ]));
     }
 

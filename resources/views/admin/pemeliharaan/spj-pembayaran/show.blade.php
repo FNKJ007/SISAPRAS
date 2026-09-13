@@ -220,38 +220,38 @@
         <div style="margin-bottom:18px;">
             <table class="invoice-items-table" style="width:100%; border-collapse:collapse; table-layout:fixed; box-sizing:border-box; font-size:11px; text-align:left; border:1px solid #CBD5E1;">
                 <colgroup>
-                    <col style="width:35px;">
-                    <col style="width:80px;">
+                    <col style="width:32px;">
+                    <col style="width:70px;">
                     <col>
-                    <col style="width:45px;">
-                    <col style="width:60px;">
-                    <col style="width:110px;">
-                    <col style="width:65px;">
-                    <col style="width:120px;">
+                    <col style="width:38px;">
+                    <col style="width:52px;">
+                    <col style="width:95px;">
+                    <col style="width:55px;">
+                    <col style="width:105px;">
                 </colgroup>
                 <thead>
                     <tr style="background:#16244f; color:#FFFFFF;">
-                        <th style="padding:8px 11px; text-align:center; border:1px solid #16244f; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF; white-space:nowrap;">NO</th>
-                        <th style="padding:8px 11px; text-align:center; border:1px solid #16244f; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF; white-space:nowrap;">KD. ITEM</th>
-                        <th style="padding:8px 11px; border:1px solid #16244f; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF; white-space:nowrap;">NAMA ITEM / JENIS PERBAIKAN</th>
-                        <th style="padding:8px 11px; text-align:center; border:1px solid #16244f; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF; white-space:nowrap;">JML</th>
-                        <th style="padding:8px 11px; text-align:center; border:1px solid #16244f; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF; white-space:nowrap;">SATUAN</th>
-                        <th style="padding:8px 11px; text-align:right; border:1px solid #16244f; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF; white-space:nowrap;">HARGA (RP)</th>
-                        <th style="padding:8px 11px; text-align:center; border:1px solid #16244f; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF; white-space:nowrap;">POT. (%)</th>
-                        <th style="padding:8px 11px; text-align:right; border:1px solid #16244f; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF; white-space:nowrap;">TOTAL (RP)</th>
+                        <th style="padding:8px 6px; text-align:center; border:1px solid #16244f; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF; white-space:nowrap;">NO</th>
+                        <th style="padding:8px 6px; text-align:center; border:1px solid #16244f; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF; white-space:nowrap;">KD. ITEM</th>
+                        <th style="padding:8px 8px; border:1px solid #16244f; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; color:#FFFFFF;">NAMA ITEM / JENIS PERBAIKAN</th>
+                        <th style="padding:8px 4px; text-align:center; border:1px solid #16244f; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#FFFFFF; white-space:nowrap;">JML</th>
+                        <th style="padding:8px 4px; text-align:center; border:1px solid #16244f; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; color:#FFFFFF; white-space:nowrap;">SATUAN</th>
+                        <th style="padding:8px 6px; text-align:right; border:1px solid #16244f; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; color:#FFFFFF; white-space:nowrap;">HARGA (RP)</th>
+                        <th style="padding:8px 4px; text-align:center; border:1px solid #16244f; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; color:#FFFFFF; white-space:nowrap;">POT. (%)</th>
+                        <th style="padding:8px 6px; text-align:right; border:1px solid #16244f; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; color:#FFFFFF; white-space:nowrap;">TOTAL (RP)</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($invoice->items as $i => $item)
                         <tr style="{{ $i % 2 == 1 ? 'background:#F8FAFC;' : 'background:#FFFFFF;' }}">
-                            <td style="padding:7px 11px; text-align:center; color:#4B5563; font-weight:400; border:1px solid #CBD5E1;">{{ $i + 1 }}</td>
-                            <td style="padding:7px 11px; text-align:center; color:#16244f; font-weight:400; font-style:italic; border:1px solid #CBD5E1; overflow-wrap:break-word;">{{ $item->kode_item ?: '—' }}</td>
-                            <td style="padding:7px 11px; font-weight:700; color:#0F172A; border:1px solid #CBD5E1; overflow-wrap:break-word;">{{ ucwords(strtolower(trim($item->jenis_perbaikan))) }}</td>
-                            <td style="padding:7px 11px; text-align:center; color:#334155; font-weight:400; border:1px solid #CBD5E1;">{{ rtrim(rtrim(number_format($item->vol, 2, ',', '.'), '0'), ',') }}</td>
-                            <td style="padding:7px 11px; text-align:center; color:#4B5563; border:1px solid #CBD5E1; overflow-wrap:break-word;">{{ ucwords(strtolower(trim($item->satuan))) }}</td>
-                            <td style="padding:7px 11px; text-align:right; color:#334155; font-variant-numeric:tabular-nums; border:1px solid #CBD5E1;">{{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
-                            <td style="padding:7px 11px; text-align:center; color:#4B5563; border:1px solid #CBD5E1;">{{ (float)$item->potongan_persen > 0 ? rtrim(rtrim(number_format($item->potongan_persen, 2, ',', '.'), '0'), ',') . '%' : '0%' }}</td>
-                            <td style="padding:7px 11px; text-align:right; font-weight:700; color:#0F172A; font-variant-numeric:tabular-nums; border:1px solid #CBD5E1;">{{ number_format($item->total_biaya, 0, ',', '.') }}</td>
+                            <td style="padding:7px 6px; text-align:center; color:#4B5563; font-weight:400; border:1px solid #CBD5E1;">{{ $i + 1 }}</td>
+                            <td style="padding:7px 6px; text-align:center; color:#16244f; font-weight:400; border:1px solid #CBD5E1; overflow-wrap:break-word;">{{ $item->kode_item ?: '—' }}</td>
+                            <td style="padding:7px 8px; font-weight:700; color:#0F172A; border:1px solid #CBD5E1; overflow-wrap:break-word; word-break:break-word;">{{ ucwords(strtolower(trim($item->jenis_perbaikan))) }}</td>
+                            <td style="padding:7px 4px; text-align:center; color:#334155; font-weight:400; border:1px solid #CBD5E1;">{{ rtrim(rtrim(number_format($item->vol, 2, ',', '.'), '0'), ',') }}</td>
+                            <td style="padding:7px 4px; text-align:center; color:#4B5563; border:1px solid #CBD5E1; overflow-wrap:break-word;">{{ ucwords(strtolower(trim($item->satuan))) }}</td>
+                            <td style="padding:7px 6px; text-align:right; color:#334155; font-variant-numeric:tabular-nums; border:1px solid #CBD5E1;">{{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
+                            <td style="padding:7px 4px; text-align:center; color:#4B5563; border:1px solid #CBD5E1;">{{ (float)$item->potongan_persen > 0 ? rtrim(rtrim(number_format($item->potongan_persen, 2, ',', '.'), '0'), ',') . '%' : '0%' }}</td>
+                            <td style="padding:7px 6px; text-align:right; font-weight:700; color:#0F172A; font-variant-numeric:tabular-nums; border:1px solid #CBD5E1;">{{ number_format($item->total_biaya, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -301,7 +301,7 @@
                 <td style="width:42%; text-align:center; font-size:11px; color:#334155; vertical-align:top;">
                     <div style="font-weight:400; color:#374151;">Soreang, {{ $invoice->tanggal_invoice ? $invoice->tanggal_invoice->translatedFormat('d F Y') : now()->translatedFormat('d F Y') }}</div>
                     <div style="font-weight:700; color:#0F172A; margin-top:3px; margin-bottom:50px;">{{ $pejabatKasi->jabatan ?? 'Kepala Seksi Pemeliharaan Sarana Dan Prasarana' }}</div>
-                    <div style="font-weight:700; color:#0F172A; text-decoration:underline; font-style:italic;">{{ $pejabatKasi->name ?? 'Ahmad Kuswara, S.M., M.M.' }}</div>
+                    <div style="font-weight:700; color:#0F172A; text-decoration:underline;">{{ $pejabatKasi->name ?? 'Ahmad Kuswara, S.M., M.M.' }}</div>
                     <div style="font-size:10px; color:#64748B; margin-top:2px;">NIP. {{ $pejabatKasi->nip ?? '197209212008011001' }}</div>
                 </td>
             </tr>
@@ -322,7 +322,7 @@
     @media print {
         @page {
             size: A4 portrait;
-            margin: 28px 56px;
+            margin: 12mm 18mm 12mm 18mm;
         }
         .no-print, aside, nav, .sidebar, .topbar, .app-header, .mobile-menu-btn, header {
             display: none !important;
@@ -343,6 +343,11 @@
         .invoice-items-table thead th {
             background-color: #16244f !important;
             color: #FFFFFF !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        .invoice-items-table tfoot tr[style*="background:#EBF3FC"],
+        .invoice-items-table tfoot tr[style*="background:#DFEBFA"] {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
         }
