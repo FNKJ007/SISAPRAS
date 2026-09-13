@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CekHarianAlat;
 use App\Models\CekHarianUnit;
+use App\Models\Invoice;
 use App\Models\Pengajuan;
 use App\Models\PengaturanDokumen;
+use App\Models\Unit;
 use App\Models\User;
 use App\Services\CacheService;
+use App\Services\ExcelExportService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -720,10 +723,7 @@ class AdminController extends Controller
     public function pemeliharaanKartuKendaliAktual(Request $request)
     {
         $existingYears = \App\Models\Invoice::whereNotNull('tahun_anggaran')
-            ->where(function ($q) {
-                $q->where('kategori_monitoring', 'invoice')
-                  ->orWhereNull('kategori_monitoring');
-            })
+            ->where('kategori_monitoring', 'aktual')
             ->pluck('tahun_anggaran')
             ->filter()
             ->map(fn($y) => (int)$y)
@@ -758,10 +758,7 @@ class AdminController extends Controller
 
         // Ambil data invoice pembayaran untuk tahun yang dipilih
         $invoices = \App\Models\Invoice::with('unit')
-            ->where(function ($q) {
-                $q->where('kategori_monitoring', 'invoice')
-                  ->orWhereNull('kategori_monitoring');
-            })
+            ->where('kategori_monitoring', 'aktual')
             ->where(function ($q) use ($tahunFilter) {
                 $q->where('tahun_anggaran', $tahunFilter)
                   ->orWhereYear('tanggal_invoice', $tahunFilter);
@@ -861,7 +858,10 @@ class AdminController extends Controller
     public function pemeliharaanKartuKendaliSpj(Request $request)
     {
         $existingYears = \App\Models\Invoice::whereNotNull('tahun_anggaran')
-            ->where('kategori_monitoring', 'aktual')
+            ->where(function ($q) {
+                $q->where('kategori_monitoring', 'invoice')
+                  ->orWhereNull('kategori_monitoring');
+            })
             ->pluck('tahun_anggaran')
             ->filter()
             ->map(fn($y) => (int)$y)
@@ -896,7 +896,10 @@ class AdminController extends Controller
 
         // Ambil data invoice SPJ pembayaran untuk tahun yang dipilih
         $invoices = \App\Models\Invoice::with('unit')
-            ->where('kategori_monitoring', 'aktual')
+            ->where(function ($q) {
+                $q->where('kategori_monitoring', 'invoice')
+                  ->orWhereNull('kategori_monitoring');
+            })
             ->where(function ($q) use ($tahunFilter) {
                 $q->where('tahun_anggaran', $tahunFilter)
                   ->orWhereYear('tanggal_invoice', $tahunFilter);
@@ -1558,5 +1561,711 @@ class AdminController extends Controller
         $cekAlat->delete();
 
         return redirect()->back()->with('success', 'Data pengecekan alat berhasil dihapus.');
+    }
+
+    /* =====================================================================
+     *  EXPORT EXCEL REKAPITULASI (.XLSX)
+     * ===================================================================== */
+
+    /**
+     * Export Rekap Pengajuan Pemeliharaan ke Excel
+     */
+    public function exportExcelPengajuan(Request $request)
+    {
+        $statusFilter = $request->query('status', 'semua');
+        $searchQuery  = $request->query('search', '');
+
+        $query = Pengajuan::latest();
+
+        if ($statusFilter !== 'semua' && in_array($statusFilter, ['menunggu', 'disetujui', 'selesai', 'ditolak'])) {
+            if ($statusFilter === 'selesai') {
+                $query->where(function ($q) {
+                    $q->where('status', 'selesai')
+                      ->orWhere('status_pengerjaan', 'selesai');
+                });
+            } elseif ($statusFilter === 'disetujui') {
+                $query->where('status', 'disetujui')
+                      ->where(function ($q) {
+                          $q->whereNull('status_pengerjaan')
+                            ->orWhere('status_pengerjaan', '!=', 'selesai');
+                      });
+            } else {
+                $query->where('status', $statusFilter);
+            }
+        }
+
+        if (!empty($searchQuery)) {
+            $query->where(function ($q) use ($searchQuery) {
+                $q->where('nomor_lambung', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemegang', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('item_perbaikan', 'ILIKE', "%{$searchQuery}%");
+            });
+        }
+
+        $list = $query->get();
+
+        [$spreadsheet, $sheet, $startRow] = ExcelExportService::createWithHeader(
+            'REKAPITULASI PENGAJUAN PEMELIHARAAN UNIT',
+            'Filter: Status ' . strtoupper($statusFilter) . ' | Dicetak: ' . date('d/m/Y H:i') . ' WIB'
+        );
+
+        $headers = [
+            'NO',
+            'KODE VERIFIKASI',
+            'TANGGAL PENGAJUAN',
+            'POS PENEMPATAN',
+            'REGU',
+            'NAMA PEMEGANG / PEMOHON',
+            'NIP PEMEGANG',
+            'JENIS KENDARAAN',
+            'NO. LAMBUNG',
+            'ITEM / URAIAN KERUSAKAN',
+            'STATUS PENGAJUAN',
+            'TANGGAL BERANGKAT BENGKEL',
+            'TANGGAL SELESAI / KEMBALI',
+            'STATUS PENGERJAAN',
+            'CATATAN ADMIN',
+        ];
+
+        ExcelExportService::setTableHeaders($sheet, $startRow, $headers);
+
+        $row = $startRow + 1;
+        foreach ($list as $idx => $p) {
+            $tgl = $p->created_at ? $p->created_at->translatedFormat('d/m/Y H:i') : '—';
+            $tglBerangkat = $p->tanggal_keberangkatan ? Carbon::parse($p->tanggal_keberangkatan)->translatedFormat('d/m/Y') : '—';
+            $tglSelesai = $p->tanggal_selesai_pengerjaan ? Carbon::parse($p->tanggal_selesai_pengerjaan)->translatedFormat('d/m/Y') : '—';
+            $items = is_array($p->item_list) ? implode(', ', $p->item_list) : str_replace("\n", ', ', $p->item_perbaikan ?? '—');
+
+            $colIdx = 1;
+            $sheet->setCellValue([$colIdx++, $row], $idx + 1);
+            $sheet->setCellValue([$colIdx++, $row], $p->kode_verifikasi ?? ('HAR-' . ($p->created_at ? $p->created_at->format('Ymd') : date('Ymd')) . '-' . sprintf('%04d', $p->id)));
+            $sheet->setCellValue([$colIdx++, $row], $tgl);
+            $sheet->setCellValue([$colIdx++, $row], $p->pos ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $p->regu ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $p->nama_pemegang ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $p->nip_pemegang ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $p->jenis_kendaraan ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $p->nomor_lambung ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $items);
+            $sheet->setCellValue([$colIdx++, $row], strtoupper($p->status ?? 'menunggu'));
+            $sheet->setCellValue([$colIdx++, $row], $tglBerangkat);
+            $sheet->setCellValue([$colIdx++, $row], $tglSelesai);
+            $sheet->setCellValue([$colIdx++, $row], strtoupper($p->status_pengerjaan ?? '—'));
+            $sheet->setCellValue([$colIdx++, $row], $p->catatan_admin ?? '');
+
+            $row++;
+        }
+
+        $endDataRow = $row - 1;
+        $totalCols = count($headers);
+
+        if ($endDataRow >= $startRow + 1) {
+            ExcelExportService::styleDataRows(
+                $sheet,
+                $startRow + 1,
+                $endDataRow,
+                $totalCols,
+                [],
+                [1, 2, 3, 4, 5, 8, 9, 11, 12, 13, 14]
+            );
+        }
+
+        ExcelExportService::autoFitColumns($sheet, $totalCols);
+
+        return ExcelExportService::streamDownload($spreadsheet, 'Rekap_Pengajuan_Pemeliharaan_' . date('Ymd_His'));
+    }
+
+    /**
+     * Export Rekap Surat Permohonan Pemeliharaan ke Excel
+     */
+    public function exportExcelPemeliharaan(Request $request)
+    {
+        $search = $request->query('search', '');
+
+        $query = Pengajuan::where('status', 'disetujui')->latest();
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nomor_lambung', 'ILIKE', "%{$search}%")
+                  ->orWhere('pos', 'ILIKE', "%{$search}%")
+                  ->orWhere('nama_pemegang', 'ILIKE', "%{$search}%")
+                  ->orWhere('item_perbaikan', 'ILIKE', "%{$search}%");
+            });
+        }
+
+        $list = $query->get();
+
+        [$spreadsheet, $sheet, $startRow] = ExcelExportService::createWithHeader(
+            'REKAPITULASI SURAT PERMOHONAN & PESANAN PEMELIHARAAN',
+            'Data Pengajuan Terverifikasi Disetujui | Dicetak: ' . date('d/m/Y H:i') . ' WIB'
+        );
+
+        $headers = [
+            'NO',
+            'KODE VERIFIKASI',
+            'TANGGAL DISETUJUI',
+            'BIDANG',
+            'POS',
+            'REGU',
+            'JENIS KENDARAAN',
+            'NO. LAMBUNG',
+            'NAMA PEMEGANG',
+            'NIP PEMEGANG',
+            'KOMANDAN REGU',
+            'KEPALA BIDANG',
+            'URAIAN PERBAIKAN / PESANAN',
+            'TANGGAL BERANGKAT',
+            'STATUS PENGERJAAN',
+            'CATATAN ADMIN',
+        ];
+
+        ExcelExportService::setTableHeaders($sheet, $startRow, $headers);
+
+        $row = $startRow + 1;
+        foreach ($list as $idx => $p) {
+            $tgl = $p->created_at ? $p->created_at->translatedFormat('d/m/Y') : '—';
+            $tglBerangkat = $p->tanggal_keberangkatan ? Carbon::parse($p->tanggal_keberangkatan)->translatedFormat('d/m/Y') : '—';
+            $items = is_array($p->item_list) ? implode(', ', $p->item_list) : str_replace("\n", ', ', $p->item_perbaikan ?? '—');
+
+            $colIdx = 1;
+            $sheet->setCellValue([$colIdx++, $row], $idx + 1);
+            $sheet->setCellValue([$colIdx++, $row], $p->kode_verifikasi ?? ('HAR-' . ($p->created_at ? $p->created_at->format('Ymd') : date('Ymd')) . '-' . sprintf('%04d', $p->id)));
+            $sheet->setCellValue([$colIdx++, $row], $tgl);
+            $sheet->setCellValue([$colIdx++, $row], $p->bidang ?? 'Pemadam');
+            $sheet->setCellValue([$colIdx++, $row], $p->pos ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $p->regu ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $p->jenis_kendaraan ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $p->nomor_lambung ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $p->nama_pemegang ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $p->nip_pemegang ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $p->nama_komandan_regu ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $p->nama_kepala_bidang ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $items);
+            $sheet->setCellValue([$colIdx++, $row], $tglBerangkat);
+            $sheet->setCellValue([$colIdx++, $row], strtoupper($p->status_pengerjaan ?? 'DISETUJUI'));
+            $sheet->setCellValue([$colIdx++, $row], $p->catatan_admin ?? '');
+
+            $row++;
+        }
+
+        $endDataRow = $row - 1;
+        $totalCols = count($headers);
+
+        if ($endDataRow >= $startRow + 1) {
+            ExcelExportService::styleDataRows(
+                $sheet,
+                $startRow + 1,
+                $endDataRow,
+                $totalCols,
+                [],
+                [1, 2, 3, 4, 5, 6, 7, 8, 14, 15]
+            );
+        }
+
+        ExcelExportService::autoFitColumns($sheet, $totalCols);
+
+        return ExcelExportService::streamDownload($spreadsheet, 'Rekap_Surat_Permohonan_' . date('Ymd_His'));
+    }
+
+    /**
+     * Export Matriks Kartu Kendali Aktual ke Excel
+     */
+    public function exportExcelKartuKendaliAktual(Request $request)
+    {
+        return $this->exportKartuKendaliMatrix($request, 'aktual', 'REKAP KARTU KENDALI PEMELIHARAAN (AKTUAL)', 'Kartu_Kendali_Aktual_');
+    }
+
+    /**
+     * Export Matriks Kartu Kendali SPJ ke Excel
+     */
+    public function exportExcelKartuKendaliSpj(Request $request)
+    {
+        return $this->exportKartuKendaliMatrix($request, 'spj', 'REKAP KARTU KENDALI PEMELIHARAAN (SPJ)', 'Kartu_Kendali_SPJ_');
+    }
+
+    private function exportKartuKendaliMatrix(Request $request, string $type, string $title, string $filePrefix)
+    {
+        $currentYear = (int) date('Y');
+        $tahunFilter = (string) $request->query('tahun', (string) $currentYear);
+        $searchQuery = $request->query('search', '');
+
+        $units = Unit::all()->sort(function ($a, $b) {
+            $getPriority = function ($code) {
+                $code = strtoupper(trim($code ?? ''));
+                if (str_starts_with($code, 'P-')) return 1;
+                if (str_starts_with($code, 'R-')) return 2;
+                if (str_starts_with($code, 'S-')) return 3;
+                if (str_starts_with($code, 'PC-')) return 4;
+                if (str_starts_with($code, 'MP-')) return 5;
+                if (str_starts_with($code, 'K-')) return 6;
+                return 99;
+            };
+            $pA = $getPriority($a->nomor_lambung);
+            $pB = $getPriority($b->nomor_lambung);
+            if ($pA !== $pB) return $pA <=> $pB;
+            return strnatcasecmp($a->nomor_lambung ?? '', $b->nomor_lambung ?? '');
+        });
+
+        $isAktual = ($type === 'aktual');
+
+        $invoices = Invoice::with('unit')
+            ->where(function ($q) use ($isAktual) {
+                if ($isAktual) {
+                    $q->where('kategori_monitoring', 'aktual');
+                } else {
+                    $q->where('kategori_monitoring', 'invoice')
+                      ->orWhereNull('kategori_monitoring');
+                }
+            })
+            ->where(function ($q) use ($tahunFilter) {
+                $q->where('tahun_anggaran', $tahunFilter)
+                  ->orWhereYear('tanggal_invoice', $tahunFilter);
+            })
+            ->get();
+
+        [$spreadsheet, $sheet, $startRow] = ExcelExportService::createWithHeader(
+            $title,
+            'Tahun Anggaran: ' . $tahunFilter . ' | Dicetak: ' . date('d/m/Y H:i') . ' WIB'
+        );
+
+        $headers = [
+            'NO',
+            'NO. LAMBUNG',
+            'MERK / TIPE ARMADA',
+            'NO. POLISI',
+            'POS PENEMPATAN',
+            'JAN',
+            'FEB',
+            'MAR',
+            'APR',
+            'MEI',
+            'JUN',
+            'JUL',
+            'AGU',
+            'SEP',
+            'OKT',
+            'NOV',
+            'DES',
+            'TOTAL',
+        ];
+
+        ExcelExportService::setTableHeaders($sheet, $startRow, $headers);
+
+        $row = $startRow + 1;
+        $monthlyTotals = array_fill(1, 12, 0);
+        $grandTotal = 0;
+        $no = 1;
+
+        foreach ($units as $unit) {
+            if (!empty($searchQuery)) {
+                $q = strtolower($searchQuery);
+                if (
+                    !str_contains(strtolower($unit->nomor_lambung ?? ''), $q) &&
+                    !str_contains(strtolower($unit->plat_nomor ?? ''), $q) &&
+                    !str_contains(strtolower($unit->nama ?? ''), $q)
+                ) {
+                    continue;
+                }
+            }
+
+            $uInvoices = $invoices->filter(function ($inv) use ($unit) {
+                return $inv->unit_id == $unit->id ||
+                       (strtolower(trim($inv->no_lambung ?? '')) === strtolower(trim($unit->nomor_lambung ?? '')) && !empty($unit->nomor_lambung));
+            });
+
+            $months = array_fill(1, 12, 0);
+            foreach ($uInvoices as $inv) {
+                $m = $inv->tanggal_invoice ? (int) date('n', strtotime($inv->tanggal_invoice)) : 0;
+                if ($m >= 1 && $m <= 12) {
+                    $months[$m] += (float) ($inv->total_biaya ?? 0);
+                }
+            }
+
+            $rowTotal = array_sum($months);
+            $grandTotal += $rowTotal;
+            for ($m = 1; $m <= 12; $m++) {
+                $monthlyTotals[$m] += $months[$m];
+            }
+
+            $colIdx = 1;
+            $sheet->setCellValue([$colIdx++, $row], $no++);
+            $sheet->setCellValue([$colIdx++, $row], $unit->nomor_lambung ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $unit->merk_tipe ?? ($unit->nama ?? '—'));
+            $sheet->setCellValue([$colIdx++, $row], $unit->plat_nomor ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $unit->pos ?? '—');
+
+            for ($m = 1; $m <= 12; $m++) {
+                $sheet->setCellValue([$colIdx++, $row], $months[$m]);
+            }
+            $sheet->setCellValue([$colIdx++, $row], $rowTotal);
+
+            $row++;
+        }
+
+        $endDataRow = $row - 1;
+        $totalCols = count($headers);
+
+        if ($endDataRow >= $startRow + 1) {
+            $currencyCols = range(6, 18);
+            $centerCols   = [1, 2, 4, 5];
+
+            ExcelExportService::styleDataRows(
+                $sheet,
+                $startRow + 1,
+                $endDataRow,
+                $totalCols,
+                $currencyCols,
+                $centerCols
+            );
+
+            // Row Total / Ringkasan
+            $totalRow = $row;
+            $sheet->mergeCells("A{$totalRow}:E{$totalRow}");
+            $sheet->setCellValue("A{$totalRow}", "TOTAL PENGELUARAN TAHUN {$tahunFilter}");
+            
+            $colIdx = 6;
+            for ($m = 1; $m <= 12; $m++) {
+                $sheet->setCellValue([$colIdx++, $totalRow], $monthlyTotals[$m]);
+            }
+            $sheet->setCellValue([$colIdx++, $totalRow], $grandTotal);
+
+            $lastColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($totalCols);
+            $sheet->getStyle("A{$totalRow}:{$lastColLetter}{$totalRow}")->applyFromArray([
+                'font' => ['bold' => true, 'size' => 10],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E2E8F0'],
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '94A3B8'],
+                    ],
+                ],
+            ]);
+            $sheet->getStyle("A{$totalRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            $sheet->getStyle("F{$totalRow}:{$lastColLetter}{$totalRow}")->getNumberFormat()->setFormatCode('"Rp "#,##0');
+        }
+
+        ExcelExportService::autoFitColumns($sheet, $totalCols);
+
+        return ExcelExportService::streamDownload($spreadsheet, $filePrefix . $tahunFilter . '_' . date('Ymd_His'));
+    }
+
+    /**
+     * Export Pengecekan Unit & Alat Handlers
+     */
+    public function exportExcelCekUnitPemadam(Request $request)
+    {
+        return $this->exportCekUnit($request, 'pemadam', 'REKAP PENGECEKAN HARIAN UNIT PEMADAM', 'Rekap_Cek_Unit_Pemadam_');
+    }
+
+    public function exportExcelCekAlatPemadam(Request $request)
+    {
+        return $this->exportCekAlat($request, 'pemadam', 'REKAP PENGECEKAN HARIAN PERALATAN PEMADAM', 'Rekap_Cek_Alat_Pemadam_');
+    }
+
+    public function exportExcelCekUnitRescue(Request $request)
+    {
+        return $this->exportCekUnit($request, 'rescue', 'REKAP PENGECEKAN HARIAN UNIT RESCUE', 'Rekap_Cek_Unit_Rescue_');
+    }
+
+    public function exportExcelCekAlatRescue(Request $request)
+    {
+        return $this->exportCekAlat($request, 'rescue', 'REKAP PENGECEKAN HARIAN PERALATAN RESCUE', 'Rekap_Cek_Alat_Rescue_');
+    }
+
+    public function exportExcelCekUnitPencegahan(Request $request)
+    {
+        return $this->exportCekUnit($request, 'pencegahan', 'REKAP PENGECEKAN HARIAN UNIT PENCEGAHAN', 'Rekap_Cek_Unit_Pencegahan_');
+    }
+
+    public function exportExcelCekAlatPencegahan(Request $request)
+    {
+        return $this->exportCekAlat($request, 'pencegahan', 'REKAP PENGECEKAN HARIAN PERALATAN PENCEGAHAN', 'Rekap_Cek_Alat_Pencegahan_');
+    }
+
+    public function exportExcelCekAlatCommandCenter(Request $request)
+    {
+        return $this->exportCekAlat($request, 'command_center', 'REKAP PENGECEKAN PERALATAN COMMAND CENTER', 'Rekap_Cek_Alat_Command_Center_');
+    }
+
+    private function exportCekUnit(Request $request, string $kategori, string $title, string $filePrefix)
+    {
+        $searchQuery = $request->query('search', '');
+
+        $query = CekHarianUnit::with(['user', 'unit'])->where(function ($q) use ($kategori) {
+            if ($kategori === 'pemadam') {
+                $q->where('kategori', 'pemadam')->orWhereNull('kategori');
+            } else {
+                $q->where('kategori', $kategori);
+            }
+        });
+
+        if (!empty($searchQuery)) {
+            $query->where(function ($q) use ($searchQuery) {
+                $q->where('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('unit_nama', 'ILIKE', "%{$searchQuery}%");
+            });
+        }
+
+        $list = $query->latest()->get();
+
+        [$spreadsheet, $sheet, $startRow] = ExcelExportService::createWithHeader(
+            $title,
+            'Dicetak pada: ' . date('d/m/Y H:i') . ' WIB'
+        );
+
+        $headers = [
+            'NO',
+            'TANGGAL & WAKTU CEK',
+            'POS PENEMPATAN',
+            'REGU',
+            'NAMA UNIT / ARMADA',
+            'NAMA PEMERIKSA',
+            'KILOMETER (KM)',
+            'BBM & AIR TANGKI',
+            'KEBERSIHAN',
+            'STATUS UNIT',
+            'JUMLAH RUSAK',
+            'RINCIAN / CATATAN KERUSAKAN',
+        ];
+
+        ExcelExportService::setTableHeaders($sheet, $startRow, $headers);
+
+        $row = $startRow + 1;
+        $totalRusakUnit = 0;
+
+        foreach ($list as $idx => $item) {
+            $tgl = $item->created_at ? $item->created_at->translatedFormat('d/m/Y H:i') : ($item->tanggal_pemeriksaan ? $item->tanggal_pemeriksaan->format('d/m/Y') : '—');
+            $status = ($item->jumlah_rusak > 0) ? 'ADA KERUSAKAN' : 'SIAP OPERASI';
+            $regu = $item->user?->regu ?? ($item->regu ?? '—');
+            $unitName = $item->unit_nama ?? ($item->unit?->nama ?? ($item->nomor_lambung ?? '—'));
+            $pemeriksa = $item->nama_pemeriksa ?? ($item->user?->name ?? '—');
+            $km = $item->kilometer ?? '—';
+
+            // BBM & Air info
+            $bbmStr = !empty($item->jenis_bbm) ? ucfirst($item->jenis_bbm) : (!empty($item->level_bbm) ? (CekHarianUnit::$levelMap[$item->level_bbm] ?? $item->level_bbm) : '—');
+            if (!empty($item->jenis_bbm) && !empty($item->level_bbm)) {
+                $bbmStr .= ' (' . (CekHarianUnit::$levelMap[$item->level_bbm] ?? $item->level_bbm) . ')';
+            }
+            $airLevel = !empty($item->level_air) ? (CekHarianUnit::$levelMap[$item->level_air] ?? ucfirst($item->level_air)) : '—';
+            $bbmAir = "BBM: {$bbmStr} | Air: {$airLevel}";
+
+            $kebersihan = $item->kebersihan_unit ? ucfirst($item->kebersihan_unit) : '—';
+            $jmlRusak = (int) ($item->jumlah_rusak ?? 0);
+            $totalRusakUnit += $jmlRusak;
+
+            // Rincian kerusakan dari perlengkapan
+            $rincianList = [];
+            if (!empty($item->perlengkapan) && is_array($item->perlengkapan)) {
+                foreach ($item->perlengkapan as $k => $comp) {
+                    if (($comp['status'] ?? '') === 'rusak') {
+                        $label = $comp['label'] ?? ucwords(str_replace('_', ' ', $k));
+                        $catatan = !empty($comp['catatan']) ? " ({$comp['catatan']})" : "";
+                        $rincianList[] = $label . $catatan;
+                    }
+                }
+            }
+            if (!empty($item->catatan_tangki_pompa)) {
+                $rincianList[] = "Pompa/Tangki: " . $item->catatan_tangki_pompa;
+            }
+            $rincian = !empty($rincianList) ? implode('; ', $rincianList) : '—';
+
+            $colIdx = 1;
+            $sheet->setCellValue([$colIdx++, $row], $idx + 1);
+            $sheet->setCellValue([$colIdx++, $row], $tgl);
+            $sheet->setCellValue([$colIdx++, $row], $item->pos ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $regu);
+            $sheet->setCellValue([$colIdx++, $row], $unitName);
+            $sheet->setCellValue([$colIdx++, $row], $pemeriksa);
+            $sheet->setCellValue([$colIdx++, $row], $km);
+            $sheet->setCellValue([$colIdx++, $row], $bbmAir);
+            $sheet->setCellValue([$colIdx++, $row], $kebersihan);
+            $sheet->setCellValue([$colIdx++, $row], $status);
+            $sheet->setCellValue([$colIdx++, $row], $jmlRusak);
+            $sheet->setCellValue([$colIdx++, $row], $rincian);
+
+            $row++;
+        }
+
+        $endDataRow = $row - 1;
+        $totalCols = count($headers);
+
+        if ($endDataRow >= $startRow + 1) {
+            ExcelExportService::styleDataRows(
+                $sheet,
+                $startRow + 1,
+                $endDataRow,
+                $totalCols,
+                [],
+                [1, 2, 3, 4, 7, 8, 9, 10, 11]
+            );
+
+            // Total Summary Row
+            $totalRow = $row;
+            $sheet->mergeCells("A{$totalRow}:J{$totalRow}");
+            $sheet->setCellValue("A{$totalRow}", 'TOTAL KERUSAKAN TERDATA');
+            $sheet->setCellValue("K{$totalRow}", $totalRusakUnit);
+            $sheet->setCellValue("L{$totalRow}", '');
+
+            $lastColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($totalCols);
+            $sheet->getStyle("A{$totalRow}:{$lastColLetter}{$totalRow}")->applyFromArray([
+                'font' => ['bold' => true, 'size' => 10],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E2E8F0'],
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '94A3B8'],
+                    ],
+                ],
+            ]);
+            $sheet->getStyle("A{$totalRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            $sheet->getStyle("K{$totalRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        }
+
+        ExcelExportService::autoFitColumns($sheet, $totalCols);
+
+        return ExcelExportService::streamDownload($spreadsheet, $filePrefix . date('Ymd_His'));
+    }
+
+    private function exportCekAlat(Request $request, string $kategori, string $title, string $filePrefix)
+    {
+        $searchQuery = $request->query('search', '');
+
+        $query = CekHarianAlat::with(['user', 'unit'])->where(function ($q) use ($kategori) {
+            if ($kategori === 'pemadam') {
+                $q->where('kategori', 'pemadam')->orWhereNull('kategori');
+            } else {
+                $q->where('kategori', $kategori);
+            }
+        });
+
+        if (!empty($searchQuery)) {
+            $query->where(function ($q) use ($searchQuery) {
+                $q->where('pos', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('nama_pemeriksa', 'ILIKE', "%{$searchQuery}%")
+                  ->orWhere('unit_nama', 'ILIKE', "%{$searchQuery}%");
+            });
+        }
+
+        $list = $query->latest()->get();
+
+        [$spreadsheet, $sheet, $startRow] = ExcelExportService::createWithHeader(
+            $title,
+            'Dicetak pada: ' . date('d/m/Y H:i') . ' WIB'
+        );
+
+        $headers = [
+            'NO',
+            'TANGGAL & WAKTU CEK',
+            'POS PENEMPATAN',
+            'REGU',
+            'NAMA PEMERIKSA',
+            'TOTAL ALAT',
+            'KONDISI BAIK',
+            'KONDISI RUSAK',
+            'RINCIAN ALAT RUSAK / CATATAN',
+        ];
+
+        ExcelExportService::setTableHeaders($sheet, $startRow, $headers);
+
+        $row = $startRow + 1;
+        $sumTotal = 0;
+        $sumBaik = 0;
+        $sumRusak = 0;
+
+        foreach ($list as $idx => $item) {
+            $tgl = $item->created_at ? $item->created_at->translatedFormat('d/m/Y H:i') : ($item->tanggal_pemeriksaan ? $item->tanggal_pemeriksaan->format('d/m/Y') : '—');
+            $regu = $item->user?->regu ?? ($item->regu ?? '—');
+            $pemeriksa = $item->nama_pemeriksa ?? ($item->user?->name ?? '—');
+
+            $baik = (int) ($item->total_baik ?? 0);
+            $rusak = (int) ($item->total_rusak ?? 0);
+            $tot = $baik + $rusak;
+
+            $sumTotal += $tot;
+            $sumBaik += $baik;
+            $sumRusak += $rusak;
+
+            // Rincian alat rusak
+            $rusakList = [];
+            if (!empty($item->alat) && is_array($item->alat)) {
+                foreach ($item->alat as $a) {
+                    $jmlR = (int) ($a['jumlah_rusak'] ?? 0);
+                    if ($jmlR > 0) {
+                        $nm = $a['nama'] ?? 'Alat';
+                        $noR = !empty($a['nomor_rusak']) ? " [No: {$a['nomor_rusak']}]" : "";
+                        $rusakList[] = "{$nm} ({$jmlR} Rusak{$noR})";
+                    }
+                }
+            }
+            if (!empty($item->catatan_umum)) {
+                $rusakList[] = "Catatan: " . $item->catatan_umum;
+            }
+            $rincian = !empty($rusakList) ? implode('; ', $rusakList) : '—';
+
+            $colIdx = 1;
+            $sheet->setCellValue([$colIdx++, $row], $idx + 1);
+            $sheet->setCellValue([$colIdx++, $row], $tgl);
+            $sheet->setCellValue([$colIdx++, $row], $item->pos ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $regu);
+            $sheet->setCellValue([$colIdx++, $row], $pemeriksa);
+            $sheet->setCellValue([$colIdx++, $row], $tot);
+            $sheet->setCellValue([$colIdx++, $row], $baik);
+            $sheet->setCellValue([$colIdx++, $row], $rusak);
+            $sheet->setCellValue([$colIdx++, $row], $rincian);
+
+            $row++;
+        }
+
+        $endDataRow = $row - 1;
+        $totalCols = count($headers);
+
+        if ($endDataRow >= $startRow + 1) {
+            ExcelExportService::styleDataRows(
+                $sheet,
+                $startRow + 1,
+                $endDataRow,
+                $totalCols,
+                [],
+                [1, 2, 3, 4, 6, 7, 8]
+            );
+
+            // Total Summary Row
+            $totalRow = $row;
+            $sheet->mergeCells("A{$totalRow}:E{$totalRow}");
+            $sheet->setCellValue("A{$totalRow}", 'TOTAL AKUMULASI');
+            $sheet->setCellValue("F{$totalRow}", $sumTotal);
+            $sheet->setCellValue("G{$totalRow}", $sumBaik);
+            $sheet->setCellValue("H{$totalRow}", $sumRusak);
+            $sheet->setCellValue("I{$totalRow}", '');
+
+            $lastColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($totalCols);
+            $sheet->getStyle("A{$totalRow}:{$lastColLetter}{$totalRow}")->applyFromArray([
+                'font' => ['bold' => true, 'size' => 10],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E2E8F0'],
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '94A3B8'],
+                    ],
+                ],
+            ]);
+            $sheet->getStyle("A{$totalRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            $sheet->getStyle("F{$totalRow}:H{$totalRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        }
+
+        ExcelExportService::autoFitColumns($sheet, $totalCols);
+
+        return ExcelExportService::streamDownload($spreadsheet, $filePrefix . date('Ymd_His'));
     }
 }

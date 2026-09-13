@@ -34,55 +34,75 @@
         </div>
 
         <div class="kpi-card" style="background:#FFFFFF; border-radius:14px; padding:18px 20px; border:1px solid #FEE2E2; background:linear-gradient(180deg, #FFFFFF 0%, #FEF2F2 100%); box-shadow:0 4px 14px rgba(239,68,68,0.06);">
-            <div class="kpi-title" style="font-size:11px; font-weight:700; color:#991B1B; text-transform:uppercase; letter-spacing:0.5px;">Total Unit Alat Rusak</div>
+            <div class="kpi-title" style="font-size:11px; font-weight:700; color:#991B1B; text-transform:uppercase; letter-spacing:0.5px;">Total Peralatan Rusak</div>
             <div class="kpi-number" style="font-size:28px; font-weight:800; color:#B91C1C; margin-top:6px;">{{ $kpi['alat_rusak_total'] }}</div>
         </div>
     </div>
 
-    {{-- Search Bar --}}
-    <div style="margin-bottom:18px;">
-        <form method="GET" action="{{ route('admin.unit-pemadam.pengecekan') }}" style="display:flex; align-items:center; gap:8px; width:100%; max-width:520px;">
-            <input type="hidden" name="tab" value="{{ $tab }}">
-            <div style="position:relative; flex:1;">
-                <input type="text" name="search" value="{{ $searchQuery ?? '' }}" placeholder="Cari berdasarkan Pos, Pemeriksa, atau Unit..."
-                       style="width:100%; padding:8px 14px 8px 36px; font-size:12.5px; border-radius:10px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF; box-shadow:0 2px 6px rgba(0,0,0,0.03);">
-                <i data-lucide="search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:#94A3B8;"></i>
-            </div>
-            <button type="submit" style="padding:8px 16px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer;">
-                Cari
-            </button>
-            @if(!empty($searchQuery))
-                <a href="{{ route('admin.unit-pemadam.pengecekan') }}?tab={{ $tab }}" style="padding:8px 12px; background:#F1F5F9; color:#64748B; border:1px solid #CBD5E1; border-radius:10px; font-size:12px; font-weight:600; text-decoration:none;">
-                    Reset
-                </a>
-            @endif
-        </form>
-    </div>
-
-    {{-- Sleek Compact Tab Switcher Bar --}}
-    <div class="w-full flex items-center mb-4">
-        <div class="inline-flex items-center gap-1 p-1 bg-white border border-slate-300 rounded-lg shadow-2xs">
+    {{-- Control Toolbar: Tab Switcher (Left) + Search & Export Excel (Right) --}}
+    <div style="background:#FFFFFF; border-radius:14px; padding:12px 16px; margin-bottom:18px; border:1px solid #E2E8F0; box-shadow:0 2px 8px rgba(0,0,0,0.03); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+        
+        {{-- Tab Switcher --}}
+        <div class="inline-flex items-center gap-1 p-1 bg-slate-100 border border-slate-200 rounded-xl">
             <button type="button" @click="activeTab = 'unit'"
-                    :class="activeTab === 'unit' ? 'bg-[#1B2A6B] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors duration-150 whitespace-nowrap cursor-pointer border-0">
-                <i data-lucide="truck" class="w-3.5 h-3.5"></i>
+                    :class="activeTab === 'unit' ? 'bg-[#1B2A6B] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'"
+                    class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-lg transition-all duration-150 whitespace-nowrap cursor-pointer border-0">
+                <i data-lucide="truck" class="w-4 h-4"></i>
                 <span>Unit Kendaraan</span>
                 <span :class="activeTab === 'unit' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'"
-                      class="px-1.5 py-0.25 rounded-full text-[10px] font-extrabold ml-0.5">
+                      class="px-2 py-0.5 rounded-full text-[10.5px] font-extrabold ml-0.5">
                     {{ $cekUnitList->total() }}
                 </span>
             </button>
 
             <button type="button" @click="activeTab = 'alat'"
-                    :class="activeTab === 'alat' ? 'bg-[#1B2A6B] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors duration-150 whitespace-nowrap cursor-pointer border-0">
-                <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
+                    :class="activeTab === 'alat' ? 'bg-[#1B2A6B] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'"
+                    class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-lg transition-all duration-150 whitespace-nowrap cursor-pointer border-0">
+                <i data-lucide="shield-alert" class="w-4 h-4"></i>
                 <span>Alat Pemadam</span>
                 <span :class="activeTab === 'alat' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'"
-                      class="px-1.5 py-0.25 rounded-full text-[10px] font-extrabold ml-0.5">
+                      class="px-2 py-0.5 rounded-full text-[10.5px] font-extrabold ml-0.5">
                     {{ $cekAlatList->total() }}
                 </span>
             </button>
+        </div>
+
+        {{-- Actions: Search Form & Dynamic Export Excel --}}
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <form method="GET" action="{{ route('admin.unit-pemadam.pengecekan') }}" style="display:flex; align-items:center; gap:8px;">
+                <input type="hidden" name="tab" :value="activeTab">
+                <div style="position:relative;">
+                    <input type="text" name="search" value="{{ $searchQuery ?? '' }}" placeholder="Cari Pos, Pemeriksa, Unit..."
+                           style="padding:8px 14px 8px 34px; font-size:12.5px; border-radius:10px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; width:220px; transition:border 0.2s;">
+                    <i data-lucide="search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:#94A3B8;"></i>
+                </div>
+                <button type="submit" style="padding:8px 15px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer; transition:all 0.2s ease;">
+                    Cari
+                </button>
+                @if(!empty($searchQuery))
+                    <a :href="'{{ route('admin.unit-pemadam.pengecekan') }}?tab=' + activeTab" style="padding:8px 12px; background:#F1F5F9; color:#64748B; border:1px solid #CBD5E1; border-radius:10px; font-size:12px; font-weight:600; text-decoration:none;">
+                        Reset
+                    </a>
+                @endif
+            </form>
+
+            {{-- Export Excel Buttons --}}
+            <a x-cloak x-show="activeTab === 'unit'"
+               href="{{ route('admin.unit-pemadam.pengecekan.export-excel-unit', ['search' => $searchQuery ?? '']) }}"
+               class="inline-flex flex-row items-center justify-center gap-2 whitespace-nowrap shrink-0"
+               style="display:inline-flex !important; flex-direction:row !important; align-items:center !important; justify-content:center !important; gap:8px !important; white-space:nowrap !important; flex-shrink:0 !important; padding:9px 16px; background:#10B981; color:#FFFFFF; border:none; border-radius:10px; font-size:12.5px; font-weight:700; text-decoration:none; box-shadow:0 3px 8px rgba(16,185,129,0.25); transition:all 0.2s ease;"
+               title="Download Rekap Pengecekan Unit Pemadam ke Excel (.xlsx)">
+                <i data-lucide="file-spreadsheet" style="width:16px; height:16px; min-width:16px; min-height:16px; flex-shrink:0; display:inline-block; vertical-align:middle;"></i>
+                <span style="white-space:nowrap; display:inline-block; line-height:1.2;">Export Excel Unit</span>
+            </a>
+            <a x-cloak x-show="activeTab === 'alat'"
+               href="{{ route('admin.unit-pemadam.pengecekan.export-excel-alat', ['search' => $searchQuery ?? '']) }}"
+               class="inline-flex flex-row items-center justify-center gap-2 whitespace-nowrap shrink-0"
+               style="display:inline-flex !important; flex-direction:row !important; align-items:center !important; justify-content:center !important; gap:8px !important; white-space:nowrap !important; flex-shrink:0 !important; padding:9px 16px; background:#10B981; color:#FFFFFF; border:none; border-radius:10px; font-size:12.5px; font-weight:700; text-decoration:none; box-shadow:0 3px 8px rgba(16,185,129,0.25); transition:all 0.2s ease;"
+               title="Download Rekap Pengecekan Alat Pemadam ke Excel (.xlsx)">
+                <i data-lucide="file-spreadsheet" style="width:16px; height:16px; min-width:16px; min-height:16px; flex-shrink:0; display:inline-block; vertical-align:middle;"></i>
+                <span style="white-space:nowrap; display:inline-block; line-height:1.2;">Export Excel Alat</span>
+            </a>
         </div>
     </div>
 
@@ -143,8 +163,8 @@
                                         <div style="font-size:11px; color:#94A3B8;">{{ $item->jabatan }}</div>
                                     </td>
                                     <td style="padding:14px 18px; white-space:nowrap;">
-                                        <div style="font-size:12px; color:#334155; font-weight:500;">BBM: <strong style="color:#0F172A;">{{ ucfirst($item->jenis_bbm) }} ({{ \App\Models\CekHarianUnit::$levelMap[$item->level_bbm] ?? $item->level_bbm }})</strong></div>
-                                        <div style="font-size:11.5px; color:#64748B; margin-top:2px;">Air: <strong style="color:#0F172A;">{{ \App\Models\CekHarianUnit::$levelMap[$item->level_air] ?? $item->level_air }}</strong></div>
+                                        <div style="font-size:12px; color:#334155; font-weight:500;">BBM: <strong style="color:#0F172A;">{{ ucfirst($item->jenis_bbm ?? '—') }}</strong></div>
+                                        <div style="font-size:11.5px; color:#64748B; margin-top:2px;">Air: <strong style="color:#0F172A;">{{ \App\Models\CekHarianUnit::$levelMap[$item->level_air] ?? ($item->level_air ?? '—') }}</strong></div>
                                     </td>
                                     <td style="padding:14px 18px; white-space:nowrap;">
                                         @php

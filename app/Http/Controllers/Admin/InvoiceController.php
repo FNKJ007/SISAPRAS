@@ -4,13 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Pengajuan;
 use App\Models\Unit;
+use App\Services\ExcelExportService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
-use App\Models\InvoiceItem;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class InvoiceController extends Controller
 {
@@ -44,7 +46,6 @@ class InvoiceController extends Controller
                 'no_lambung'       => $unit ? $unit->nomor_lambung : ($p->nomor_lambung ?? ''),
                 'jenis_mobil'      => $unit ? $unit->merk_tipe : ($p->jenis_kendaraan ?? ''),
                 'lokasi'           => $p->pos ?? ($unit ? $unit->pos_penempatan : ''),
-                'kode_rekening'    => '5.1.02.03.02.0035',
                 'tahun_anggaran'   => $p->created_at ? $p->created_at->format('Y') : date('Y'),
                 'subtotal'         => 0,
                 'total_biaya'      => 0,
@@ -83,9 +84,33 @@ class InvoiceController extends Controller
         return $inv;
     }
 
+    /**
+     * Helper untuk menentukan apakah request saat ini adalah SPJ Pembayaran atau Aktual Pembayaran
+     */
+    protected function isSpjRequest(Request $request, ?Invoice $invoice = null): bool
+    {
+        if ($request->routeIs('admin.pemeliharaan.spj-pembayaran.*')) {
+            return true;
+        }
+        if ($request->routeIs('admin.pemeliharaan.aktual-pembayaran.*') || $request->routeIs('admin.pemeliharaan.monitoring-aktual.*')) {
+            return false;
+        }
+        if ($request->query('kategori') === 'spj' || $request->input('kategori_monitoring') === 'invoice') {
+            return true;
+        }
+        if ($request->query('kategori') === 'aktual' || $request->input('kategori_monitoring') === 'aktual') {
+            return false;
+        }
+        if ($invoice) {
+            return ($invoice->kategori_monitoring ?? 'invoice') !== 'aktual';
+        }
+        return false;
+    }
+
     public function index(Request $request)
     {
-        $isAktual = $request->routeIs('admin.pemeliharaan.spj-pembayaran.*') || $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+        $isSpj = $this->isSpjRequest($request);
+        $isAktual = !$isSpj;
 
         $query = Invoice::with('unit')
             ->when($isAktual, function ($q) {
@@ -205,7 +230,7 @@ class InvoiceController extends Controller
             ];
         })->values();
 
-        $viewFolder = $isAktual ? 'spj-pembayaran' : 'aktual-pembayaran';
+        $viewFolder = $isSpj ? 'spj-pembayaran' : 'aktual-pembayaran';
 
         return view("admin.pemeliharaan.{$viewFolder}.index", compact(
             'invoices',
@@ -226,11 +251,11 @@ class InvoiceController extends Controller
     {
         $pengajuans = Pengajuan::where('status', 'disetujui')->latest()->get();
         $units = Unit::orderBy('nomor_lambung')->get();
-        $isAktual = $request->routeIs('admin.pemeliharaan.spj-pembayaran.*') || $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
-        $nomorInvoice = Invoice::generateNomorInvoice(null, $isAktual ? 'INV-SPJ' : 'INV');
+        $isSpj = $this->isSpjRequest($request);
+        $nomorInvoice = Invoice::generateNomorInvoice(null, $isSpj ? 'INV' : 'INV-AKTUAL');
         $selectedPengajuanId = $request->query('pengajuan_id');
 
-        $viewFolder = $isAktual ? 'spj-pembayaran' : 'aktual-pembayaran';
+        $viewFolder = $isSpj ? 'spj-pembayaran' : 'aktual-pembayaran';
 
         return view("admin.pemeliharaan.{$viewFolder}.create", compact('pengajuans', 'units', 'nomorInvoice', 'selectedPengajuanId'));
     }
@@ -267,7 +292,7 @@ class InvoiceController extends Controller
             }
 
             $unitId = $unit ? $unit->id : (Unit::first()->id ?? 1);
-            $isAktual = $request->routeIs('admin.pemeliharaan.spj-pembayaran.*') || $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+            $isSpj = $this->isSpjRequest($request);
 
             $invoice = Invoice::create([
                 'nomor_invoice'       => $validated['nomor_invoice'],
@@ -284,7 +309,7 @@ class InvoiceController extends Controller
                 'pajak'               => $validated['pajak'] ?? 0,
                 'biaya_lain'          => $validated['biaya_lain'] ?? 0,
                 'status'              => $validated['status'] ?? $request->input('status', 'disetujui'),
-                'kategori_monitoring' => $isAktual ? 'aktual' : 'invoice',
+                'kategori_monitoring' => $isSpj ? 'invoice' : 'aktual',
                 'pengajuan_id'        => $request->input('pengajuan_id'),
                 'catatan'             => $validated['catatan'] ?? null,
                 'created_by'          => auth()->id(),
@@ -311,8 +336,8 @@ class InvoiceController extends Controller
             $invoice->recalculateTotals();
         });
 
-        $isAktual = $request->routeIs('admin.pemeliharaan.spj-pembayaran.*') || $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
-        $routeTarget = $isAktual ? 'admin.pemeliharaan.spj-pembayaran.index' : 'admin.pemeliharaan.aktual-pembayaran.index';
+        $isSpj = $this->isSpjRequest($request);
+        $routeTarget = $isSpj ? 'admin.pemeliharaan.spj-pembayaran.index' : 'admin.pemeliharaan.aktual-pembayaran.index';
 
         return redirect()
             ->route($routeTarget)
@@ -327,8 +352,8 @@ class InvoiceController extends Controller
             ->orWhere('jabatan', 'ILIKE', '%pemeliharaan%')
             ->first();
 
-        $isAktual = $request->routeIs('admin.pemeliharaan.spj-pembayaran.*') || $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
-        $viewFolder = $isAktual ? 'spj-pembayaran' : 'aktual-pembayaran';
+        $isSpj = $this->isSpjRequest($request, $invoice);
+        $viewFolder = $isSpj ? 'spj-pembayaran' : 'aktual-pembayaran';
 
         return view("admin.pemeliharaan.{$viewFolder}.show", compact('invoice', 'pejabatKasi'));
     }
@@ -359,8 +384,8 @@ class InvoiceController extends Controller
         $pengajuans = Pengajuan::where('status', 'disetujui')->latest()->get();
         $units = Unit::orderBy('nomor_lambung')->get();
 
-        $isAktual = $request->routeIs('admin.pemeliharaan.spj-pembayaran.*') || $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
-        $viewFolder = $isAktual ? 'spj-pembayaran' : 'aktual-pembayaran';
+        $isSpj = $this->isSpjRequest($request, $invoice);
+        $viewFolder = $isSpj ? 'spj-pembayaran' : 'aktual-pembayaran';
 
         return view("admin.pemeliharaan.{$viewFolder}.edit", compact('invoice', 'pengajuans', 'units'));
     }
@@ -440,8 +465,8 @@ class InvoiceController extends Controller
             $invoice->recalculateTotals();
         });
 
-        $isAktual = $request->routeIs('admin.pemeliharaan.spj-pembayaran.*') || $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
-        $routeTarget = $isAktual ? 'admin.pemeliharaan.spj-pembayaran.index' : 'admin.pemeliharaan.aktual-pembayaran.index';
+        $isSpj = $this->isSpjRequest($request, $invoice);
+        $routeTarget = $isSpj ? 'admin.pemeliharaan.spj-pembayaran.index' : 'admin.pemeliharaan.aktual-pembayaran.index';
 
         return redirect()
             ->route($routeTarget)
@@ -450,10 +475,10 @@ class InvoiceController extends Controller
 
     public function destroy(Request $request, Invoice $invoice)
     {
-        $isAktual = $request->routeIs('admin.pemeliharaan.spj-pembayaran.*') || $request->routeIs('admin.pemeliharaan.monitoring-aktual.*');
+        $isSpj = $this->isSpjRequest($request, $invoice);
         $invoice->delete();
 
-        $routeTarget = $isAktual ? 'admin.pemeliharaan.spj-pembayaran.index' : 'admin.pemeliharaan.aktual-pembayaran.index';
+        $routeTarget = $isSpj ? 'admin.pemeliharaan.spj-pembayaran.index' : 'admin.pemeliharaan.aktual-pembayaran.index';
 
         return redirect()
             ->route($routeTarget)
@@ -552,5 +577,197 @@ class InvoiceController extends Controller
         }
 
         return ucwords(strtolower($input));
+    }
+
+    /**
+     * Export data Invoice / Monitoring Pembayaran ke format Excel (.xlsx)
+     */
+    public function exportExcel(Request $request)
+    {
+        $isSpj = $this->isSpjRequest($request);
+        $isAktual = !$isSpj;
+
+        $title = $isAktual ? 'REKAP PEMBAYARAN AKTUAL (MONITORING PEMELIHARAAN)' : 'REKAP SPJ PEMBAYARAN PEMELIHARAAN';
+        $filename = $isAktual ? 'Rekap_Aktual_Pembayaran_' . date('Ymd_His') : 'Rekap_SPJ_Pembayaran_' . date('Ymd_His');
+
+        $query = Invoice::with(['unit', 'items'])
+            ->when($isAktual, function ($q) {
+                $q->where('kategori_monitoring', 'aktual');
+            }, function ($q) {
+                $q->where(function ($qq) {
+                    $qq->where('kategori_monitoring', 'invoice')
+                       ->orWhereNull('kategori_monitoring');
+                });
+            })
+            ->latest('tanggal_invoice');
+
+        if ($search = trim($request->get('q') ?? $request->get('search') ?? '')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nomor_invoice', 'ILIKE', "%{$search}%")
+                  ->orWhere('no_pol', 'ILIKE', "%{$search}%")
+                  ->orWhere('no_lambung', 'ILIKE', "%{$search}%")
+                  ->orWhere('lokasi', 'ILIKE', "%{$search}%")
+                  ->orWhere('nama_bengkel', 'ILIKE', "%{$search}%");
+            });
+        }
+
+        if ($tahun = $request->get('tahun')) {
+            $query->where(function ($q) use ($tahun) {
+                $q->where('tahun_anggaran', $tahun)
+                  ->orWhereYear('tanggal_invoice', $tahun);
+            });
+        }
+
+        $invoices = $query->get();
+
+        [$spreadsheet, $sheet, $startRow] = ExcelExportService::createWithHeader(
+            $title,
+            'Dicetak pada: ' . date('d/m/Y H:i') . ' WIB' . ($tahun ? ' | Tahun Anggaran: ' . $tahun : '')
+        );
+
+        $headers = $isAktual ? [
+            'NO',
+            'NO. INVOICE',
+            'TANGGAL',
+            'NAMA BENGKEL / VENDOR',
+            'NO. POLISI',
+            'NO. LAMBUNG',
+            'JENIS KENDARAAN',
+            'POS / LOKASI',
+            'JUMLAH ITEM',
+            'SUBTOTAL (RP)',
+            'DISKON (RP)',
+            'PAJAK / PPN (RP)',
+            'BIAYA LAINNYA (RP)',
+            'TOTAL BIAYA (RP)',
+            'STATUS',
+            'CATATAN',
+        ] : [
+            'NO',
+            'NO. SPJ / INVOICE',
+            'TANGGAL',
+            'NAMA TOKO / BENGKEL',
+            'NO. POLISI',
+            'NO. LAMBUNG',
+            'JENIS KENDARAAN',
+            'POS / LOKASI',
+            'TAHUN ANGGARAN',
+            'JUMLAH ITEM',
+            'SUBTOTAL (RP)',
+            'DISKON (RP)',
+            'PAJAK / PPN (RP)',
+            'BIAYA LAINNYA (RP)',
+            'TOTAL BIAYA (RP)',
+            'STATUS',
+            'CATATAN',
+        ];
+
+        ExcelExportService::setTableHeaders($sheet, $startRow, $headers);
+
+        $row = $startRow + 1;
+        $totalSubtotal  = 0;
+        $totalDiskon    = 0;
+        $totalPajak     = 0;
+        $totalBiayaLain = 0;
+        $totalBiaya     = 0;
+
+        foreach ($invoices as $idx => $inv) {
+            $tgl             = $inv->tanggal_invoice ? Carbon::parse($inv->tanggal_invoice)->translatedFormat('d/m/Y') : '—';
+            $sub             = (float) ($inv->subtotal ?: $inv->items->sum('total_biaya'));
+            $potonganPct     = (float) ($inv->potongan ?? 0);
+            $potonganNominal = $sub * ($potonganPct / 100);
+            $dpp             = max(0, $sub - $potonganNominal);
+            $pajakPct        = (float) ($inv->pajak ?? 0);
+            $pajakNominal    = $dpp * ($pajakPct / 100);
+            $biayaLain       = (float) ($inv->biaya_lain ?? 0);
+            $tot             = (float) ($inv->total_biaya ?: max(0, $dpp + $pajakNominal + $biayaLain));
+
+            $totalSubtotal  += $sub;
+            $totalDiskon    += $potonganNominal;
+            $totalPajak     += $pajakNominal;
+            $totalBiayaLain += $biayaLain;
+            $totalBiaya     += $tot;
+
+            $colIdx = 1;
+            $sheet->setCellValue([$colIdx++, $row], $idx + 1);
+            $sheet->setCellValue([$colIdx++, $row], $inv->nomor_invoice ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $tgl);
+            $sheet->setCellValue([$colIdx++, $row], $inv->nama_bengkel ?? '—');
+            $sheet->setCellValue([$colIdx++, $row], $inv->no_pol ?? ($inv->unit->plat_nomor ?? '—'));
+            $sheet->setCellValue([$colIdx++, $row], $inv->no_lambung ?? ($inv->unit->nomor_lambung ?? '—'));
+            $sheet->setCellValue([$colIdx++, $row], $inv->jenis_mobil ?? ($inv->unit->merk_tipe ?? '—'));
+            $sheet->setCellValue([$colIdx++, $row], $this->formatLokasi($inv->lokasi, $inv->unit));
+
+            if (!$isAktual) {
+                $sheet->setCellValue([$colIdx++, $row], $inv->tahun_anggaran ?? date('Y'));
+            }
+
+            $sheet->setCellValue([$colIdx++, $row], $inv->items->count());
+            $sheet->setCellValue([$colIdx++, $row], $sub);
+            $sheet->setCellValue([$colIdx++, $row], $potonganNominal);
+            $sheet->setCellValue([$colIdx++, $row], $pajakNominal);
+            $sheet->setCellValue([$colIdx++, $row], $biayaLain);
+            $sheet->setCellValue([$colIdx++, $row], $tot);
+            $sheet->setCellValue([$colIdx++, $row], strtoupper($inv->status ?? 'disetujui'));
+            $sheet->setCellValue([$colIdx++, $row], $inv->catatan ?? '');
+
+            $row++;
+        }
+
+        $endDataRow = $row - 1;
+        $totalCols = count($headers);
+
+        if ($endDataRow >= $startRow + 1) {
+            $currencyCols = $isAktual ? [10, 11, 12, 13, 14] : [11, 12, 13, 14, 15];
+            $centerCols   = $isAktual ? [1, 2, 3, 5, 6, 8, 9, 15] : [1, 2, 3, 5, 6, 8, 9, 10, 16];
+
+            ExcelExportService::styleDataRows(
+                $sheet,
+                $startRow + 1,
+                $endDataRow,
+                $totalCols,
+                $currencyCols,
+                $centerCols
+            );
+
+            // Row Total
+            $totalRow = $row;
+            $spanColIndex = $isAktual ? 9 : 10;
+            $spanColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($spanColIndex);
+            $sheet->mergeCells("A{$totalRow}:{$spanColLetter}{$totalRow}");
+            $sheet->setCellValue("A{$totalRow}", 'TOTAL KESELURUHAN');
+            
+            $startCurColIdx = $isAktual ? 10 : 11;
+            $endCurColIdx   = $isAktual ? 14 : 15;
+            $startCurLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($startCurColIdx);
+            $endCurLetter   = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($endCurCurIdx = $endCurColIdx);
+
+            $sheet->setCellValue("{$startCurLetter}{$totalRow}", $totalSubtotal);
+            $sheet->setCellValue((\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($startCurColIdx + 1)) . $totalRow, $totalDiskon);
+            $sheet->setCellValue((\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($startCurColIdx + 2)) . $totalRow, $totalPajak);
+            $sheet->setCellValue((\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($startCurColIdx + 3)) . $totalRow, $totalBiayaLain);
+            $sheet->setCellValue("{$endCurLetter}{$totalRow}", $totalBiaya);
+
+            $lastColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($totalCols);
+            $sheet->getStyle("A{$totalRow}:{$lastColLetter}{$totalRow}")->applyFromArray([
+                'font' => ['bold' => true, 'size' => 10],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E2E8F0'],
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '94A3B8'],
+                    ],
+                ],
+            ]);
+            $sheet->getStyle("A{$totalRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            $sheet->getStyle("{$startCurLetter}{$totalRow}:{$endCurLetter}{$totalRow}")->getNumberFormat()->setFormatCode('"Rp "#,##0');
+        }
+
+        ExcelExportService::autoFitColumns($sheet, $totalCols);
+
+        return ExcelExportService::streamDownload($spreadsheet, $filename);
     }
 }

@@ -168,41 +168,47 @@ Route::middleware(['auth', 'admin', 'prevent-back-history'])->prefix('admin')->n
     // Pemeliharaan
     Route::prefix('pemeliharaan')->name('pemeliharaan.')->group(function () {
         Route::get('/pengajuan',                    [AdminController::class, 'pemeliharaanPengajuan'])->name('pengajuan');
+        Route::get('/pengajuan/export-excel',        [AdminController::class, 'exportExcelPengajuan'])->name('pengajuan.export-excel');
         Route::post('/pengajuan/{id}/verifikasi',   [AdminController::class, 'verifikasiPengajuan'])->name('pengajuan.verifikasi');
         Route::post('/pengajuan/{id}/selesai',      [AdminController::class, 'selesaikanPengajuan'])->name('pengajuan.selesai');
         Route::get('/pemeriksaan',                  [AdminController::class, 'pemeliharaanPemeriksaan'])->name('pemeriksaan');
         Route::get('/pemeliharaan',                 [AdminController::class, 'pemeliharaanPemeliharaan'])->name('pemeliharaan');
+        Route::get('/pemeliharaan/export-excel',     [AdminController::class, 'exportExcelPemeliharaan'])->name('pemeliharaan.export-excel');
         Route::get('/surat-permohonan',             [AdminController::class, 'pemeliharaanPemeliharaan'])->name('surat-permohonan');
         Route::get('/cetak-dokumen/{id}/{type}',    [AdminController::class, 'cetakDokumen'])->name('cetak-dokumen');
         
         // SPJ Pembayaran Routes (URL: /admin/pemeliharaan/spj-pembayaran)
+        Route::get('/spj-pembayaran/export-excel',   [InvoiceController::class, 'exportExcel'])->name('spj-pembayaran.export-excel');
         Route::get('/spj-pembayaran/{invoice}/pdf', [InvoiceController::class, 'exportPdf'])->name('spj-pembayaran.pdf');
         Route::post('/spj-pembayaran/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('spj-pembayaran.update-status');
         Route::resource('spj-pembayaran', InvoiceController::class, [
             'names' => 'spj-pembayaran',
             'parameters' => ['spj-pembayaran' => 'invoice'],
         ]);
-        // Fallback route agar URL /monitoring-aktual tetap dialihkan ke /spj-pembayaran
-        Route::get('/monitoring-aktual', fn() => redirect()->route('admin.pemeliharaan.spj-pembayaran.index'))->name('monitoring-aktual');
-        Route::get('/monitoring-aktual/index', fn() => redirect()->route('admin.pemeliharaan.spj-pembayaran.index'))->name('monitoring-aktual.index');
-        Route::get('/monitoring-aktual/{id}', fn($id) => redirect()->route('admin.pemeliharaan.spj-pembayaran.show', $id))->name('monitoring-aktual.show');
+        // Fallback route agar URL lama /invoice dialihkan ke /spj-pembayaran
+        Route::get('/invoice', fn() => redirect()->route('admin.pemeliharaan.spj-pembayaran.index'))->name('invoice.index');
+        Route::get('/invoice/{id}', fn($id) => redirect()->route('admin.pemeliharaan.spj-pembayaran.show', $id))->name('invoice.show');
 
 
         // Aktual Pembayaran Routes (URL: /admin/pemeliharaan/aktual-pembayaran)
+        Route::get('/aktual-pembayaran/export-excel', [InvoiceController::class, 'exportExcel'])->name('aktual-pembayaran.export-excel');
         Route::get('/aktual-pembayaran/{invoice}/pdf', [InvoiceController::class, 'exportPdf'])->name('aktual-pembayaran.pdf');
         Route::post('/aktual-pembayaran/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('aktual-pembayaran.update-status');
         Route::resource('aktual-pembayaran', InvoiceController::class, [
             'names' => 'aktual-pembayaran',
             'parameters' => ['aktual-pembayaran' => 'invoice'],
         ]);
-        // Fallback route agar URL /invoice tetap dialihkan ke /aktual-pembayaran
-        Route::get('/invoice', fn() => redirect()->route('admin.pemeliharaan.aktual-pembayaran.index'))->name('invoice.index');
-        Route::get('/invoice/{id}', fn($id) => redirect()->route('admin.pemeliharaan.aktual-pembayaran.show', $id))->name('invoice.show');
+        // Fallback route agar URL lama /monitoring-aktual dialihkan ke /aktual-pembayaran
+        Route::get('/monitoring-aktual', fn() => redirect()->route('admin.pemeliharaan.aktual-pembayaran.index'))->name('monitoring-aktual');
+        Route::get('/monitoring-aktual/index', fn() => redirect()->route('admin.pemeliharaan.aktual-pembayaran.index'))->name('monitoring-aktual.index');
+        Route::get('/monitoring-aktual/{id}', fn($id) => redirect()->route('admin.pemeliharaan.aktual-pembayaran.show', $id))->name('monitoring-aktual.show');
 
         Route::get('/kartu-kendali-aktual',                [AdminController::class, 'pemeliharaanKartuKendaliAktual'])->name('kartu-kendali-aktual');
+        Route::get('/kartu-kendali-aktual/export-excel',   [AdminController::class, 'exportExcelKartuKendaliAktual'])->name('kartu-kendali-aktual.export-excel');
         Route::get('/kartu-kendali-spj',                   [AdminController::class, 'pemeliharaanKartuKendaliSpj'])->name('kartu-kendali-spj');
-        // Fallback route agar URL /kartu-kendali-pembayaran tetap dialihkan ke /kartu-kendali-aktual
-        Route::get('/kartu-kendali-pembayaran',            fn() => redirect()->route('admin.pemeliharaan.kartu-kendali-aktual'))->name('kartu-kendali-pembayaran');
+        Route::get('/kartu-kendali-spj/export-excel',      [AdminController::class, 'exportExcelKartuKendaliSpj'])->name('kartu-kendali-spj.export-excel');
+        // Fallback route agar URL /kartu-kendali-pembayaran tetap dialihkan ke /kartu-kendali-spj
+        Route::get('/kartu-kendali-pembayaran',            fn() => redirect()->route('admin.pemeliharaan.kartu-kendali-spj'))->name('kartu-kendali-pembayaran');
 
         // Data Unit CRUD Routes
         Route::get('/data-unit',                    [UnitManagementController::class, 'index'])->name('data-unit');
@@ -243,6 +249,8 @@ Route::middleware(['auth', 'admin', 'prevent-back-history'])->prefix('admin')->n
     // Unit Pemadam
     Route::prefix('unit-pemadam')->name('unit-pemadam.')->group(function () {
         Route::get('/pengecekan',  [AdminController::class, 'unitPemadamPengecekan'])->name('pengecekan');
+        Route::get('/pengecekan/export-excel-unit', [AdminController::class, 'exportExcelCekUnitPemadam'])->name('pengecekan.export-excel-unit');
+        Route::get('/pengecekan/export-excel-alat', [AdminController::class, 'exportExcelCekAlatPemadam'])->name('pengecekan.export-excel-alat');
         Route::get('/riwayat',     [AdminController::class, 'unitPemadamRiwayat'])->name('riwayat');
         Route::get('/cek-harian-unit/{id}/export-pdf', [CekHarianUnitPemadamController::class, 'exportPdf'])->name('cek-harian-unit.export-pdf');
         Route::get('/cek-harian-alat/{id}/export-pdf', [CekHarianAlatController::class, 'exportPdf'])->name('cek-harian-alat.export-pdf');
@@ -251,6 +259,8 @@ Route::middleware(['auth', 'admin', 'prevent-back-history'])->prefix('admin')->n
     // Unit Rescue
     Route::prefix('unit-rescue')->name('unit-rescue.')->group(function () {
         Route::get('/pengecekan',  [AdminController::class, 'unitRescuePengecekan'])->name('pengecekan');
+        Route::get('/pengecekan/export-excel-unit', [AdminController::class, 'exportExcelCekUnitRescue'])->name('pengecekan.export-excel-unit');
+        Route::get('/pengecekan/export-excel-alat', [AdminController::class, 'exportExcelCekAlatRescue'])->name('pengecekan.export-excel-alat');
         Route::get('/riwayat',     [AdminController::class, 'unitRescueRiwayat'])->name('riwayat');
         Route::get('/cek-harian-unit/{id}/export-pdf', [CekHarianUnitRescueController::class, 'exportPdf'])->name('cek-harian-unit.export-pdf');
         Route::get('/cek-harian-alat/{id}/export-pdf', [CekHarianAlatRescueController::class, 'exportPdf'])->name('cek-harian-alat.export-pdf');
@@ -259,6 +269,8 @@ Route::middleware(['auth', 'admin', 'prevent-back-history'])->prefix('admin')->n
     // Unit Pencegahan
     Route::prefix('unit-pencegahan')->name('unit-pencegahan.')->group(function () {
         Route::get('/pengecekan',  [AdminController::class, 'unitPencegahanPengecekan'])->name('pengecekan');
+        Route::get('/pengecekan/export-excel-unit', [AdminController::class, 'exportExcelCekUnitPencegahan'])->name('pengecekan.export-excel-unit');
+        Route::get('/pengecekan/export-excel-alat', [AdminController::class, 'exportExcelCekAlatPencegahan'])->name('pengecekan.export-excel-alat');
         Route::get('/cek-harian-unit/{id}/export-pdf', [CekHarianUnitPencegahanController::class, 'exportPdf'])->name('cek-harian-unit.export-pdf');
         Route::get('/cek-harian-alat/{id}/export-pdf', [CekHarianAlatPencegahanController::class, 'exportPdf'])->name('cek-harian-alat.export-pdf');
     });
@@ -267,6 +279,7 @@ Route::middleware(['auth', 'admin', 'prevent-back-history'])->prefix('admin')->n
     Route::prefix('command-center')->name('command-center.')->group(function () {
         Route::get('/data-peralatan', [AdminController::class, 'commandCenterDataPeralatan'])->name('data-peralatan');
         Route::get('/pengecekan',     [AdminController::class, 'commandCenterPengecekan'])->name('pengecekan');
+        Route::get('/pengecekan/export-excel', [AdminController::class, 'exportExcelCekAlatCommandCenter'])->name('pengecekan.export-excel');
         Route::get('/cek-alat-cc/{id}/export-pdf', [CekAlatCcController::class, 'exportPdf'])->name('cek-alat-cc.export-pdf');
     });
 

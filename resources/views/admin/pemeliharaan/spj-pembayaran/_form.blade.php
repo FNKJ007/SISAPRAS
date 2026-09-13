@@ -1,9 +1,9 @@
-{{-- resources/views/admin/pemeliharaan/aktual-pembayaran/_form.blade.php --}}
+{{-- resources/views/admin/pemeliharaan/spj-pembayaran/_form.blade.php --}}
 @php
     $isEdit = isset($invoice);
     $selectedPengajuanId = $selectedPengajuanId ?? old('pengajuan_id', request()->query('pengajuan_id', null));
-    $isAktual = request()->routeIs('admin.pemeliharaan.spj-pembayaran.*') || request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
-    $routePrefix = $isAktual ? 'admin.pemeliharaan.spj-pembayaran' : 'admin.pemeliharaan.aktual-pembayaran';
+    $isSpj = request()->routeIs('admin.pemeliharaan.spj-pembayaran.*');
+    $routePrefix = $isSpj ? 'admin.pemeliharaan.spj-pembayaran' : 'admin.pemeliharaan.aktual-pembayaran';
 
     // Cari pengajuan yang dipilih jika ada
     $selectedPengajuan = null;
@@ -201,7 +201,7 @@
             <select id="select_pengajuan_unit" style="padding:10px 14px; border:1px solid {{ $errors->has('unit_id') || $errors->has('no_lambung') ? '#C0201F' : '#CBD5E1' }}; border-radius:8px; font-size:13px; width:100%; outline:none; background:#FFFFFF; box-sizing:border-box;" required>
                 <option value="">-- Pilih Unit Kendaraan --</option>
                 
-                @if($isAktual)
+                @if($isSpj)
                     {{-- SPJ Pembayaran: Tampilkan semua Unit dari Master Data --}}
                     @if(isset($units) && $units->count() > 0)
                         @foreach ($units as $u)
@@ -294,7 +294,7 @@
             <p style="font-size:12px; color:#94A3B8; margin:0;">Isi rincian barang/jasa sesuai nota invoice bengkel. Kolom Kode Item dan Pot. (%) dapat diisi jika ada.</p>
         </div>
         <div class="invoice-btn-group">
-            @if(!$isAktual)
+            @if(!$isSpj)
             <button type="button" id="btn-sync-items" style="background:#EFF6FF; color:#1B2A6B; border:1px solid #BFDBFE; padding:8px 14px; border-radius:10px; font-weight:700; font-size:12px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
                 <i data-lucide="refresh-cw" style="width:14px; height:14px;"></i> Isi Ulang dari Pengajuan
             </button>
