@@ -136,6 +136,13 @@
                 <i data-lucide="download" style="width:15px; height:15px;"></i>
                 <span>Unduh PDF Kartu Kendali</span>
             </button>
+            <a href="{{ route('admin.pemeliharaan.kartu-kendali-aktual.export-excel', ['tahun' => $tahunFilter, 'search' => $searchQuery ?? '']) }}"
+               class="inline-flex flex-row items-center justify-center gap-2 whitespace-nowrap shrink-0"
+               style="display:inline-flex !important; flex-direction:row !important; align-items:center !important; justify-content:center !important; gap:7px !important; white-space:nowrap !important; flex-shrink:0 !important; padding:8px 16px; background:#10B981; color:#FFFFFF; border:none; border-radius:10px; font-size:12px; font-weight:700; text-decoration:none; box-shadow:0 4px 12px rgba(16,185,129,0.25); transition:all 0.2s;"
+               title="Download Matriks Kartu Kendali ke Excel (.xlsx)">
+                <i data-lucide="file-spreadsheet" style="width:15px; height:15px; min-width:15px; min-height:15px; flex-shrink:0; display:inline-block; vertical-align:middle;"></i>
+                <span style="white-space:nowrap; display:inline-block; line-height:1.2;">Unduh Excel</span>
+            </a>
         </div>
     </div>
 

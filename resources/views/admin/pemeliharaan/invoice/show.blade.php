@@ -58,10 +58,6 @@
                         <td class="text-muted">Tahun Anggaran</td>
                         <td>: {{ $invoice->tahun_anggaran }}</td>
                     </tr>
-                    <tr>
-                        <td class="text-muted">Kode Rekening</td>
-                        <td>: {{ $invoice->kode_rekening ?: '-' }}</td>
-                    </tr>
                 </table>
             </div>
             <div class="col-md-6">

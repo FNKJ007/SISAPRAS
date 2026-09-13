@@ -1,7 +1,7 @@
 @php
-    $isAktual = request()->routeIs('admin.pemeliharaan.spj-pembayaran.*') || request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
-    $pageTitle = $isAktual ? 'SPJ Pembayaran' : 'Aktual Pembayaran';
-    $routePrefix = $isAktual ? 'admin.pemeliharaan.spj-pembayaran' : 'admin.pemeliharaan.aktual-pembayaran';
+    $isSpj = request()->routeIs('admin.pemeliharaan.spj-pembayaran.*');
+    $pageTitle = $isSpj ? 'SPJ Pembayaran' : 'Aktual Pembayaran';
+    $routePrefix = $isSpj ? 'admin.pemeliharaan.spj-pembayaran' : 'admin.pemeliharaan.aktual-pembayaran';
 @endphp
 
 @extends('layouts.admin')

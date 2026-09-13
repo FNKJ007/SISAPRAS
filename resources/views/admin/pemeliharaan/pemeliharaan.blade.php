@@ -55,6 +55,13 @@
                         Reset
                     </a>
                 @endif
+                <a href="{{ route('admin.pemeliharaan.pemeliharaan.export-excel', ['search' => $search]) }}"
+                   class="inline-flex flex-row items-center justify-center gap-2 whitespace-nowrap shrink-0"
+                   style="display:inline-flex !important; flex-direction:row !important; align-items:center !important; justify-content:center !important; gap:7px !important; white-space:nowrap !important; flex-shrink:0 !important; padding:8px 16px; background:#10B981; color:#FFFFFF; border:none; border-radius:8px; font-size:12.5px; font-weight:700; text-decoration:none; box-shadow:0 2px 6px rgba(16,185,129,0.25); transition:all 0.15s ease;"
+                   title="Download Rekap Surat Permohonan ke Excel (.xlsx)">
+                    <i data-lucide="file-spreadsheet" style="width:16px; height:16px; min-width:16px; min-height:16px; flex-shrink:0; display:inline-block; vertical-align:middle;"></i>
+                    <span style="white-space:nowrap; display:inline-block; line-height:1.2;">Export Excel</span>
+                </a>
             </form>
         </div>
 

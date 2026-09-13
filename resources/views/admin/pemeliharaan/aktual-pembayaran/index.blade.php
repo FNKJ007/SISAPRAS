@@ -1,8 +1,8 @@
 @php
-    $isAktual = request()->routeIs('admin.pemeliharaan.spj-pembayaran.*') || request()->routeIs('admin.pemeliharaan.monitoring-aktual.*');
-    $pageTitle = $isAktual ? 'SPJ Pembayaran' : 'Aktual Pembayaran';
-    $subTitle  = $isAktual ? 'Monitoring data SPJ pembayaran pemeliharaan unit.' : 'Monitoring data aktual pembayaran pemeliharaan unit.';
-    $routePrefix = $isAktual ? 'admin.pemeliharaan.spj-pembayaran' : 'admin.pemeliharaan.aktual-pembayaran';
+    $isSpj = request()->routeIs('admin.pemeliharaan.spj-pembayaran.*');
+    $pageTitle = $isSpj ? 'SPJ Pembayaran' : 'Aktual Pembayaran';
+    $subTitle  = $isSpj ? 'Monitoring data SPJ pembayaran pemeliharaan unit.' : 'Monitoring data aktual pembayaran pemeliharaan unit.';
+    $routePrefix = $isSpj ? 'admin.pemeliharaan.spj-pembayaran' : 'admin.pemeliharaan.aktual-pembayaran';
 @endphp
 
 @extends('layouts.admin')
@@ -115,6 +115,13 @@
             <p style="font-size:13px; color:#64748B; margin:0;">{{ $subTitle }}</p>
         </div>
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <a href="{{ route($routePrefix . '.export-excel', request()->query()) }}"
+               class="inline-flex flex-row items-center justify-center gap-2 whitespace-nowrap shrink-0"
+               style="display:inline-flex !important; flex-direction:row !important; align-items:center !important; justify-content:center !important; gap:8px !important; white-space:nowrap !important; flex-shrink:0 !important; padding:9px 18px; background:#10B981; color:#FFFFFF; border-radius:10px; font-size:12.5px; font-weight:700; text-decoration:none; box-shadow:0 4px 12px rgba(16,185,129,0.25); transition:all 0.2s ease;"
+               title="Download Rekap ke Excel (.xlsx)">
+                <i data-lucide="file-spreadsheet" style="width:16px; height:16px; min-width:16px; min-height:16px; flex-shrink:0; display:inline-block; vertical-align:middle;"></i>
+                <span style="white-space:nowrap; display:inline-block; line-height:1.2;">Export Excel</span>
+            </a>
             <a href="{{ route($routePrefix . '.create') }}"
                style="display:inline-flex; align-items:center; gap:8px; padding:9px 18px; background:#1B2A6B; color:#FFFFFF; border-radius:10px; font-size:12.5px; font-weight:700; text-decoration:none; box-shadow:0 4px 12px rgba(27,42,107,0.25); transition:all 0.2s ease;">
                 <i data-lucide="plus-circle" style="width:16px; height:16px;"></i>

@@ -34,15 +34,15 @@
         </div>
     </div>
 
-    {{-- Search Bar --}}
-    <div style="margin-bottom:18px;">
-        <form method="GET" action="{{ route('admin.command-center.pengecekan') }}" style="display:flex; align-items:center; gap:8px; width:100%; max-width:520px;">
+    {{-- Control Toolbar: Search & Export Excel --}}
+    <div style="background:#FFFFFF; border-radius:14px; padding:12px 16px; margin-bottom:18px; border:1px solid #E2E8F0; box-shadow:0 2px 8px rgba(0,0,0,0.03); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+        <form method="GET" action="{{ route('admin.command-center.pengecekan') }}" style="display:flex; align-items:center; gap:8px; width:100%; max-width:480px;">
             <div style="position:relative; flex:1;">
                 <input type="text" name="search" value="{{ $searchQuery ?? '' }}" placeholder="Cari berdasarkan Regu atau Pemeriksa..."
-                       style="width:100%; padding:8px 14px 8px 36px; font-size:12.5px; border-radius:10px; border:1px solid #CBD5E1; outline:none; background:#FFFFFF; box-shadow:0 2px 6px rgba(0,0,0,0.03);">
-                <i data-lucide="search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:#94A3B8;"></i>
+                       style="width:100%; padding:8px 14px 8px 34px; font-size:12.5px; border-radius:10px; border:1px solid #CBD5E1; outline:none; background:#F8FAFC; transition:border 0.2s;">
+                <i data-lucide="search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:#94A3B8;"></i>
             </div>
-            <button type="submit" style="padding:8px 16px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer;">
+            <button type="submit" style="padding:8px 15px; background:#1B2A6B; color:#FFFFFF; border:none; border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer; transition:all 0.2s ease;">
                 Cari
             </button>
             @if(!empty($searchQuery))
@@ -51,6 +51,13 @@
                 </a>
             @endif
         </form>
+        <a href="{{ route('admin.command-center.pengecekan.export-excel', ['search' => $searchQuery ?? '']) }}"
+           class="inline-flex flex-row items-center justify-center gap-2 whitespace-nowrap shrink-0"
+           style="display:inline-flex !important; flex-direction:row !important; align-items:center !important; justify-content:center !important; gap:8px !important; white-space:nowrap !important; flex-shrink:0 !important; padding:9px 16px; background:#10B981; color:#FFFFFF; border:none; border-radius:10px; font-size:12.5px; font-weight:700; text-decoration:none; box-shadow:0 3px 8px rgba(16,185,129,0.25); transition:all 0.2s ease;"
+           title="Download Rekap Pengecekan Command Center ke Excel (.xlsx)">
+            <i data-lucide="file-spreadsheet" style="width:16px; height:16px; min-width:16px; min-height:16px; flex-shrink:0; display:inline-block; vertical-align:middle;"></i>
+            <span style="white-space:nowrap; display:inline-block; line-height:1.2;">Export Excel Alat</span>
+        </a>
     </div>
 
     {{-- Table Container --}}
