@@ -518,7 +518,7 @@
                     </div>
                     <div>
                         <span style="color:#64748B; font-size:10.5px; display:block;">Tanggal Pemeriksaan:</span>
-                        <strong style="color:#0F172A;" x-text="formatDate(activeAlat.tanggal_pemeriksaan)"></strong>
+                        <strong style="color:#0F172A;" x-text="formatDate(activeAlat.created_at || activeAlat.tanggal_pemeriksaan)"></strong>
                     </div>
                     <div>
                         <span style="color:#64748B; font-size:10.5px; display:block;">Nama Pemeriksa:</span>

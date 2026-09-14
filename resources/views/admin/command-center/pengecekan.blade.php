@@ -184,7 +184,7 @@
                     </div>
                     <div>
                         <span style="color:#64748B; font-size:10.5px; display:block;">Tanggal Pemeriksaan:</span>
-                        <strong style="color:#0F172A;" x-text="formatDate(activeAlat.tanggal_pemeriksaan)"></strong>
+                        <strong style="color:#0F172A;" x-text="formatDate(activeAlat.created_at || activeAlat.tanggal_pemeriksaan)"></strong>
                     </div>
                     <div>
                         <span style="color:#64748B; font-size:10.5px; display:block;">Nama Pemeriksa:</span>
@@ -276,7 +276,10 @@ function pengecekanCommandCenterAdmin() {
             if (!val) return '-';
             const d = new Date(val);
             if (isNaN(d)) return val;
-            return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const dateStr = d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${dateStr} (${hours}:${minutes} WIB)`;
         },
 
         fotoUrl(value) {
