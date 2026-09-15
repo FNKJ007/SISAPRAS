@@ -17,6 +17,21 @@
     closeModals() {
         this.selectedAlat = null;
         this.selectedPengajuan = null;
+    },
+    formatDate(val) {
+        if (!val) return '-';
+        const d = new Date(val);
+        if (isNaN(d.getTime())) return val;
+        const dateStr = d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        return `${dateStr} (${hours}:${minutes} WIB)`;
+    },
+    formatDateOnly(val) {
+        if (!val) return '-';
+        const d = new Date(val);
+        if (isNaN(d.getTime())) return val;
+        return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
 }" x-effect="document.body.classList.toggle('modal-open', selectedAlat !== null || selectedPengajuan !== null)" x-init="$watch('activeTab', () => $nextTick(() => { if (window.lucide) lucide.createIcons(); }))">
 
@@ -162,13 +177,13 @@
                             </td>
                             <td class="py-3 px-3.5 whitespace-nowrap">
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">
-                                    {{ $item->total_alat_baik ?? 0 }} Baik
+                                    {{ $item->total_baik ?? $item->total_alat_baik ?? 0 }} Baik
                                 </span>
                             </td>
                             <td class="py-3 px-3.5 whitespace-nowrap">
-                                @if(($item->total_alat_rusak ?? 0) > 0)
+                                @if(($item->total_rusak ?? $item->total_alat_rusak ?? 0) > 0)
                                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700">
-                                        {{ $item->total_alat_rusak }} Rusak
+                                        {{ $item->total_rusak ?? $item->total_alat_rusak }} Rusak
                                     </span>
                                 @else
                                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600">
@@ -210,11 +225,11 @@
                         </div>
                         <div class="flex flex-col items-end gap-1 flex-shrink-0">
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-700">
-                                {{ $item->total_alat_baik ?? 0 }} Baik
+                                {{ $item->total_baik ?? $item->total_alat_baik ?? 0 }} Baik
                             </span>
-                            @if(($item->total_alat_rusak ?? 0) > 0)
+                            @if(($item->total_rusak ?? $item->total_alat_rusak ?? 0) > 0)
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 text-red-700">
-                                    {{ $item->total_alat_rusak }} Rusak
+                                    {{ $item->total_rusak ?? $item->total_alat_rusak }} Rusak
                                 </span>
                             @else
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600">
@@ -495,15 +510,15 @@
                     {{-- HEADER (tidak scroll) --}}
                     <div class="flex-shrink-0 p-4 sm:p-6 border-b border-gray-200">
                         <h3 class="text-base sm:text-lg font-extrabold text-blue-950 mb-1 pr-6" x-text="'Detail Pengecekan Alat Command Center'"></h3>
-                        <p class="text-xs text-gray-500 mb-3.5" x-text="'Tanggal: ' + selectedAlat.tanggal_pemeriksaan + ' | Pos: ' + (selectedAlat.pos || '-')"></p>
+                        <p class="text-xs text-gray-500 mb-3.5" x-text="'Tanggal: ' + formatDate(selectedAlat.created_at || selectedAlat.tanggal_pemeriksaan) + ' | Pos: ' + (selectedAlat.pos || '-')"></p>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs bg-gray-50 p-3 sm:p-3.5 rounded-xl border border-gray-200">
                             <div><strong class="text-gray-500">Pemeriksa:</strong> <span class="font-bold text-gray-900" x-text="selectedAlat.nama_pemeriksa"></span></div>
                             <div><strong class="text-gray-500">Jabatan:</strong> <span class="text-gray-800" x-text="selectedAlat.jabatan"></span></div>
                             <div><strong class="text-gray-500">Danru:</strong> <span class="text-gray-800" x-text="selectedAlat.nama_danru || '-'"></span></div>
                             <div><strong class="text-gray-500">Kepala Bidang:</strong> <span class="text-gray-800" x-text="selectedAlat.nama_kabid || '-'"></span></div>
-                            <div><strong class="text-gray-500">Total Baik:</strong> <span class="font-bold text-emerald-600" x-text="(selectedAlat.total_alat_baik || 0) + ' Unit'"></span></div>
-                            <div><strong class="text-gray-500">Total Rusak:</strong> <span class="font-bold text-red-600" x-text="(selectedAlat.total_alat_rusak || 0) + ' Unit'"></span></div>
+                            <div><strong class="text-gray-500">Total Baik:</strong> <span class="font-bold text-emerald-600" x-text="((selectedAlat.total_baik !== undefined ? selectedAlat.total_baik : selectedAlat.total_alat_baik) || 0) + ' Unit'"></span></div>
+                            <div><strong class="text-gray-500">Total Rusak:</strong> <span class="font-bold text-red-600" x-text="((selectedAlat.total_rusak !== undefined ? selectedAlat.total_rusak : selectedAlat.total_alat_rusak) || 0) + ' Unit'"></span></div>
                         </div>
                     </div>
 
@@ -573,7 +588,7 @@
                             <div><strong class="text-gray-500">Komandan Regu:</strong> <span class="text-gray-800" x-text="selectedPengajuan.nama_komandan_regu || '-'"></span></div>
                             <div><strong class="text-gray-500">Kepala Bidang:</strong> <span class="text-gray-800" x-text="selectedPengajuan.nama_kepala_bidang || '-'"></span></div>
                             <div><strong class="text-gray-500">Jenis Kendaraan:</strong> <span class="font-bold text-gray-900" x-text="selectedPengajuan.jenis_kendaraan || '-'"></span></div>
-                            <div><strong class="text-gray-500">Tanggal Pengajuan:</strong> <span class="font-bold text-gray-900" x-text="selectedPengajuan.created_at ? new Date(selectedPengajuan.created_at).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'}) : '-'"></span></div>
+                            <div><strong class="text-gray-500">Tanggal Pengajuan:</strong> <span class="font-bold text-gray-900" x-text="formatDate(selectedPengajuan.created_at)"></span></div>
                         </div>
                     </div>
 
@@ -599,11 +614,11 @@
                             <div class="grid grid-cols-2 gap-2 text-[11px] text-gray-600 pt-1">
                                 <div x-show="selectedPengajuan.tanggal_keberangkatan">
                                     <span>Tgl Masuk Bengkel:</span>
-                                    <strong class="text-gray-900 block" x-text="selectedPengajuan.tanggal_keberangkatan"></strong>
+                                    <strong class="text-gray-900 block" x-text="formatDateOnly(selectedPengajuan.tanggal_keberangkatan)"></strong>
                                 </div>
                                 <div x-show="selectedPengajuan.tanggal_selesai_pengerjaan">
                                     <span>Tgl Selesai:</span>
-                                    <strong class="text-gray-900 block" x-text="selectedPengajuan.tanggal_selesai_pengerjaan"></strong>
+                                    <strong class="text-gray-900 block" x-text="formatDateOnly(selectedPengajuan.tanggal_selesai_pengerjaan)"></strong>
                                 </div>
                             </div>
                         </div>
