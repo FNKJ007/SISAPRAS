@@ -833,7 +833,7 @@
 
         input.addEventListener('render-preview', renderFiles);
 
-        input.addEventListener('change', function () {
+        input.addEventListener('change', async function () {
             var errEl = document.getElementById('err_' + inputId);
             var maxFiles = input.hasAttribute('multiple') ? 3 : 1;
 
@@ -841,9 +841,9 @@
                 return;
             }
 
-            var newFiles = Array.from(input.files);
-            for (var f = 0; f < newFiles.length; f++) {
-                var res = validateSingleFile(newFiles[f]);
+            var rawFiles = Array.from(input.files);
+            for (var f = 0; f < rawFiles.length; f++) {
+                var res = validateSingleFile(rawFiles[f]);
                 if (!res.valid) {
                     if (errEl) {
                         errEl.textContent = res.error;
@@ -858,14 +858,28 @@
                 }
             }
 
+            // Tampilkan indikator proses kompresi foto
+            var origLabel = labelEl.textContent;
+            labelEl.textContent = '⏳ Mengoptimalkan foto...';
+
+            var compressedFiles = [];
+            for (var i = 0; i < rawFiles.length; i++) {
+                if (window.compressImageFile) {
+                    var cFile = await window.compressImageFile(rawFiles[i], 1600, 1600, 0.8);
+                    compressedFiles.push(cFile);
+                } else {
+                    compressedFiles.push(rawFiles[i]);
+                }
+            }
+
             if (maxFiles > 1) {
-                newFiles.forEach(f => {
+                compressedFiles.forEach(f => {
                     if (input.accumulatedFiles.length < maxFiles) {
                         input.accumulatedFiles.push(f);
                     }
                 });
             } else {
-                input.accumulatedFiles = newFiles.slice(0, 1);
+                input.accumulatedFiles = compressedFiles.slice(0, 1);
             }
 
             if (errEl) errEl.classList.add('hidden');

@@ -386,12 +386,12 @@
     }
 
     if (input && labelText) {
-        input.addEventListener('change', function () {
+        input.addEventListener('change', async function () {
             clearFileError();
 
             // Gabungkan file yang baru dipilih dengan file yang sudah ada
-            var newFiles = Array.from(input.files);
-            var combined = accumulatedFiles.concat(newFiles);
+            var rawFiles = Array.from(input.files);
+            var combined = accumulatedFiles.concat(rawFiles);
 
             if (combined.length > MAX_FILES) {
                 showFileError('Maksimal 3 foto yang dapat diunggah. Total foto terpilih ' + combined.length + ' foto.');
@@ -402,8 +402,8 @@
                 return;
             }
 
-            for (var i = 0; i < newFiles.length; i++) {
-                var result = validateFile(newFiles[i]);
+            for (var i = 0; i < rawFiles.length; i++) {
+                var result = validateFile(rawFiles[i]);
                 if (!result.valid) {
                     showFileError(result.error);
                     // Kembalikan input ke foto yang sudah valid sebelumnya, jangan dikosongkan total
@@ -414,7 +414,19 @@
                 }
             }
 
-            accumulatedFiles = combined;
+            labelText.textContent = '⏳ Mengoptimalkan foto...';
+
+            var compressedFiles = [];
+            for (var j = 0; j < rawFiles.length; j++) {
+                if (window.compressImageFile) {
+                    var cFile = await window.compressImageFile(rawFiles[j], 1600, 1600, 0.8);
+                    compressedFiles.push(cFile);
+                } else {
+                    compressedFiles.push(rawFiles[j]);
+                }
+            }
+
+            accumulatedFiles = accumulatedFiles.concat(compressedFiles);
             syncInputFiles();
             updateLabel();
             renderPreviews();
