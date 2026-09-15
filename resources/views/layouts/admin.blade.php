@@ -349,6 +349,69 @@
                 lucide.createIcons();
             }
         });
+
+        // Global Image Auto-Compression Utility for Mobile/Camera uploads
+        window.compressImageFile = function(file, maxWidth, maxHeight, quality) {
+            maxWidth = maxWidth || 1600;
+            maxHeight = maxHeight || 1600;
+            quality = quality || 0.8;
+
+            return new Promise(function(resolve) {
+                if (!file || !file.type || !file.type.startsWith('image/') || file.type === 'image/svg+xml' || file.type === 'image/gif') {
+                    return resolve(file);
+                }
+
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var img = new Image();
+                    img.onload = function() {
+                        var width = img.naturalWidth || img.width;
+                        var height = img.naturalHeight || img.height;
+
+                        if (width <= maxWidth && height <= maxHeight && file.size <= 500 * 1024) {
+                            return resolve(file);
+                        }
+
+                        if (width > maxWidth || height > maxHeight) {
+                            if (width / height > maxWidth / maxHeight) {
+                                height = Math.round((height * maxWidth) / width);
+                                width = maxWidth;
+                            } else {
+                                width = Math.round((width * maxHeight) / height);
+                                height = maxHeight;
+                            }
+                        }
+
+                        var canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        var ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob(function(blob) {
+                            if (blob && blob.size < file.size) {
+                                var newName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
+                                var compressedFile = new File([blob], newName, {
+                                    type: 'image/jpeg',
+                                    lastModified: Date.now()
+                                });
+                                resolve(compressedFile);
+                            } else {
+                                resolve(file);
+                            }
+                        }, 'image/jpeg', quality);
+                    };
+                    img.onerror = function() {
+                        resolve(file);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.onerror = function() {
+                    resolve(file);
+                };
+                reader.readAsDataURL(file);
+            });
+        };
     </script>
     @stack('scripts')
     <script>

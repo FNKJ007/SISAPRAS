@@ -30,6 +30,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY . ./
 COPY docker/apache-laravel.conf /etc/apache2/conf-available/laravel.conf
 COPY docker/render-entrypoint.sh /usr/local/bin/render-entrypoint
+COPY docker/php.ini $PHP_INI_DIR/conf.d/custom.ini
 
 # Package discovery is needed for laravel-dompdf. The directories below must
 # remain writable because Laravel compiles views and writes its runtime logs.

@@ -352,12 +352,19 @@
         });
     }
 
-    function removeFile(index) {
+    var accumulatedFiles = [];
+
+    function syncInputFiles() {
         var dt = new DataTransfer();
-        Array.from(input.files).forEach(function (file, i) {
-            if (i !== index) dt.items.add(file);
+        accumulatedFiles.forEach(function (file) {
+            dt.items.add(file);
         });
         input.files = dt.files;
+    }
+
+    function removeFile(index) {
+        accumulatedFiles.splice(index, 1);
+        syncInputFiles();
         clearFileError();
         updateLabel();
         renderPreviews();
@@ -393,28 +400,45 @@
     }
 
     if (input && labelText) {
-        input.addEventListener('change', function () {
+        input.addEventListener('change', async function () {
             clearFileError();
 
-            if (input.files.length > MAX_FILES) {
-                showFileError('Maksimal 3 foto yang dapat diunggah. Anda memilih ' + input.files.length + ' foto.');
-                input.value = '';
+            var rawFiles = Array.from(input.files);
+            var combined = accumulatedFiles.concat(rawFiles);
+
+            if (combined.length > MAX_FILES) {
+                showFileError('Maksimal 3 foto yang dapat diunggah. Total foto terpilih ' + combined.length + ' foto.');
+                syncInputFiles();
                 updateLabel();
                 renderPreviews();
                 return;
             }
 
-            for (var i = 0; i < input.files.length; i++) {
-                var result = validateFile(input.files[i]);
+            for (var i = 0; i < rawFiles.length; i++) {
+                var result = validateFile(rawFiles[i]);
                 if (!result.valid) {
                     showFileError(result.error);
-                    input.value = '';
+                    syncInputFiles();
                     updateLabel();
                     renderPreviews();
                     return;
                 }
             }
 
+            labelText.textContent = '⏳ Mengoptimalkan foto...';
+
+            var compressedFiles = [];
+            for (var j = 0; j < rawFiles.length; j++) {
+                if (window.compressImageFile) {
+                    var cFile = await window.compressImageFile(rawFiles[j], 1600, 1600, 0.8);
+                    compressedFiles.push(cFile);
+                } else {
+                    compressedFiles.push(rawFiles[j]);
+                }
+            }
+
+            accumulatedFiles = accumulatedFiles.concat(compressedFiles);
+            syncInputFiles();
             updateLabel();
             renderPreviews();
         });
