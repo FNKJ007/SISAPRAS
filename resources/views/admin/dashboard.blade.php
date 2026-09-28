@@ -32,10 +32,32 @@
                 </div>
             </form>
 
-            {{-- Tanggal Hari Ini --}}
-            <div style="display:flex; align-items:center; gap:8px; background:#FFFFFF; padding:8px 14px; border-radius:10px; border:1px solid #E2E8F0; box-shadow:0 2px 6px rgba(0,0,0,0.03);">
-                <i data-lucide="calendar" style="width:16px; height:16px; color:#C0201F;"></i>
-                <span style="font-size:12.5px; font-weight:700; color:#1E293B;">{{ \Illuminate\Support\Carbon::now()->translatedFormat('d F Y') }}</span>
+            {{-- Tanggal Dinamis (Date Picker) --}}
+            <div style="display:flex; align-items:center; gap:6px;">
+                @if($isCustomDate ?? false)
+                    <a href="{{ route('admin.dashboard', ['tahun' => $currentYear]) }}"
+                       style="display:flex; align-items:center; gap:5px; background:#FEF2F2; padding:7px 12px; border-radius:10px; border:1px solid #FCA5A5; text-decoration:none; font-size:11.5px; font-weight:700; color:#DC2626; transition:all 0.15s;"
+                       onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='#FEF2F2'">
+                        <i data-lucide="rotate-ccw" style="width:13px; height:13px;"></i>
+                        Hari Ini
+                    </a>
+                @endif
+                <div style="display:flex; align-items:center; gap:8px; background:{{ ($isCustomDate ?? false) ? '#FFFBEB' : '#FFFFFF' }}; padding:6px 12px; border-radius:10px; border:1px solid {{ ($isCustomDate ?? false) ? '#F59E0B' : '#E2E8F0' }}; box-shadow:0 2px 6px rgba(0,0,0,0.03); cursor:pointer; position:relative; transition:all 0.15s;"
+                     onclick="document.getElementById('dashboardDateInput').showPicker()"
+                     onmouseover="this.style.borderColor='#1B2A6B'" onmouseout="this.style.borderColor='{{ ($isCustomDate ?? false) ? '#F59E0B' : '#E2E8F0' }}'">
+                    <i data-lucide="calendar" style="width:16px; height:16px; color:{{ ($isCustomDate ?? false) ? '#D97706' : '#C0201F' }};"></i>
+                    <span style="font-size:12.5px; font-weight:700; color:#1E293B;">{{ $selectedDate->translatedFormat('d F Y') }}</span>
+                    <i data-lucide="chevron-down" style="width:12px; height:12px; color:#94A3B8;"></i>
+                    <input type="date" id="dashboardDateInput"
+                           value="{{ $selectedDate->format('Y-m-d') }}"
+                           max="{{ now()->format('Y-m-d') }}"
+                           style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index:2;"
+                           onchange="if(this.value) { 
+                               const params = new URLSearchParams(window.location.search);
+                               params.set('tanggal', this.value);
+                               window.location.href = '{{ route('admin.dashboard') }}?' + params.toString();
+                           }">
+                </div>
             </div>
         </div>
     </div>
@@ -175,10 +197,10 @@
                 </div>
 
                 <span style="font-size:12px; color:#64748B; margin-top:4px; display:block;" x-show="tabAbsen === 'unit'">
-                    Monitoring kepatuhan pemeriksaan harian {{ $absenSummary['total_unit'] ?? 25 }} unit kendaraan pemadam, rescue, dan pencegahan per hari ini (<strong>{{ now()->translatedFormat('l, d F Y') }}</strong>).
+                    Monitoring kepatuhan pemeriksaan harian {{ $absenSummary['total_unit'] ?? 25 }} unit kendaraan pemadam, rescue, dan pencegahan per {{ ($isCustomDate ?? false) ? 'tanggal' : 'hari ini' }} (<strong>{{ $selectedDate->translatedFormat('l, d F Y') }}</strong>).
                 </span>
                 <span style="font-size:12px; color:#64748B; margin-top:4px; display:block;" x-show="tabAbsen === 'alat'" x-cloak>
-                    Monitoring kepatuhan pemeriksaan harian peralatan operasional di seluruh 9 Pos Damkar sesuai kapabilitas pos per hari ini (<strong>{{ now()->translatedFormat('l, d F Y') }}</strong>).
+                    Monitoring kepatuhan pemeriksaan harian peralatan operasional di seluruh 9 Pos Damkar sesuai kapabilitas pos per {{ ($isCustomDate ?? false) ? 'tanggal' : 'hari ini' }} (<strong>{{ $selectedDate->translatedFormat('l, d F Y') }}</strong>).
                 </span>
             </div>
 

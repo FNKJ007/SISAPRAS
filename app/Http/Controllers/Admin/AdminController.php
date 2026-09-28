@@ -173,11 +173,24 @@ class AdminController extends Controller
             ];
         });
 
-        // 5. Absen Pengecekan Harian Unit & Peralatan (Cached for 15s to guarantee high responsiveness)
-        $absenData = \Illuminate\Support\Facades\Cache::remember('admin_dashboard_absen_unit_alat_v3', 15, function () {
-            $todayStart = now()->startOfDay()->toDateTimeString();
-            $todayEnd   = now()->endOfDay()->toDateTimeString();
-            $todayDate  = now()->format('Y-m-d');
+        // 5. Absen Pengecekan Harian Unit & Peralatan
+        // Mendukung tanggal dinamis via query param ?tanggal=YYYY-MM-DD
+        $selectedDateStr = $request->query('tanggal');
+        $selectedDate = null;
+        try {
+            $selectedDate = $selectedDateStr ? Carbon::parse($selectedDateStr) : now();
+        } catch (\Exception $e) {
+            $selectedDate = now();
+        }
+        $isCustomDate = $selectedDateStr && $selectedDate->format('Y-m-d') !== now()->format('Y-m-d');
+
+        $absenCacheKey = 'admin_dashboard_absen_' . $selectedDate->format('Y_m_d');
+        $absenCacheTtl = $isCustomDate ? 120 : 15; // Cache longer for historical dates
+
+        $absenData = \Illuminate\Support\Facades\Cache::remember($absenCacheKey, $absenCacheTtl, function () use ($selectedDate) {
+            $todayStart = $selectedDate->copy()->startOfDay()->toDateTimeString();
+            $todayEnd   = $selectedDate->copy()->endOfDay()->toDateTimeString();
+            $todayDate  = $selectedDate->format('Y-m-d');
 
             // --- A. Data Absen Pengecekan Unit Armada ---
             $todayCekUnits = \App\Models\CekHarianUnit::where(function ($q) use ($todayStart, $todayEnd, $todayDate) {
@@ -313,16 +326,19 @@ class AdminController extends Controller
         $calendarBulanSebelumnya = $calendarCurrentDate->copy()->subMonth();
         $calendarBulanBerikutnya = $calendarCurrentDate->copy()->addMonth();
 
-        $calendarPrevMonthUrl = route('admin.dashboard', [
+        $calendarUrlParams = ['tahun' => $currentYear];
+        if ($isCustomDate) {
+            $calendarUrlParams['tanggal'] = $selectedDate->format('Y-m-d');
+        }
+
+        $calendarPrevMonthUrl = route('admin.dashboard', array_merge($calendarUrlParams, [
             'month' => $calendarBulanSebelumnya->month,
             'year'  => $calendarBulanSebelumnya->year,
-            'tahun' => $currentYear,
-        ]);
-        $calendarNextMonthUrl = route('admin.dashboard', [
+        ]));
+        $calendarNextMonthUrl = route('admin.dashboard', array_merge($calendarUrlParams, [
             'month' => $calendarBulanBerikutnya->month,
             'year'  => $calendarBulanBerikutnya->year,
-            'tahun' => $currentYear,
-        ]);
+        ]));
 
         // Query SEMUA pengajuan pemeliharaan dari SELURUH POS & UNIT untuk bulan kalender aktif
         $calendarTglAwal  = $calendarCurrentDate->copy()->startOfMonth();
@@ -431,6 +447,8 @@ class AdminController extends Controller
 
         return view('admin.dashboard', array_merge($stats, $absenData, [
             'currentYear'             => $currentYear,
+            'selectedDate'            => $selectedDate,
+            'isCustomDate'            => $isCustomDate,
             'calendarMonth'           => $calendarMonth,
             'calendarYear'            => $calendarYear,
             'calendarCurrentDate'     => $calendarCurrentDate,
